@@ -403,7 +403,7 @@
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    539
+                    779
                 </div>
                 
 
@@ -469,10 +469,25 @@
 <h2 id="3-容器技术的发展过程"><a href="#3-容器技术的发展过程" class="headerlink" title="3 容器技术的发展过程"></a>3 容器技术的发展过程</h2><blockquote>
 <p>chroot — lxc —- docker</p>
 </blockquote>
+<h3 id="4-Docker组成"><a href="#4-Docker组成" class="headerlink" title="4 Docker组成"></a>4 Docker组成</h3><p>​    Docker基于Go语言开发，C/S模式</p>
+<ul>
+<li>主要组件<ul>
+<li>镜像</li>
+<li>容器</li>
+<li>仓库：最大的dockerhub</li>
+<li>网络</li>
+<li>存储</li>
+</ul>
+</li>
+</ul>
 <h1 id="二、Docker安装"><a href="#二、Docker安装" class="headerlink" title="二、Docker安装"></a>二、Docker安装</h1><blockquote>
 <p>参考网站：<a target="_blank" rel="noopener" href="https://mirrors.tuna.tsinghua.edu.cn/help/docker-ce/">https://mirrors.tuna.tsinghua.edu.cn/help/docker-ce/</a></p>
 </blockquote>
-<h2 id="1-联网在线安装"><a href="#1-联网在线安装" class="headerlink" title="1 联网在线安装"></a>1 联网在线安装</h2><p>如果你之前安装过 docker，请先删掉</p>
+<h2 id="1-联网在线安装"><a href="#1-联网在线安装" class="headerlink" title="1 联网在线安装"></a>1 联网在线安装</h2><p>开启rpm包缓存，方便制作离线安装包</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;yum.conf
+keepcache&#x3D;1 <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>如果你之前安装过 docker，请先删掉</p>
 <pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">sudo yum remove docker docker-common docker-selinux docker-engine<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
 <p>安装一些依赖</p>
@@ -486,9 +501,40 @@
 
 <p>最后安装:</p>
 <pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">sudo yum makecache fast
-sudo yum install docker-ce<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+    sudo yum install docker-ce<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
 
-<h2 id="2-无网环境下离线安装"><a href="#2-无网环境下离线安装" class="headerlink" title="2 无网环境下离线安装"></a>2 无网环境下离线安装</h2>
+<h2 id="2-无网环境下离线安装"><a href="#2-无网环境下离线安装" class="headerlink" title="2 无网环境下离线安装"></a>2 无网环境下离线安装</h2><p>搜集联网环境下下载的rpm包</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">find &#x2F;var&#x2F;cache&#x2F;yum&#x2F;x86_64&#x2F;7&#x2F; -name &quot;*.rpm&quot; | xargs -i mv &#123;&#125; docker_rpm&#x2F;
+tar -zvcf docker_rpm.tgz docker_rpm&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>拷贝到无网环境的服务器中安装</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">tar -vxf docker_rpm.tgz # 解压
+cd docker_rpm	
+rpm -Uvh .&#x2F;*.rpm # 安装<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="3-启动服务并验证安装是否成功"><a href="#3-启动服务并验证安装是否成功" class="headerlink" title="3 启动服务并验证安装是否成功"></a>3 启动服务并验证安装是否成功</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 启动服务
+systemctl enable docker
+systemctl start docker
+
+# 验证是否安装成功
+docker version
+docker info<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="4-Docker镜像下载加速"><a href="#4-Docker镜像下载加速" class="headerlink" title="4 Docker镜像下载加速"></a>4 Docker镜像下载加速</h2><ul>
+<li>阿里云docker镜像加速器服务</li>
+<li>配置docker镜像加速(推荐)</li>
+</ul>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 创建文件
+vi &#x2F;etc&#x2F;docker&#x2F;daemon.json
+&#123;    
+	&quot;registry-mirrors&quot;:[&quot;https:&#x2F;&#x2F;registry.docker-cn.com”]
+&#125; 
+# 重新加载
+systemctl daemon-reload     <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="5-创建并运行一个nginx容器"><a href="#5-创建并运行一个nginx容器" class="headerlink" title="5 创建并运行一个nginx容器"></a>5 创建并运行一个nginx容器</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker run -d -p 80:80 nginx<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+
                 
             </div>
             <hr/>
@@ -1036,7 +1082,7 @@ sudo yum install docker-ce<span aria-hidden="true" class="line-numbers-rows"><sp
             <br>
             
                 &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                        class="white-color">10.1k</span>
+                        class="white-color">10.4k</span>
             
             
             
