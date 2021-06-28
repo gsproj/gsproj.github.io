@@ -1096,7 +1096,7 @@ systemctl restart docker<span aria-hidden="true" class="line-numbers-rows"><span
   <entry>
     <title>Docker系列(二)-Docker常用管理命令</title>
     <url>/2021/06/28/Docker%E7%B3%BB%E5%88%97-%E4%BA%8C-Docker%E5%B8%B8%E7%94%A8%E7%AE%A1%E7%90%86%E5%91%BD%E4%BB%A4/</url>
-    <content><![CDATA[<h1 id="一、Docker常用管理命令"><a href="#一、Docker常用管理命令" class="headerlink" title="一、Docker常用管理命令"></a>一、Docker常用管理命令</h1><h2 id="1-在镜像仓库查找镜像"><a href="#1-在镜像仓库查找镜像" class="headerlink" title="1 在镜像仓库查找镜像"></a>1 在镜像仓库查找镜像</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker search tomcat<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+    <content><![CDATA[<h1 id="一、常用镜像管理命令"><a href="#一、常用镜像管理命令" class="headerlink" title="一、常用镜像管理命令"></a>一、常用镜像管理命令</h1><h2 id="1-在镜像仓库查找镜像"><a href="#1-在镜像仓库查找镜像" class="headerlink" title="1 在镜像仓库查找镜像"></a>1 在镜像仓库查找镜像</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker search tomcat<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
 <h2 id="2-在镜像仓库拉取镜像"><a href="#2-在镜像仓库拉取镜像" class="headerlink" title="2 在镜像仓库拉取镜像"></a>2 在镜像仓库拉取镜像</h2><blockquote>
 <p>不指定版本号时默认下载最新版（latest），版本可在dockerhub(官方仓库)、DaoCloud(私有仓库)等仓库查到</p>
@@ -1110,12 +1110,73 @@ docker pull daocloud.io&#x2F;jermine&#x2F;alpine:latest<span aria-hidden="true" 
 # 别名
 docker images<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
 
-<h2 id="4-导出镜像"><a href="#4-导出镜像" class="headerlink" title="4 导出镜像"></a>4 导出镜像</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker image save alpine -o alpine.tar.gz<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<h2 id="4-导出镜像"><a href="#4-导出镜像" class="headerlink" title="4 导出镜像"></a>4 导出镜像</h2><blockquote>
+<p>弃用export，导出的镜像不带版本TAG信息</p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker image save alpine -o alpine.tar.gz<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
 <h2 id="5-删除镜像"><a href="#5-删除镜像" class="headerlink" title="5 删除镜像"></a>5 删除镜像</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 删除alpine镜像
 docker image rm d4ff818577bc<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
 
-<h2 id="6-导入镜像"><a href="#6-导入镜像" class="headerlink" title="6 导入镜像"></a>6 导入镜像</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker image load -i alpine.tar.gz<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<h2 id="6-导入镜像"><a href="#6-导入镜像" class="headerlink" title="6 导入镜像"></a>6 导入镜像</h2><blockquote>
+<p>弃用import，导入的镜像不带版本TAG信息</p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker image load -i alpine.tar.gz<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h2 id="7-查看镜像属性"><a href="#7-查看镜像属性" class="headerlink" title="7 查看镜像属性"></a>7 查看镜像属性</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker image inspect 4f380adfc10f<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h2 id="8-镜像批量删除"><a href="#8-镜像批量删除" class="headerlink" title="8 镜像批量删除"></a>8 镜像批量删除</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker image prune<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h2 id="9-指定TAG信息"><a href="#9-指定TAG信息" class="headerlink" title="9 指定TAG信息"></a>9 指定TAG信息</h2><blockquote>
+<p>docker images查看docker image import的镜像，没有镜像名和TAG，可以使用此方法来修改</p>
+</blockquote>
+<pre class="line-numbers language-sh" data-language="sh"><code class="language-sh">docker image tag d4ff818577bc oldbly<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h1 id="二、常用容器管理命令"><a href="#二、常用容器管理命令" class="headerlink" title="二、常用容器管理命令"></a>二、常用容器管理命令</h1><h2 id="1-运行容器"><a href="#1-运行容器" class="headerlink" title="1 运行容器"></a>1 运行容器</h2><blockquote>
+<p>1、docker容器内的第一个进程（初始命令）必须一直处于前台运行的状态（必须夯住），否则这个容器，就会处于退出状态。</p>
+<p>2、业务在容器中运行：前台运行夯住，启动服务</p>
+<p>3、如果不指定执行命令，会运行默认的执行命令</p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 放后台运行
+docker run -d -p 80:80 nginx:latest
+run 创建并运行一个容器
+-d	放在后台运行
+-p 	端口映射
+-v 	源地址(宿主机)：目标地址(容器)
+
+# 交互式方式进入容器执行
+docker run -it --name centos6 centos:6.9 &#x2F;bin&#x2F;bash
+-it 	分配交互式的终端
+--name 	制定容器的名称
+&#x2F;bin&#x2F;sh 容器执行的命令，每个进程默认有初始执行命令，可以覆盖<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="2-查看已有容器"><a href="#2-查看已有容器" class="headerlink" title="2 查看已有容器"></a>2 查看已有容器</h2><blockquote>
+<p>-a 显示所有容器（默认只显示running的容器）</p>
+<p>-l 显示最新的容器</p>
+<p>–no-trunc 显示完整id</p>
+<p>-q 静默输出（只显示容器id）</p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker container ls -a
+# 别名
+docker ps -a<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="3-停止容器"><a href="#3-停止容器" class="headerlink" title="3 停止容器"></a>3 停止容器</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker contaner stop <span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h2 id="4-杀死容器"><a href="#4-杀死容器" class="headerlink" title="4 杀死容器"></a>4 杀死容器</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker kill contaner <span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h2 id="4-启动容器"><a href="#4-启动容器" class="headerlink" title="4 启动容器"></a>4 启动容器</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker contaner start<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h2 id="5-进入容器（重要！调试、排错）"><a href="#5-进入容器（重要！调试、排错）" class="headerlink" title="5 进入容器（重要！调试、排错）"></a>5 进入容器（重要！调试、排错）</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 使用同一终端
+docker attach -it d4ff818577bc
+
+# 使用不同终端
+docker exec -it d4ff818577bc<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="6-删除容器"><a href="#6-删除容器" class="headerlink" title="6 删除容器"></a>6 删除容器</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker container rm 55e9c7cb59a6 55e9c7cb59a5
+# 别名
+docker rm 55e9c7cb59a6
+# 批量删除容器
+docker rm &#96;docker ps -a -q&#96;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 ]]></content>
       <categories>
