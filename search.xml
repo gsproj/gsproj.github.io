@@ -1234,4 +1234,65 @@ docker run -p 10.0.0.1::80<span aria-hidden="true" class="line-numbers-rows"><sp
         <tag>Docker</tag>
       </tags>
   </entry>
+  <entry>
+    <title>Docker系列(四)-容器的数据卷挂载与小案例练习</title>
+    <url>/2021/06/29/Docker%E7%B3%BB%E5%88%97-%E5%9B%9B-%E5%AE%B9%E5%99%A8%E7%9A%84%E6%95%B0%E6%8D%AE%E5%8D%B7%E6%8C%82%E8%BD%BD%E4%B8%8E%E5%B0%8F%E6%A1%88%E4%BE%8B%E7%BB%83%E4%B9%A0/</url>
+    <content><![CDATA[<h2 id="一、数据卷挂载"><a href="#一、数据卷挂载" class="headerlink" title="一、数据卷挂载"></a>一、数据卷挂载</h2><h3 id="1-临时挂载"><a href="#1-临时挂载" class="headerlink" title="1 临时挂载"></a>1 临时挂载</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 将&#x2F;opt&#x2F;xiaoniao目录挂载到容器的html目录
+docker run -d -p 80:80 -v &#x2F;opt&#x2F;xiaoniao:&#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html nginx:latest<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<h3 id="2-使用卷挂载"><a href="#2-使用卷挂载" class="headerlink" title="2 使用卷挂载"></a>2 使用卷挂载</h3><blockquote>
+<p>容器被删除，创建的卷可以保留，可以再次挂载到新建的容器中</p>
+</blockquote>
+<p>创建名为myvol的容器卷并挂载到容器html目录</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker run -d -p 80:80 -v myvol:&#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html nginx:latest<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>查看当前有哪些容器卷</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker volume ls<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>查看名为myvol的卷的信息</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker volume inspect myvol<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>删除容器并删除卷（无效）</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># PS：删除容器并删除卷，无法将卷删除
+docker rm -f -v [容器ID]
+    -v --volume<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="二、小案例：多端口多站点"><a href="#二、小案例：多端口多站点" class="headerlink" title="二、小案例：多端口多站点"></a>二、小案例：多端口多站点</h2><blockquote>
+<p>80端口访问nginx首页</p>
+<p>81端口访问水果忍者</p>
+</blockquote>
+<p>获取水果忍者HTML5小游戏源码</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">wget https:&#x2F;&#x2F;7npmedia.w3cschool.cn&#x2F;1-FruitNinja.7z<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>创建81端口nginx配置文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;opt&#x2F;fruitninjia.conf
+server &#123;
+    listen       81;
+    listen  [::]:81;
+    server_name  localhost;
+
+    #access_log  &#x2F;var&#x2F;log&#x2F;nginx&#x2F;host.access.log  main;
+
+    location &#x2F; &#123;
+        root   &#x2F;data;
+        index  index.html index.htm;
+    &#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>将游戏源码文件解压至/opt/fruitninjia，并运行nginx容器</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 将&#x2F;opt&#x2F;fruitninjia挂载到容器&#x2F;data中
+docker run -d -p 80:80 -p 81:81 -v &#x2F;opt&#x2F;fruitninjia:&#x2F;data -v &#x2F;opt&#x2F;fruitninjia.conf:&#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;fruitninjia.conf nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>网页访问</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">https:&#x2F;&#x2F;10.0.0.11:80<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+]]></content>
+      <categories>
+        <category>Docker</category>
+      </categories>
+      <tags>
+        <tag>学习笔记</tag>
+        <tag>Docker</tag>
+      </tags>
+  </entry>
 </search>
