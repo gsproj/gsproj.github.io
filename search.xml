@@ -1169,10 +1169,10 @@ docker run -it --name centos6.9 centos:6.9 &#x2F;bin&#x2F;bash
 # 暂时退出当前终端
 ctrl + p 再 ctrl + q
 # 重新进入该终端
-docker attach -it d4ff818577bc<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+docker attach d4ff818577bc<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <p>使用不同终端（常用）</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker exec -it d4ff818577bc<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker exec -it d4ff818577bc &#x2F;bin&#x2F;bash<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
 <h3 id="7-删除容器"><a href="#7-删除容器" class="headerlink" title="7 删除容器"></a>7 删除容器</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker container rm 55e9c7cb59a6 55e9c7cb59a5
 # 别名
@@ -1192,7 +1192,40 @@ docker rm &#96;docker ps -a -q&#96;<span aria-hidden="true" class="line-numbers-
   <entry>
     <title>Docker系列(三)-容器的网络访问</title>
     <url>/2021/06/29/Docker%E7%B3%BB%E5%88%97-%E4%B8%89-%E5%AE%B9%E5%99%A8%E7%9A%84%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE/</url>
-    <content><![CDATA[<h1 id="一、"><a href="#一、" class="headerlink" title="一、"></a>一、</h1><h2 id="二、"><a href="#二、" class="headerlink" title="二、"></a>二、</h2><h3 id="三、"><a href="#三、" class="headerlink" title="三、"></a>三、</h3><h4 id="四"><a href="#四" class="headerlink" title="四"></a>四</h4>]]></content>
+    <content><![CDATA[<h2 id="一、容器的访问流程"><a href="#一、容器的访问流程" class="headerlink" title="一、容器的访问流程"></a>一、容器的访问流程</h2><blockquote>
+<p>参考：<a href="https://z.itpub.net/article/detail/FE8EBAC62D5881E3A432291F8C8E4F02">https://z.itpub.net/article/detail/FE8EBAC62D5881E3A432291F8C8E4F02</a></p>
+</blockquote>
+<h3 id="1-虚拟机注意事项"><a href="#1-虚拟机注意事项" class="headerlink" title="1 虚拟机注意事项"></a>1 虚拟机注意事项</h3><p>查看net.ipv4.ip_forward值是否为1</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">sysctl -a | grep ipv4 | grep forward <span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>只有值为1时docker容器才能上网，而vmware虚拟机挂起将使他变成0，解决方法：</p>
+<ul>
+<li>sysctl net.ipv4.ip_forward = 1 设置为1</li>
+<li>不要挂起虚拟机，直接关机重启，docker服务在启动时会将它改为1</li>
+</ul>
+<h3 id="2-docker-run-p端口映射参数"><a href="#2-docker-run-p端口映射参数" class="headerlink" title="2 docker run -p端口映射参数"></a>2 docker run -p端口映射参数</h3><p>指定端口访问</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 将容器80端口，映射到主机180端口
+docker run -p 180:80<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>指定IP+端口访问</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 多网卡环境下，将容器80端口映射到10.0.0.1的180端口
+docker run -p 10.0.0.1:180:80<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>指定随机端口</p>
+<pre class="line-numbers language-she" data-language="she"><code class="language-she"># 将容器80端口，映射到主机随机端口
+docker run -p 10.0.0.1::80<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>指定随机端口+UDP (默认映射TCP)</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 将容器80端口映射到主机随机端口，并使用UDP协议
+-p 10.0.0.100:80:udp # 指定随机端口 + udp<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>可以指定多个端口</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">-p 180:80 -p 1443:443 # 指定多个端口<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>随机映射</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker run -P<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+]]></content>
       <categories>
         <category>Docker</category>
       </categories>
