@@ -403,7 +403,7 @@
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    250
+                    430
                 </div>
                 
 
@@ -424,7 +424,7 @@
         <div class="card-content article-card-content">
             <div id="articleContent">
                 <h2 id="一、Dokerfile简介"><a href="#一、Dokerfile简介" class="headerlink" title="一、Dokerfile简介"></a>一、Dokerfile简介</h2><blockquote>
-<p>Dockerfile 是一个用来构建镜像的文本文件，文本内容包含了一条条构建镜像所需的指令和说明。</p>
+<p>Dockerfile 是一个用来自动构建镜像的文本文件，文本内容包含了一条条构建镜像所需的指令和说明。</p>
 <p>建议存放在/opt/dockerfile中，如创建centosXX的镜像，则创建/opt/dockerfile/centosXX/Dockerfile</p>
 </blockquote>
 <h3 id="1-Dockerfile的简单使用"><a href="#1-Dockerfile的简单使用" class="headerlink" title="1 Dockerfile的简单使用"></a>1 Dockerfile的简单使用</h3><blockquote>
@@ -443,6 +443,9 @@ RUN service sshd restart
 RUN echo &#39;123456&#39; | passwd --stdin root
 CMD [&quot;&#x2F;usr&#x2F;sbin&#x2F;sshd&quot;,&quot;-D&quot;]<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
+<blockquote>
+<p>PS：RUN的执行过程：创建临时容器，执行命令，提交成临时镜像，删除临时容器，重复此步骤。</p>
+</blockquote>
 <p>构建镜像</p>
 <pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker build -t centos6.9_ssh:v2 &#x2F;opt&#x2F;dockfile&#x2F;centos6.9_ssh<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
@@ -455,7 +458,35 @@ CMD [&quot;&#x2F;usr&#x2F;sbin&#x2F;sshd&quot;,&quot;-D&quot;]<span aria-hidden=
 <blockquote>
 <p>PS：最后不用接命令，将自动执行CMD指定的命令</p>
 </blockquote>
+<h3 id="2-小案例"><a href="#2-小案例" class="headerlink" title="2 小案例"></a>2 小案例</h3><blockquote>
+<p>创建centos6.9 + ssh + nginx的Dockerfile</p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@docker01 centos6.9_ssh_nginx]# pwd
+&#x2F;opt&#x2F;dockfile&#x2F;centos6.9_ssh_nginx
+[root@docker01 centos6.9_ssh_nginx]# ls
+CentOS-Base.repo  Dockerfile  epel.repo  init.sh<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
 
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># init.sh
+#!&#x2F;bin&#x2F;bash
+service sshd restart
+nginx -g &quot;daemon off;&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>编写Dockerfile</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">FROM centos:6.9
+ADD CentOS-Base.repo &#x2F;etc&#x2F;yum.repos.d
+ADD epel.repo &#x2F;etc&#x2F;yum.repos.d
+ADD init.sh &#x2F;root
+RUN yum install openssh-server nginx -y
+RUN echo &#39;123456&#39; | passwd --stdin root
+CMD [&quot;&#x2F;bin&#x2F;bash&quot;,&quot;&#x2F;root&#x2F;init.sh&quot;]<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>构建镜像</p>
+<pre class="line-numbers language-she" data-language="she"><code class="language-she">docker build -t centos6.9_ssh_nginx:v3 .<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>测试使用</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker run -d -p 1022:22 -p 81:80 centos6.9_ssh_nginx:v3<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h2 id="二、Docker指令精讲"><a href="#二、Docker指令精讲" class="headerlink" title="二、Docker指令精讲"></a>二、Docker指令精讲</h2>
                 
             </div>
             <hr/>
@@ -999,7 +1030,7 @@ CMD [&quot;&#x2F;usr&#x2F;sbin&#x2F;sshd&quot;,&quot;-D&quot;]<span aria-hidden=
             <br>
             
                 &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                        class="white-color">12.7k</span>
+                        class="white-color">12.9k</span>
             
             
             
