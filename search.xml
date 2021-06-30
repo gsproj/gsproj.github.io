@@ -1382,4 +1382,48 @@ nginx -g &#39;daemon off;&#39;<span aria-hidden="true" class="line-numbers-rows"
         <tag>Docker</tag>
       </tags>
   </entry>
+  <entry>
+    <title>Docker系列(六)-Dockfile的使用</title>
+    <url>/2021/06/30/Docker%E7%B3%BB%E5%88%97-%E5%85%AD-Dockfile%E7%9A%84%E4%BD%BF%E7%94%A8/</url>
+    <content><![CDATA[<h2 id="一、Dokerfile简介"><a href="#一、Dokerfile简介" class="headerlink" title="一、Dokerfile简介"></a>一、Dokerfile简介</h2><blockquote>
+<p>Dockerfile 是一个用来构建镜像的文本文件，文本内容包含了一条条构建镜像所需的指令和说明。</p>
+<p>建议存放在/opt/dockerfile中，如创建centosXX的镜像，则创建/opt/dockerfile/centosXX/Dockerfile</p>
+</blockquote>
+<h3 id="1-Dockerfile的简单使用"><a href="#1-Dockerfile的简单使用" class="headerlink" title="1 Dockerfile的简单使用"></a>1 Dockerfile的简单使用</h3><blockquote>
+<p>创建一个开启sshd服务的centos6.9镜像</p>
+</blockquote>
+<p>创建yum源文件，用于拷贝到centos6.9镜像中</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">cd &#x2F;opt&#x2F;dockfile&#x2F;centos6.9_ssh
+vim CentOS-Base.repo
+...内容省略<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>创建Dockerfile文件/opt/dockfile/centos6.9_ssh/Dockerfile，内容如下：</p>
+<pre class="line-numbers language-dockerfile" data-language="dockerfile"><code class="language-dockerfile">FROM centos:6.9
+ADD CentOS-Base.repo &#x2F;etc&#x2F;yum.repos.d
+RUN yum install openssh-server -y
+RUN service sshd restart
+RUN echo &#39;123456&#39; | passwd --stdin root
+CMD [&quot;&#x2F;usr&#x2F;sbin&#x2F;sshd&quot;,&quot;-D&quot;]<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>构建镜像</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker build -t centos6.9_ssh:v2 &#x2F;opt&#x2F;dockfile&#x2F;centos6.9_ssh<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<blockquote>
+<p>PS：最后传入的是包含Dockerfile的文件夹，区分大小写，可以用”.”代替 </p>
+</blockquote>
+<p>验证镜像是否正常</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker run -d -p 1022:22 centos6.9_ssh:v2<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<blockquote>
+<p>PS：最后不用接命令，将自动执行CMD指定的命令</p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>Docker</category>
+      </categories>
+      <tags>
+        <tag>学习笔记</tag>
+        <tag>Docker</tag>
+      </tags>
+  </entry>
 </search>
