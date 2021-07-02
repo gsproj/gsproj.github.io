@@ -403,7 +403,7 @@
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    430
+                    1.9k
                 </div>
                 
 
@@ -486,7 +486,287 @@ CMD [&quot;&#x2F;bin&#x2F;bash&quot;,&quot;&#x2F;root&#x2F;init.sh&quot;]<span a
 <p>测试使用</p>
 <pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker run -d -p 1022:22 -p 81:80 centos6.9_ssh_nginx:v3<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
-<h2 id="二、Docker指令精讲"><a href="#二、Docker指令精讲" class="headerlink" title="二、Docker指令精讲"></a>二、Docker指令精讲</h2>
+<h2 id="二、Docker指令"><a href="#二、Docker指令" class="headerlink" title="二、Docker指令"></a>二、Docker指令</h2><table>
+<thead>
+<tr>
+<th align="left">命令</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">FROM</td>
+<td align="left">基于那个镜像来构建</td>
+</tr>
+<tr>
+<td align="left">MAINTAINER</td>
+<td align="left">镜像的创建者</td>
+</tr>
+<tr>
+<td align="left">ENV</td>
+<td align="left">设置环境变量</td>
+</tr>
+<tr>
+<td align="left">ADD</td>
+<td align="left">添加宿主机文件到容器里，有需要解压的文件会自动解压</td>
+</tr>
+<tr>
+<td align="left">COPY</td>
+<td align="left">添加宿主机文件到容器里</td>
+</tr>
+<tr>
+<td align="left">WORKDIR</td>
+<td align="left">切换工作目录</td>
+</tr>
+<tr>
+<td align="left">EXPOSE</td>
+<td align="left">开放可用端口</td>
+</tr>
+<tr>
+<td align="left">CMD</td>
+<td align="left">容器启动后执行的命令，可被docker run指定的命令覆盖</td>
+</tr>
+<tr>
+<td align="left">ENTRYPOINT</td>
+<td align="left">容器启动后执行的命令，但不回被docker run指定的命令覆盖，如需覆盖，需要加–entrypoint参数</td>
+</tr>
+<tr>
+<td align="left">VOLUME</td>
+<td align="left">创建挂载卷，将宿主机的目录挂载到容器里</td>
+</tr>
+</tbody></table>
+<h2 id="三、案例：Dockerfile构建可道云容器"><a href="#三、案例：Dockerfile构建可道云容器" class="headerlink" title="三、案例：Dockerfile构建可道云容器"></a>三、案例：Dockerfile构建可道云容器</h2><blockquote>
+<p>项目：</p>
+<p>​    可道云网盘kodexplorer</p>
+<p>环境：</p>
+<p>​    httpd+php或者nginx+php<br>​    php所需模块：php5.5以上<br>​    基础镜像：centos:7.9<br>​    项目下载地址: <a target="_blank" rel="noopener" href="http://static.kodcloud.com/update/download/kodexplorer4.37.zip">http://static.kodcloud.com/update/download/kodexplorer4.37.zip</a><br>​    项目官网：<a target="_blank" rel="noopener" href="https://kodcloud.com/download/">https://kodcloud.com/download/</a></p>
+</blockquote>
+<h3 id="1-手工部署一遍"><a href="#1-手工部署一遍" class="headerlink" title="1 手工部署一遍"></a>1 手工部署一遍</h3><blockquote>
+<p>写Dockerfile前自己手动部署一遍，主要是nginx + php的搭建，参考博客</p>
+<p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1015237">https://cloud.tencent.com/developer/article/1015237</a></p>
+</blockquote>
+<p>修改nginx.conf</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># For more information on configuration, see:
+#   * Official English Documentation: http:&#x2F;&#x2F;nginx.org&#x2F;en&#x2F;docs&#x2F;
+#   * Official Russian Documentation: http:&#x2F;&#x2F;nginx.org&#x2F;ru&#x2F;docs&#x2F;
+
+user nginx;
+worker_processes auto;
+error_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log;
+pid &#x2F;run&#x2F;nginx.pid;
+
+# Load dynamic modules. See &#x2F;usr&#x2F;share&#x2F;doc&#x2F;nginx&#x2F;README.dynamic.
+include &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;modules&#x2F;*.conf;
+
+events &#123;
+    worker_connections 1024;
+&#125;
+
+http &#123;
+    log_format  main  &#39;$remote_addr - $remote_user [$time_local] &quot;$request&quot; &#39;
+                      &#39;$status $body_bytes_sent &quot;$http_referer&quot; &#39;
+                      &#39;&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;&#39;;
+
+    access_log  &#x2F;var&#x2F;log&#x2F;nginx&#x2F;access.log  main;
+
+    sendfile            on;
+    tcp_nopush          on;
+    tcp_nodelay         on;
+    keepalive_timeout   65;
+    types_hash_max_size 4096;
+
+    include             &#x2F;etc&#x2F;nginx&#x2F;mime.types;
+    default_type        application&#x2F;octet-stream;
+
+    # Load modular configuration files from the &#x2F;etc&#x2F;nginx&#x2F;conf.d directory.
+    # See http:&#x2F;&#x2F;nginx.org&#x2F;en&#x2F;docs&#x2F;ngx_core_module.html#include
+    # for more information.
+    include &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;*.conf;
+
+    server &#123;
+        listen       80;
+        listen       [::]:80;
+        server_name  _;
+        root         &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html;
+
+        # Load configuration files for the default server block.
+        include &#x2F;etc&#x2F;nginx&#x2F;default.d&#x2F;*.conf;
+
+        error_page 404 &#x2F;404.html;
+        location &#x3D; &#x2F;404.html &#123;
+        &#125;
+
+        error_page 500 502 503 504 &#x2F;50x.html;
+        location &#x3D; &#x2F;50x.html &#123;
+        &#125;
+
+    	location ~ \.php$ &#123;
+        try_files $uri &#x3D;404;
+        fastcgi_pass unix:&#x2F;var&#x2F;run&#x2F;php-fpm&#x2F;php-fpm.sock;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    	&#125;
+	
+    	location &#x2F; &#123;
+        index  index.php index.html index.htm;
+        try_files $uri $uri&#x2F; &#x2F;index.php?$args;
+    	&#125;
+    &#125;
+
+# Settings for a TLS enabled server.
+#
+#    server &#123;
+#        listen       443 ssl http2;
+#        listen       [::]:443 ssl http2;
+#        server_name  _;
+#        root         &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html;
+#
+#        ssl_certificate &quot;&#x2F;etc&#x2F;pki&#x2F;nginx&#x2F;server.crt&quot;;
+#        ssl_certificate_key &quot;&#x2F;etc&#x2F;pki&#x2F;nginx&#x2F;private&#x2F;server.key&quot;;
+#        ssl_session_cache shared:SSL:1m;
+#        ssl_session_timeout  10m;
+#        ssl_ciphers HIGH:!aNULL:!MD5;
+#        ssl_prefer_server_ciphers on;
+#
+#        # Load configuration files for the default server block.
+#        include &#x2F;etc&#x2F;nginx&#x2F;default.d&#x2F;*.conf;
+#
+#        error_page 404 &#x2F;404.html;
+#            location &#x3D; &#x2F;40x.html &#123;
+#        &#125;
+#
+#        error_page 500 502 503 504 &#x2F;50x.html;
+#            location &#x3D; &#x2F;50x.html &#123;
+#        &#125;
+#    &#125;
+
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>修改php-fpm.conf</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">;;;;;;;;;;;;;;;;;;;;;
+; FPM Configuration ;
+;;;;;;;;;;;;;;;;;;;;;
+
+; All relative paths in this configuration file are relative to PHP&#39;s install
+; prefix.
+
+; Include one or more files. If glob(3) exists, it is used to include a bunch of
+; files from a glob(3) pattern. This directive can be used everywhere in the
+; file.
+include&#x3D;&#x2F;etc&#x2F;php-fpm.d&#x2F;*.conf
+
+;;;;;;;;;;;;;;;;;;
+; Global Options ;
+;;;;;;;;;;;;;;;;;;
+
+[global]
+; Pid file
+; Default Value: none
+pid &#x3D; &#x2F;run&#x2F;php-fpm&#x2F;php-fpm.pid
+
+; Error log file
+; Default Value: &#x2F;var&#x2F;log&#x2F;php-fpm.log
+error_log &#x3D; &#x2F;var&#x2F;log&#x2F;php-fpm&#x2F;error.log
+
+; Log level
+; Possible Values: alert, error, warning, notice, debug
+; Default Value: notice
+;log_level &#x3D; notice
+
+; If this number of child processes exit with SIGSEGV or SIGBUS within the time
+; interval set by emergency_restart_interval then FPM will restart. A value
+; of &#39;0&#39; means &#39;Off&#39;.
+; Default Value: 0
+;emergency_restart_threshold &#x3D; 0
+
+; Interval of time used by emergency_restart_interval to determine when 
+; a graceful restart will be initiated.  This can be useful to work around
+; accidental corruptions in an accelerator&#39;s shared memory.
+; Available Units: s(econds), m(inutes), h(ours), or d(ays)
+; Default Unit: seconds
+; Default Value: 0
+;emergency_restart_interval &#x3D; 0
+
+; Time limit for child processes to wait for a reaction on signals from master.
+; Available units: s(econds), m(inutes), h(ours), or d(ays)
+; Default Unit: seconds
+; Default Value: 0
+;process_control_timeout &#x3D; 0
+
+; Send FPM to background. Set to &#39;no&#39; to keep FPM in foreground for debugging.
+; Default Value: yes
+daemonize &#x3D; no
+
+;;;;;;;;;;;;;;;;;;;;
+; Pool Definitions ; 
+;;;;;;;;;;;;;;;;;;;;
+
+; See &#x2F;etc&#x2F;php-fpm.d&#x2F;*.conf<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>修改<a target="_blank" rel="noopener" href="http://www.conf/">www.conf</a></p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 12行
+listen &#x3D; &#x2F;var&#x2F;run&#x2F;php-fpm&#x2F;php-fpm.sock
+# 31-32行
+listen.owner &#x3D; nobody
+listen.group &#x3D; nobody
+# 39-41行
+user &#x3D; nginx
+; RPM: Keep a group allowed to write in log dir.
+group &#x3D; nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>修改php.ini</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">cgi.fix_pathinfo 把它的值设置为 0<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h3 id="2-Dockerfile部署"><a href="#2-Dockerfile部署" class="headerlink" title="2 Dockerfile部署"></a>2 Dockerfile部署</h3><p>文件存放</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@docker01 centos7.9_kod]# ll
+total 92
+-rw-r--r--. 1 root root   661 Jul  2 11:21 Dockerfile
+-rw-r--r--. 1 root root   171 Jul  1 14:28 init.sh
+-rw-r--r--. 1 root root  2715 Jul  1 13:50 nginx.conf
+-rw-r--r--. 1 root root  1691 Jul  1 13:50 php-fpm.conf
+-rw-r--r--. 1 root root 64945 Jul  1 14:48 php.ini
+-rw-r--r--. 1 root root 10029 Jul  1 13:50 www.conf
+[root@docker01 centos7.9_kod]# pwd
+&#x2F;opt&#x2F;dockfile&#x2F;centos7.9_kod<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>编写Dockerfile</p>
+<pre class="line-numbers language-dockerfile" data-language="dockerfile"><code class="language-dockerfile">FROM centos:7.9.2009
+RUN curl -o &#x2F;etc&#x2F;yum.repos.d&#x2F;CentOS-Base.repo http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;repo&#x2F;Centos-7.repo &amp;&amp; \
+curl -o &#x2F;etc&#x2F;yum.repos.d&#x2F;epel.repo https:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;repo&#x2F;epel-7.repo &amp;&amp; \
+yum install openssh-server nginx net-tools php-cli php-fpm unzip php-gd php-mbstring  -y
+ADD nginx.conf &#x2F;etc&#x2F;nginx&#x2F;nginx.conf
+ADD php-fpm.conf &#x2F;etc&#x2F;php-fpm.conf
+ADD www.conf &#x2F;etc&#x2F;php-fpm.d&#x2F;www.conf
+ADD php.ini &#x2F;etc
+ADD init.sh &#x2F;root&#x2F;
+EXPOSE 80 22
+WORKDIR &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html
+RUN curl -o kod.zip https:&#x2F;&#x2F;static.kodcloud.com&#x2F;update&#x2F;download&#x2F;kodexplorer4.45.zip &amp;&amp; \
+unzip kod.zip &amp;&amp; \
+chmod -R 777 &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html&#x2F;
+CMD [&quot;&#x2F;bin&#x2F;bash&quot;,&quot;&#x2F;root&#x2F;init.sh&quot;]<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>构建镜像</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker build -t centos7.9_kod:v1 .<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>运行容器</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker run -d -p 80:80 -p 1022:22 -e &quot;SSH_PWD&#x3D;redhat123&quot; --privileged centos7.9_kod:v1 &#x2F;usr&#x2F;sbin&#x2F;init<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>进入容器，并运行初始化命令</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker exec -it 865 &#x2F;bin&#x2F;bash
+# 容器启动服务，设置root密码
+[root@88179198e672 html]#systemctl restart sshd php-fpm nginx
+[root@88179198e672 html]#echo &quot;redhat123&quot; | passwd --stdin root<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>测试访问：</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">网页访问：http:&#x2F;&#x2F;10.0.0.11可进去可道云界面
+ssh 10.0.0.11 -p1022 可以登录镜像<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+
+
+
+
+
                 
             </div>
             <hr/>
@@ -727,18 +1007,17 @@ CMD [&quot;&#x2F;bin&#x2F;bash&quot;,&quot;&#x2F;root&#x2F;init.sh&quot;]<span a
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="far fa-dot-circle"></i>&nbsp;本篇
-            </div>
+                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
             <div class="card">
-                <a href="/2021/06/30/Docker%E7%B3%BB%E5%88%97-%E5%85%AD-Dockfile%E7%9A%84%E4%BD%BF%E7%94%A8/">
+                <a href="/2021/06/30/ZStack-%E4%B8%80-%E5%88%9D%E8%AF%86ZStack/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/23.jpg" class="responsive-img" alt="Docker系列(六)-Dockfile的使用">
+                        <img src="/medias/featureimages/7.jpg" class="responsive-img" alt="ZStack(一)ZStack安装部署">
                         
-                        <span class="card-title">Docker系列(六)-Dockfile的使用</span>
+                        <span class="card-title">ZStack(一)ZStack安装部署</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -748,31 +1027,26 @@ CMD [&quot;&#x2F;bin&#x2F;bash&quot;,&quot;&#x2F;root&#x2F;init.sh&quot;]<span a
                         
                     </div>
                     <div class="publish-info">
-                            <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2021-06-30
-                            </span>
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2021-06-30
+                        </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-bookmark fa-fw icon-category"></i>
                             
-                            <a href="/categories/Docker/" class="post-category">
-                                    Docker
+                            <a href="/categories/ZStack/" class="post-category">
+                                    ZStack
                                 </a>
                             
                             
                         </span>
                     </div>
                 </div>
-
                 
                 <div class="card-action article-tags">
                     
-                    <a href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
-                        <span class="chip bg-color">学习笔记</span>
-                    </a>
-                    
-                    <a href="/tags/Docker/">
-                        <span class="chip bg-color">Docker</span>
+                    <a href="/tags/ZStack/">
+                        <span class="chip bg-color">ZStack</span>
                     </a>
                     
                 </div>
@@ -1030,7 +1304,7 @@ CMD [&quot;&#x2F;bin&#x2F;bash&quot;,&quot;&#x2F;root&#x2F;init.sh&quot;]<span a
             <br>
             
                 &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                        class="white-color">12.9k</span>
+                        class="white-color">14.5k</span>
             
             
             
