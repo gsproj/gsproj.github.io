@@ -4,7 +4,7 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="Docker系列(一)-安装Docker, Hexo">
+    <meta name="keywords" content="Docker系列(九)-Docker容器互连, Hexo">
     <meta name="description" content="">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -16,7 +16,7 @@
     <!-- Global site tag (gtag.js) - Google Analytics -->
 
 
-    <title>Docker系列(一)-安装Docker | Hexo</title>
+    <title>Docker系列(九)-Docker容器互连 | Hexo</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
@@ -244,12 +244,12 @@
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/20.jpg')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/16.jpg')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
-                    <h1 class="description center-align post-title">Docker系列(一)-安装Docker</h1>
+                    <h1 class="description center-align post-title">Docker系列(九)-Docker容器互连</h1>
                 </div>
             </div>
         </div>
@@ -394,7 +394,7 @@
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
-                    2021-06-28
+                    2021-07-06
                 </div>
                 
 
@@ -403,7 +403,7 @@
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    783
+                    967
                 </div>
                 
 
@@ -423,118 +423,121 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <h2 id="一、容器简介"><a href="#一、容器简介" class="headerlink" title="一、容器简介"></a>一、容器简介</h2><blockquote>
-<p>容器就是在隔离环境中运行一个进程，如果进程停止，容器就会销毁，隔离环境拥有自己的系统文件，ip地址，主机名等。</p>
+                <h2 id="一、Docker容器的四种网络类型"><a href="#一、Docker容器的四种网络类型" class="headerlink" title="一、Docker容器的四种网络类型"></a>一、Docker容器的四种网络类型</h2><blockquote>
+<p>哪四种？</p>
+<ul>
+<li>bridge（默认）：NAT桥接模式</li>
+<li>none：不分配网络，什么服务都访问不了</li>
+<li>host：与宿主机共享网络，共享主机名，端口共用(宿主机用了的端口，容器也不能用)，【网络性能最高】</li>
+<li>container:容器id：与容器xx共享网络，共享主机名、hosts、hostname、端口等….【K8S常用】</li>
+</ul>
 </blockquote>
-<h3 id="1-容器和虚拟化的区别"><a href="#1-容器和虚拟化的区别" class="headerlink" title="1 容器和虚拟化的区别"></a>1 容器和虚拟化的区别</h3><ul>
-<li><p>KVM虚拟化：</p>
-<ul>
-<li><p>需要硬件的支持，需要模拟硬件，可以运行不同的操作系统，启动时间分钟级（有开机启动流程）</p>
-<p>开机启动流程</p>
-<p>bios开机硬件自检</p>
-<p>根据bios设置的优先启动项boot</p>
-<p>读取mbr/gpt引导，读取mbr硬盘分区信息，内核加载路径</p>
-<p>加载内核</p>
-<p>启动第一个进程（C6：/sbin/init，C7：systemd）</p>
-<p>系统初始化完成</p>
-<p>运行服务</p>
-</li>
-</ul>
-</li>
-<li><p>容器：</p>
-<ul>
-<li><p>不需要硬件的支持，不需要模拟硬件，公用宿主机内核，启动时间秒级（没有开机启动流程）</p>
-<p>容器的第一个进程直接运行服务，损耗少，启动快，性能高</p>
-</li>
-</ul>
-</li>
-</ul>
-<h3 id="2-容器的优缺点"><a href="#2-容器的优缺点" class="headerlink" title="2 容器的优缺点"></a>2 容器的优缺点</h3><ul>
-<li><p>优点</p>
-<ul>
-<li><p>与宿主机使用同一个内核，性能损耗小</p>
-<p>不需要指令级模拟</p>
-<p>容器可以再cpu核心的本地运行指令，不需要任何专门的解释机制</p>
-<p>避免了准虚拟化和系统调用替换中的复杂性</p>
-<p>轻量级隔离，在隔离的同事还提供共享机制，以实现容器与宿主机的资源共享</p>
-</li>
-</ul>
-</li>
-<li><p>缺点</p>
-<ul>
-<li>使用同一内核，存在安全性问题</li>
-</ul>
-</li>
-</ul>
-<h3 id="3-容器技术的发展过程"><a href="#3-容器技术的发展过程" class="headerlink" title="3 容器技术的发展过程"></a>3 容器技术的发展过程</h3><blockquote>
-<p>chroot — lxc —- docker</p>
+<h3 id="1-指定与查看容器网络类型的方法"><a href="#1-指定与查看容器网络类型的方法" class="headerlink" title="1 指定与查看容器网络类型的方法"></a>1 指定与查看容器网络类型的方法</h3><p>指定容器网络类型</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker run --network none # 指定网络类型<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>查看容器网络类型</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker instpect 容器id # 可以查看当前的容器网络类型
+# 查看字段
+&quot;NetworkSettings&quot;: &#123;
+	&quot;Bridge&quot;: &quot;&quot;,<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>查看有哪些网络类型</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker network ls # 查看有哪些网络类型<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+
+
+<h2 id="二、跨主机容器网络通信-macvlan"><a href="#二、跨主机容器网络通信-macvlan" class="headerlink" title="二、跨主机容器网络通信(macvlan)"></a>二、跨主机容器网络通信(macvlan)</h2><blockquote>
+<p>一个物理网卡，虚拟多个mac地址</p>
+<p>需要手动分配IP地址</p>
 </blockquote>
-<h3 id="4-Docker组成"><a href="#4-Docker组成" class="headerlink" title="4 Docker组成"></a>4 Docker组成</h3><p>​    Docker基于Go语言开发，C/S模式</p>
-<ul>
-<li>主要组件<ul>
-<li>镜像</li>
-<li>容器</li>
-<li>仓库：最大的dockerhub</li>
-<li>网络</li>
-<li>存储</li>
-</ul>
-</li>
-</ul>
-<h2 id="二、Docker安装"><a href="#二、Docker安装" class="headerlink" title="二、Docker安装"></a>二、Docker安装</h2><blockquote>
-<p>参考网站：<a target="_blank" rel="noopener" href="https://mirrors.tuna.tsinghua.edu.cn/help/docker-ce/">https://mirrors.tuna.tsinghua.edu.cn/help/docker-ce/</a></p>
+<h3 id="1-案例：实现两个centos6-9-ssh容器跨主机网络通信"><a href="#1-案例：实现两个centos6-9-ssh容器跨主机网络通信" class="headerlink" title="1 案例：实现两个centos6.9_ssh容器跨主机网络通信"></a>1 案例：实现两个centos6.9_ssh容器跨主机网络通信</h3><blockquote>
+<p>宿主机信息（虚拟机）：</p>
+<p>​    docker01: 10.0.0.11 网关: 10.0.0.2</p>
+<p>​    docker02: 10.0.0.12 网关: 10.0.0.2</p>
 </blockquote>
-<h3 id="1-联网在线安装"><a href="#1-联网在线安装" class="headerlink" title="1 联网在线安装"></a>1 联网在线安装</h3><p>开启rpm包缓存，方便制作离线安装包</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;yum.conf
-keepcache&#x3D;1 <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<p>宿主机1,2分别创建macvlan</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker network create --driver macvlan --subnet 10.0.0.0&#x2F;24 --gateway 10.0.0.2 -o parent&#x3D;ens33 macvlan_1<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
-<p>如果你之前安装过 docker，请先删掉</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">sudo yum remove docker docker-common docker-selinux docker-engine<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>设置网卡为混杂模式【Ubuntu需要设置】</p>
+<blockquote>
+<p>混杂模式是计算机网络中的术语。 是指一台机器的网卡能够接收所有经过它的数据流，而不论其目的地址是否是它。</p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">ip link set ens33 promisc on<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
-<p>安装一些依赖</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">sudo yum install -y yum-utils device-mapper-persistent-data lvm2<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>宿主机1,2分别使用centos7.9_ssh:v2镜像创建容器，并指定为macvlan_1网络</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># docker01
+docker run -d --network macvlan_1 --ip&#x3D;10.0.0.100 centos6.9_ssh:v2
+# docker02
+docker run -d --network macvlan_1 --ip&#x3D;10.0.0.200 centos6.9_ssh:v2<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
 
-<p>根据你的发行版下载repo文件（Centos）</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">wget -O &#x2F;etc&#x2F;yum.repos.d&#x2F;docker-ce.repo https:&#x2F;&#x2F;download.docker.com&#x2F;linux&#x2F;centos&#x2F;docker-ce.repo<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>测试，docker exec进入docker01中运行容器，开启抓包，并使用docker02中的容器ping它</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">tcpdump icmp<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
-<p>把软件仓库替换为TUNA：</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">sudo sed -i &#39;s+download.docker.com+mirrors.tuna.tsinghua.edu.cn&#x2F;docker-ce+&#39; &#x2F;etc&#x2F;yum.repos.d&#x2F;docker-ce.repo<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>通过xshell或者mobaxterm可以直接ssh到容器中 (PS:并没有 -p 22端口)</p>
+<blockquote>
+<p>实际测试宿主机并不能ssh到容器，显示No route to host，但是物理机可以连接</p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">ssh root@10.0.0.100<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
-<p>最后安装:</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">sudo yum makecache fast
-    sudo yum install docker-ce<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
 
-<h3 id="2-无网环境下离线安装"><a href="#2-无网环境下离线安装" class="headerlink" title="2 无网环境下离线安装"></a>2 无网环境下离线安装</h3><p>搜集联网环境下下载的rpm包</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">find &#x2F;var&#x2F;cache&#x2F;yum&#x2F;x86_64&#x2F;7&#x2F; -name &quot;*.rpm&quot; | xargs -i mv &#123;&#125; docker_rpm&#x2F;
-tar -zvcf docker_rpm.tgz docker_rpm&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
 
-<p>拷贝到无网环境的服务器中安装</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">tar -vxf docker_rpm.tgz # 解压
-cd docker_rpm	
-rpm -Uvh .&#x2F;*.rpm # 安装<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+<h2 id="三、跨主机容器间网络通讯（overlay）"><a href="#三、跨主机容器间网络通讯（overlay）" class="headerlink" title="三、跨主机容器间网络通讯（overlay）"></a>三、跨主机容器间网络通讯（overlay）</h2><blockquote>
+<p>可以自动分配ip地址</p>
+<p>需要修改docker.service</p>
+<p>参考：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/CloudMan6/p/7270551.html">https://www.cnblogs.com/CloudMan6/p/7270551.html</a></p>
+</blockquote>
+<h3 id="1-overlay实现"><a href="#1-overlay实现" class="headerlink" title="1 overlay实现"></a>1 overlay实现</h3><p>docker01启动consul</p>
+<blockquote>
+<p>consul是一个key:value类型的存储数据库</p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker run -d -p 8500:8500 --restart&#x3D;always -h consul --name consul progrium&#x2F;consul -server -bootstrap<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
-<h3 id="3-启动服务并验证安装是否成功"><a href="#3-启动服务并验证安装是否成功" class="headerlink" title="3 启动服务并验证安装是否成功"></a>3 启动服务并验证安装是否成功</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 启动服务
-systemctl enable docker
-systemctl start docker
+<p>docker01,02上设置daemon.json文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;docker&#x2F;daemon.json<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
-# 验证是否安装成功
-docker version
-docker info<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token property">"hosts"</span><span class="token operator">:</span><span class="token punctuation">[</span><span class="token string">"tcp://0.0.0.0:2376"</span><span class="token punctuation">,</span><span class="token string">"unix:///var/run/docker.sock"</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+<span class="token property">"cluster-store"</span><span class="token operator">:</span><span class="token string">"consul://10.0.0.11:8500"</span><span class="token punctuation">,</span>
+<span class="token property">"cluster-advertise"</span><span class="token operator">:</span><span class="token string">"10.0.0.11:2376"</span> # 此处不同，docker01为<span class="token number">10.0</span>.<span class="token number">0.11</span>，docker02为<span class="token number">12</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
 
-<h3 id="4-Docker镜像下载加速"><a href="#4-Docker镜像下载加速" class="headerlink" title="4 Docker镜像下载加速"></a>4 Docker镜像下载加速</h3><ul>
-<li>阿里云docker镜像加速器服务</li>
-<li>配置docker镜像加速(推荐)</li>
-</ul>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 创建文件
-vi &#x2F;etc&#x2F;docker&#x2F;daemon.json
-&#123;    
-	&quot;registry-mirrors&quot;:[&quot;https:&#x2F;&#x2F;registry.docker-cn.com&quot;]
-&#125; 
-# 重新加载
-systemctl daemon-reload
-systemctl restart docker<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>修改docker.service文件</p>
+<blockquote>
+<p>因为daemon.json中的hosts项与docker.service中的-H参数冲突，需要去掉</p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;usr&#x2F;lib&#x2F;systemd&#x2F;system&#x2F;docker.service
+ExecStart&#x3D;&#x2F;usr&#x2F;bin&#x2F;dockerd -H fd:&#x2F;&#x2F; --containerd&#x3D;&#x2F;run&#x2F;containerd&#x2F;containerd.sock
+# 删除-H fd:&#x2F;&#x2F;
+ExecStart&#x3D;&#x2F;usr&#x2F;bin&#x2F;dockerd --containerd&#x3D;&#x2F;run&#x2F;containerd&#x2F;containerd.sock<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
 
-<h3 id="5-创建并运行一个nginx容器"><a href="#5-创建并运行一个nginx容器" class="headerlink" title="5 创建并运行一个nginx容器"></a>5 创建并运行一个nginx容器</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker run -d -p 80:80 nginx<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>重启docker服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl daemon-reload
+systemctl restart docker<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
 
+<p>测试consul是否搭建成功</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">浏览器访问：http:&#x2F;&#x2F;10.0.0.11:8500&#x2F;
+在KEY&#x2F;VALUE标签页正常显示10.0.0.11和12两台宿主机<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>docker01,02创建overlay网络</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker network create -d overlay --subnet 172.16.1.0&#x2F;24 --gateway 172.16.1.254 ol1<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>启动容器</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># docker01
+docker run -d --network ol1 --name centos6.9_01 centos6.9_ssh:v2
+# docker02
+docker run -d --network ol1 --name centos6.9_02 centos6.9_ssh:v2<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>测试容器间网络</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># docker01中的容器ping另一容器的hostname
+[root@e1e8cc01792d &#x2F;]# ping centos6.9_02
+PING centos6.9_02 (172.16.1.2) 56(84) bytes of data.
+64 bytes from centos6.9_02.ol1 (172.16.1.2): icmp_seq&#x3D;1 ttl&#x3D;64 time&#x3D;0.197 ms
+64 bytes from centos6.9_02.ol1 (172.16.1.2): icmp_seq&#x3D;2 ttl&#x3D;64 time&#x3D;0.269 ms
+64 bytes from centos6.9_02.ol1 (172.16.1.2): icmp_seq&#x3D;3 ttl&#x3D;64 time&#x3D;1.04 ms<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-外网通容器"><a href="#2-外网通容器" class="headerlink" title="2 外网通容器"></a>2 外网通容器</h3><blockquote>
+<p>外网访问容器，还是需要(-p)做映射，不用担心ip地址重了</p>
+<p>容器间可以构建多条overlay通道（vxlan实现）</p>
+</blockquote>
+<p><img src="C:\Users\gs\AppData\Roaming\Typora\typora-user-images\image-20210704230832368.png" alt="image-20210704230832368"></p>
 
                 
             </div>
@@ -561,7 +564,7 @@ systemctl restart docker<span aria-hidden="true" class="line-numbers-rows"><span
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="http://gsproj.github.io/2021/06/28/Docker%E7%B3%BB%E5%88%97-%E4%B8%80-%E5%AE%89%E8%A3%85Docker/">http://gsproj.github.io/2021/06/28/Docker%E7%B3%BB%E5%88%97-%E4%B8%80-%E5%AE%89%E8%A3%85Docker/</a>
+                    <a href="http://gsproj.github.io/2021/07/06/Docker%E7%B3%BB%E5%88%97-%E4%B9%9D-Dokcer%E5%AE%B9%E5%99%A8%E4%BA%92%E8%BF%9E/">http://gsproj.github.io/2021/07/06/Docker%E7%B3%BB%E5%88%97-%E4%B9%9D-Dokcer%E5%AE%B9%E5%99%A8%E4%BA%92%E8%BF%9E/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -776,17 +779,18 @@ systemctl restart docker<span aria-hidden="true" class="line-numbers-rows"><span
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+                <i class="far fa-dot-circle"></i>&nbsp;本篇
+            </div>
             <div class="card">
-                <a href="/2021/06/28/Docker%E7%B3%BB%E5%88%97-%E4%BA%8C-Docker%E5%B8%B8%E7%94%A8%E7%AE%A1%E7%90%86%E5%91%BD%E4%BB%A4/">
+                <a href="/2021/07/06/Docker%E7%B3%BB%E5%88%97-%E4%B9%9D-Dokcer%E5%AE%B9%E5%99%A8%E4%BA%92%E8%BF%9E/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/0.jpg" class="responsive-img" alt="Docker系列(二)-Docker常用管理命令">
+                        <img src="/medias/featureimages/16.jpg" class="responsive-img" alt="Docker系列(九)-Docker容器互连">
                         
-                        <span class="card-title">Docker系列(二)-Docker常用管理命令</span>
+                        <span class="card-title">Docker系列(九)-Docker容器互连</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -796,9 +800,9 @@ systemctl restart docker<span aria-hidden="true" class="line-numbers-rows"><span
                         
                     </div>
                     <div class="publish-info">
-                        <span class="publish-date">
-                            <i class="far fa-clock fa-fw icon-date"></i>2021-06-28
-                        </span>
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2021-07-06
+                            </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-bookmark fa-fw icon-category"></i>
@@ -811,6 +815,7 @@ systemctl restart docker<span aria-hidden="true" class="line-numbers-rows"><span
                         </span>
                     </div>
                 </div>
+
                 
                 <div class="card-action article-tags">
                     
@@ -833,13 +838,13 @@ systemctl restart docker<span aria-hidden="true" class="line-numbers-rows"><span
                 下一篇&nbsp;<i class="fas fa-chevron-right"></i>
             </div>
             <div class="card">
-                <a href="/2021/06/28/Docker%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+                <a href="/2021/07/06/Docker%E7%B3%BB%E5%88%97-%E5%85%AB-Docker%E7%A7%81%E6%9C%89%E4%BB%93%E5%BA%93/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/14.jpg" class="responsive-img" alt="Docker学习笔记">
+                        <img src="/medias/featureimages/11.jpg" class="responsive-img" alt="Docker系列(七)-Docker私有仓库">
                         
-                        <span class="card-title">Docker学习笔记</span>
+                        <span class="card-title">Docker系列(七)-Docker私有仓库</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -850,7 +855,7 @@ systemctl restart docker<span aria-hidden="true" class="line-numbers-rows"><span
                     </div>
                     <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2021-06-28
+                                <i class="far fa-clock fa-fw icon-date"></i>2021-07-06
                             </span>
                         <span class="publish-author">
                             
@@ -873,10 +878,6 @@ systemctl restart docker<span aria-hidden="true" class="line-numbers-rows"><span
                     
                     <a href="/tags/Docker/">
                         <span class="chip bg-color">Docker</span>
-                    </a>
-                    
-                    <a href="/tags/%E5%AE%B9%E5%99%A8/">
-                        <span class="chip bg-color">容器</span>
                     </a>
                     
                 </div>
