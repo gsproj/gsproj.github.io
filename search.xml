@@ -1892,7 +1892,7 @@ systemctl restart zabbix-agent<span aria-hidden="true" class="line-numbers-rows"
 <h2 id="三、docker重启后容器不退出"><a href="#三、docker重启后容器不退出" class="headerlink" title="三、docker重启后容器不退出"></a>三、docker重启后容器不退出</h2><blockquote>
 <p>默认情况下，systemctl restart docker之后，容器将处于Exited状态</p>
 </blockquote>
-<h3 id="1-添加容器修改启动参数"><a href="#1-添加容器修改启动参数" class="headerlink" title="1 添加容器修改启动参数"></a>1 添加容器修改启动参数</h3><blockquote>
+<h3 id="1-添加容器启动参数"><a href="#1-添加容器启动参数" class="headerlink" title="1 添加容器启动参数"></a>1 添加容器启动参数</h3><blockquote>
 <p>docker重启后，容器先停止，再立即重新启动</p>
 </blockquote>
 <pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker run --restart&#x3D;always<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
@@ -1909,6 +1909,46 @@ systemctl restart zabbix-agent<span aria-hidden="true" class="line-numbers-rows"
 
 
 <p>​    </p>
+]]></content>
+      <categories>
+        <category>Docker</category>
+      </categories>
+      <tags>
+        <tag>学习笔记</tag>
+        <tag>Docker</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Docker系列(七)-Docker私有仓库</title>
+    <url>/2021/07/06/Docker%E7%B3%BB%E5%88%97-%E5%85%AB-Docker%E7%A7%81%E6%9C%89%E4%BB%93%E5%BA%93/</url>
+    <content><![CDATA[<h2 id="Docker私有仓库搭建流程"><a href="#Docker私有仓库搭建流程" class="headerlink" title="Docker私有仓库搭建流程"></a>Docker私有仓库搭建流程</h2><p>拉取私有仓库镜像</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker pull registry<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>启动私有仓库容器</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker run -di --name&#x3D;registry -p 5000:5000 registry<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>验证是否正常</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 浏览器输入
+10.0.0.12:5000&#x2F;v2&#x2F;_catalog<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>修改daemon.json，让 docker信任私有仓库地址</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vi &#x2F;etc&#x2F;docker&#x2F;daemon.json
+# 添加
+&#123;
+	&quot;insecure-registries&quot;:[&quot;10.0.0.12:5000&quot;]
+&#125; <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>重启docker服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl reset-failed docker.service<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>上传镜像到私有仓库</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker push 10.0.0.11:5000&#x2F;registry<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>从私有仓库下载镜像</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker pull http:&#x2F;&#x2F;10.0.0.12:5000&#x2F;registry<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+
+
 ]]></content>
       <categories>
         <category>Docker</category>

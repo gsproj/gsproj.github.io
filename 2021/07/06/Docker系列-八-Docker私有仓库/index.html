@@ -4,7 +4,7 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="Docker系列(五)-手动制作docker镜像, Hexo">
+    <meta name="keywords" content="Docker系列(七)-Docker私有仓库, Hexo">
     <meta name="description" content="">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -16,7 +16,7 @@
     <!-- Global site tag (gtag.js) - Google Analytics -->
 
 
-    <title>Docker系列(五)-手动制作docker镜像 | Hexo</title>
+    <title>Docker系列(七)-Docker私有仓库 | Hexo</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
@@ -244,12 +244,12 @@
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/2.jpg')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/11.jpg')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
-                    <h1 class="description center-align post-title">Docker系列(五)-手动制作docker镜像</h1>
+                    <h1 class="description center-align post-title">Docker系列(七)-Docker私有仓库</h1>
                 </div>
             </div>
         </div>
@@ -394,7 +394,7 @@
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
-                    2021-06-29
+                    2021-07-06
                 </div>
                 
 
@@ -403,7 +403,7 @@
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    490
+                    144
                 </div>
                 
 
@@ -423,80 +423,33 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <h2 id="一、制作Docker镜像"><a href="#一、制作Docker镜像" class="headerlink" title="一、制作Docker镜像"></a>一、制作Docker镜像</h2><h3 id="1-启动基础容器"><a href="#1-启动基础容器" class="headerlink" title="1 启动基础容器"></a>1 启动基础容器</h3><pre class="line-numbers language-she" data-language="she"><code class="language-she">docker run -it centos:6.9 # yum
-docker run -it alpine:3.9 # apk<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+                <h2 id="Docker私有仓库搭建流程"><a href="#Docker私有仓库搭建流程" class="headerlink" title="Docker私有仓库搭建流程"></a>Docker私有仓库搭建流程</h2><p>拉取私有仓库镜像</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker pull registry<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
-<h3 id="2-在容器中安装服务"><a href="#2-在容器中安装服务" class="headerlink" title="2 在容器中安装服务"></a>2 在容器中安装服务</h3><p>修改yum源（Centos6阿里源已停止维护）</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">echo &#39;[centos-office]
-name&#x3D;centos-office
-failovermethod&#x3D;priority
-baseurl&#x3D;https:&#x2F;&#x2F;vault.centos.org&#x2F;6.10&#x2F;os&#x2F;x86_64&#x2F;
-gpgcheck&#x3D;1
-gpgkey&#x3D;https:&#x2F;&#x2F;vault.centos.org&#x2F;6.10&#x2F;os&#x2F;x86_64&#x2F;RPM-GPG-KEY-CentOS-6&#39; &gt; CentOS-Base.repo<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>启动私有仓库容器</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker run -di --name&#x3D;registry -p 5000:5000 registry<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
-<p>安装并启动openssh服务</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum install openssh-server -y
-service sshd restart<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<p>验证是否正常</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 浏览器输入
+10.0.0.12:5000&#x2F;v2&#x2F;_catalog<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
 
-<p>修改root密码(默认没有密码)</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">echo &#39;123456&#39; | passwd --stdin root
-# 或者
-echo root:123456 | chpassw<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+<p>修改daemon.json，让 docker信任私有仓库地址</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vi &#x2F;etc&#x2F;docker&#x2F;daemon.json
+# 添加
+&#123;
+	&quot;insecure-registries&quot;:[&quot;10.0.0.12:5000&quot;]
+&#125; <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<p>将已经安装好sshd服务的容器打包成镜像</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker container commit 981877f137c9 centos6.9_ssh:v1<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>重启docker服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl reset-failed docker.service<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
-<p>测试镜像</p>
-<blockquote>
-<p>sshd -D：以后台守护进程的方式运行服务</p>
-</blockquote>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 启动sshd并将22端口映射出来，可以使用xshell连接
-docker run -d -p 1022:22 centos6.9_ssh:v1 &#x2F;usr&#x2F;sbin&#x2F;sshd -D<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<p>上传镜像到私有仓库</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker push 10.0.0.11:5000&#x2F;registry<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
-<h2 id="二、小案例：创建一个ssh-nginx双服务的镜像"><a href="#二、小案例：创建一个ssh-nginx双服务的镜像" class="headerlink" title="二、小案例：创建一个ssh+nginx双服务的镜像"></a>二、小案例：创建一个ssh+nginx双服务的镜像</h2><p>创建容器</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker run -d -p 1023:22 centos6.9_ssh:v1 &#x2F;usr&#x2F;sbin&#x2F;sshd -D<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>从私有仓库下载镜像</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker pull http:&#x2F;&#x2F;10.0.0.12:5000&#x2F;registry<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
-<p>修改yum源和epel源</p>
-<pre class="line-numbers language-she" data-language="she"><code class="language-she">由于Centos6阿里云停止维护
-参考：https:&#x2F;&#x2F;blog.csdn.net&#x2F;u013250554&#x2F;article&#x2F;details&#x2F;110684307<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
 
-<p>安装nginx</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum install nginx -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>创建运行服务的脚本</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;root&#x2F;init.sh
-#!&#x2F;bin&#x2F;bash
-service sshd restart
-nginx -g &#39;daemon off;&#39;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>将容器封装成镜像</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker commit e6a6dsa6 centos6.9_ssh_nginx:v2<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>启动镜像，开启服务，并夯住</p>
-<blockquote>
-<p>可以使用工具ssh登录，并且可以访问到nginx的欢迎页面</p>
-</blockquote>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker run -d -p 1025:22 -p 80:80 centos6.9_ssh_nginx:v2 &#x2F;bin&#x2F;bash &#x2F;root&#x2F;init.sh<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<h2 id="三、通过环境变量设置容器密码"><a href="#三、通过环境变量设置容器密码" class="headerlink" title="三、通过环境变量设置容器密码"></a>三、通过环境变量设置容器密码</h2><p>修改/root/init.sh文件</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">#!&#x2F;bin&#x2F;bash
-
-if [ -z $SSH_PWD ];then
-        SSH_PWD&#x3D;123456
-fi
-echo &quot;$SSH_PWD&quot; | passwd --stdin root
-
-service sshd restart
-nginx -g &#39;daemon off;&#39;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>打包成镜像</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker commit 12386c6504d4 centos6.9_ssh_nginx_passwd<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>运行容器</p>
-<blockquote>
-<p>docker run -e：指定环境变量</p>
-</blockquote>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker run -d -p 1022:22 -p 80:80 -e &quot;SSH_PWD&#x3D;123456&quot; centos6.9_ssh_nginx_passwd &#x2F;bin&#x2F;bash &#x2F;root&#x2F;init.sh<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
 
                 
@@ -524,7 +477,7 @@ nginx -g &#39;daemon off;&#39;<span aria-hidden="true" class="line-numbers-rows"
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="http://gsproj.github.io/2021/06/29/Docker%E7%B3%BB%E5%88%97-%E4%BA%94-%E6%89%8B%E5%8A%A8%E5%88%B6%E4%BD%9Cdocker%E9%95%9C%E5%83%8F/">http://gsproj.github.io/2021/06/29/Docker%E7%B3%BB%E5%88%97-%E4%BA%94-%E6%89%8B%E5%8A%A8%E5%88%B6%E4%BD%9Cdocker%E9%95%9C%E5%83%8F/</a>
+                    <a href="http://gsproj.github.io/2021/07/06/Docker%E7%B3%BB%E5%88%97-%E5%85%AB-Docker%E7%A7%81%E6%9C%89%E4%BB%93%E5%BA%93/">http://gsproj.github.io/2021/07/06/Docker%E7%B3%BB%E5%88%97-%E5%85%AB-Docker%E7%A7%81%E6%9C%89%E4%BB%93%E5%BA%93/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -739,17 +692,18 @@ nginx -g &#39;daemon off;&#39;<span aria-hidden="true" class="line-numbers-rows"
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+                <i class="far fa-dot-circle"></i>&nbsp;本篇
+            </div>
             <div class="card">
-                <a href="/2021/06/30/Docker%E7%B3%BB%E5%88%97-%E5%85%AD-Dockfile%E7%9A%84%E4%BD%BF%E7%94%A8/">
+                <a href="/2021/07/06/Docker%E7%B3%BB%E5%88%97-%E5%85%AB-Docker%E7%A7%81%E6%9C%89%E4%BB%93%E5%BA%93/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/23.jpg" class="responsive-img" alt="Docker系列(六)-Dockfile的使用">
+                        <img src="/medias/featureimages/11.jpg" class="responsive-img" alt="Docker系列(七)-Docker私有仓库">
                         
-                        <span class="card-title">Docker系列(六)-Dockfile的使用</span>
+                        <span class="card-title">Docker系列(七)-Docker私有仓库</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -759,9 +713,9 @@ nginx -g &#39;daemon off;&#39;<span aria-hidden="true" class="line-numbers-rows"
                         
                     </div>
                     <div class="publish-info">
-                        <span class="publish-date">
-                            <i class="far fa-clock fa-fw icon-date"></i>2021-06-30
-                        </span>
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2021-07-06
+                            </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-bookmark fa-fw icon-category"></i>
@@ -774,6 +728,7 @@ nginx -g &#39;daemon off;&#39;<span aria-hidden="true" class="line-numbers-rows"
                         </span>
                     </div>
                 </div>
+
                 
                 <div class="card-action article-tags">
                     
@@ -796,13 +751,13 @@ nginx -g &#39;daemon off;&#39;<span aria-hidden="true" class="line-numbers-rows"
                 下一篇&nbsp;<i class="fas fa-chevron-right"></i>
             </div>
             <div class="card">
-                <a href="/2021/06/29/Docker%E7%B3%BB%E5%88%97-%E5%9B%9B-%E5%AE%B9%E5%99%A8%E7%9A%84%E6%95%B0%E6%8D%AE%E5%8D%B7%E6%8C%82%E8%BD%BD%E4%B8%8E%E5%B0%8F%E6%A1%88%E4%BE%8B%E7%BB%83%E4%B9%A0/">
+                <a href="/2021/07/05/Docker%E7%B3%BB%E5%88%97-%E4%B8%83-Docker%E9%95%9C%E5%83%8F%E5%88%86%E5%B1%82%E4%B8%8E%E5%AE%B9%E5%99%A8%E5%8D%95%E5%90%91%E4%BA%92%E8%BF%9E/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/13.jpg" class="responsive-img" alt="Docker系列(四)-容器的数据卷挂载与小案例练习">
+                        <img src="/medias/featureimages/19.jpg" class="responsive-img" alt="Docker系列(七)-Docker镜像分层与容器单向互连">
                         
-                        <span class="card-title">Docker系列(四)-容器的数据卷挂载与小案例练习</span>
+                        <span class="card-title">Docker系列(七)-Docker镜像分层与容器单向互连</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -813,7 +768,7 @@ nginx -g &#39;daemon off;&#39;<span aria-hidden="true" class="line-numbers-rows"
                     </div>
                     <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2021-06-29
+                                <i class="far fa-clock fa-fw icon-date"></i>2021-07-05
                             </span>
                         <span class="publish-author">
                             
