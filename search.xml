@@ -1776,8 +1776,48 @@ ssh 10.0.0.11 -p1022 可以登录镜像<span aria-hidden="true" class="line-numb
       </tags>
   </entry>
   <entry>
-    <title>Docker系列(七)-Docker镜像分层与容器单向互连</title>
-    <url>/2021/07/05/Docker%E7%B3%BB%E5%88%97-%E4%B8%83-Docker%E9%95%9C%E5%83%8F%E5%88%86%E5%B1%82%E4%B8%8E%E5%AE%B9%E5%99%A8%E5%8D%95%E5%90%91%E4%BA%92%E8%BF%9E/</url>
+    <title>Docker系列(八)-Docker私有仓库</title>
+    <url>/2021/07/06/Docker%E7%B3%BB%E5%88%97-%E5%85%AB-Docker%E7%A7%81%E6%9C%89%E4%BB%93%E5%BA%93/</url>
+    <content><![CDATA[<h2 id="Docker私有仓库搭建流程"><a href="#Docker私有仓库搭建流程" class="headerlink" title="Docker私有仓库搭建流程"></a>Docker私有仓库搭建流程</h2><p>拉取私有仓库镜像</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker pull registry<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>启动私有仓库容器</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker run -di --name&#x3D;registry -p 5000:5000 registry<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>验证是否正常</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 浏览器输入
+10.0.0.12:5000&#x2F;v2&#x2F;_catalog<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>修改daemon.json，让 docker信任私有仓库地址</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vi &#x2F;etc&#x2F;docker&#x2F;daemon.json
+# 添加
+&#123;
+	&quot;insecure-registries&quot;:[&quot;10.0.0.12:5000&quot;]
+&#125; <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>重启docker服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl reset-failed docker.service<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>上传镜像到私有仓库</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker push 10.0.0.11:5000&#x2F;registry<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>从私有仓库下载镜像</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker pull http:&#x2F;&#x2F;10.0.0.12:5000&#x2F;registry<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+
+
+]]></content>
+      <categories>
+        <category>Docker</category>
+      </categories>
+      <tags>
+        <tag>学习笔记</tag>
+        <tag>Docker</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Docker系列(七)-Docker镜像分层与同主机中容器互连</title>
+    <url>/2021/07/05/Docker%E7%B3%BB%E5%88%97-%E4%B8%83-Docker%E9%95%9C%E5%83%8F%E5%88%86%E5%B1%82%E4%B8%8E%E5%90%8C%E4%B8%BB%E6%9C%BA%E4%B8%AD%E5%AE%B9%E5%99%A8%E4%BA%92%E8%BF%9E/</url>
     <content><![CDATA[<h2 id="一、Docker镜像分层"><a href="#一、Docker镜像分层" class="headerlink" title="一、Docker镜像分层"></a>一、Docker镜像分层</h2><blockquote>
 <p>镜像分层的好处：</p>
 <p>​    复用、节省磁盘空间，相同的内容只需加载一份到内存</p>
@@ -1919,48 +1959,8 @@ systemctl restart zabbix-agent<span aria-hidden="true" class="line-numbers-rows"
       </tags>
   </entry>
   <entry>
-    <title>Docker系列(八)-Docker私有仓库</title>
-    <url>/2021/07/06/Docker%E7%B3%BB%E5%88%97-%E5%85%AB-Docker%E7%A7%81%E6%9C%89%E4%BB%93%E5%BA%93/</url>
-    <content><![CDATA[<h2 id="Docker私有仓库搭建流程"><a href="#Docker私有仓库搭建流程" class="headerlink" title="Docker私有仓库搭建流程"></a>Docker私有仓库搭建流程</h2><p>拉取私有仓库镜像</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker pull registry<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>启动私有仓库容器</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker run -di --name&#x3D;registry -p 5000:5000 registry<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>验证是否正常</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 浏览器输入
-10.0.0.12:5000&#x2F;v2&#x2F;_catalog<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>修改daemon.json，让 docker信任私有仓库地址</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vi &#x2F;etc&#x2F;docker&#x2F;daemon.json
-# 添加
-&#123;
-	&quot;insecure-registries&quot;:[&quot;10.0.0.12:5000&quot;]
-&#125; <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>重启docker服务</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl reset-failed docker.service<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>上传镜像到私有仓库</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker push 10.0.0.11:5000&#x2F;registry<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>从私有仓库下载镜像</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker pull http:&#x2F;&#x2F;10.0.0.12:5000&#x2F;registry<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-
-
-]]></content>
-      <categories>
-        <category>Docker</category>
-      </categories>
-      <tags>
-        <tag>学习笔记</tag>
-        <tag>Docker</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Docker系列(九)-Docker容器互连</title>
-    <url>/2021/07/06/Docker%E7%B3%BB%E5%88%97-%E4%B9%9D-Dokcer%E5%AE%B9%E5%99%A8%E4%BA%92%E8%BF%9E/</url>
+    <title>Docker系列(九)-Docker跨主机容器互连</title>
+    <url>/2021/07/06/Docker%E7%B3%BB%E5%88%97-%E4%B9%9D-Dokcer%E8%B7%A8%E4%B8%BB%E6%9C%BA%E5%AE%B9%E5%99%A8%E4%BA%92%E8%BF%9E/</url>
     <content><![CDATA[<h2 id="一、Docker容器的四种网络类型"><a href="#一、Docker容器的四种网络类型" class="headerlink" title="一、Docker容器的四种网络类型"></a>一、Docker容器的四种网络类型</h2><blockquote>
 <p>哪四种？</p>
 <ul>
@@ -1984,11 +1984,14 @@ systemctl restart zabbix-agent<span aria-hidden="true" class="line-numbers-rows"
 
 
 
-<h2 id="二、跨主机容器网络通信-macvlan"><a href="#二、跨主机容器网络通信-macvlan" class="headerlink" title="二、跨主机容器网络通信(macvlan)"></a>二、跨主机容器网络通信(macvlan)</h2><blockquote>
-<p>一个物理网卡，虚拟多个mac地址</p>
-<p>需要手动分配IP地址</p>
+<h2 id="二、使用macvlan实现"><a href="#二、使用macvlan实现" class="headerlink" title="二、使用macvlan实现"></a>二、使用macvlan实现</h2><blockquote>
+<p>优势：</p>
+<p>​    性能比overlay高</p>
+<p>​    不用做端口映射，外界可直接访问</p>
+<p>劣势：</p>
+<p>​    IP需要手动指定</p>
 </blockquote>
-<h3 id="1-案例：实现两个centos6-9-ssh容器跨主机网络通信"><a href="#1-案例：实现两个centos6-9-ssh容器跨主机网络通信" class="headerlink" title="1 案例：实现两个centos6.9_ssh容器跨主机网络通信"></a>1 案例：实现两个centos6.9_ssh容器跨主机网络通信</h3><blockquote>
+<h3 id="1-案例：使用macvlan实现两个centos6-9-ssh容器跨主机网络通信"><a href="#1-案例：使用macvlan实现两个centos6-9-ssh容器跨主机网络通信" class="headerlink" title="1 案例：使用macvlan实现两个centos6.9_ssh容器跨主机网络通信"></a>1 案例：使用macvlan实现两个centos6.9_ssh容器跨主机网络通信</h3><blockquote>
 <p>宿主机信息（虚拟机）：</p>
 <p>​    docker01: 10.0.0.11 网关: 10.0.0.2</p>
 <p>​    docker02: 10.0.0.12 网关: 10.0.0.2</p>
@@ -2019,12 +2022,14 @@ docker run -d --network macvlan_1 --ip&#x3D;10.0.0.200 centos6.9_ssh:v2<span ari
 
 
 
-<h2 id="三、跨主机容器间网络通讯（overlay）"><a href="#三、跨主机容器间网络通讯（overlay）" class="headerlink" title="三、跨主机容器间网络通讯（overlay）"></a>三、跨主机容器间网络通讯（overlay）</h2><blockquote>
-<p>可以自动分配ip地址</p>
-<p>需要修改docker.service</p>
-<p>参考：<a href="https://www.cnblogs.com/CloudMan6/p/7270551.html">https://www.cnblogs.com/CloudMan6/p/7270551.html</a></p>
+<h2 id="三、使用overlay实现"><a href="#三、使用overlay实现" class="headerlink" title="三、使用overlay实现"></a>三、使用overlay实现</h2><blockquote>
+<p>优势：</p>
+<p>​    可以自动分配ip地址</p>
+<p>劣势：</p>
+<p>​    需要做端口映射才能访问容器服务</p>
+<p>overlay参考：<a href="https://www.cnblogs.com/CloudMan6/p/7270551.html">https://www.cnblogs.com/CloudMan6/p/7270551.html</a></p>
 </blockquote>
-<h3 id="1-overlay实现"><a href="#1-overlay实现" class="headerlink" title="1 overlay实现"></a>1 overlay实现</h3><p>docker01启动consul</p>
+<h3 id="1-案例：使用overlay实现两个centos6-9-ssh容器跨主机网络通信"><a href="#1-案例：使用overlay实现两个centos6-9-ssh容器跨主机网络通信" class="headerlink" title="1 案例：使用overlay实现两个centos6.9_ssh容器跨主机网络通信"></a>1 案例：使用overlay实现两个centos6.9_ssh容器跨主机网络通信</h3><p>docker01启动consul</p>
 <blockquote>
 <p>consul是一个key:value类型的存储数据库</p>
 </blockquote>
@@ -2071,12 +2076,7 @@ PING centos6.9_02 (172.16.1.2) 56(84) bytes of data.
 64 bytes from centos6.9_02.ol1 (172.16.1.2): icmp_seq&#x3D;2 ttl&#x3D;64 time&#x3D;0.269 ms
 64 bytes from centos6.9_02.ol1 (172.16.1.2): icmp_seq&#x3D;3 ttl&#x3D;64 time&#x3D;1.04 ms<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<h3 id="2-外网通容器"><a href="#2-外网通容器" class="headerlink" title="2 外网通容器"></a>2 外网通容器</h3><blockquote>
-<p>外网访问容器，还是需要(-p)做映射，不用担心ip地址重了</p>
-<p>容器间可以构建多条overlay通道（vxlan实现）</p>
-</blockquote>
-<p><img src="C:\Users\gs\AppData\Roaming\Typora\typora-user-images\image-20210704230832368.png" alt="image-20210704230832368"></p>
-]]></content>
+<h3 id="2-Overlay的网络访问流程图"><a href="#2-Overlay的网络访问流程图" class="headerlink" title="2 Overlay的网络访问流程图"></a>2 Overlay的网络访问流程图</h3>]]></content>
       <categories>
         <category>Docker</category>
       </categories>
@@ -2084,12 +2084,5 @@ PING centos6.9_02 (172.16.1.2) 56(84) bytes of data.
         <tag>学习笔记</tag>
         <tag>Docker</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>test</title>
-    <url>/2021/07/07/test/</url>
-    <content><![CDATA[<img src="/2021/07/07/test/overlay%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE.png" class="" title="overlay网络访问">
-
-]]></content>
   </entry>
 </search>
