@@ -2,12 +2,133 @@
 layout: w
 title: K8S系列(一)-安装K8S
 date: 2021-07-08 23:05:17
-tags:
+tag:
 ---
 
-## 一、K8S介绍
+课程目录：
 
-> 全称Kubernetes，是一个Docker管理平台
+>第一部分：K8S概念和架构
+>
+>第二部分：K8S安装
+>
+>​	kubeadm
+>
+>​	二进制
+>
+>第三部分：K8S核心概念
+>
+>POD 
+>
+>CONTROLLER
+>
+>SERVICE
+>
+>INGRESS
+>
+>RABC
+>
+>HELM
+>
+>持久化存储
+>
+>第四部分：集群监控平台
+>
+>第五部分：从零开始搭建高可用K8S集群
+>
+>第六部分：在集群环境中部署项目
+>
+>
+
+## 一、K8S概念和架构
+
+### 1 K8S概述和特性
+
+#### 1.1 基本介绍
+
+- K8S是谷歌在2014年开发的容器化集群管理系统
+- 使用K8S可以进行容器化应用部署
+- 使用K8S利于应用扩展
+- K8S目标是让部署容器化应用更加简洁和高效
+
+容器化部署的好处：
+
+#### 1.2 K8S的特性和优势
+
+自动装箱：自动部署应用容器
+
+自我修复（自愈能力）： 
+
+水平扩展：副本数量增加
+
+服务发现（负载均衡）：通过Service实现，为多个副本对外提供统一的入口，节点调度负载均衡
+
+滚动更新：
+
+版本回退：
+
+密钥配置管理：不需要重新构建镜像，可以部署和更新密钥和应用配置
+
+存储编排：
+
+批处理：	
+
+### 2 K8S架构组件
+
+### 3 K8S核心概念
+
+3.1 Pod
+
+3.2 Controller
+
+3.3 Service
+
+
+
+## 二、K8S安装
+
+>master  192.168.44.146
+>
+>node1	192.168.44.145
+>
+>node2	192.168.44.144
+
+### 1 kubeadm安装
+
+
+
+### 2 二进制安装
+
+
+
+-----------------------------------------------------------------------
+
+生产环境通用需求：
+
+​	服务的自动发现和负载均衡
+
+​	自愈
+
+​	一键升级和回滚
+
+​	水平扩展（弹性伸缩） 
+
+### 1 容器管理平台
+
+docker swarm
+
+messos
+
+marathon
+
+kubernetes  (90%市场)
+
+## 2 K8S发展
+
+发布频繁，一年4个版本	
+
+### 3 核心组件
+
+
 
 ## 二、K8S安装
 
@@ -197,6 +318,8 @@ systemctl restart kubelet
 systemctl restart kube-proxy
 ```
 
+### 4 配置Master为镜像服务器
+
 ## 三、K8S使用
 
 1 查看节点
@@ -209,5 +332,96 @@ kubectl get nodes
 
 ```shell
 kubectl get componentstatus
+```
+
+### 1 Pod使用
+
+创建pod
+
+```shell
+kubectl create -f k8s_pod.yml
+```
+
+删除pod
+
+```she
+kubectl delete pod oldboy
+kubectl delete pod --all 删除所有
+```
+
+查看pod
+
+```shell
+kubectl get pods
+kubectl get pods -o wides
+```
+
+查看pod详细信息
+
+```shell
+kubectl descripe pod nginx
+```
+
+ 更新
+
+```shell
+kubectl replace xxxx.yml
+```
+
+
+
+#### 1.1 创建一个pod,为什么要启动两个容器？
+
+>一个pod中可以挂多个容器
+
+比如创建一个niginx pod，将启动一个pod容器，一个nginx容器
+
+Pod容器172.16.18.2
+
+Nginx容器，共用pod容器ip
+
+主要通过用POD来实现K8S的高级功能
+
+
+
+#### 1.2 rc副本控制器的使用
+
+通过rc保证容器高可用
+
+调整rc副本数
+
+```shell
+kubectl scale rc myweb --replicates=1
+```
+
+#### 1.3 利用rc实现滚动升级和一键回滚
+
+案例：nginx 1.13升级1.15
+
+```shell
+# 每5s升级一个
+kubectl rolling-update myweb -f nginx-rc1.15.yaml --update-period=5s
+```
+
+案例：nginx1.15回滚到1.13
+
+```shell
+kubectl rolling-update mywebv2 -f nginx-rc1.13.yaml
+```
+
+
+
+### service的创建和访问
+
+> 外部访问容器，端口映射
+
+#### K8S小结
+
+1 端口30000开始？
+
+2 查看yml字段编写帮助
+
+```shell
+kubectl explain svc.spec
 ```
 

@@ -127,13 +127,13 @@ docker ps -a
 ### 3 停止容器
 
 ```shell
-docker contaner stop 
+docker container stop 55e9c7c
 ```
 
 ### 4 杀死容器
 
 ```shell
-docker contaner kill
+docker container kill 55e9c7c
 ```
 
 >kill与stop的区别：
@@ -145,7 +145,7 @@ docker contaner kill
 ### 5 启动容器
 
 ```shell
-docker contaner start
+docker container start 55e9c7c
 ```
 
 ### 6 进入容器（重要！调试、排错）
