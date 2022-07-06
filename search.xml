@@ -1,6 +1,127 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Docker系列(一)-安装Docker</title>
+    <url>/2021/06/28/01_%E8%BF%90%E7%BB%B4/03-Docker/Docker%E7%B3%BB%E5%88%97-%E4%B8%80-%E5%AE%89%E8%A3%85Docker/</url>
+    <content><![CDATA[<h2 id="一、容器简介"><a href="#一、容器简介" class="headerlink" title="一、容器简介"></a>一、容器简介</h2><blockquote>
+<p>容器就是在隔离环境中运行一个进程，如果进程停止，容器就会销毁，隔离环境拥有自己的系统文件，ip地址，主机名等。</p>
+</blockquote>
+<h3 id="1-容器和虚拟化的区别"><a href="#1-容器和虚拟化的区别" class="headerlink" title="1 容器和虚拟化的区别"></a>1 容器和虚拟化的区别</h3><ul>
+<li><p>KVM虚拟化：</p>
+<ul>
+<li><p>需要硬件的支持，需要模拟硬件，可以运行不同的操作系统，启动时间分钟级（有开机启动流程）</p>
+<p>开机启动流程</p>
+<p>bios开机硬件自检</p>
+<p>根据bios设置的优先启动项boot</p>
+<p>读取mbr&#x2F;gpt引导，读取mbr硬盘分区信息，内核加载路径</p>
+<p>加载内核</p>
+<p>启动第一个进程（C6：&#x2F;sbin&#x2F;init，C7：systemd）</p>
+<p>系统初始化完成</p>
+<p>运行服务</p>
+</li>
+</ul>
+</li>
+<li><p>容器：</p>
+<ul>
+<li><p>不需要硬件的支持，不需要模拟硬件，公用宿主机内核，启动时间秒级（没有开机启动流程）</p>
+<p>容器的第一个进程直接运行服务，损耗少，启动快，性能高</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-容器的优缺点"><a href="#2-容器的优缺点" class="headerlink" title="2 容器的优缺点"></a>2 容器的优缺点</h3><ul>
+<li><p>优点</p>
+<ul>
+<li><p>与宿主机使用同一个内核，性能损耗小</p>
+<p>不需要指令级模拟</p>
+<p>容器可以再cpu核心的本地运行指令，不需要任何专门的解释机制</p>
+<p>避免了准虚拟化和系统调用替换中的复杂性</p>
+<p>轻量级隔离，在隔离的同事还提供共享机制，以实现容器与宿主机的资源共享</p>
+</li>
+</ul>
+</li>
+<li><p>缺点</p>
+<ul>
+<li>使用同一内核，存在安全性问题</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-容器技术的发展过程"><a href="#3-容器技术的发展过程" class="headerlink" title="3 容器技术的发展过程"></a>3 容器技术的发展过程</h3><blockquote>
+<p>chroot — lxc —- docker</p>
+</blockquote>
+<h3 id="4-Docker组成"><a href="#4-Docker组成" class="headerlink" title="4 Docker组成"></a>4 Docker组成</h3><p>​	Docker基于Go语言开发，C&#x2F;S模式</p>
+<ul>
+<li>主要组件<ul>
+<li>镜像</li>
+<li>容器</li>
+<li>仓库：最大的dockerhub</li>
+<li>网络</li>
+<li>存储</li>
+</ul>
+</li>
+</ul>
+<h2 id="二、Docker安装"><a href="#二、Docker安装" class="headerlink" title="二、Docker安装"></a>二、Docker安装</h2><blockquote>
+<p>参考网站：<a href="https://mirrors.tuna.tsinghua.edu.cn/help/docker-ce/">https://mirrors.tuna.tsinghua.edu.cn/help/docker-ce/</a></p>
+</blockquote>
+<h3 id="1-联网在线安装"><a href="#1-联网在线安装" class="headerlink" title="1 联网在线安装"></a>1 联网在线安装</h3><p>开启rpm包缓存，方便制作离线安装包</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;yum.conf
+keepcache&#x3D;1 <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>如果你之前安装过 docker，请先删掉</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">sudo yum remove docker docker-common docker-selinux docker-engine<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>安装一些依赖</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">sudo yum install -y yum-utils device-mapper-persistent-data lvm2<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>根据你的发行版下载repo文件（Centos）</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">wget -O &#x2F;etc&#x2F;yum.repos.d&#x2F;docker-ce.repo https:&#x2F;&#x2F;download.docker.com&#x2F;linux&#x2F;centos&#x2F;docker-ce.repo<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>把软件仓库替换为TUNA：</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">sudo sed -i &#39;s+download.docker.com+mirrors.tuna.tsinghua.edu.cn&#x2F;docker-ce+&#39; &#x2F;etc&#x2F;yum.repos.d&#x2F;docker-ce.repo<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>最后安装:</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">sudo yum makecache fast
+    sudo yum install docker-ce<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<h3 id="2-无网环境下离线安装"><a href="#2-无网环境下离线安装" class="headerlink" title="2 无网环境下离线安装"></a>2 无网环境下离线安装</h3><p>搜集联网环境下下载的rpm包</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">find &#x2F;var&#x2F;cache&#x2F;yum&#x2F;x86_64&#x2F;7&#x2F; -name &quot;*.rpm&quot; | xargs -i mv &#123;&#125; docker_rpm&#x2F;
+tar -zvcf docker_rpm.tgz docker_rpm&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>拷贝到无网环境的服务器中安装</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">tar -vxf docker_rpm.tgz # 解压
+cd docker_rpm	
+rpm -Uvh .&#x2F;*.rpm # 安装<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="3-启动服务并验证安装是否成功"><a href="#3-启动服务并验证安装是否成功" class="headerlink" title="3 启动服务并验证安装是否成功"></a>3 启动服务并验证安装是否成功</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 启动服务
+systemctl enable docker
+systemctl start docker
+
+# 验证是否安装成功
+docker version
+docker info<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="4-Docker镜像下载加速"><a href="#4-Docker镜像下载加速" class="headerlink" title="4 Docker镜像下载加速"></a>4 Docker镜像下载加速</h3><ul>
+<li>阿里云docker镜像加速器服务</li>
+<li>配置docker镜像加速(推荐)</li>
+</ul>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 创建文件
+vi &#x2F;etc&#x2F;docker&#x2F;daemon.json
+&#123;    
+	&quot;registry-mirrors&quot;:[&quot;https:&#x2F;&#x2F;registry.docker-cn.com&quot;]
+&#125; 
+# 重新加载
+systemctl daemon-reload
+systemctl restart docker<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="5-创建并运行一个nginx容器"><a href="#5-创建并运行一个nginx容器" class="headerlink" title="5 创建并运行一个nginx容器"></a>5 创建并运行一个nginx容器</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker run -d -p 80:80 nginx<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+]]></content>
+      <categories>
+        <category>运维</category>
+        <category>（三）Docker</category>
+      </categories>
+  </entry>
+  <entry>
     <title>国产化POC测试工具使用指南</title>
     <url>/2022/07/06/02-%E6%B5%8B%E8%AF%95/01_POC%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97/</url>
     <content><![CDATA[<h1 id="一、性能测试"><a href="#一、性能测试" class="headerlink" title="一、性能测试"></a>一、性能测试</h1><blockquote>
@@ -1899,127 +2020,6 @@ vim org.eclipse.ptp.rm.slurm.proxy_4.0.7.201104291906&#x2F;src&#x2F;ptp_slurm_pr
       <tags>
         <tag>工作</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>Docker系列(一)-安装Docker</title>
-    <url>/2021/06/28/01_%E8%BF%90%E7%BB%B4/03-Docker/Docker%E7%B3%BB%E5%88%97-%E4%B8%80-%E5%AE%89%E8%A3%85Docker/</url>
-    <content><![CDATA[<h2 id="一、容器简介"><a href="#一、容器简介" class="headerlink" title="一、容器简介"></a>一、容器简介</h2><blockquote>
-<p>容器就是在隔离环境中运行一个进程，如果进程停止，容器就会销毁，隔离环境拥有自己的系统文件，ip地址，主机名等。</p>
-</blockquote>
-<h3 id="1-容器和虚拟化的区别"><a href="#1-容器和虚拟化的区别" class="headerlink" title="1 容器和虚拟化的区别"></a>1 容器和虚拟化的区别</h3><ul>
-<li><p>KVM虚拟化：</p>
-<ul>
-<li><p>需要硬件的支持，需要模拟硬件，可以运行不同的操作系统，启动时间分钟级（有开机启动流程）</p>
-<p>开机启动流程</p>
-<p>bios开机硬件自检</p>
-<p>根据bios设置的优先启动项boot</p>
-<p>读取mbr&#x2F;gpt引导，读取mbr硬盘分区信息，内核加载路径</p>
-<p>加载内核</p>
-<p>启动第一个进程（C6：&#x2F;sbin&#x2F;init，C7：systemd）</p>
-<p>系统初始化完成</p>
-<p>运行服务</p>
-</li>
-</ul>
-</li>
-<li><p>容器：</p>
-<ul>
-<li><p>不需要硬件的支持，不需要模拟硬件，公用宿主机内核，启动时间秒级（没有开机启动流程）</p>
-<p>容器的第一个进程直接运行服务，损耗少，启动快，性能高</p>
-</li>
-</ul>
-</li>
-</ul>
-<h3 id="2-容器的优缺点"><a href="#2-容器的优缺点" class="headerlink" title="2 容器的优缺点"></a>2 容器的优缺点</h3><ul>
-<li><p>优点</p>
-<ul>
-<li><p>与宿主机使用同一个内核，性能损耗小</p>
-<p>不需要指令级模拟</p>
-<p>容器可以再cpu核心的本地运行指令，不需要任何专门的解释机制</p>
-<p>避免了准虚拟化和系统调用替换中的复杂性</p>
-<p>轻量级隔离，在隔离的同事还提供共享机制，以实现容器与宿主机的资源共享</p>
-</li>
-</ul>
-</li>
-<li><p>缺点</p>
-<ul>
-<li>使用同一内核，存在安全性问题</li>
-</ul>
-</li>
-</ul>
-<h3 id="3-容器技术的发展过程"><a href="#3-容器技术的发展过程" class="headerlink" title="3 容器技术的发展过程"></a>3 容器技术的发展过程</h3><blockquote>
-<p>chroot — lxc —- docker</p>
-</blockquote>
-<h3 id="4-Docker组成"><a href="#4-Docker组成" class="headerlink" title="4 Docker组成"></a>4 Docker组成</h3><p>​	Docker基于Go语言开发，C&#x2F;S模式</p>
-<ul>
-<li>主要组件<ul>
-<li>镜像</li>
-<li>容器</li>
-<li>仓库：最大的dockerhub</li>
-<li>网络</li>
-<li>存储</li>
-</ul>
-</li>
-</ul>
-<h2 id="二、Docker安装"><a href="#二、Docker安装" class="headerlink" title="二、Docker安装"></a>二、Docker安装</h2><blockquote>
-<p>参考网站：<a href="https://mirrors.tuna.tsinghua.edu.cn/help/docker-ce/">https://mirrors.tuna.tsinghua.edu.cn/help/docker-ce/</a></p>
-</blockquote>
-<h3 id="1-联网在线安装"><a href="#1-联网在线安装" class="headerlink" title="1 联网在线安装"></a>1 联网在线安装</h3><p>开启rpm包缓存，方便制作离线安装包</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;yum.conf
-keepcache&#x3D;1 <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>如果你之前安装过 docker，请先删掉</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">sudo yum remove docker docker-common docker-selinux docker-engine<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>安装一些依赖</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">sudo yum install -y yum-utils device-mapper-persistent-data lvm2<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>根据你的发行版下载repo文件（Centos）</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">wget -O &#x2F;etc&#x2F;yum.repos.d&#x2F;docker-ce.repo https:&#x2F;&#x2F;download.docker.com&#x2F;linux&#x2F;centos&#x2F;docker-ce.repo<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>把软件仓库替换为TUNA：</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">sudo sed -i &#39;s+download.docker.com+mirrors.tuna.tsinghua.edu.cn&#x2F;docker-ce+&#39; &#x2F;etc&#x2F;yum.repos.d&#x2F;docker-ce.repo<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>最后安装:</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">sudo yum makecache fast
-    sudo yum install docker-ce<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<h3 id="2-无网环境下离线安装"><a href="#2-无网环境下离线安装" class="headerlink" title="2 无网环境下离线安装"></a>2 无网环境下离线安装</h3><p>搜集联网环境下下载的rpm包</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">find &#x2F;var&#x2F;cache&#x2F;yum&#x2F;x86_64&#x2F;7&#x2F; -name &quot;*.rpm&quot; | xargs -i mv &#123;&#125; docker_rpm&#x2F;
-tar -zvcf docker_rpm.tgz docker_rpm&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>拷贝到无网环境的服务器中安装</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">tar -vxf docker_rpm.tgz # 解压
-cd docker_rpm	
-rpm -Uvh .&#x2F;*.rpm # 安装<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="3-启动服务并验证安装是否成功"><a href="#3-启动服务并验证安装是否成功" class="headerlink" title="3 启动服务并验证安装是否成功"></a>3 启动服务并验证安装是否成功</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 启动服务
-systemctl enable docker
-systemctl start docker
-
-# 验证是否安装成功
-docker version
-docker info<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="4-Docker镜像下载加速"><a href="#4-Docker镜像下载加速" class="headerlink" title="4 Docker镜像下载加速"></a>4 Docker镜像下载加速</h3><ul>
-<li>阿里云docker镜像加速器服务</li>
-<li>配置docker镜像加速(推荐)</li>
-</ul>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 创建文件
-vi &#x2F;etc&#x2F;docker&#x2F;daemon.json
-&#123;    
-	&quot;registry-mirrors&quot;:[&quot;https:&#x2F;&#x2F;registry.docker-cn.com&quot;]
-&#125; 
-# 重新加载
-systemctl daemon-reload
-systemctl restart docker<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="5-创建并运行一个nginx容器"><a href="#5-创建并运行一个nginx容器" class="headerlink" title="5 创建并运行一个nginx容器"></a>5 创建并运行一个nginx容器</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker run -d -p 80:80 nginx<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-]]></content>
-      <categories>
-        <category>运维</category>
-        <category>（三）Docker</category>
-      </categories>
   </entry>
   <entry>
     <title>Docker系列(七)-Docker镜像分层与同主机中容器互连</title>
@@ -3967,54 +3967,6 @@ _______________________________________________________
       </categories>
   </entry>
   <entry>
-    <title>运维之综合架构--06--HTTP协议介绍</title>
-    <url>/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/06-HTTP%E5%8D%8F%E8%AE%AE/</url>
-    <content><![CDATA[<h2 id="一、HTTP的发展历程"><a href="#一、HTTP的发展历程" class="headerlink" title="一、HTTP的发展历程"></a>一、HTTP的发展历程</h2><p>HTTP协议始于三十年前蒂姆·伯纳斯 - 李的一篇论文</p>
-<p>HTTP&#x2F;0.9 (是个简单的文本协议，只能获取文本资源；)</p>
-<p>HTTP&#x2F;1.0 - 1996年 （确立了大部分现在使用的技术，参考文档，不具备实际约束力）</p>
-<p>HTTP&#x2F;1.1 - 1999年 （正式标准严格遵守，功能也非常完善，互联网爆发式增长，目前互联网上使用最广泛的协议） </p>
-<p>HTTP&#x2F;2 - 2015年 （基于 Google 的 SPDY 协议，注重性能改善，但还未普及）</p>
-<p>HTTP&#x2F;3 - 2018年 （基于 Google 的 QUIC 协议，是将来的发展方向）</p>
-<hr>
-<p>课下作业</p>
-<ol>
-<li>你认为推动 HTTP 发展的原动力是什么？</li>
-<li>你是怎么理解 HTTP（超文本传输协议）的？</li>
-</ol>
-<h2 id="二、HTTP简介"><a href="#二、HTTP简介" class="headerlink" title="二、HTTP简介"></a>二、HTTP简介</h2><p>HyperText transfer protocol （超文本传输协议）</p>
-<ul>
-<li>HTTP 是一个用在计算机世界里的协议，它确立了一种计算机之间交流通信的规范，以及相关的各种控制和错误处理方式。</li>
-<li>HTTP 专门用来在两点之间传输数据，不能用于广播、寻址或路由。</li>
-<li>HTTP 传输的是文字、图片、音频、视频等超文本数据。</li>
-<li>HTTP 是构建互联网的重要基础技术，它没有实体，依赖许多其他的技术来实现，但同时许多技术也都依赖于它。</li>
-</ul>
-<hr>
-<p>课下作业：</p>
-<ol>
-<li>有一种流行的说法：“HTTP 是用于从互联网服务器传输超文本到本地浏览器的协议”，你认为这种说法对吗？对在哪里，又错在哪里？</li>
-<li>你能再说出几个“HTTP 不是什么”吗？</li>
-</ol>
-<p><img src="/05-HTTP%E5%8D%8F%E8%AE%AE.assets/http%E6%80%9D%E7%BB%B4%E5%AF%BC%E5%9B%BE.png" alt="http思维导图"></p>
-<h3 id="三、HTTP的应用领域"><a href="#三、HTTP的应用领域" class="headerlink" title="三、HTTP的应用领域"></a>三、HTTP的应用领域</h3><ol>
-<li>互联网上绝大部分资源都使用 HTTP 协议传输；</li>
-<li>浏览器是 HTTP 协议里的请求方，即 User Agent；</li>
-<li>服务器是 HTTP 协议里的应答方，常用的有 Apache 和 Nginx；</li>
-<li>CDN 位于浏览器和服务器之间，主要起到缓存加速的作用；</li>
-<li>爬虫是另一类 User Agent，是自动访问网络资源的程序。</li>
-</ol>
-<hr>
-<p>课后作业：</p>
-<ol>
-<li>你觉得 CDN 在对待浏览器和爬虫时会有差异吗？为什么？</li>
-<li>你怎么理解 WebService 与 Web Server 这两个非常相似的词？</li>
-</ol>
-]]></content>
-      <categories>
-        <category>运维</category>
-        <category>（二）综合架构</category>
-      </categories>
-  </entry>
-  <entry>
     <title>运维之综合架构--05--SSH服务器搭建</title>
     <url>/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/05-ssh%E6%9C%8D%E5%8A%A1%E8%B7%B3%E6%9D%BF%E6%9C%BA%E6%90%AD%E5%BB%BA/</url>
     <content><![CDATA[<h2 id="一、SSH服务器介绍"><a href="#一、SSH服务器介绍" class="headerlink" title="一、SSH服务器介绍"></a>一、SSH服务器介绍</h2><blockquote>
@@ -4135,6 +4087,54 @@ logpath &#x3D; &#x2F;var&#x2F;log&#x2F;secure
 6.清除被封掉的IP地址
 [root@bgx ~]# fail2ban-client set sshd unbanip 10.0.0.1<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
+]]></content>
+      <categories>
+        <category>运维</category>
+        <category>（二）综合架构</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>运维之综合架构--06--HTTP协议介绍</title>
+    <url>/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/06-HTTP%E5%8D%8F%E8%AE%AE/</url>
+    <content><![CDATA[<h2 id="一、HTTP的发展历程"><a href="#一、HTTP的发展历程" class="headerlink" title="一、HTTP的发展历程"></a>一、HTTP的发展历程</h2><p>HTTP协议始于三十年前蒂姆·伯纳斯 - 李的一篇论文</p>
+<p>HTTP&#x2F;0.9 (是个简单的文本协议，只能获取文本资源；)</p>
+<p>HTTP&#x2F;1.0 - 1996年 （确立了大部分现在使用的技术，参考文档，不具备实际约束力）</p>
+<p>HTTP&#x2F;1.1 - 1999年 （正式标准严格遵守，功能也非常完善，互联网爆发式增长，目前互联网上使用最广泛的协议） </p>
+<p>HTTP&#x2F;2 - 2015年 （基于 Google 的 SPDY 协议，注重性能改善，但还未普及）</p>
+<p>HTTP&#x2F;3 - 2018年 （基于 Google 的 QUIC 协议，是将来的发展方向）</p>
+<hr>
+<p>课下作业</p>
+<ol>
+<li>你认为推动 HTTP 发展的原动力是什么？</li>
+<li>你是怎么理解 HTTP（超文本传输协议）的？</li>
+</ol>
+<h2 id="二、HTTP简介"><a href="#二、HTTP简介" class="headerlink" title="二、HTTP简介"></a>二、HTTP简介</h2><p>HyperText transfer protocol （超文本传输协议）</p>
+<ul>
+<li>HTTP 是一个用在计算机世界里的协议，它确立了一种计算机之间交流通信的规范，以及相关的各种控制和错误处理方式。</li>
+<li>HTTP 专门用来在两点之间传输数据，不能用于广播、寻址或路由。</li>
+<li>HTTP 传输的是文字、图片、音频、视频等超文本数据。</li>
+<li>HTTP 是构建互联网的重要基础技术，它没有实体，依赖许多其他的技术来实现，但同时许多技术也都依赖于它。</li>
+</ul>
+<hr>
+<p>课下作业：</p>
+<ol>
+<li>有一种流行的说法：“HTTP 是用于从互联网服务器传输超文本到本地浏览器的协议”，你认为这种说法对吗？对在哪里，又错在哪里？</li>
+<li>你能再说出几个“HTTP 不是什么”吗？</li>
+</ol>
+<p><img src="/05-HTTP%E5%8D%8F%E8%AE%AE.assets/http%E6%80%9D%E7%BB%B4%E5%AF%BC%E5%9B%BE.png" alt="http思维导图"></p>
+<h3 id="三、HTTP的应用领域"><a href="#三、HTTP的应用领域" class="headerlink" title="三、HTTP的应用领域"></a>三、HTTP的应用领域</h3><ol>
+<li>互联网上绝大部分资源都使用 HTTP 协议传输；</li>
+<li>浏览器是 HTTP 协议里的请求方，即 User Agent；</li>
+<li>服务器是 HTTP 协议里的应答方，常用的有 Apache 和 Nginx；</li>
+<li>CDN 位于浏览器和服务器之间，主要起到缓存加速的作用；</li>
+<li>爬虫是另一类 User Agent，是自动访问网络资源的程序。</li>
+</ol>
+<hr>
+<p>课后作业：</p>
+<ol>
+<li>你觉得 CDN 在对待浏览器和爬虫时会有差异吗？为什么？</li>
+<li>你怎么理解 WebService 与 Web Server 这两个非常相似的词？</li>
+</ol>
 ]]></content>
       <categories>
         <category>运维</category>
@@ -6516,236 +6516,6 @@ web02的Tomcat服务正常，关掉web01的nginx服务
       </categories>
   </entry>
   <entry>
-    <title>K8S系列(一)-安装K8S</title>
-    <url>/2021/07/08/01_%E8%BF%90%E7%BB%B4/05-K8S/K8S%E7%B3%BB%E5%88%97-%E4%B8%80-%E5%AE%89%E8%A3%85K8S/</url>
-    <content><![CDATA[<p>课程目录：</p>
-<blockquote>
-<p>第一部分：K8S概念和架构</p>
-<p>第二部分：K8S安装</p>
-<p>​	kubeadm</p>
-<p>​	二进制</p>
-<p>第三部分：K8S核心概念</p>
-<p>POD </p>
-<p>CONTROLLER</p>
-<p>SERVICE</p>
-<p>INGRESS</p>
-<p>RABC</p>
-<p>HELM</p>
-<p>持久化存储</p>
-<p>第四部分：集群监控平台</p>
-<p>第五部分：从零开始搭建高可用K8S集群</p>
-<p>第六部分：在集群环境中部署项目</p>
-</blockquote>
-<h2 id="一、K8S概念和架构"><a href="#一、K8S概念和架构" class="headerlink" title="一、K8S概念和架构"></a>一、K8S概念和架构</h2><h3 id="1-K8S概述和特性"><a href="#1-K8S概述和特性" class="headerlink" title="1 K8S概述和特性"></a>1 K8S概述和特性</h3><h4 id="1-1-基本介绍"><a href="#1-1-基本介绍" class="headerlink" title="1.1 基本介绍"></a>1.1 基本介绍</h4><ul>
-<li>K8S是谷歌在2014年开发的容器化集群管理系统</li>
-<li>使用K8S可以进行容器化应用部署</li>
-<li>使用K8S利于应用扩展</li>
-<li>K8S目标是让部署容器化应用更加简洁和高效</li>
-</ul>
-<p>容器化部署的好处：</p>
-<h4 id="1-2-K8S的特性和优势"><a href="#1-2-K8S的特性和优势" class="headerlink" title="1.2 K8S的特性和优势"></a>1.2 K8S的特性和优势</h4><p>自动装箱：自动部署应用容器</p>
-<p>自我修复（自愈能力）： </p>
-<p>水平扩展：副本数量增加</p>
-<p>服务发现（负载均衡）：通过Service实现，为多个副本对外提供统一的入口，节点调度负载均衡</p>
-<p>滚动更新：</p>
-<p>版本回退：</p>
-<p>密钥配置管理：不需要重新构建镜像，可以部署和更新密钥和应用配置</p>
-<p>存储编排：</p>
-<p>批处理：	</p>
-<h3 id="2-K8S架构组件"><a href="#2-K8S架构组件" class="headerlink" title="2 K8S架构组件"></a>2 K8S架构组件</h3><h3 id="3-K8S核心概念"><a href="#3-K8S核心概念" class="headerlink" title="3 K8S核心概念"></a>3 K8S核心概念</h3><p>3.1 Pod</p>
-<p>3.2 Controller</p>
-<p>3.3 Service</p>
-<h2 id="二、K8S安装"><a href="#二、K8S安装" class="headerlink" title="二、K8S安装"></a>二、K8S安装</h2><blockquote>
-<p>master  192.168.44.146</p>
-<p>node1	192.168.44.145</p>
-<p>node2	192.168.44.144</p>
-</blockquote>
-<h3 id="1-kubeadm安装"><a href="#1-kubeadm安装" class="headerlink" title="1 kubeadm安装"></a>1 kubeadm安装</h3><h3 id="2-二进制安装"><a href="#2-二进制安装" class="headerlink" title="2 二进制安装"></a>2 二进制安装</h3><hr>
-<p>生产环境通用需求：</p>
-<p>​	服务的自动发现和负载均衡</p>
-<p>​	自愈</p>
-<p>​	一键升级和回滚</p>
-<p>​	水平扩展（弹性伸缩） </p>
-<h3 id="1-容器管理平台"><a href="#1-容器管理平台" class="headerlink" title="1 容器管理平台"></a>1 容器管理平台</h3><p>docker swarm</p>
-<p>messos</p>
-<p>marathon</p>
-<p>kubernetes  (90%市场)</p>
-<h2 id="2-K8S发展"><a href="#2-K8S发展" class="headerlink" title="2 K8S发展"></a>2 K8S发展</h2><p>发布频繁，一年4个版本	</p>
-<h3 id="3-核心组件"><a href="#3-核心组件" class="headerlink" title="3 核心组件"></a>3 核心组件</h3><h2 id="二、K8S安装-1"><a href="#二、K8S安装-1" class="headerlink" title="二、K8S安装"></a>二、K8S安装</h2><blockquote>
-<p>K8S安装方式很多：</p>
-<ul>
-<li>源码编译安装 ：golang编译环境</li>
-<li>二进制安装 ：文档，全程手动，ansible等</li>
-<li>kubeadm安装：网络要求</li>
-<li>minikube ：开发者学习</li>
-<li>yum安装</li>
-</ul>
-<p>这里使用yum安装的方法</p>
-</blockquote>
-<h3 id="1-虚拟机准备"><a href="#1-虚拟机准备" class="headerlink" title="1 虚拟机准备"></a>1 虚拟机准备</h3><blockquote>
-<p>centos7, 1CPU 1G</p>
-<p>设置主机名，<strong>添加hosts解析</strong></p>
-</blockquote>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">k8s-master  --  10.0.0.21
-k8s-node1   --  10.0.0.22
-k8s-node2   --  10.0.0.23<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<p>配置Centos7源和epel7源</p>
-<pre class="line-numbers language-he" data-language="he"><code class="language-he">curl -o &#x2F;etc&#x2F;yum.repos.d&#x2F;CentOS-Base.repo http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;repo&#x2F;Centos-7.repo
-curl -o &#x2F;etc&#x2F;yum.repos.d&#x2F;epel.repo http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;repo&#x2F;epel-7.repo
-yum clean all
-yum makecache<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="2-Master节点安装"><a href="#2-Master节点安装" class="headerlink" title="2 Master节点安装"></a>2 Master节点安装</h3><h4 id="2-1-安装docker"><a href="#2-1-安装docker" class="headerlink" title="2.1 安装docker"></a>2.1 安装docker</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum install docker -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<h4 id="2-2-安装etcd"><a href="#2-2-安装etcd" class="headerlink" title="2.2 安装etcd"></a>2.2 安装etcd</h4><blockquote>
-<p>etcd是一个nosql数据库</p>
-</blockquote>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum install etcd -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>修改etcd配置文件</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;etcd&#x2F;etcd.conf
-ETCD_LISTEN_CLIENT_URLS&#x3D;&quot;http:&#x2F;&#x2F;0.0.0.0:2379&quot;
-ETCD_ADVERTISE_CLIENT_URLS&#x3D;&quot;http:&#x2F;&#x2F;10.0.0.21:2379&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<p>启动etcd服务</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl enable etcd
-systemctl restart etcd<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>测试etcd</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">etcdctl set testdir&#x2F;testkey0 0
-etcdctl get testdir&#x2F;testkey0<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>etcdctl相关设置</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">etcdctl -C http:&#x2F;&#x2F;10.0.0.21:2379 cluster-health<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<h4 id="2-3-安装k8s服务"><a href="#2-3-安装k8s服务" class="headerlink" title="2.3 安装k8s服务"></a>2.3 安装k8s服务</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum install kubernetes-master -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>配置文件修改</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;kubernetes&#x2F;apiserver
-KUBE_API_ADDRESS&#x3D;&quot;--insecure-bind-address&#x3D;0.0.0.0&quot;
-KUBE_API_PORT&#x3D;&quot;--port&#x3D;8080&quot;
-KUBE_ETCD_SERVERS&#x3D;&quot;--etcd-servers&#x3D;http:&#x2F;&#x2F;10.0.0.21:2379&quot;
-# 23行删除ServiceAccount，如下
-KUBE_ADMISSION_CONTROL&#x3D;&quot;--admission-control&#x3D;NamespaceLifecycle,NamespaceExists,LimitRanger,SecurityContextDeny,ResourceQuota&quot; # <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;kubernetes&#x2F;config
-KUBE_MASTER&#x3D;&quot;--master&#x3D;http:&#x2F;&#x2F;10.0.0.21:8080&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>开放防火墙端口【重要】</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">firewall-cmd --zone&#x3D;public --add-port&#x3D;2379&#x2F;tcp --permanent
-firewall-cmd --zone&#x3D;public --add-port&#x3D;8080&#x2F;tcp --permanent
-firewall-cmd --reload<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<p>启动服务</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl enable kube-apiserver
-systemctl restart kube-apiserver
-systemctl enable kube-controller-manager
-systemctl restart kube-controller-manager
-systemctl enable kube-scheduler
-systemctl restart kube-scheduler<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="3-Node节点安装"><a href="#3-Node节点安装" class="headerlink" title="3 Node节点安装"></a>3 Node节点安装</h3><h4 id="3-1-安装k8s-node服务"><a href="#3-1-安装k8s-node服务" class="headerlink" title="3.1 安装k8s-node服务"></a>3.1 安装k8s-node服务</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum install kubernetes-node<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>编辑配置文件</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;kubernetes&#x2F;config
-KUBE_MASTER&#x3D;&quot;--master&#x3D;http:&#x2F;&#x2F;10.0.0.21:8080&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;kubernetes&#x2F;kubelet
-KUBELET_ADDRESS&#x3D;&quot;--address&#x3D;0.0.0.0&quot;
-KUBELET_PORT&#x3D;&quot;--port&#x3D;10250&quot;
-KUBELET_HOSTNAME&#x3D;&quot;--hostname-override&#x3D;10.0.0.22&quot;
-KUBELET_API_SERVER&#x3D;&quot;--api-servers&#x3D;http:&#x2F;&#x2F;10.0.0.21:8080&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>启动服务</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl enable kubelet
-systemctl restart kubelet
-systemctl enable kube-proxy
-systemctl restart kube-proxy<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h4 id="3-2-fannel网络服务安装"><a href="#3-2-fannel网络服务安装" class="headerlink" title="3.2 fannel网络服务安装"></a>3.2 fannel网络服务安装</h4><blockquote>
-<p>用于节点之间通信</p>
-</blockquote>
-<p>所有节点安装并配置fannel</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum install flannel -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;sysconfig&#x2F;flanneld
-FLANNEL_ETCD_ENDPOINTS&#x3D;&quot;http:&#x2F;&#x2F;10.0.0.21:2379&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">etcdctl mk &#x2F;atomic.io&#x2F;network&#x2F;config &#39;&#123;&quot;Network&quot;:&quot;172.16.0.0&#x2F;16&quot;&#125;&#39;<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>重新启动服务—Master节点</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl enable fanneld
-systemctl restart fanneld
-systemctl restart kube-apiserver
-systemctl restart kube-controller-manager
-systemctl restart kube-scheduler	<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>重新启动服务—Node节点</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl enable fanneld
-systemctl restart fanneld
-systemctl restart kubelet
-systemctl restart kube-proxy<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="4-配置Master为镜像服务器"><a href="#4-配置Master为镜像服务器" class="headerlink" title="4 配置Master为镜像服务器"></a>4 配置Master为镜像服务器</h3><h2 id="三、K8S使用"><a href="#三、K8S使用" class="headerlink" title="三、K8S使用"></a>三、K8S使用</h2><p>1 查看节点</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">kubectl get nodes<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>2 查看服务状态</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">kubectl get componentstatus<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<h3 id="1-Pod使用"><a href="#1-Pod使用" class="headerlink" title="1 Pod使用"></a>1 Pod使用</h3><p>创建pod</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">kubectl create -f k8s_pod.yml<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>删除pod</p>
-<pre class="line-numbers language-she" data-language="she"><code class="language-she">kubectl delete pod oldboy
-kubectl delete pod --all 删除所有<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>查看pod</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">kubectl get pods
-kubectl get pods -o wides<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>查看pod详细信息</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">kubectl descripe pod nginx<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p> 更新</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">kubectl replace xxxx.yml<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-
-
-<h4 id="1-1-创建一个pod-为什么要启动两个容器？"><a href="#1-1-创建一个pod-为什么要启动两个容器？" class="headerlink" title="1.1 创建一个pod,为什么要启动两个容器？"></a>1.1 创建一个pod,为什么要启动两个容器？</h4><blockquote>
-<p>一个pod中可以挂多个容器</p>
-</blockquote>
-<p>比如创建一个niginx pod，将启动一个pod容器，一个nginx容器</p>
-<p>Pod容器172.16.18.2</p>
-<p>Nginx容器，共用pod容器ip</p>
-<p>主要通过用POD来实现K8S的高级功能</p>
-<h4 id="1-2-rc副本控制器的使用"><a href="#1-2-rc副本控制器的使用" class="headerlink" title="1.2 rc副本控制器的使用"></a>1.2 rc副本控制器的使用</h4><p>通过rc保证容器高可用</p>
-<p>调整rc副本数</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">kubectl scale rc myweb --replicates&#x3D;1<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<h4 id="1-3-利用rc实现滚动升级和一键回滚"><a href="#1-3-利用rc实现滚动升级和一键回滚" class="headerlink" title="1.3 利用rc实现滚动升级和一键回滚"></a>1.3 利用rc实现滚动升级和一键回滚</h4><p>案例：nginx 1.13升级1.15</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 每5s升级一个
-kubectl rolling-update myweb -f nginx-rc1.15.yaml --update-period&#x3D;5s<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>案例：nginx1.15回滚到1.13</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">kubectl rolling-update mywebv2 -f nginx-rc1.13.yaml<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-
-
-<h3 id="service的创建和访问"><a href="#service的创建和访问" class="headerlink" title="service的创建和访问"></a>service的创建和访问</h3><blockquote>
-<p>外部访问容器，端口映射</p>
-</blockquote>
-<h4 id="K8S小结"><a href="#K8S小结" class="headerlink" title="K8S小结"></a>K8S小结</h4><p>1 端口30000开始？</p>
-<p>2 查看yml字段编写帮助</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">kubectl explain svc.spec<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-]]></content>
-      <categories>
-        <category>运维</category>
-        <category>（五）K8S</category>
-      </categories>
-  </entry>
-  <entry>
     <title>OpenStack学习笔记</title>
     <url>/2022/07/06/01_%E8%BF%90%E7%BB%B4/04-%E8%99%9A%E6%8B%9F%E5%8C%96/OpenStack%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</url>
     <content><![CDATA[<h1 id="OpenStack笔记"><a href="#OpenStack笔记" class="headerlink" title="OpenStack笔记"></a><strong><font color=green>OpenStack笔记</font></strong></h1><p>​	OpenStack实现的是云计算IAAS</p>
@@ -7618,6 +7388,236 @@ systemctl restart libvirtd openstack-nova-compute
       </categories>
   </entry>
   <entry>
+    <title>K8S系列(一)-安装K8S</title>
+    <url>/2021/07/08/01_%E8%BF%90%E7%BB%B4/05-K8S/K8S%E7%B3%BB%E5%88%97-%E4%B8%80-%E5%AE%89%E8%A3%85K8S/</url>
+    <content><![CDATA[<p>课程目录：</p>
+<blockquote>
+<p>第一部分：K8S概念和架构</p>
+<p>第二部分：K8S安装</p>
+<p>​	kubeadm</p>
+<p>​	二进制</p>
+<p>第三部分：K8S核心概念</p>
+<p>POD </p>
+<p>CONTROLLER</p>
+<p>SERVICE</p>
+<p>INGRESS</p>
+<p>RABC</p>
+<p>HELM</p>
+<p>持久化存储</p>
+<p>第四部分：集群监控平台</p>
+<p>第五部分：从零开始搭建高可用K8S集群</p>
+<p>第六部分：在集群环境中部署项目</p>
+</blockquote>
+<h2 id="一、K8S概念和架构"><a href="#一、K8S概念和架构" class="headerlink" title="一、K8S概念和架构"></a>一、K8S概念和架构</h2><h3 id="1-K8S概述和特性"><a href="#1-K8S概述和特性" class="headerlink" title="1 K8S概述和特性"></a>1 K8S概述和特性</h3><h4 id="1-1-基本介绍"><a href="#1-1-基本介绍" class="headerlink" title="1.1 基本介绍"></a>1.1 基本介绍</h4><ul>
+<li>K8S是谷歌在2014年开发的容器化集群管理系统</li>
+<li>使用K8S可以进行容器化应用部署</li>
+<li>使用K8S利于应用扩展</li>
+<li>K8S目标是让部署容器化应用更加简洁和高效</li>
+</ul>
+<p>容器化部署的好处：</p>
+<h4 id="1-2-K8S的特性和优势"><a href="#1-2-K8S的特性和优势" class="headerlink" title="1.2 K8S的特性和优势"></a>1.2 K8S的特性和优势</h4><p>自动装箱：自动部署应用容器</p>
+<p>自我修复（自愈能力）： </p>
+<p>水平扩展：副本数量增加</p>
+<p>服务发现（负载均衡）：通过Service实现，为多个副本对外提供统一的入口，节点调度负载均衡</p>
+<p>滚动更新：</p>
+<p>版本回退：</p>
+<p>密钥配置管理：不需要重新构建镜像，可以部署和更新密钥和应用配置</p>
+<p>存储编排：</p>
+<p>批处理：	</p>
+<h3 id="2-K8S架构组件"><a href="#2-K8S架构组件" class="headerlink" title="2 K8S架构组件"></a>2 K8S架构组件</h3><h3 id="3-K8S核心概念"><a href="#3-K8S核心概念" class="headerlink" title="3 K8S核心概念"></a>3 K8S核心概念</h3><p>3.1 Pod</p>
+<p>3.2 Controller</p>
+<p>3.3 Service</p>
+<h2 id="二、K8S安装"><a href="#二、K8S安装" class="headerlink" title="二、K8S安装"></a>二、K8S安装</h2><blockquote>
+<p>master  192.168.44.146</p>
+<p>node1	192.168.44.145</p>
+<p>node2	192.168.44.144</p>
+</blockquote>
+<h3 id="1-kubeadm安装"><a href="#1-kubeadm安装" class="headerlink" title="1 kubeadm安装"></a>1 kubeadm安装</h3><h3 id="2-二进制安装"><a href="#2-二进制安装" class="headerlink" title="2 二进制安装"></a>2 二进制安装</h3><hr>
+<p>生产环境通用需求：</p>
+<p>​	服务的自动发现和负载均衡</p>
+<p>​	自愈</p>
+<p>​	一键升级和回滚</p>
+<p>​	水平扩展（弹性伸缩） </p>
+<h3 id="1-容器管理平台"><a href="#1-容器管理平台" class="headerlink" title="1 容器管理平台"></a>1 容器管理平台</h3><p>docker swarm</p>
+<p>messos</p>
+<p>marathon</p>
+<p>kubernetes  (90%市场)</p>
+<h2 id="2-K8S发展"><a href="#2-K8S发展" class="headerlink" title="2 K8S发展"></a>2 K8S发展</h2><p>发布频繁，一年4个版本	</p>
+<h3 id="3-核心组件"><a href="#3-核心组件" class="headerlink" title="3 核心组件"></a>3 核心组件</h3><h2 id="二、K8S安装-1"><a href="#二、K8S安装-1" class="headerlink" title="二、K8S安装"></a>二、K8S安装</h2><blockquote>
+<p>K8S安装方式很多：</p>
+<ul>
+<li>源码编译安装 ：golang编译环境</li>
+<li>二进制安装 ：文档，全程手动，ansible等</li>
+<li>kubeadm安装：网络要求</li>
+<li>minikube ：开发者学习</li>
+<li>yum安装</li>
+</ul>
+<p>这里使用yum安装的方法</p>
+</blockquote>
+<h3 id="1-虚拟机准备"><a href="#1-虚拟机准备" class="headerlink" title="1 虚拟机准备"></a>1 虚拟机准备</h3><blockquote>
+<p>centos7, 1CPU 1G</p>
+<p>设置主机名，<strong>添加hosts解析</strong></p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">k8s-master  --  10.0.0.21
+k8s-node1   --  10.0.0.22
+k8s-node2   --  10.0.0.23<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>配置Centos7源和epel7源</p>
+<pre class="line-numbers language-he" data-language="he"><code class="language-he">curl -o &#x2F;etc&#x2F;yum.repos.d&#x2F;CentOS-Base.repo http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;repo&#x2F;Centos-7.repo
+curl -o &#x2F;etc&#x2F;yum.repos.d&#x2F;epel.repo http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;repo&#x2F;epel-7.repo
+yum clean all
+yum makecache<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-Master节点安装"><a href="#2-Master节点安装" class="headerlink" title="2 Master节点安装"></a>2 Master节点安装</h3><h4 id="2-1-安装docker"><a href="#2-1-安装docker" class="headerlink" title="2.1 安装docker"></a>2.1 安装docker</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum install docker -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h4 id="2-2-安装etcd"><a href="#2-2-安装etcd" class="headerlink" title="2.2 安装etcd"></a>2.2 安装etcd</h4><blockquote>
+<p>etcd是一个nosql数据库</p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum install etcd -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>修改etcd配置文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;etcd&#x2F;etcd.conf
+ETCD_LISTEN_CLIENT_URLS&#x3D;&quot;http:&#x2F;&#x2F;0.0.0.0:2379&quot;
+ETCD_ADVERTISE_CLIENT_URLS&#x3D;&quot;http:&#x2F;&#x2F;10.0.0.21:2379&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>启动etcd服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl enable etcd
+systemctl restart etcd<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>测试etcd</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">etcdctl set testdir&#x2F;testkey0 0
+etcdctl get testdir&#x2F;testkey0<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>etcdctl相关设置</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">etcdctl -C http:&#x2F;&#x2F;10.0.0.21:2379 cluster-health<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h4 id="2-3-安装k8s服务"><a href="#2-3-安装k8s服务" class="headerlink" title="2.3 安装k8s服务"></a>2.3 安装k8s服务</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum install kubernetes-master -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>配置文件修改</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;kubernetes&#x2F;apiserver
+KUBE_API_ADDRESS&#x3D;&quot;--insecure-bind-address&#x3D;0.0.0.0&quot;
+KUBE_API_PORT&#x3D;&quot;--port&#x3D;8080&quot;
+KUBE_ETCD_SERVERS&#x3D;&quot;--etcd-servers&#x3D;http:&#x2F;&#x2F;10.0.0.21:2379&quot;
+# 23行删除ServiceAccount，如下
+KUBE_ADMISSION_CONTROL&#x3D;&quot;--admission-control&#x3D;NamespaceLifecycle,NamespaceExists,LimitRanger,SecurityContextDeny,ResourceQuota&quot; # <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;kubernetes&#x2F;config
+KUBE_MASTER&#x3D;&quot;--master&#x3D;http:&#x2F;&#x2F;10.0.0.21:8080&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>开放防火墙端口【重要】</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">firewall-cmd --zone&#x3D;public --add-port&#x3D;2379&#x2F;tcp --permanent
+firewall-cmd --zone&#x3D;public --add-port&#x3D;8080&#x2F;tcp --permanent
+firewall-cmd --reload<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>启动服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl enable kube-apiserver
+systemctl restart kube-apiserver
+systemctl enable kube-controller-manager
+systemctl restart kube-controller-manager
+systemctl enable kube-scheduler
+systemctl restart kube-scheduler<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="3-Node节点安装"><a href="#3-Node节点安装" class="headerlink" title="3 Node节点安装"></a>3 Node节点安装</h3><h4 id="3-1-安装k8s-node服务"><a href="#3-1-安装k8s-node服务" class="headerlink" title="3.1 安装k8s-node服务"></a>3.1 安装k8s-node服务</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum install kubernetes-node<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>编辑配置文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;kubernetes&#x2F;config
+KUBE_MASTER&#x3D;&quot;--master&#x3D;http:&#x2F;&#x2F;10.0.0.21:8080&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;kubernetes&#x2F;kubelet
+KUBELET_ADDRESS&#x3D;&quot;--address&#x3D;0.0.0.0&quot;
+KUBELET_PORT&#x3D;&quot;--port&#x3D;10250&quot;
+KUBELET_HOSTNAME&#x3D;&quot;--hostname-override&#x3D;10.0.0.22&quot;
+KUBELET_API_SERVER&#x3D;&quot;--api-servers&#x3D;http:&#x2F;&#x2F;10.0.0.21:8080&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>启动服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl enable kubelet
+systemctl restart kubelet
+systemctl enable kube-proxy
+systemctl restart kube-proxy<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="3-2-fannel网络服务安装"><a href="#3-2-fannel网络服务安装" class="headerlink" title="3.2 fannel网络服务安装"></a>3.2 fannel网络服务安装</h4><blockquote>
+<p>用于节点之间通信</p>
+</blockquote>
+<p>所有节点安装并配置fannel</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum install flannel -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;sysconfig&#x2F;flanneld
+FLANNEL_ETCD_ENDPOINTS&#x3D;&quot;http:&#x2F;&#x2F;10.0.0.21:2379&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">etcdctl mk &#x2F;atomic.io&#x2F;network&#x2F;config &#39;&#123;&quot;Network&quot;:&quot;172.16.0.0&#x2F;16&quot;&#125;&#39;<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>重新启动服务—Master节点</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl enable fanneld
+systemctl restart fanneld
+systemctl restart kube-apiserver
+systemctl restart kube-controller-manager
+systemctl restart kube-scheduler	<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>重新启动服务—Node节点</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl enable fanneld
+systemctl restart fanneld
+systemctl restart kubelet
+systemctl restart kube-proxy<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="4-配置Master为镜像服务器"><a href="#4-配置Master为镜像服务器" class="headerlink" title="4 配置Master为镜像服务器"></a>4 配置Master为镜像服务器</h3><h2 id="三、K8S使用"><a href="#三、K8S使用" class="headerlink" title="三、K8S使用"></a>三、K8S使用</h2><p>1 查看节点</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">kubectl get nodes<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>2 查看服务状态</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">kubectl get componentstatus<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h3 id="1-Pod使用"><a href="#1-Pod使用" class="headerlink" title="1 Pod使用"></a>1 Pod使用</h3><p>创建pod</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">kubectl create -f k8s_pod.yml<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>删除pod</p>
+<pre class="line-numbers language-she" data-language="she"><code class="language-she">kubectl delete pod oldboy
+kubectl delete pod --all 删除所有<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>查看pod</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">kubectl get pods
+kubectl get pods -o wides<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>查看pod详细信息</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">kubectl descripe pod nginx<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p> 更新</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">kubectl replace xxxx.yml<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+
+
+<h4 id="1-1-创建一个pod-为什么要启动两个容器？"><a href="#1-1-创建一个pod-为什么要启动两个容器？" class="headerlink" title="1.1 创建一个pod,为什么要启动两个容器？"></a>1.1 创建一个pod,为什么要启动两个容器？</h4><blockquote>
+<p>一个pod中可以挂多个容器</p>
+</blockquote>
+<p>比如创建一个niginx pod，将启动一个pod容器，一个nginx容器</p>
+<p>Pod容器172.16.18.2</p>
+<p>Nginx容器，共用pod容器ip</p>
+<p>主要通过用POD来实现K8S的高级功能</p>
+<h4 id="1-2-rc副本控制器的使用"><a href="#1-2-rc副本控制器的使用" class="headerlink" title="1.2 rc副本控制器的使用"></a>1.2 rc副本控制器的使用</h4><p>通过rc保证容器高可用</p>
+<p>调整rc副本数</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">kubectl scale rc myweb --replicates&#x3D;1<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h4 id="1-3-利用rc实现滚动升级和一键回滚"><a href="#1-3-利用rc实现滚动升级和一键回滚" class="headerlink" title="1.3 利用rc实现滚动升级和一键回滚"></a>1.3 利用rc实现滚动升级和一键回滚</h4><p>案例：nginx 1.13升级1.15</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 每5s升级一个
+kubectl rolling-update myweb -f nginx-rc1.15.yaml --update-period&#x3D;5s<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>案例：nginx1.15回滚到1.13</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">kubectl rolling-update mywebv2 -f nginx-rc1.13.yaml<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+
+
+<h3 id="service的创建和访问"><a href="#service的创建和访问" class="headerlink" title="service的创建和访问"></a>service的创建和访问</h3><blockquote>
+<p>外部访问容器，端口映射</p>
+</blockquote>
+<h4 id="K8S小结"><a href="#K8S小结" class="headerlink" title="K8S小结"></a>K8S小结</h4><p>1 端口30000开始？</p>
+<p>2 查看yml字段编写帮助</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">kubectl explain svc.spec<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+]]></content>
+      <categories>
+        <category>运维</category>
+        <category>（五）K8S</category>
+      </categories>
+  </entry>
+  <entry>
     <title></title>
     <url>/2022/07/06/01_%E8%BF%90%E7%BB%B4/05-%E5%B7%A5%E4%BD%9C%E4%B8%AD%E7%9A%84%E8%AE%B0%E5%BD%95/SVN%E6%90%AD%E5%BB%BA/</url>
     <content><![CDATA[<h1 id="KylinV10-桌面版SVN搭建"><a href="#KylinV10-桌面版SVN搭建" class="headerlink" title="KylinV10 桌面版SVN搭建"></a>KylinV10 桌面版SVN搭建</h1><h2 id="一、服务端配置"><a href="#一、服务端配置" class="headerlink" title="一、服务端配置"></a>一、服务端配置</h2><h3 id="1-1-安装SVN"><a href="#1-1-安装SVN" class="headerlink" title="1.1 安装SVN"></a>1.1 安装SVN</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">sudo apt-get install subversion<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
@@ -7782,37 +7782,6 @@ team1&#x3D;admin,gs	# 创建用户组
 
 <h2 id="二、客户端连接"><a href="#二、客户端连接" class="headerlink" title="二、客户端连接"></a>二、客户端连接</h2><p>svn:&#x2F;&#x2F;10.47.76.90&#x2F;project</p>
 ]]></content>
-  </entry>
-  <entry>
-    <title>运维之基础命令--虚拟机安装</title>
-    <url>/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day01-%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AE%89%E8%A3%85/%E8%AF%BE%E5%A0%82%E7%AC%94%E8%AE%B0/</url>
-    <content><![CDATA[<h1 id="day01-课堂笔记"><a href="#day01-课堂笔记" class="headerlink" title="day01 : 课堂笔记"></a>day01 : 课堂笔记</h1><h2 id="安装系统"><a href="#安装系统" class="headerlink" title="安装系统"></a>安装系统</h2><p><strong>1、安装虚拟机</strong></p>
-<p><img src="/.%5Cassets%5Cimage-20210302121236930.png" alt="image-20210302121236930"></p>
-<p>解压上述软件，创建vmware.exe快捷方式，然后用快捷方式打开。</p>
-<p><img src="/.%5Cassets%5Cimage-20210302121408360.png" alt="image-20210302121408360"></p>
-<p><strong>2、创建虚拟机</strong></p>
-<p><img src="/.%5Cassets%5Cimage-20210302121456338.png" alt="image-20210302121456338"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302121550128.png" alt="image-20210302121550128"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302121622000.png" alt="image-20210302121622000"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302121745568.png" alt="image-20210302121745568"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302122035359.png" alt="image-20210302122035359"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302122256831.png" alt="image-20210302122256831"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302122359568.png" alt="image-20210302122359568"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302122603313.png" alt="image-20210302122603313"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302122657199.png" alt="image-20210302122657199"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302123826623.png" alt="image-20210302123826623"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302124229475.png" alt="image-20210302124229475"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302124308081.png" alt="image-20210302124308081"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302124327456.png" alt="image-20210302124327456"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302124404318.png" alt="image-20210302124404318"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302124713502.png" alt="image-20210302124713502"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302124741038.png" alt="image-20210302124741038"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302125049653.png" alt="image-20210302125049653"></p>
-]]></content>
-      <categories>
-        <category>运维</category>
-        <category>（一）基础命令</category>
-      </categories>
   </entry>
   <entry>
     <title>运维之基础命令--打包与压缩</title>
@@ -8303,6 +8272,37 @@ x		可执行		<span class="token number">1</span>
       </categories>
   </entry>
   <entry>
+    <title>运维之基础命令--虚拟机安装</title>
+    <url>/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day01-%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AE%89%E8%A3%85/%E8%AF%BE%E5%A0%82%E7%AC%94%E8%AE%B0/</url>
+    <content><![CDATA[<h1 id="day01-课堂笔记"><a href="#day01-课堂笔记" class="headerlink" title="day01 : 课堂笔记"></a>day01 : 课堂笔记</h1><h2 id="安装系统"><a href="#安装系统" class="headerlink" title="安装系统"></a>安装系统</h2><p><strong>1、安装虚拟机</strong></p>
+<p><img src="/.%5Cassets%5Cimage-20210302121236930.png" alt="image-20210302121236930"></p>
+<p>解压上述软件，创建vmware.exe快捷方式，然后用快捷方式打开。</p>
+<p><img src="/.%5Cassets%5Cimage-20210302121408360.png" alt="image-20210302121408360"></p>
+<p><strong>2、创建虚拟机</strong></p>
+<p><img src="/.%5Cassets%5Cimage-20210302121456338.png" alt="image-20210302121456338"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302121550128.png" alt="image-20210302121550128"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302121622000.png" alt="image-20210302121622000"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302121745568.png" alt="image-20210302121745568"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302122035359.png" alt="image-20210302122035359"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302122256831.png" alt="image-20210302122256831"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302122359568.png" alt="image-20210302122359568"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302122603313.png" alt="image-20210302122603313"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302122657199.png" alt="image-20210302122657199"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302123826623.png" alt="image-20210302123826623"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124229475.png" alt="image-20210302124229475"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124308081.png" alt="image-20210302124308081"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124327456.png" alt="image-20210302124327456"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124404318.png" alt="image-20210302124404318"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124713502.png" alt="image-20210302124713502"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124741038.png" alt="image-20210302124741038"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302125049653.png" alt="image-20210302125049653"></p>
+]]></content>
+      <categories>
+        <category>运维</category>
+        <category>（一）基础命令</category>
+      </categories>
+  </entry>
+  <entry>
     <title>运维之基础命令--用户组管理</title>
     <url>/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day09-%E7%94%A8%E6%88%B7%E7%BB%84%E7%AE%A1%E7%90%86/%E7%AC%94%E8%AE%B0/</url>
     <content><![CDATA[<h1 id="用户管理"><a href="#用户管理" class="headerlink" title="用户管理"></a>用户管理</h1><h2 id="linux中用户介绍"><a href="#linux中用户介绍" class="headerlink" title="linux中用户介绍"></a>linux中用户介绍</h2><p>什么是用户？</p>
@@ -8547,6 +8547,236 @@ Last login: Mon Mar <span class="token number">15</span> <span class="token numb
 
 
 
+]]></content>
+      <categories>
+        <category>运维</category>
+        <category>（一）基础命令</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>运维之基础命令--文件ACL</title>
+    <url>/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day11-sudo%E4%B8%8Esu/facl/</url>
+    <content><![CDATA[<h1 id="笔记"><a href="#笔记" class="headerlink" title="笔记"></a>笔记</h1><blockquote>
+<p>补充：</p>
+<p>​	权限的归属</p>
+<p>​		a : 属组、属主以及其他人的权限一起设置。</p>
+<p>​		o : 其他人</p>
+<p>​		g : 属组</p>
+<p>​		u : 属主</p>
+</blockquote>
+<h2 id="umask"><a href="#umask" class="headerlink" title="umask"></a>umask</h2><blockquote>
+<p>就是解决目录及文件的默认权限。</p>
+</blockquote>
+<ul>
+<li>文件的最高权限是多少     777</li>
+<li>文件夹的最高权限是多少  777</li>
+</ul>
+<h2 id="ACL"><a href="#ACL" class="headerlink" title="ACL"></a>ACL</h2><blockquote>
+<p>ACL是为了解决某种特殊环境下的，用户权限需求。</p>
+</blockquote>
+<ul>
+<li>setfacl ： 设置acl权限</li>
+<li>getfacl ：查看ACL权限</li>
+</ul>
+<h3 id="acl权限归属"><a href="#acl权限归属" class="headerlink" title="acl权限归属"></a>acl权限归属</h3><ul>
+<li>u : 指定用户</li>
+<li>g : 指定组</li>
+<li>o : 修改其他用户权限</li>
+<li>m : 指定mask权限</li>
+</ul>
+<p>注：默认情况下，ACL权限跟普通权限保持一致。</p>
+<h2 id="ACL-的流程"><a href="#ACL-的流程" class="headerlink" title="ACL 的流程"></a>ACL 的流程</h2><ul>
+<li><p>1、创建文件</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">chmod</span> o+x /root
+<span class="token function">chmod</span> o+x /root/xiaochen
+<span class="token builtin class-name">cd</span> xiaochen
+
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># touch abc.txt</span>
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># chmod 000 abc.txt </span>
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># ll</span>
+total <span class="token number">0</span>
+---------- <span class="token number">1</span> root root <span class="token number">0</span> Mar <span class="token number">16</span> <span class="token number">11</span>:39 abc.txt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>编写文件</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># echo 111 > abc.txt </span>
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># cat abc.txt </span>
+<span class="token number">111</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>设置ACL权限</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># useradd xiaozhang</span>
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># setfacl -m u:xiaozhang:r abc.txt </span>
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
+<span class="token comment"># file: abc.txt</span>
+<span class="token comment"># owner: root</span>
+<span class="token comment"># group: root</span>
+user::---
+user:xiaozhang:r--
+group::---
+mask::r--
+other::---
+
+<span class="token comment"># 注：</span>
+setfacl -m u:用户名称:权限<span class="token punctuation">(</span>rwx<span class="token punctuation">)</span> 文件名称<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>查看文件</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># su - xiaozhang</span>
+<span class="token punctuation">[</span>xiaozhang@localhost ~<span class="token punctuation">]</span>$ <span class="token function">cat</span> /root/xiaochen/abc.txt
+<span class="token number">111</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+<p>mask :  rw-</p>
+<p>xxxx :   -w-</p>
+<p>-w-</p>
+<h2 id="ACL权限的删除"><a href="#ACL权限的删除" class="headerlink" title="ACL权限的删除"></a>ACL权限的删除</h2><ul>
+<li><p>删除某个权限</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
+<span class="token comment"># file: abc.txt</span>
+<span class="token comment"># owner: root</span>
+<span class="token comment"># group: root</span>
+user::---
+user:xiaozhang:r--
+group::---
+group:xiaochen:r-x		<span class="token comment">#effective:r--</span>
+mask::rw-
+other::r--
+
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># setfacl -x u:xiaozhang abc.txt</span>
+
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
+<span class="token comment"># file: abc.txt</span>
+<span class="token comment"># owner: root</span>
+<span class="token comment"># group: root</span>
+user::---
+group::---
+group:xiaochen:r-x
+mask::r-x
+other::r--
+
+
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
+<span class="token comment"># file: abc.txt</span>
+<span class="token comment"># owner: root</span>
+<span class="token comment"># group: root</span>
+user::---
+group::---
+group:xiaochen:r-x
+mask::r-x
+other::r--
+
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># setfacl -x g:xiaochen abc.txt </span>
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
+<span class="token comment"># file: abc.txt</span>
+<span class="token comment"># owner: root</span>
+<span class="token comment"># group: root</span>
+user::---
+group::---
+mask::---
+other::r--
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+</li>
+<li><p>清空acl权限</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
+<span class="token comment"># file: abc.txt</span>
+<span class="token comment"># owner: root</span>
+<span class="token comment"># group: root</span>
+user::---
+user:xiaochen:rw-
+user:xiaocao:rw-
+group::---
+group:xiaochen:rw-
+group:xiaocao:rw-
+mask::rw-
+other::r--
+
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># setfacl -b abc.txt </span>
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
+<span class="token comment"># file: abc.txt</span>
+<span class="token comment"># owner: root</span>
+<span class="token comment"># group: root</span>
+user::---
+group::---
+other::r--
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+<h2 id="ACL继承"><a href="#ACL继承" class="headerlink" title="ACL继承"></a>ACL继承</h2><blockquote>
+<p>默认情况下，ACL是不会继承上层目录的权限的。只有目录设置可继承子集文件才可以继承ACL权限。</p>
+</blockquote>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost linux12<span class="token punctuation">]</span><span class="token comment"># setfacl -m d:u:xiaochen:w ../linux12</span>
+<span class="token punctuation">[</span>root@localhost linux12<span class="token punctuation">]</span><span class="token comment"># touch bcd.txt</span>
+<span class="token punctuation">[</span>root@localhost linux12<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
+total <span class="token number">0</span>
+-rw-r--r--  <span class="token number">1</span> root root <span class="token number">0</span> Mar <span class="token number">16</span> <span class="token number">15</span>:40 abc.txt
+-rw-rw-r--+ <span class="token number">1</span> root root <span class="token number">0</span> Mar <span class="token number">16</span> <span class="token number">15</span>:43 bcd.txt
+<span class="token punctuation">[</span>root@localhost linux12<span class="token punctuation">]</span><span class="token comment"># getfacl bcd.txt </span>
+<span class="token comment"># file: bcd.txt</span>
+<span class="token comment"># owner: root</span>
+<span class="token comment"># group: root</span>
+user::rw-
+user:xiaochen:-w-
+group::r-x			<span class="token comment">#effective:r--</span>
+mask::rw-
+other::r--
+
+<span class="token punctuation">[</span>root@localhost linux12<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+]]></content>
+      <categories>
+        <category>运维</category>
+        <category>（一）基础命令</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>运维之基础命令--sudo和su</title>
+    <url>/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day11-sudo%E4%B8%8Esu/sudo%20and%20su/</url>
+    <content><![CDATA[<h1 id="sudo"><a href="#sudo" class="headerlink" title="sudo"></a>sudo</h1><blockquote>
+<p>用于普通用提升权限的。</p>
+</blockquote>
+<ul>
+<li><p>相关的文件：<code>/etc/sudoers</code></p>
+</li>
+<li><p>检查<code>/etc/sudoers</code>是否修改正确：visudo -c</p>
+</li>
+<li><p>sudoers文件格式</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">tom       <span class="token assign-left variable">ALL</span><span class="token operator">=</span>           <span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>          ALL
+用户名称   所有机器可登陆    所有IP或主机名   所有的指令<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+</li>
+<li><p>指令编写格式</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 必须写全路径：which查看命令全路径</span>
+
+<span class="token comment">## 只支持vim命令提权</span>
+xianchen <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>  /usr/bin/vim
+
+<span class="token comment">## 支持所有的命令提权</span>
+tom <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>  ALL
+
+<span class="token comment">## 不支持某个命令提权</span>
+tom <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span> ALL, <span class="token operator">!</span>/usr/bin/vim
+
+<span class="token comment">## 不支持某个命令的部分功能</span>
+xiaochen <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>   ALL, <span class="token operator">!</span>/usr/bin/vim /root/123.txt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+<h1 id="su"><a href="#su" class="headerlink" title="su"></a>su</h1><ul>
+<li><p>su - xxx  和 su xxx之间区别</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>、su - xxx ：相当于切换一个窗口，su xxx 仅仅切换了用户
+
+<span class="token number">2</span>、su - xxx ： 切换用户执行的系统文件要多于 <span class="token function">su</span> xxx
+
+<span class="token number">3</span>、su - xxx 是登录
+   <span class="token function">su</span>  xxx  切换用户<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+</ul>
 ]]></content>
       <categories>
         <category>运维</category>
@@ -8960,236 +9190,6 @@ yum <span class="token function">install</span> mariadb -y
 
 <span class="token number">3</span>、测试安装mariadb
 yum <span class="token function">install</span> mariadb -y<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
-</ul>
-]]></content>
-      <categories>
-        <category>运维</category>
-        <category>（一）基础命令</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>运维之基础命令--文件ACL</title>
-    <url>/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day11-sudo%E4%B8%8Esu/facl/</url>
-    <content><![CDATA[<h1 id="笔记"><a href="#笔记" class="headerlink" title="笔记"></a>笔记</h1><blockquote>
-<p>补充：</p>
-<p>​	权限的归属</p>
-<p>​		a : 属组、属主以及其他人的权限一起设置。</p>
-<p>​		o : 其他人</p>
-<p>​		g : 属组</p>
-<p>​		u : 属主</p>
-</blockquote>
-<h2 id="umask"><a href="#umask" class="headerlink" title="umask"></a>umask</h2><blockquote>
-<p>就是解决目录及文件的默认权限。</p>
-</blockquote>
-<ul>
-<li>文件的最高权限是多少     777</li>
-<li>文件夹的最高权限是多少  777</li>
-</ul>
-<h2 id="ACL"><a href="#ACL" class="headerlink" title="ACL"></a>ACL</h2><blockquote>
-<p>ACL是为了解决某种特殊环境下的，用户权限需求。</p>
-</blockquote>
-<ul>
-<li>setfacl ： 设置acl权限</li>
-<li>getfacl ：查看ACL权限</li>
-</ul>
-<h3 id="acl权限归属"><a href="#acl权限归属" class="headerlink" title="acl权限归属"></a>acl权限归属</h3><ul>
-<li>u : 指定用户</li>
-<li>g : 指定组</li>
-<li>o : 修改其他用户权限</li>
-<li>m : 指定mask权限</li>
-</ul>
-<p>注：默认情况下，ACL权限跟普通权限保持一致。</p>
-<h2 id="ACL-的流程"><a href="#ACL-的流程" class="headerlink" title="ACL 的流程"></a>ACL 的流程</h2><ul>
-<li><p>1、创建文件</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">chmod</span> o+x /root
-<span class="token function">chmod</span> o+x /root/xiaochen
-<span class="token builtin class-name">cd</span> xiaochen
-
-<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># touch abc.txt</span>
-<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># chmod 000 abc.txt </span>
-<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># ll</span>
-total <span class="token number">0</span>
----------- <span class="token number">1</span> root root <span class="token number">0</span> Mar <span class="token number">16</span> <span class="token number">11</span>:39 abc.txt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>编写文件</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># echo 111 > abc.txt </span>
-<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># cat abc.txt </span>
-<span class="token number">111</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>设置ACL权限</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># useradd xiaozhang</span>
-<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># setfacl -m u:xiaozhang:r abc.txt </span>
-<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
-<span class="token comment"># file: abc.txt</span>
-<span class="token comment"># owner: root</span>
-<span class="token comment"># group: root</span>
-user::---
-user:xiaozhang:r--
-group::---
-mask::r--
-other::---
-
-<span class="token comment"># 注：</span>
-setfacl -m u:用户名称:权限<span class="token punctuation">(</span>rwx<span class="token punctuation">)</span> 文件名称<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>查看文件</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># su - xiaozhang</span>
-<span class="token punctuation">[</span>xiaozhang@localhost ~<span class="token punctuation">]</span>$ <span class="token function">cat</span> /root/xiaochen/abc.txt
-<span class="token number">111</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></li>
-</ul>
-<p>mask :  rw-</p>
-<p>xxxx :   -w-</p>
-<p>-w-</p>
-<h2 id="ACL权限的删除"><a href="#ACL权限的删除" class="headerlink" title="ACL权限的删除"></a>ACL权限的删除</h2><ul>
-<li><p>删除某个权限</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
-<span class="token comment"># file: abc.txt</span>
-<span class="token comment"># owner: root</span>
-<span class="token comment"># group: root</span>
-user::---
-user:xiaozhang:r--
-group::---
-group:xiaochen:r-x		<span class="token comment">#effective:r--</span>
-mask::rw-
-other::r--
-
-<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># setfacl -x u:xiaozhang abc.txt</span>
-
-<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
-<span class="token comment"># file: abc.txt</span>
-<span class="token comment"># owner: root</span>
-<span class="token comment"># group: root</span>
-user::---
-group::---
-group:xiaochen:r-x
-mask::r-x
-other::r--
-
-
-<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
-<span class="token comment"># file: abc.txt</span>
-<span class="token comment"># owner: root</span>
-<span class="token comment"># group: root</span>
-user::---
-group::---
-group:xiaochen:r-x
-mask::r-x
-other::r--
-
-<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># setfacl -x g:xiaochen abc.txt </span>
-<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
-<span class="token comment"># file: abc.txt</span>
-<span class="token comment"># owner: root</span>
-<span class="token comment"># group: root</span>
-user::---
-group::---
-mask::---
-other::r--
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-
-</li>
-<li><p>清空acl权限</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
-<span class="token comment"># file: abc.txt</span>
-<span class="token comment"># owner: root</span>
-<span class="token comment"># group: root</span>
-user::---
-user:xiaochen:rw-
-user:xiaocao:rw-
-group::---
-group:xiaochen:rw-
-group:xiaocao:rw-
-mask::rw-
-other::r--
-
-<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># setfacl -b abc.txt </span>
-<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
-<span class="token comment"># file: abc.txt</span>
-<span class="token comment"># owner: root</span>
-<span class="token comment"># group: root</span>
-user::---
-group::---
-other::r--
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
-</ul>
-<h2 id="ACL继承"><a href="#ACL继承" class="headerlink" title="ACL继承"></a>ACL继承</h2><blockquote>
-<p>默认情况下，ACL是不会继承上层目录的权限的。只有目录设置可继承子集文件才可以继承ACL权限。</p>
-</blockquote>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost linux12<span class="token punctuation">]</span><span class="token comment"># setfacl -m d:u:xiaochen:w ../linux12</span>
-<span class="token punctuation">[</span>root@localhost linux12<span class="token punctuation">]</span><span class="token comment"># touch bcd.txt</span>
-<span class="token punctuation">[</span>root@localhost linux12<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
-total <span class="token number">0</span>
--rw-r--r--  <span class="token number">1</span> root root <span class="token number">0</span> Mar <span class="token number">16</span> <span class="token number">15</span>:40 abc.txt
--rw-rw-r--+ <span class="token number">1</span> root root <span class="token number">0</span> Mar <span class="token number">16</span> <span class="token number">15</span>:43 bcd.txt
-<span class="token punctuation">[</span>root@localhost linux12<span class="token punctuation">]</span><span class="token comment"># getfacl bcd.txt </span>
-<span class="token comment"># file: bcd.txt</span>
-<span class="token comment"># owner: root</span>
-<span class="token comment"># group: root</span>
-user::rw-
-user:xiaochen:-w-
-group::r-x			<span class="token comment">#effective:r--</span>
-mask::rw-
-other::r--
-
-<span class="token punctuation">[</span>root@localhost linux12<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-
-
-
-
-
-
-
-
-
-
-
-
-]]></content>
-      <categories>
-        <category>运维</category>
-        <category>（一）基础命令</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>运维之基础命令--sudo和su</title>
-    <url>/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day11-sudo%E4%B8%8Esu/sudo%20and%20su/</url>
-    <content><![CDATA[<h1 id="sudo"><a href="#sudo" class="headerlink" title="sudo"></a>sudo</h1><blockquote>
-<p>用于普通用提升权限的。</p>
-</blockquote>
-<ul>
-<li><p>相关的文件：<code>/etc/sudoers</code></p>
-</li>
-<li><p>检查<code>/etc/sudoers</code>是否修改正确：visudo -c</p>
-</li>
-<li><p>sudoers文件格式</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">tom       <span class="token assign-left variable">ALL</span><span class="token operator">=</span>           <span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>          ALL
-用户名称   所有机器可登陆    所有IP或主机名   所有的指令<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-</li>
-<li><p>指令编写格式</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 必须写全路径：which查看命令全路径</span>
-
-<span class="token comment">## 只支持vim命令提权</span>
-xianchen <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>  /usr/bin/vim
-
-<span class="token comment">## 支持所有的命令提权</span>
-tom <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>  ALL
-
-<span class="token comment">## 不支持某个命令提权</span>
-tom <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span> ALL, <span class="token operator">!</span>/usr/bin/vim
-
-<span class="token comment">## 不支持某个命令的部分功能</span>
-xiaochen <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>   ALL, <span class="token operator">!</span>/usr/bin/vim /root/123.txt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
-</ul>
-<h1 id="su"><a href="#su" class="headerlink" title="su"></a>su</h1><ul>
-<li><p>su - xxx  和 su xxx之间区别</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>、su - xxx ：相当于切换一个窗口，su xxx 仅仅切换了用户
-
-<span class="token number">2</span>、su - xxx ： 切换用户执行的系统文件要多于 <span class="token function">su</span> xxx
-
-<span class="token number">3</span>、su - xxx 是登录
-   <span class="token function">su</span>  xxx  切换用户<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
 </ul>
 ]]></content>
       <categories>
@@ -10685,56 +10685,6 @@ sr0            <span class="token number">11</span>:0    <span class="token numb
       </categories>
   </entry>
   <entry>
-    <title>运维之基础命令--计划任务</title>
-    <url>/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day21-%E8%AE%A1%E5%88%92%E4%BB%BB%E5%8A%A1/%E8%AE%A1%E5%88%92%E4%BB%BB%E5%8A%A1/</url>
-    <content><![CDATA[<h1 id="计划任务"><a href="#计划任务" class="headerlink" title="计划任务"></a>计划任务</h1><p>1、Crontab表达式</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">*  *  *  * * 
-分 时 日 月 周
-
-每天的凌晨2点   02：00     00 02 * * *
-每月执行一次    00  00  01  * *
-每个月的一号零点零时零分同时这一天时星期六 00  00  01  *  <span class="token number">6</span>
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>2、系统级别的计划任务</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>、/etc/crontab
-
-<span class="token number">2</span>、如下的目录
-    /etc/cron.hourly/ <span class="token comment"># 系统定时任务每个⼩时运⾏这个⽬录⾥的内容</span>
-    /etc/cron.daily/ <span class="token comment"># 系统定时任务每天运⾏这个⽬录⾥的内容</span>
-    /etc/cron.weekly/ <span class="token comment"># 系统定时任务每周运⾏这个⽬录⾥的内容</span>
-    /etc/cron.monthly/ <span class="token comment"># 系统定时任务每⽉运⾏这个⽬录⾥的内容</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>3、用户级别的计划任务</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">crontab</span> -e
-
--e <span class="token builtin class-name">:</span> 编辑计划任务
--l <span class="token builtin class-name">:</span> 查看计划任务
-
-<span class="token comment"># 注：用户级别的计划任务存放在/var/spool/cron/，不同的用户存放的计划任务是以其自己的名字命名的脚本</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>4、crontab语法</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 1 3 5</span>
-00 00 <span class="token number">1,3</span>,5 * *
-
-<span class="token comment"># 1到5号</span>
-00 00 <span class="token number">1</span>-5
-
-<span class="token comment"># 每几分钟，每几个小数，每几天</span>
-<span class="token number">0</span>/2  /2 
-00 <span class="token number">0</span>/2    00 /2
-00 00 <span class="token number">0</span>/2   00 00 /2<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-
-
-<p>5、每3分钟同步一下系统时间</p>
-]]></content>
-      <categories>
-        <category>运维</category>
-        <category>（一）基础命令</category>
-      </categories>
-  </entry>
-  <entry>
     <title>运维之基础命令--dd与文件系统备份</title>
     <url>/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day20-dd%E4%B8%8E%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%A4%87%E4%BB%BD/%E7%AC%94%E8%AE%B0/</url>
     <content><![CDATA[<h2 id="笔记"><a href="#笔记" class="headerlink" title="笔记"></a>笔记</h2><p>1、dd命令</p>
@@ -11175,6 +11125,56 @@ Chain FORWARD <span class="token punctuation">(</span>policy ACCEPT <span class=
 Chain OUTPUT <span class="token punctuation">(</span>policy ACCEPT <span class="token number">4</span> packets, <span class="token number">544</span> bytes<span class="token punctuation">)</span>
  pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
+]]></content>
+      <categories>
+        <category>运维</category>
+        <category>（一）基础命令</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>运维之基础命令--计划任务</title>
+    <url>/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day21-%E8%AE%A1%E5%88%92%E4%BB%BB%E5%8A%A1/%E8%AE%A1%E5%88%92%E4%BB%BB%E5%8A%A1/</url>
+    <content><![CDATA[<h1 id="计划任务"><a href="#计划任务" class="headerlink" title="计划任务"></a>计划任务</h1><p>1、Crontab表达式</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">*  *  *  * * 
+分 时 日 月 周
+
+每天的凌晨2点   02：00     00 02 * * *
+每月执行一次    00  00  01  * *
+每个月的一号零点零时零分同时这一天时星期六 00  00  01  *  <span class="token number">6</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>2、系统级别的计划任务</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>、/etc/crontab
+
+<span class="token number">2</span>、如下的目录
+    /etc/cron.hourly/ <span class="token comment"># 系统定时任务每个⼩时运⾏这个⽬录⾥的内容</span>
+    /etc/cron.daily/ <span class="token comment"># 系统定时任务每天运⾏这个⽬录⾥的内容</span>
+    /etc/cron.weekly/ <span class="token comment"># 系统定时任务每周运⾏这个⽬录⾥的内容</span>
+    /etc/cron.monthly/ <span class="token comment"># 系统定时任务每⽉运⾏这个⽬录⾥的内容</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>3、用户级别的计划任务</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">crontab</span> -e
+
+-e <span class="token builtin class-name">:</span> 编辑计划任务
+-l <span class="token builtin class-name">:</span> 查看计划任务
+
+<span class="token comment"># 注：用户级别的计划任务存放在/var/spool/cron/，不同的用户存放的计划任务是以其自己的名字命名的脚本</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>4、crontab语法</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 1 3 5</span>
+00 00 <span class="token number">1,3</span>,5 * *
+
+<span class="token comment"># 1到5号</span>
+00 00 <span class="token number">1</span>-5
+
+<span class="token comment"># 每几分钟，每几个小数，每几天</span>
+<span class="token number">0</span>/2  /2 
+00 <span class="token number">0</span>/2    00 /2
+00 00 <span class="token number">0</span>/2   00 00 /2<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+
+<p>5、每3分钟同步一下系统时间</p>
 ]]></content>
       <categories>
         <category>运维</category>
