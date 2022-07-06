@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="今日内容： 1、grep命令&amp;正则表达式—》过滤 2、sed—》非交互式编辑文本 3、awk-》格式化有规律的文本 三剑客命令的共性： ​	1、都支持正则表达式 ​	2、都支持管道 echo 123 | passwd egon --stdin    4、expect：交互的命令变为非交互 一 grep命令grep的执行原理 &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&amp;#x">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Stephen Gong&#39;s Blog">
+<meta property="og:url" content="http://gsproj.github.io/2022/07/06/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day30/day30%E7%AC%94%E8%AE%B0/index.html">
+<meta property="og:site_name" content="Stephen Gong&#39;s Blog">
+<meta property="og:description" content="今日内容： 1、grep命令&amp;正则表达式—》过滤 2、sed—》非交互式编辑文本 3、awk-》格式化有规律的文本 三剑客命令的共性： ​	1、都支持正则表达式 ​	2、都支持管道 echo 123 | passwd egon --stdin    4、expect：交互的命令变为非交互 一 grep命令grep的执行原理 &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&amp;#x">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-07-06T03:07:13.239Z">
+<meta property="article:modified_time" content="2021-09-17T02:29:16.668Z">
+<meta property="article:author" content="Stephen Gong">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://gsproj.github.io/2022/07/06/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day30/day30%E7%AC%94%E8%AE%B0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title> | Stephen Gong's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Stephen Gong's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">山川異域，風月同天</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day30/day30%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Stephen Gong">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Stephen Gong's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-07-06 11:07:13" itemprop="dateCreated datePublished" datetime="2022-07-06T11:07:13+08:00">2022-07-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-09-17 10:29:16" itemprop="dateModified" datetime="2021-09-17T10:29:16+08:00">2021-09-17</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>今日内容：</p>
+<p>1、grep命令&amp;正则表达式—》过滤</p>
+<p>2、sed—》非交互式编辑文本</p>
+<p>3、awk-》格式化有规律的文本</p>
+<p>三剑客命令的共性：</p>
+<p>​	1、都支持正则表达式</p>
+<p>​	2、都支持管道</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">echo</span> <span class="token number">123</span> <span class="token operator">|</span> <span class="token function">passwd</span> egon --stdin<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+
+
+<p>4、expect：交互的命令变为非交互</p>
+<h1 id="一-grep命令"><a href="#一-grep命令" class="headerlink" title="一 grep命令"></a>一 grep命令</h1><p>grep的执行原理</p>
+<pre class="line-numbers language-none"><code class="language-none">&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;用法1
+grep &quot;root&quot; &#x2F;etc&#x2F;passwd
+
+# 打开文件，每读一行，都用正则表达式去匹配一下，但凡匹配成功一次，该行就被过滤出来的
+root:x:0:0:root:&#x2F;root:&#x2F;bin&#x2F;bash
+                     root
+                     
+&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;用法2
+cat test.txt | grep &quot;root&quot;
+ps aux | grep ssh<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>grep的选项</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">-n 过滤结果带行号
+-q 静默输出
+--color
+-i 忽略大小写
+-A <span class="token number">2</span> 后两行
+-B <span class="token number">2</span> 前两行
+-C <span class="token number">2</span> 前后两行
+-c 统计过滤成功的行数
+-v 取反
+-w
+<span class="token function">grep</span> -rl <span class="token string">"location"</span> /etc/<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>正则表达式</p>
+<p>案例1</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">^
+$
+
+<span class="token function">grep</span> -n <span class="token string">"^root"</span> /etc/passwd
+<span class="token function">grep</span> -n <span class="token string">"bash$"</span> /etc/passwd<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>案例2</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">.</span>    匹配任意一个字符
+*    左边那个字符出现0次或无穷次
+.*   匹配没有或者所有   
+.*?  非贪婪匹配（需要配合grep -P选项才可以使用）
+
+
+<span class="token comment"># 例1</span>
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># cat c.txt </span>
+abc
+a+c
+a-c
+a1c
+aaaaaaaaaaaaaaaac
+bbbbbbbbc
+cccc
+dddd
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># grep "a.c" c.txt </span>
+abc
+a+c
+a-c
+a1c
+aaaaaaaaaaaaaaaac
+
+<span class="token comment"># 例2</span>
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># cat d.txt </span>
+a
+ab
+abbcccc
+abbbbbbbbbbbbbbbbccc
+bbbbbbbbbbbbb
+aaaaaaaaaaaaaaaab
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># </span>
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># grep "ab*" d.txt </span>
+a
+ab
+abbcccc
+abbbbbbbbbbbbbbbbccc
+aaaaaaaaaaaaaaaab
+
+<span class="token comment"># 例3：</span>
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># cat e.txt </span>
+a123123213c3123123c
+ac
+<span class="token assign-left variable">a</span><span class="token operator">=</span>-*<span class="token punctuation">(</span>0c
+cccccca123123c
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># grep "a.*c" e.txt </span>
+a123123213c3123123c
+ac
+<span class="token assign-left variable">a</span><span class="token operator">=</span>-*<span class="token punctuation">(</span>0c
+cccccca123123c
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># </span>
+
+<span class="token comment"># 例4：</span>
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># cat f.txt </span>
+<span class="token operator">&lt;</span>a <span class="token assign-left variable">href</span><span class="token operator">=</span><span class="token string">"http://www.baidu.com"</span><span class="token operator">></span>我是百度<span class="token operator">&lt;</span>/a<span class="token operator">></span><span class="token operator">&lt;</span>a <span class="token assign-left variable">href</span><span class="token operator">=</span><span class="token string">"http://www.sina.com.cn"</span><span class="token operator">></span>新浪<span class="token operator">&lt;</span>/a<span class="token operator">></span>
+<span class="token number">1111</span>
+<span class="token number">2222</span>
+<span class="token number">3333</span>
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># grep '".*"' f.txt </span>
+<span class="token operator">&lt;</span>a <span class="token assign-left variable">href</span><span class="token operator">=</span><span class="token string">"http://www.baidu.com"</span><span class="token operator">></span>我是百度<span class="token operator">&lt;</span>/a<span class="token operator">></span><span class="token operator">&lt;</span>a <span class="token assign-left variable">href</span><span class="token operator">=</span><span class="token string">"http://www.sina.com.cn"</span><span class="token operator">></span>新浪<span class="token operator">&lt;</span>/a<span class="token operator">></span>
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># grep -P '".*?"' f.txt </span>
+<span class="token operator">&lt;</span>a <span class="token assign-left variable">href</span><span class="token operator">=</span><span class="token string">"http://www.baidu.com"</span><span class="token operator">></span>我是百度<span class="token operator">&lt;</span>/a<span class="token operator">></span><span class="token operator">&lt;</span>a <span class="token assign-left variable">href</span><span class="token operator">=</span><span class="token string">"http://www.sina.com.cn"</span><span class="token operator">></span>新浪<span class="token operator">&lt;</span>/a<span class="token operator">></span>
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># grep -oP '".*?"' f.txt </span>
+<span class="token string">"http://www.baidu.com"</span>
+<span class="token string">"http://www.sina.com.cn"</span>
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># </span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>案例3</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span><span class="token punctuation">]</span> 匹配指定范围的任意一个字符
+
+<span class="token punctuation">[</span>a1cd2<span class="token punctuation">]</span>
+<span class="token punctuation">[</span><span class="token number">0</span>-9<span class="token punctuation">]</span>
+<span class="token punctuation">[</span>a-z<span class="token punctuation">]</span>
+
+<span class="token comment"># 例1</span>
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># cat h.txt </span>
+abc
+aBc
+a1c
+a2c
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># grep 'a[a-z]c' h.txt </span>
+abc
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># grep 'a[A-Z]c' h.txt </span>
+aBc
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># grep 'a[a-zA-Z]c' h.txt </span>
+abc
+aBc
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># grep 'a[0-9]c' h.txt </span>
+a1c
+a2c
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># </span>
+
+
+<span class="token comment"># 例2</span>
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># cat i.txt </span>
+a+c
+a-c
+a*c
+a/c
+a1c
+a2c
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># grep 'a[+-*/]c' i.txt </span>
+grep: Invalid range end
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># grep 'a[+\-*/]c' i.txt </span>
+grep: Invalid range end
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># grep 'a[+*/-]c' i.txt </span>
+a+c
+a-c
+a*c
+a/c
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># </span>
+
+<span class="token comment"># 例3：</span>
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># cat i.txt </span>
+a+c
+a-c
+a*c
+a/c
+a1c
+a2c
+a<span class="token operator">!</span>c
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># grep 'a[!+*/-]c' i.txt </span>
+a+c
+a-c
+a*c
+a/c
+a<span class="token operator">!</span>c
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># grep 'a[^!+*/-]c' i.txt </span>
+a1c
+a2c
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># </span>
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>案例4</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">+ 左边那个字符出现1次或无穷次
+
+ab*
+ab+
+
+<span class="token comment"># 例1</span>
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># cat d.txt </span>
+a
+ab
+abbcccc
+abbbbbbbbbbbbbbbbccc
+bbbbbbbbbbbbb
+aaaaaaaaaaaaaaaab
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># grep -n 'ab*' d.txt </span>
+<span class="token number">1</span>:a
+<span class="token number">2</span>:ab
+<span class="token number">3</span>:abbcccc
+<span class="token number">4</span>:abbbbbbbbbbbbbbbbccc
+<span class="token number">6</span>:aaaaaaaaaaaaaaaab
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># egrep -n 'ab+' d.txt </span>
+<span class="token number">2</span>:ab
+<span class="token number">3</span>:abbcccc
+<span class="token number">4</span>:abbbbbbbbbbbbbbbbccc
+<span class="token number">6</span>:aaaaaaaaaaaaaaaab
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># </span>
+
+<span class="token comment"># 例2</span>
+<span class="token punctuation">[</span>root@www1 scripts<span class="token punctuation">]</span><span class="token comment"># cat 14.sh </span>
+<span class="token comment">#!/bin/bash</span>
+
+<span class="token keyword">while</span> <span class="token boolean">true</span>
+<span class="token keyword">do</span>
+    <span class="token builtin class-name">read</span> -p <span class="token string">"请输入您的年龄: "</span> age
+    
+    <span class="token keyword">if</span> <span class="token punctuation">[</span><span class="token punctuation">[</span> <span class="token variable">$age</span> <span class="token operator">=~</span> ^<span class="token punctuation">[</span><span class="token number">0</span>-9<span class="token punctuation">]</span>+$ <span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">;</span><span class="token keyword">then</span>
+        <span class="token builtin class-name">break</span>
+    <span class="token keyword">else</span>
+        <span class="token builtin class-name">echo</span> <span class="token string">"必须输入数字小垃圾"</span>       
+    <span class="token keyword">fi</span>
+<span class="token keyword">done</span>
+
+
+<span class="token builtin class-name">echo</span> <span class="token string">"后续代码"</span>
+<span class="token punctuation">[</span>root@www1 scripts<span class="token punctuation">]</span><span class="token comment"># chmod +x 14.sh </span>
+<span class="token punctuation">[</span>root@www1 scripts<span class="token punctuation">]</span><span class="token comment"># ./14.sh </span>
+请输入您的年龄: asdf
+必须输入数字小垃圾
+请输入您的年龄: asdf
+必须输入数字小垃圾
+请输入您的年龄: <span class="token number">123</span>
+后续代码<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h1 id="二-sed命令"><a href="#二-sed命令" class="headerlink" title="二 sed命令"></a>二 sed命令</h1><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 场景1：</span>
+定位到某一行，然后将该的某一部分给替换掉
+<span class="token function">sed</span> -r <span class="token string">"定位+操作"</span> test.txt
+
+<span class="token function">sed</span> -r <span class="token string">"3s/egon/EGON/gi"</span> test.txt
+<span class="token function">sed</span> -r <span class="token string">"3,5操作"</span> test.txt
+<span class="token function">sed</span> -r <span class="token string">"1操作;3操作"</span> test.txt
+
+
+<span class="token function">sed</span> -r <span class="token string">"/^[a-zA-Z]/s/egon/EGON/gi"</span> test.txt
+
+
+<span class="token comment"># 场景2：</span>
+定位到某一行，然后删除
+
+<span class="token function">sed</span> -r <span class="token string">"1,3d"</span> new.txt
+<span class="token function">sed</span> -r <span class="token string">"/^[0-9]/d"</span> new.txt
+
+<span class="token comment"># 场景3：</span>
+定位到某一行，在改行后添加新的配置
+<span class="token function">sed</span> -r <span class="token string">"1a XXXXXXXXXXXXXXXX"</span> new.txt
+
+<span class="token comment"># 场景4：</span>
+定位到某一行，将整行修改掉
+<span class="token function">sed</span> -r <span class="token string">"1c XXXXXXXXXXXXXXXX"</span> new.txt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+
+<p>场景1案例</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># cat new.txt </span>
+xxEgonxxxegonxxxxx
+xxx123xxegonxxegonxxx
+EgonxxxxdaxegonxxEGONxxx
+xxxyyyyxxegonxxxEgOnxx
+xxxzzzxxegonxxxxx
+xxxhhhhhxxegonxxxxx
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># sed -r '3s/egon/666666/' new.txt </span>
+xxEgonxxxegonxxxxx
+xxx123xxegonxxegonxxx
+Egonxxxxdax666666xxEGONxxx
+xxxyyyyxxegonxxxEgOnxx
+xxxzzzxxegonxxxxx
+xxxhhhhhxxegonxxxxx
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># sed -r '3s/egon/666666/i' new.txt </span>
+xxEgonxxxegonxxxxx
+xxx123xxegonxxegonxxx
+666666xxxxdaxegonxxEGONxxx
+xxxyyyyxxegonxxxEgOnxx
+xxxzzzxxegonxxxxx
+xxxhhhhhxxegonxxxxx
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># sed -r '3s/egon/666666/gi' new.txt </span>
+xxEgonxxxegonxxxxx
+xxx123xxegonxxegonxxx
+666666xxxxdax666666xx666666xxx
+xxxyyyyxxegonxxxEgOnxx
+xxxzzzxxegonxxxxx
+xxxhhhhhxxegonxxxxx
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># sed -ri '3s/egon/666666/gi' new.txt </span>
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># vim new.txt </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>场景1案例</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># cat new.txt </span>
+xxEgonxxxegonxxxxx
+xxx123xxegonxxegonxxx
+EgonxxxxdaxegonxxEgOnxxx
+xxxyyyyxxegonxxxEgOnxx
+xxxzzzxxegonxxxxx
+xxxhhhhhxxegonxxxxx
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># sed -r '3s/^egon/666/gi' new.txt </span>
+xxEgonxxxegonxxxxx
+xxx123xxegonxxegonxxx
+666xxxxdaxegonxxEgOnxxx
+xxxyyyyxxegonxxxEgOnxx
+xxxzzzxxegonxxxxx
+xxxhhhhhxxegonxxxxx
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>场景1案例</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># cat new.txt </span>
+xxEgonxxxegonxxxxx
+xxx123xxegonxxegonxxx
+EgonxxxxdaxegonxxEgOnxxx
+xxxyyyyxxegonxxxEgOnxx
+xxxzzzxxegonxxxxx
+xxxhhhhhxxegonxxxxx
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># sed -r '3,5s/egon/666/gi' new.txt </span>
+xxEgonxxxegonxxxxx
+xxx123xxegonxxegonxxx
+666xxxxdax666xx666xxx
+xxxyyyyxx666xxx666xx
+xxxzzzxx666xxxxx
+xxxhhhhhxxegonxxxxx
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># sed -r '3s/egon/666/gi;5s/egon/666/gi' new.txt </span>
+xxEgonxxxegonxxxxx
+xxx123xxegonxxegonxxx
+666xxxxdax666xx666xxx
+xxxyyyyxxegonxxxEgOnxx
+xxxzzzxx666xxxxx
+xxxhhhhhxxegonxxxxx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h1 id="三-awk命令"><a href="#三-awk命令" class="headerlink" title="三 awk命令"></a>三 awk命令</h1><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">awk</span> -F: <span class="token string">'定位&#123;&#125;'</span> 文件路径
+
+<span class="token function">awk</span> -F: <span class="token string">'NR==3&#123;print $1,$7&#125;'</span> /etc/passwd
+<span class="token function">awk</span> -F: <span class="token string">'NR>3 &amp;&amp; NR&lt;5&#123;print $0&#125;'</span> /etc/passwd
+<span class="token function">awk</span> -F: <span class="token string">'NR==3 || NR==5&#123;print $1"-"$3&#125;'</span> /etc/passwd
+
+<span class="token function">awk</span> -F: <span class="token string">'/bash$/&#123;print $1&#125;'</span> /etc/passwd<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>获取ip地址</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># ifconfig eth0</span>
+eth0: <span class="token assign-left variable">flags</span><span class="token operator">=</span><span class="token number">416</span><span class="token operator"><span class="token file-descriptor important">3</span>&lt;</span>UP,BROADCAST,RUNNING,MULTICAST<span class="token operator">></span>  mtu <span class="token number">1500</span>
+        inet <span class="token number">1.1</span>.1.8  netmask <span class="token number">255.255</span>.255.0  broadcast <span class="token number">1.1</span>.1.255
+        inet6 fe80::20c:29ff:fea2:d75e  prefixlen <span class="token number">64</span>  scopeid 0x2<span class="token operator"><span class="token file-descriptor important">0</span>&lt;</span>link<span class="token operator">></span>
+        ether 00:0c:29:a2:d7:5e  txqueuelen <span class="token number">1000</span>  <span class="token punctuation">(</span>Ethernet<span class="token punctuation">)</span>
+        RX packets <span class="token number">51153</span>  bytes <span class="token number">4323126</span> <span class="token punctuation">(</span><span class="token number">4.1</span> MiB<span class="token punctuation">)</span>
+        RX errors <span class="token number">0</span>  dropped <span class="token number">0</span>  overruns <span class="token number">0</span>  frame <span class="token number">0</span>
+        TX packets <span class="token number">59883</span>  bytes <span class="token number">64679002</span> <span class="token punctuation">(</span><span class="token number">61.6</span> MiB<span class="token punctuation">)</span>
+        TX errors <span class="token number">0</span>  dropped <span class="token number">0</span> overruns <span class="token number">0</span>  carrier <span class="token number">0</span>  collisions <span class="token number">0</span>
+
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># ifconfig eth0 | awk 'NR==2&#123;print $1&#125;'</span>
+inet
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># ifconfig eth0 | awk 'NR==2&#123;print $2&#125;'</span>
+<span class="token number">1.1</span>.1.8
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># ip=`ifconfig eth0 | awk 'NR==2&#123;print $2&#125;'`</span>
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># echo $ip</span>
+<span class="token number">1.1</span>.1.8
+<span class="token punctuation">[</span>root@www1 ~<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h1 id="四-expect"><a href="#四-expect" class="headerlink" title="四 expect"></a>四 expect</h1><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">yum <span class="token function">install</span> <span class="token function">expect</span> -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+
+
+
+
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">   <span class="token function">expect</span> <span class="token operator">&lt;&lt;</span> <span class="token string">EOF
+	spawn ssh <span class="token variable">$user</span>@<span class="token variable">$ip</span> <span class="token variable">$cmd</span>
+
+	expect &#123;
+	    "yes/no" &#123;send "yes<span class="token entity" title="\r">\r</span>";exp_continue&#125;
+	    "*assword" &#123;send "1<span class="token entity" title="\n">\n</span>"&#125;
+	&#125;
+
+	expect eof
+EOF</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>cat &gt; a1.txt &lt;&lt; EOF</p>
+<p>111</p>
+<p>222</p>
+<p>333</p>
+<p>EOF</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@www1 scripts<span class="token punctuation">]</span><span class="token comment"># cat 15.sh </span>
+<span class="token comment">#!/bin/bash</span>
+
+<span class="token function">expect</span> <span class="token operator">&lt;&lt;</span> <span class="token string">EOF
+    spawn ssh root@1.1.1.2 hostname
+
+    expect &#123;
+	    "yes/no" &#123;send "yes<span class="token entity" title="\r">\r</span>";exp_continue&#125;
+	    "*assword" &#123;send "1<span class="token entity" title="\n">\n</span>"&#125;
+    &#125;
+
+    expect eof
+
+EOF</span>
+<span class="token punctuation">[</span>root@www1 scripts<span class="token punctuation">]</span><span class="token comment"># chmod +x 15.sh </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/07/06/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day29/day29%E7%AC%94%E8%AE%B0/" rel="prev" title="">
+      <i class="fa fa-chevron-left"></i> 
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/07/06/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day31/%E7%AC%94%E8%AE%B0/%E7%AC%94%E8%AE%B0/" rel="next" title="">
+       <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80-grep%E5%91%BD%E4%BB%A4"><span class="nav-number">1.</span> <span class="nav-text">一 grep命令</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8C-sed%E5%91%BD%E4%BB%A4"><span class="nav-number">2.</span> <span class="nav-text">二 sed命令</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%89-awk%E5%91%BD%E4%BB%A4"><span class="nav-number">3.</span> <span class="nav-text">三 awk命令</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9B%9B-expect"><span class="nav-number">4.</span> <span class="nav-text">四 expect</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Stephen Gong</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">103</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Stephen Gong</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
