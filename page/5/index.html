@@ -146,6 +146,277 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day10-Linux%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/%E7%AC%94%E8%AE%B0/%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Stephen Gong">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Stephen Gong's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/06/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day10-Linux%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/%E7%AC%94%E8%AE%B0/%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">未命名</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-07-06 11:07:12" itemprop="dateCreated datePublished" datetime="2022-07-06T11:07:12+08:00">2022-07-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-09-17 10:29:16" itemprop="dateModified" datetime="2021-09-17T10:29:16+08:00">2021-09-17</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="修改用户信息-usermod"><a href="#修改用户信息-usermod" class="headerlink" title="修改用户信息(usermod)"></a>修改用户信息(usermod)</h1><blockquote>
+<p>修改用户信息最主要的命令是usermod命令，其参数跟useradd基本一致。</p>
+</blockquote>
+<ul>
+<li><p>修改UID</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+xiaoyu:x:2002:2002::/home/xiaoyu:/bin/bash
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># usermod -u 2302 xiaoyu</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+xiaoyu:x:2302:2002::/home/xiaoyu:/bin/bash<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>修改基本组及附加组</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 基本组 : 一个用户必须拥有的哪个组</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+xiaoyu:x:2302:2002::/home/xiaoyu:/bin/bash
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># id xiaoyu</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>xiaoyu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2002</span><span class="token punctuation">(</span>xiaoyu<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2002</span><span class="token punctuation">(</span>xiaoyu<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># usermod -g group1 xiaoyu</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># id xiaoyu</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>xiaoyu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+xiaoyu:x:2302:2003::/home/xiaoyu:/bin/bash
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># </span>
+
+<span class="token comment"># 附加组 ： 用户加入的其他用户组</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># groupadd group1</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># id</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">(</span>root<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">(</span>root<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">(</span>root<span class="token punctuation">)</span>,1000<span class="token punctuation">(</span>oldboy<span class="token punctuation">)</span>,1001<span class="token punctuation">(</span>sssssssssssssssssssssss<span class="token punctuation">)</span>,1002<span class="token punctuation">(</span>test<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># usermod -G group1 root</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># vim /etc/group</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/group</span>
+group1:x:2003:root<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>修改家目录</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># usermod  -d /home/xiaoyu123 xiaoyu</span>
+
+<span class="token comment"># 注：修改家目录仅仅修改了配置，而原来的家目录文件没有迁移</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>修改用户描述信息</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+xiaoyu:x:2302:2003::/home/xiaoyu123:/bin/bash
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># usermod -c "这是一个甩锅" xiaoyu</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+xiaoyu:x:2302:2003:这是一个甩锅:/home/xiaoyu123:/bin/bash<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>修改用户默认解析器</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># usermod -s /bin/sh xiaoyu</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+xiaoyu:x:2302:2003:这是一个甩锅:/home/xiaoyu123:/bin/sh<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>锁定与解锁</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># usermod -L xiaoyu</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># usermod -U xiaoyu</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+</li>
+<li><p>修改登录名称</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># usermod -l dayu xiaoyu</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+dayu:x:2302:2003:这是一个甩锅:/home/xiaoyu123:/bin/bash<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>追加</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id dayu</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>dayu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span>,1000<span class="token punctuation">(</span>oldboy<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># usermod -G root dayu</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id dayu</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>dayu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span>,0<span class="token punctuation">(</span>root<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># usermod -G oldboy dayu</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id dayu</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>dayu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span>,1000<span class="token punctuation">(</span>oldboy<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># usermod -a -G root dayu</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id dayu</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>dayu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span>,0<span class="token punctuation">(</span>root<span class="token punctuation">)</span>,1000<span class="token punctuation">(</span>oldboy<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+<h1 id="密码（passwd）"><a href="#密码（passwd）" class="headerlink" title="密码（passwd）"></a>密码（passwd）</h1><blockquote>
+<p>修改或添加Linux普通用户的密码。直接影响的文件是&#x2F;etc&#x2F;shadow</p>
+</blockquote>
+<ul>
+<li><p>增加或修改密码</p>
+<p>当用户密码不存在的时候即为增加密码，当用户密码存在时即为修改密码。</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># useradd password</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+password:x:2303:2303::/home/password:/bin/bash
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/shadow</span>
+password:<span class="token operator">!</span><span class="token operator">!</span>:18701:0:99999:7:::
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># passwd password</span>
+Changing password <span class="token keyword">for</span> user password.
+New password: 
+BAD PASSWORD: The password is a palindrome
+Retype new password: 
+passwd: all authentication tokens updated successfully.
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+password:x:2303:2303::/home/password:/bin/bash
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/shadow</span>
+password:<span class="token variable">$6</span>$.EmM.4Bl<span class="token variable">$f</span>.LimfvMsxxFZq6yFklfyk08JKQORdQovlk2a2dtrpkP31lAMLQpezFqLheBYOTm4Sur9aAqZlC/6MN6wHFBM1:18701:0:99999:7:::
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>免交互修改密码</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># echo "123" | passwd --stdin dayu</span>
+Changing password <span class="token keyword">for</span> user dayu.
+passwd: all authentication tokens updated successfully.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+<h1 id="用户组"><a href="#用户组" class="headerlink" title="用户组"></a>用户组</h1><blockquote>
+<p>就类似于班级，是某个同权限用户的集合。</p>
+</blockquote>
+<h2 id="创建组"><a href="#创建组" class="headerlink" title="创建组"></a>创建组</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># groupadd group2</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/group</span>
+group2:x:2304:
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<ul>
+<li>指定gid</li>
+</ul>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># groupadd -g 2204 group3</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/group</span>
+group3:x:2204:<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<ul>
+<li>创建系统组</li>
+</ul>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># groupadd -r group4</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/group</span>
+group4:x:996:<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="修改组"><a href="#修改组" class="headerlink" title="修改组"></a>修改组</h2><ul>
+<li><p>修改名称</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -8 /etc/group</span>
+girl:x:2001:
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># groupmod -n boy girl</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -8 /etc/group</span>
+boy:x:2001:<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>修改gid</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># groupmod -g 2021 boy</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -8 /etc/group</span>
+boy:x:2021:<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+<h2 id="删除组"><a href="#删除组" class="headerlink" title="删除组"></a>删除组</h2><blockquote>
+<p>用户组在系统中删除，如果一个组被用户占用则不能删除。</p>
+</blockquote>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># groupdel group4</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -8 /etc/group</span>
+dajige:x:1003:
+abc:x:2000:
+xiaoyu:x:2002:
+group1:x:2003:root
+password:x:2303:
+group2:x:2304:
+group3:x:2204:
+boy:x:2021:
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># </span>
+
+<span class="token comment"># 注：用户被删除，用户基本组也会被删除</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># useradd test-group-del</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+test-group-del:x:2304:2305::/home/test-group-del:/bin/bash
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/group</span>
+test-group-del:x:2305:
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># userdel -r test-group-del</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+password:x:2303:2303::/home/password:/bin/bash
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/group</span>
+boy:x:2021:
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="组成员管理"><a href="#组成员管理" class="headerlink" title="组成员管理"></a>组成员管理</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 添加一个组到用户</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># useradd gtest</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># vim /etc/group</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id gtest</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2304</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2305</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2305</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span>,2204<span class="token punctuation">(</span>group3<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># gpasswd -a gtest group2</span>
+Adding user gtest to group group2
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id gtest</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2304</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2305</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2305</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span>,2304<span class="token punctuation">(</span>group2<span class="token punctuation">)</span>,2204<span class="token punctuation">(</span>group3<span class="token punctuation">)</span>
+
+<span class="token comment"># 添加多个组到用户</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># gpasswd -M gtest,root,dayu group</span>
+gpasswd: group <span class="token string">'group'</span> does not exist <span class="token keyword">in</span> /etc/group
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># gpasswd -M gtest,root,dayu group3</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id root</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">(</span>root<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">(</span>root<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">(</span>root<span class="token punctuation">)</span>,2000<span class="token punctuation">(</span>abc<span class="token punctuation">)</span>,2003<span class="token punctuation">(</span>group1<span class="token punctuation">)</span>,2204<span class="token punctuation">(</span>group3<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id dayu</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>dayu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span>,0<span class="token punctuation">(</span>root<span class="token punctuation">)</span>,1000<span class="token punctuation">(</span>oldboy<span class="token punctuation">)</span>,2204<span class="token punctuation">(</span>group3<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id gtest</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2304</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2305</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2305</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span>,2304<span class="token punctuation">(</span>group2<span class="token punctuation">)</span>,2204<span class="token punctuation">(</span>group3<span class="token punctuation">)</span>
+
+<span class="token comment"># 为一个组添加组长(组长有权限向组内添加用户，其他用户[除root外]没有权限添加用户到该组)</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># gpasswd -A dayu group3</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># cat /etc/gshadow</span>
+group3:<span class="token operator">!</span>:dayu:gtest,dayu,oldboy
+
+<span class="token comment"># 组权限</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># id dayu</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>dayu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span>,1000<span class="token punctuation">(</span>oldboy<span class="token punctuation">)</span>,2204<span class="token punctuation">(</span>group3<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># chown .group3 /tmp/12.txt </span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># ls -l /tmp/12.txt</span>
+-rw-r--r-- <span class="token number">1</span> root group3 <span class="token number">4</span> Mar <span class="token number">15</span> <span class="token number">11</span>:35 /tmp/12.txt
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># chmod g+w /tmp/12.txt</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># ls -l /tmp/12.txt</span>
+-rw-rw-r-- <span class="token number">1</span> root group3 <span class="token number">4</span> Mar <span class="token number">15</span> <span class="token number">11</span>:35 /tmp/12.txt
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># su - dayu</span>
+Last login: Mon Mar <span class="token number">15</span> <span class="token number">11</span>:37:05 CST <span class="token number">2021</span> on pts/3
+<span class="token punctuation">[</span>dayu@localhost ~<span class="token punctuation">]</span>$ <span class="token builtin class-name">echo</span> <span class="token string">"456"</span> <span class="token operator">></span> /tmp/12.txt 
+<span class="token punctuation">[</span>dayu@localhost ~<span class="token punctuation">]</span>$ <span class="token function">cat</span> /tmp/12.txt
+<span class="token number">456</span>
+<span class="token punctuation">[</span>dayu@localhost ~<span class="token punctuation">]</span>$ <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day10-Linux%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/%E7%AC%94%E8%AE%B0/%E6%9C%AC%E5%91%A8%E8%AF%BE%E7%A8%8B%E5%AE%89%E6%8E%92/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2468,109 +2739,6 @@ rm: remove regular <span class="token function">file</span> ‘proxy.conf’? <s
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day05-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/%E7%AC%94%E8%AE%B0/%E8%AF%BE%E7%A8%8B%E5%AE%89%E6%8E%92/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Stephen Gong">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Stephen Gong's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day05-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/%E7%AC%94%E8%AE%B0/%E8%AF%BE%E7%A8%8B%E5%AE%89%E6%8E%92/" class="post-title-link" itemprop="url">未命名</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-07-06 11:07:12" itemprop="dateCreated datePublished" datetime="2022-07-06T11:07:12+08:00">2022-07-06</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-17 10:29:16" itemprop="dateModified" datetime="2021-09-17T10:29:16+08:00">2021-09-17</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="基础部分"><a href="#基础部分" class="headerlink" title="基础部分"></a>基础部分</h3><ul>
-<li>基础命令（1~1.5月）</li>
-<li>期中架构（1月）</li>
-</ul>
-<h3 id="中级部分"><a href="#中级部分" class="headerlink" title="中级部分"></a>中级部分</h3><ul>
-<li>shell编程（2周）</li>
-<li>数据库（重点）（3~4周）</li>
-<li>缓存（1周）</li>
-<li>ELK（1周）</li>
-<li>DevOps（1周）</li>
-</ul>
-<h3 id="高级部分"><a href="#高级部分" class="headerlink" title="高级部分"></a>高级部分</h3><ul>
-<li><p>k8s + docker (1月)</p>
-</li>
-<li><p>DevOps + k8s + java(3天)</p>
-</li>
-<li><p>python</p>
-</li>
-<li><p>自动化运维（python）</p>
-</li>
-<li><p>应用运维</p>
-</li>
-<li><p>容器</p>
-</li>
-<li><p>DBA</p>
-</li>
-</ul>
-<h3 id="基础部分-1"><a href="#基础部分-1" class="headerlink" title="基础部分"></a>基础部分</h3><ul>
-<li>基础命令（1~1.5月）</li>
-<li>期中架构（1月）</li>
-</ul>
-<h3 id="中级部分-1"><a href="#中级部分-1" class="headerlink" title="中级部分"></a>中级部分</h3><ul>
-<li>shell编程（2周）</li>
-<li>数据库（重点）（3~4周）</li>
-<li>k8s + docker (1月)</li>
-<li>DevOps（1周）</li>
-<li>缓存（1周）</li>
-<li>ELK（1周）</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -2640,18 +2808,18 @@ rm: remove regular <span class="token function">file</span> ‘proxy.conf’? <s
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">103</span>
+          <span class="site-state-item-count">104</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
-        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-count">9</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
-        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-count">11</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

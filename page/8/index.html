@@ -146,6 +146,196 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2021/07/06/old/Docker%E7%B3%BB%E5%88%97-%E4%B9%9D-Dokcer%E8%B7%A8%E4%B8%BB%E6%9C%BA%E5%AE%B9%E5%99%A8%E4%BA%92%E8%BF%9E/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Stephen Gong">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Stephen Gong's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/07/06/old/Docker%E7%B3%BB%E5%88%97-%E4%B9%9D-Dokcer%E8%B7%A8%E4%B8%BB%E6%9C%BA%E5%AE%B9%E5%99%A8%E4%BA%92%E8%BF%9E/" class="post-title-link" itemprop="url">Docker系列(九)-Dokcer跨主机容器互连</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-07-06 21:21:33" itemprop="dateCreated datePublished" datetime="2021-07-06T21:21:33+08:00">2021-07-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-06 10:11:52" itemprop="dateModified" datetime="2022-07-06T10:11:52+08:00">2022-07-06</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Docker/" itemprop="url" rel="index"><span itemprop="name">Docker</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="一、Docker容器的四种网络类型"><a href="#一、Docker容器的四种网络类型" class="headerlink" title="一、Docker容器的四种网络类型"></a>一、Docker容器的四种网络类型</h2><blockquote>
+<p>哪四种？</p>
+<ul>
+<li>bridge（默认）：NAT桥接模式</li>
+<li>none：不分配网络，什么服务都访问不了</li>
+<li>host：与宿主机共享网络，共享主机名，端口共用(宿主机用了的端口，容器也不能用)，【网络性能最高】</li>
+<li>container:容器id：与容器xx共享网络，共享主机名、hosts、hostname、端口等….【K8S常用】</li>
+</ul>
+</blockquote>
+<h3 id="1-指定与查看容器网络类型的方法"><a href="#1-指定与查看容器网络类型的方法" class="headerlink" title="1 指定与查看容器网络类型的方法"></a>1 指定与查看容器网络类型的方法</h3><p>指定容器网络类型</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker run --network none # 指定网络类型<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>查看容器网络类型</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker instpect 容器id # 可以查看当前的容器网络类型
+# 查看字段
+&quot;NetworkSettings&quot;: &#123;
+	&quot;Bridge&quot;: &quot;&quot;,<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>查看有哪些网络类型</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker network ls # 查看有哪些网络类型<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+
+
+<h2 id="二、使用macvlan实现"><a href="#二、使用macvlan实现" class="headerlink" title="二、使用macvlan实现"></a>二、使用macvlan实现</h2><blockquote>
+<p>优势：</p>
+<p>​	性能比overlay高</p>
+<p>​	不用做端口映射，外界可直接访问</p>
+<p>劣势：</p>
+<p>​	IP需要手动指定</p>
+</blockquote>
+<h3 id="1-案例：使用macvlan实现两个centos6-9-ssh容器跨主机网络通信"><a href="#1-案例：使用macvlan实现两个centos6-9-ssh容器跨主机网络通信" class="headerlink" title="1 案例：使用macvlan实现两个centos6.9_ssh容器跨主机网络通信"></a>1 案例：使用macvlan实现两个centos6.9_ssh容器跨主机网络通信</h3><blockquote>
+<p>宿主机信息（虚拟机）：</p>
+<p>​	docker01: 10.0.0.11 网关: 10.0.0.2</p>
+<p>​	docker02: 10.0.0.12 网关: 10.0.0.2</p>
+</blockquote>
+<p>宿主机1,2分别创建macvlan</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker network create --driver macvlan --subnet 10.0.0.0&#x2F;24 --gateway 10.0.0.2 -o parent&#x3D;ens33 macvlan_1<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>设置网卡为混杂模式【Ubuntu需要设置】</p>
+<blockquote>
+<p>混杂模式是计算机网络中的术语。 是指一台机器的网卡能够接收所有经过它的数据流，而不论其目的地址是否是它。</p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">ip link set ens33 promisc on<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>宿主机1,2分别使用centos7.9_ssh:v2镜像创建容器，并指定为macvlan_1网络</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># docker01
+docker run -d --network macvlan_1 --ip&#x3D;10.0.0.100 centos6.9_ssh:v2
+# docker02
+docker run -d --network macvlan_1 --ip&#x3D;10.0.0.200 centos6.9_ssh:v2<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>测试，docker exec进入docker01中运行容器，开启抓包，并使用docker02中的容器ping它</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">tcpdump icmp<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>通过xshell或者mobaxterm可以直接ssh到容器中 (PS:并没有 -p 22端口)</p>
+<blockquote>
+<p>实际测试宿主机并不能ssh到容器，显示No route to host，但是物理机可以连接</p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">ssh root@10.0.0.100<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+
+
+<h2 id="三、使用overlay实现"><a href="#三、使用overlay实现" class="headerlink" title="三、使用overlay实现"></a>三、使用overlay实现</h2><blockquote>
+<p>优势：</p>
+<p>​	可以自动分配ip地址</p>
+<p>劣势：</p>
+<p>​	需要做端口映射才能访问容器服务</p>
+<p>overlay参考：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/CloudMan6/p/7270551.html">https://www.cnblogs.com/CloudMan6/p/7270551.html</a></p>
+</blockquote>
+<h3 id="1-案例：使用overlay实现两个centos6-9-ssh容器跨主机网络通信"><a href="#1-案例：使用overlay实现两个centos6-9-ssh容器跨主机网络通信" class="headerlink" title="1 案例：使用overlay实现两个centos6.9_ssh容器跨主机网络通信"></a>1 案例：使用overlay实现两个centos6.9_ssh容器跨主机网络通信</h3><p>docker01启动consul</p>
+<blockquote>
+<p>consul是一个key:value类型的存储数据库</p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker run -d -p 8500:8500 --restart&#x3D;always -h consul --name consul progrium&#x2F;consul -server -bootstrap<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>docker01,02上设置daemon.json文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;docker&#x2F;daemon.json<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token property">"hosts"</span><span class="token operator">:</span><span class="token punctuation">[</span><span class="token string">"tcp://0.0.0.0:2376"</span><span class="token punctuation">,</span><span class="token string">"unix:///var/run/docker.sock"</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+<span class="token property">"cluster-store"</span><span class="token operator">:</span><span class="token string">"consul://10.0.0.11:8500"</span><span class="token punctuation">,</span>
+<span class="token property">"cluster-advertise"</span><span class="token operator">:</span><span class="token string">"10.0.0.11:2376"</span> # 此处不同，docker01为<span class="token number">10.0</span>.<span class="token number">0.11</span>，docker02为<span class="token number">12</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>修改docker.service文件</p>
+<blockquote>
+<p>因为daemon.json中的hosts项与docker.service中的-H参数冲突，需要去掉</p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;usr&#x2F;lib&#x2F;systemd&#x2F;system&#x2F;docker.service
+ExecStart&#x3D;&#x2F;usr&#x2F;bin&#x2F;dockerd -H fd:&#x2F;&#x2F; --containerd&#x3D;&#x2F;run&#x2F;containerd&#x2F;containerd.sock
+# 删除-H fd:&#x2F;&#x2F;
+ExecStart&#x3D;&#x2F;usr&#x2F;bin&#x2F;dockerd --containerd&#x3D;&#x2F;run&#x2F;containerd&#x2F;containerd.sock<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>重启docker服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl daemon-reload
+systemctl restart docker<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>测试consul是否搭建成功</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">浏览器访问：http:&#x2F;&#x2F;10.0.0.11:8500&#x2F;
+在KEY&#x2F;VALUE标签页正常显示10.0.0.11和12两台宿主机<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>docker01,02创建overlay网络</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker network create -d overlay --subnet 172.16.1.0&#x2F;24 --gateway 172.16.1.254 ol1<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>启动容器</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># docker01
+docker run -d --network ol1 --name centos6.9_01 centos6.9_ssh:v2
+# docker02
+docker run -d --network ol1 --name centos6.9_02 centos6.9_ssh:v2<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>测试容器间网络</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># docker01中的容器ping另一容器的hostname
+[root@e1e8cc01792d &#x2F;]# ping centos6.9_02
+PING centos6.9_02 (172.16.1.2) 56(84) bytes of data.
+64 bytes from centos6.9_02.ol1 (172.16.1.2): icmp_seq&#x3D;1 ttl&#x3D;64 time&#x3D;0.197 ms
+64 bytes from centos6.9_02.ol1 (172.16.1.2): icmp_seq&#x3D;2 ttl&#x3D;64 time&#x3D;0.269 ms
+64 bytes from centos6.9_02.ol1 (172.16.1.2): icmp_seq&#x3D;3 ttl&#x3D;64 time&#x3D;1.04 ms<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-Overlay的网络访问流程图"><a href="#2-Overlay的网络访问流程图" class="headerlink" title="2 Overlay的网络访问流程图"></a>2 Overlay的网络访问流程图</h3><img src="/2021/07/06/old/Docker%E7%B3%BB%E5%88%97-%E4%B9%9D-Dokcer%E8%B7%A8%E4%B8%BB%E6%9C%BA%E5%AE%B9%E5%99%A8%E4%BA%92%E8%BF%9E/overlay%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE.png" class="" title="overlay网络访问">
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2021/07/06/03-Docker/Docker%E7%B3%BB%E5%88%97-%E5%85%AB-Docker%E7%A7%81%E6%9C%89%E4%BB%93%E5%BA%93/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2356,112 +2546,6 @@ docker run -d -p 80:80 -p 81:81 -v &#x2F;opt&#x2F;fruitninjia:&#x2F;data -v &#x2
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2021/06/29/03-Docker/Docker%E7%B3%BB%E5%88%97-%E4%B8%89-%E5%AE%B9%E5%99%A8%E7%9A%84%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Stephen Gong">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Stephen Gong's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/06/29/03-Docker/Docker%E7%B3%BB%E5%88%97-%E4%B8%89-%E5%AE%B9%E5%99%A8%E7%9A%84%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE/" class="post-title-link" itemprop="url">Docker系列(三)-容器的网络访问</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-06-29 09:34:01" itemprop="dateCreated datePublished" datetime="2021-06-29T09:34:01+08:00">2021-06-29</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-09-17 10:29:16" itemprop="dateModified" datetime="2021-09-17T10:29:16+08:00">2021-09-17</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Docker/" itemprop="url" rel="index"><span itemprop="name">Docker</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="一、容器的网络访问流程"><a href="#一、容器的网络访问流程" class="headerlink" title="一、容器的网络访问流程"></a>一、容器的网络访问流程</h2><blockquote>
-<p>参考：<a target="_blank" rel="noopener" href="https://z.itpub.net/article/detail/FE8EBAC62D5881E3A432291F8C8E4F02">https://z.itpub.net/article/detail/FE8EBAC62D5881E3A432291F8C8E4F02</a></p>
-</blockquote>
-<h3 id="1-虚拟机注意事项"><a href="#1-虚拟机注意事项" class="headerlink" title="1 虚拟机注意事项"></a>1 虚拟机注意事项</h3><p>查看net.ipv4.ip_forward值是否为1</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">sysctl -a | grep ipv4 | grep forward <span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>只有值为1时docker容器才能上网，而vmware虚拟机挂起将使他变成0，解决方法：</p>
-<ul>
-<li>sysctl net.ipv4.ip_forward &#x3D; 1 设置为1</li>
-<li>不要挂起虚拟机，直接关机重启，docker服务在启动时会将它改为1</li>
-</ul>
-<h2 id="二、容器端口映射"><a href="#二、容器端口映射" class="headerlink" title="二、容器端口映射"></a>二、容器端口映射</h2><h3 id="1-docker-run-p端口映射参数"><a href="#1-docker-run-p端口映射参数" class="headerlink" title="1 docker run -p端口映射参数"></a>1 docker run -p端口映射参数</h3><p>指定端口访问</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 将容器80端口，映射到主机180端口
-docker run -p 180:80<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>指定IP+端口访问</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 多网卡环境下，将容器80端口映射到10.0.0.1的180端口
-docker run -p 10.0.0.1:180:80<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>指定随机端口</p>
-<pre class="line-numbers language-she" data-language="she"><code class="language-she"># 将容器80端口，映射到主机随机端口
-docker run -p 10.0.0.1::80<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>指定随机端口+UDP (默认映射TCP)</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 将容器80端口映射到主机随机端口，并使用UDP协议
--p 10.0.0.100:80:udp # 指定随机端口 + udp<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>可以指定多个端口</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">-p 180:80 -p 1443:443 # 指定多个端口<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>随机映射</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker run -P<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -2531,18 +2615,18 @@ docker run -p 10.0.0.1::80<span aria-hidden="true" class="line-numbers-rows"><sp
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">103</span>
+          <span class="site-state-item-count">104</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
-        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-count">9</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
-        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-count">11</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

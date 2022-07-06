@@ -146,6 +146,112 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2021/06/29/03-Docker/Docker%E7%B3%BB%E5%88%97-%E4%B8%89-%E5%AE%B9%E5%99%A8%E7%9A%84%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Stephen Gong">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Stephen Gong's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/06/29/03-Docker/Docker%E7%B3%BB%E5%88%97-%E4%B8%89-%E5%AE%B9%E5%99%A8%E7%9A%84%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE/" class="post-title-link" itemprop="url">Docker系列(三)-容器的网络访问</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-06-29 09:34:01" itemprop="dateCreated datePublished" datetime="2021-06-29T09:34:01+08:00">2021-06-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-09-17 10:29:16" itemprop="dateModified" datetime="2021-09-17T10:29:16+08:00">2021-09-17</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Docker/" itemprop="url" rel="index"><span itemprop="name">Docker</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="一、容器的网络访问流程"><a href="#一、容器的网络访问流程" class="headerlink" title="一、容器的网络访问流程"></a>一、容器的网络访问流程</h2><blockquote>
+<p>参考：<a target="_blank" rel="noopener" href="https://z.itpub.net/article/detail/FE8EBAC62D5881E3A432291F8C8E4F02">https://z.itpub.net/article/detail/FE8EBAC62D5881E3A432291F8C8E4F02</a></p>
+</blockquote>
+<h3 id="1-虚拟机注意事项"><a href="#1-虚拟机注意事项" class="headerlink" title="1 虚拟机注意事项"></a>1 虚拟机注意事项</h3><p>查看net.ipv4.ip_forward值是否为1</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">sysctl -a | grep ipv4 | grep forward <span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>只有值为1时docker容器才能上网，而vmware虚拟机挂起将使他变成0，解决方法：</p>
+<ul>
+<li>sysctl net.ipv4.ip_forward &#x3D; 1 设置为1</li>
+<li>不要挂起虚拟机，直接关机重启，docker服务在启动时会将它改为1</li>
+</ul>
+<h2 id="二、容器端口映射"><a href="#二、容器端口映射" class="headerlink" title="二、容器端口映射"></a>二、容器端口映射</h2><h3 id="1-docker-run-p端口映射参数"><a href="#1-docker-run-p端口映射参数" class="headerlink" title="1 docker run -p端口映射参数"></a>1 docker run -p端口映射参数</h3><p>指定端口访问</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 将容器80端口，映射到主机180端口
+docker run -p 180:80<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>指定IP+端口访问</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 多网卡环境下，将容器80端口映射到10.0.0.1的180端口
+docker run -p 10.0.0.1:180:80<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>指定随机端口</p>
+<pre class="line-numbers language-she" data-language="she"><code class="language-she"># 将容器80端口，映射到主机随机端口
+docker run -p 10.0.0.1::80<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>指定随机端口+UDP (默认映射TCP)</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 将容器80端口映射到主机随机端口，并使用UDP协议
+-p 10.0.0.100:80:udp # 指定随机端口 + udp<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>可以指定多个端口</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">-p 180:80 -p 1443:443 # 指定多个端口<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>随机映射</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker run -P<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2021/06/29/old/Docker%E7%B3%BB%E5%88%97-%E4%B8%89-%E5%AE%B9%E5%99%A8%E7%9A%84%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1309,18 +1415,18 @@ systemctl restart docker<span aria-hidden="true" class="line-numbers-rows"><span
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">103</span>
+          <span class="site-state-item-count">104</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
-        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-count">9</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
-        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-count">11</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
