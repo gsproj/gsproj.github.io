@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="课程目录：  第一部分：K8S概念和架构 第二部分：K8S安装 ​	kubeadm ​	二进制 第三部分：K8S核心概念 POD  CONTROLLER SERVICE INGRESS RABC HELM 持久化存储 第四部分：集群监控平台 第五部分：从零开始搭建高可用K8S集群 第六部分：在集群环境中部署项目  一、K8S概念和架构1 K8S概述和特性1.1 基本介绍 K8S是谷歌在2014年开">
+<meta property="og:type" content="article">
+<meta property="og:title" content="K8S系列(一)-安装K8S">
+<meta property="og:url" content="http://gsproj.github.io/2021/07/08/01_%E8%BF%90%E7%BB%B4/05-K8S/K8S%E7%B3%BB%E5%88%97-%E4%B8%80-%E5%AE%89%E8%A3%85K8S/index.html">
+<meta property="og:site_name" content="GongSheng Blog">
+<meta property="og:description" content="课程目录：  第一部分：K8S概念和架构 第二部分：K8S安装 ​	kubeadm ​	二进制 第三部分：K8S核心概念 POD  CONTROLLER SERVICE INGRESS RABC HELM 持久化存储 第四部分：集群监控平台 第五部分：从零开始搭建高可用K8S集群 第六部分：在集群环境中部署项目  一、K8S概念和架构1 K8S概述和特性1.1 基本介绍 K8S是谷歌在2014年开">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-07-08T15:05:17.000Z">
+<meta property="article:modified_time" content="2022-07-06T07:21:00.122Z">
+<meta property="article:author" content="GongSheng">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://gsproj.github.io/2021/07/08/01_%E8%BF%90%E7%BB%B4/05-K8S/K8S%E7%B3%BB%E5%88%97-%E4%B8%80-%E5%AE%89%E8%A3%85K8S/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>K8S系列(一)-安装K8S | GongSheng Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GongSheng Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">山川異域，風月同天</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2021/07/08/01_%E8%BF%90%E7%BB%B4/05-K8S/K8S%E7%B3%BB%E5%88%97-%E4%B8%80-%E5%AE%89%E8%A3%85K8S/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          K8S系列(一)-安装K8S
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-07-08 23:05:17" itemprop="dateCreated datePublished" datetime="2021-07-08T23:05:17+08:00">2021-07-08</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-06 15:21:00" itemprop="dateModified" datetime="2022-07-06T15:21:00+08:00">2022-07-06</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%94%EF%BC%89K8S/" itemprop="url" rel="index"><span itemprop="name">（五）K8S</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>课程目录：</p>
+<blockquote>
+<p>第一部分：K8S概念和架构</p>
+<p>第二部分：K8S安装</p>
+<p>​	kubeadm</p>
+<p>​	二进制</p>
+<p>第三部分：K8S核心概念</p>
+<p>POD </p>
+<p>CONTROLLER</p>
+<p>SERVICE</p>
+<p>INGRESS</p>
+<p>RABC</p>
+<p>HELM</p>
+<p>持久化存储</p>
+<p>第四部分：集群监控平台</p>
+<p>第五部分：从零开始搭建高可用K8S集群</p>
+<p>第六部分：在集群环境中部署项目</p>
+</blockquote>
+<h2 id="一、K8S概念和架构"><a href="#一、K8S概念和架构" class="headerlink" title="一、K8S概念和架构"></a>一、K8S概念和架构</h2><h3 id="1-K8S概述和特性"><a href="#1-K8S概述和特性" class="headerlink" title="1 K8S概述和特性"></a>1 K8S概述和特性</h3><h4 id="1-1-基本介绍"><a href="#1-1-基本介绍" class="headerlink" title="1.1 基本介绍"></a>1.1 基本介绍</h4><ul>
+<li>K8S是谷歌在2014年开发的容器化集群管理系统</li>
+<li>使用K8S可以进行容器化应用部署</li>
+<li>使用K8S利于应用扩展</li>
+<li>K8S目标是让部署容器化应用更加简洁和高效</li>
+</ul>
+<p>容器化部署的好处：</p>
+<h4 id="1-2-K8S的特性和优势"><a href="#1-2-K8S的特性和优势" class="headerlink" title="1.2 K8S的特性和优势"></a>1.2 K8S的特性和优势</h4><p>自动装箱：自动部署应用容器</p>
+<p>自我修复（自愈能力）： </p>
+<p>水平扩展：副本数量增加</p>
+<p>服务发现（负载均衡）：通过Service实现，为多个副本对外提供统一的入口，节点调度负载均衡</p>
+<p>滚动更新：</p>
+<p>版本回退：</p>
+<p>密钥配置管理：不需要重新构建镜像，可以部署和更新密钥和应用配置</p>
+<p>存储编排：</p>
+<p>批处理：	</p>
+<h3 id="2-K8S架构组件"><a href="#2-K8S架构组件" class="headerlink" title="2 K8S架构组件"></a>2 K8S架构组件</h3><h3 id="3-K8S核心概念"><a href="#3-K8S核心概念" class="headerlink" title="3 K8S核心概念"></a>3 K8S核心概念</h3><p>3.1 Pod</p>
+<p>3.2 Controller</p>
+<p>3.3 Service</p>
+<h2 id="二、K8S安装"><a href="#二、K8S安装" class="headerlink" title="二、K8S安装"></a>二、K8S安装</h2><blockquote>
+<p>master  192.168.44.146</p>
+<p>node1	192.168.44.145</p>
+<p>node2	192.168.44.144</p>
+</blockquote>
+<h3 id="1-kubeadm安装"><a href="#1-kubeadm安装" class="headerlink" title="1 kubeadm安装"></a>1 kubeadm安装</h3><h3 id="2-二进制安装"><a href="#2-二进制安装" class="headerlink" title="2 二进制安装"></a>2 二进制安装</h3><hr>
+<p>生产环境通用需求：</p>
+<p>​	服务的自动发现和负载均衡</p>
+<p>​	自愈</p>
+<p>​	一键升级和回滚</p>
+<p>​	水平扩展（弹性伸缩） </p>
+<h3 id="1-容器管理平台"><a href="#1-容器管理平台" class="headerlink" title="1 容器管理平台"></a>1 容器管理平台</h3><p>docker swarm</p>
+<p>messos</p>
+<p>marathon</p>
+<p>kubernetes  (90%市场)</p>
+<h2 id="2-K8S发展"><a href="#2-K8S发展" class="headerlink" title="2 K8S发展"></a>2 K8S发展</h2><p>发布频繁，一年4个版本	</p>
+<h3 id="3-核心组件"><a href="#3-核心组件" class="headerlink" title="3 核心组件"></a>3 核心组件</h3><h2 id="二、K8S安装-1"><a href="#二、K8S安装-1" class="headerlink" title="二、K8S安装"></a>二、K8S安装</h2><blockquote>
+<p>K8S安装方式很多：</p>
+<ul>
+<li>源码编译安装 ：golang编译环境</li>
+<li>二进制安装 ：文档，全程手动，ansible等</li>
+<li>kubeadm安装：网络要求</li>
+<li>minikube ：开发者学习</li>
+<li>yum安装</li>
+</ul>
+<p>这里使用yum安装的方法</p>
+</blockquote>
+<h3 id="1-虚拟机准备"><a href="#1-虚拟机准备" class="headerlink" title="1 虚拟机准备"></a>1 虚拟机准备</h3><blockquote>
+<p>centos7, 1CPU 1G</p>
+<p>设置主机名，<strong>添加hosts解析</strong></p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">k8s-master  --  10.0.0.21
+k8s-node1   --  10.0.0.22
+k8s-node2   --  10.0.0.23<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>配置Centos7源和epel7源</p>
+<pre class="line-numbers language-he" data-language="he"><code class="language-he">curl -o &#x2F;etc&#x2F;yum.repos.d&#x2F;CentOS-Base.repo http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;repo&#x2F;Centos-7.repo
+curl -o &#x2F;etc&#x2F;yum.repos.d&#x2F;epel.repo http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;repo&#x2F;epel-7.repo
+yum clean all
+yum makecache<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-Master节点安装"><a href="#2-Master节点安装" class="headerlink" title="2 Master节点安装"></a>2 Master节点安装</h3><h4 id="2-1-安装docker"><a href="#2-1-安装docker" class="headerlink" title="2.1 安装docker"></a>2.1 安装docker</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum install docker -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h4 id="2-2-安装etcd"><a href="#2-2-安装etcd" class="headerlink" title="2.2 安装etcd"></a>2.2 安装etcd</h4><blockquote>
+<p>etcd是一个nosql数据库</p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum install etcd -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>修改etcd配置文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;etcd&#x2F;etcd.conf
+ETCD_LISTEN_CLIENT_URLS&#x3D;&quot;http:&#x2F;&#x2F;0.0.0.0:2379&quot;
+ETCD_ADVERTISE_CLIENT_URLS&#x3D;&quot;http:&#x2F;&#x2F;10.0.0.21:2379&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>启动etcd服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl enable etcd
+systemctl restart etcd<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>测试etcd</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">etcdctl set testdir&#x2F;testkey0 0
+etcdctl get testdir&#x2F;testkey0<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>etcdctl相关设置</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">etcdctl -C http:&#x2F;&#x2F;10.0.0.21:2379 cluster-health<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h4 id="2-3-安装k8s服务"><a href="#2-3-安装k8s服务" class="headerlink" title="2.3 安装k8s服务"></a>2.3 安装k8s服务</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum install kubernetes-master -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>配置文件修改</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;kubernetes&#x2F;apiserver
+KUBE_API_ADDRESS&#x3D;&quot;--insecure-bind-address&#x3D;0.0.0.0&quot;
+KUBE_API_PORT&#x3D;&quot;--port&#x3D;8080&quot;
+KUBE_ETCD_SERVERS&#x3D;&quot;--etcd-servers&#x3D;http:&#x2F;&#x2F;10.0.0.21:2379&quot;
+# 23行删除ServiceAccount，如下
+KUBE_ADMISSION_CONTROL&#x3D;&quot;--admission-control&#x3D;NamespaceLifecycle,NamespaceExists,LimitRanger,SecurityContextDeny,ResourceQuota&quot; # <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;kubernetes&#x2F;config
+KUBE_MASTER&#x3D;&quot;--master&#x3D;http:&#x2F;&#x2F;10.0.0.21:8080&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>开放防火墙端口【重要】</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">firewall-cmd --zone&#x3D;public --add-port&#x3D;2379&#x2F;tcp --permanent
+firewall-cmd --zone&#x3D;public --add-port&#x3D;8080&#x2F;tcp --permanent
+firewall-cmd --reload<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>启动服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl enable kube-apiserver
+systemctl restart kube-apiserver
+systemctl enable kube-controller-manager
+systemctl restart kube-controller-manager
+systemctl enable kube-scheduler
+systemctl restart kube-scheduler<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="3-Node节点安装"><a href="#3-Node节点安装" class="headerlink" title="3 Node节点安装"></a>3 Node节点安装</h3><h4 id="3-1-安装k8s-node服务"><a href="#3-1-安装k8s-node服务" class="headerlink" title="3.1 安装k8s-node服务"></a>3.1 安装k8s-node服务</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum install kubernetes-node<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>编辑配置文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;kubernetes&#x2F;config
+KUBE_MASTER&#x3D;&quot;--master&#x3D;http:&#x2F;&#x2F;10.0.0.21:8080&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;kubernetes&#x2F;kubelet
+KUBELET_ADDRESS&#x3D;&quot;--address&#x3D;0.0.0.0&quot;
+KUBELET_PORT&#x3D;&quot;--port&#x3D;10250&quot;
+KUBELET_HOSTNAME&#x3D;&quot;--hostname-override&#x3D;10.0.0.22&quot;
+KUBELET_API_SERVER&#x3D;&quot;--api-servers&#x3D;http:&#x2F;&#x2F;10.0.0.21:8080&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>启动服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl enable kubelet
+systemctl restart kubelet
+systemctl enable kube-proxy
+systemctl restart kube-proxy<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="3-2-fannel网络服务安装"><a href="#3-2-fannel网络服务安装" class="headerlink" title="3.2 fannel网络服务安装"></a>3.2 fannel网络服务安装</h4><blockquote>
+<p>用于节点之间通信</p>
+</blockquote>
+<p>所有节点安装并配置fannel</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum install flannel -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;sysconfig&#x2F;flanneld
+FLANNEL_ETCD_ENDPOINTS&#x3D;&quot;http:&#x2F;&#x2F;10.0.0.21:2379&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">etcdctl mk &#x2F;atomic.io&#x2F;network&#x2F;config &#39;&#123;&quot;Network&quot;:&quot;172.16.0.0&#x2F;16&quot;&#125;&#39;<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>重新启动服务—Master节点</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl enable fanneld
+systemctl restart fanneld
+systemctl restart kube-apiserver
+systemctl restart kube-controller-manager
+systemctl restart kube-scheduler	<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>重新启动服务—Node节点</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl enable fanneld
+systemctl restart fanneld
+systemctl restart kubelet
+systemctl restart kube-proxy<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="4-配置Master为镜像服务器"><a href="#4-配置Master为镜像服务器" class="headerlink" title="4 配置Master为镜像服务器"></a>4 配置Master为镜像服务器</h3><h2 id="三、K8S使用"><a href="#三、K8S使用" class="headerlink" title="三、K8S使用"></a>三、K8S使用</h2><p>1 查看节点</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">kubectl get nodes<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>2 查看服务状态</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">kubectl get componentstatus<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h3 id="1-Pod使用"><a href="#1-Pod使用" class="headerlink" title="1 Pod使用"></a>1 Pod使用</h3><p>创建pod</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">kubectl create -f k8s_pod.yml<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>删除pod</p>
+<pre class="line-numbers language-she" data-language="she"><code class="language-she">kubectl delete pod oldboy
+kubectl delete pod --all 删除所有<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>查看pod</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">kubectl get pods
+kubectl get pods -o wides<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>查看pod详细信息</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">kubectl descripe pod nginx<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p> 更新</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">kubectl replace xxxx.yml<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+
+
+<h4 id="1-1-创建一个pod-为什么要启动两个容器？"><a href="#1-1-创建一个pod-为什么要启动两个容器？" class="headerlink" title="1.1 创建一个pod,为什么要启动两个容器？"></a>1.1 创建一个pod,为什么要启动两个容器？</h4><blockquote>
+<p>一个pod中可以挂多个容器</p>
+</blockquote>
+<p>比如创建一个niginx pod，将启动一个pod容器，一个nginx容器</p>
+<p>Pod容器172.16.18.2</p>
+<p>Nginx容器，共用pod容器ip</p>
+<p>主要通过用POD来实现K8S的高级功能</p>
+<h4 id="1-2-rc副本控制器的使用"><a href="#1-2-rc副本控制器的使用" class="headerlink" title="1.2 rc副本控制器的使用"></a>1.2 rc副本控制器的使用</h4><p>通过rc保证容器高可用</p>
+<p>调整rc副本数</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">kubectl scale rc myweb --replicates&#x3D;1<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h4 id="1-3-利用rc实现滚动升级和一键回滚"><a href="#1-3-利用rc实现滚动升级和一键回滚" class="headerlink" title="1.3 利用rc实现滚动升级和一键回滚"></a>1.3 利用rc实现滚动升级和一键回滚</h4><p>案例：nginx 1.13升级1.15</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 每5s升级一个
+kubectl rolling-update myweb -f nginx-rc1.15.yaml --update-period&#x3D;5s<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>案例：nginx1.15回滚到1.13</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">kubectl rolling-update mywebv2 -f nginx-rc1.13.yaml<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+
+
+<h3 id="service的创建和访问"><a href="#service的创建和访问" class="headerlink" title="service的创建和访问"></a>service的创建和访问</h3><blockquote>
+<p>外部访问容器，端口映射</p>
+</blockquote>
+<h4 id="K8S小结"><a href="#K8S小结" class="headerlink" title="K8S小结"></a>K8S小结</h4><p>1 端口30000开始？</p>
+<p>2 查看yml字段编写帮助</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">kubectl explain svc.spec<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/07/07/01_%E8%BF%90%E7%BB%B4/03-Docker/Docker%E7%B3%BB%E5%88%97-%E5%8D%81-Dokcer%E5%8D%95%E6%9C%BA%E7%BC%96%E6%8E%92docker-compose/" rel="prev" title="Docker系列(十)-Dokcer单机编排docker-compose">
+      <i class="fa fa-chevron-left"></i> Docker系列(十)-Dokcer单机编排docker-compose
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/05-%E5%B7%A5%E4%BD%9C%E4%B8%AD%E7%9A%84%E8%AE%B0%E5%BD%95/SVN%E6%90%AD%E5%BB%BA/" rel="next" title="">
+       <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81K8S%E6%A6%82%E5%BF%B5%E5%92%8C%E6%9E%B6%E6%9E%84"><span class="nav-number">1.</span> <span class="nav-text">一、K8S概念和架构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-K8S%E6%A6%82%E8%BF%B0%E5%92%8C%E7%89%B9%E6%80%A7"><span class="nav-number">1.1.</span> <span class="nav-text">1 K8S概述和特性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-%E5%9F%BA%E6%9C%AC%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.1.1.</span> <span class="nav-text">1.1 基本介绍</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-K8S%E7%9A%84%E7%89%B9%E6%80%A7%E5%92%8C%E4%BC%98%E5%8A%BF"><span class="nav-number">1.1.2.</span> <span class="nav-text">1.2 K8S的特性和优势</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-K8S%E6%9E%B6%E6%9E%84%E7%BB%84%E4%BB%B6"><span class="nav-number">1.2.</span> <span class="nav-text">2 K8S架构组件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-K8S%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5"><span class="nav-number">1.3.</span> <span class="nav-text">3 K8S核心概念</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81K8S%E5%AE%89%E8%A3%85"><span class="nav-number">2.</span> <span class="nav-text">二、K8S安装</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-kubeadm%E5%AE%89%E8%A3%85"><span class="nav-number">2.1.</span> <span class="nav-text">1 kubeadm安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AE%89%E8%A3%85"><span class="nav-number">2.2.</span> <span class="nav-text">2 二进制安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E5%AE%B9%E5%99%A8%E7%AE%A1%E7%90%86%E5%B9%B3%E5%8F%B0"><span class="nav-number">2.3.</span> <span class="nav-text">1 容器管理平台</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-K8S%E5%8F%91%E5%B1%95"><span class="nav-number">3.</span> <span class="nav-text">2 K8S发展</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6"><span class="nav-number">3.1.</span> <span class="nav-text">3 核心组件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81K8S%E5%AE%89%E8%A3%85-1"><span class="nav-number">4.</span> <span class="nav-text">二、K8S安装</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%87%86%E5%A4%87"><span class="nav-number">4.1.</span> <span class="nav-text">1 虚拟机准备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Master%E8%8A%82%E7%82%B9%E5%AE%89%E8%A3%85"><span class="nav-number">4.2.</span> <span class="nav-text">2 Master节点安装</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-%E5%AE%89%E8%A3%85docker"><span class="nav-number">4.2.1.</span> <span class="nav-text">2.1 安装docker</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-%E5%AE%89%E8%A3%85etcd"><span class="nav-number">4.2.2.</span> <span class="nav-text">2.2 安装etcd</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-%E5%AE%89%E8%A3%85k8s%E6%9C%8D%E5%8A%A1"><span class="nav-number">4.2.3.</span> <span class="nav-text">2.3 安装k8s服务</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-Node%E8%8A%82%E7%82%B9%E5%AE%89%E8%A3%85"><span class="nav-number">4.3.</span> <span class="nav-text">3 Node节点安装</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-%E5%AE%89%E8%A3%85k8s-node%E6%9C%8D%E5%8A%A1"><span class="nav-number">4.3.1.</span> <span class="nav-text">3.1 安装k8s-node服务</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-fannel%E7%BD%91%E7%BB%9C%E6%9C%8D%E5%8A%A1%E5%AE%89%E8%A3%85"><span class="nav-number">4.3.2.</span> <span class="nav-text">3.2 fannel网络服务安装</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E9%85%8D%E7%BD%AEMaster%E4%B8%BA%E9%95%9C%E5%83%8F%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">4.4.</span> <span class="nav-text">4 配置Master为镜像服务器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81K8S%E4%BD%BF%E7%94%A8"><span class="nav-number">5.</span> <span class="nav-text">三、K8S使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Pod%E4%BD%BF%E7%94%A8"><span class="nav-number">5.1.</span> <span class="nav-text">1 Pod使用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AApod-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%90%AF%E5%8A%A8%E4%B8%A4%E4%B8%AA%E5%AE%B9%E5%99%A8%EF%BC%9F"><span class="nav-number">5.1.1.</span> <span class="nav-text">1.1 创建一个pod,为什么要启动两个容器？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-rc%E5%89%AF%E6%9C%AC%E6%8E%A7%E5%88%B6%E5%99%A8%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="nav-number">5.1.2.</span> <span class="nav-text">1.2 rc副本控制器的使用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-%E5%88%A9%E7%94%A8rc%E5%AE%9E%E7%8E%B0%E6%BB%9A%E5%8A%A8%E5%8D%87%E7%BA%A7%E5%92%8C%E4%B8%80%E9%94%AE%E5%9B%9E%E6%BB%9A"><span class="nav-number">5.1.3.</span> <span class="nav-text">1.3 利用rc实现滚动升级和一键回滚</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#service%E7%9A%84%E5%88%9B%E5%BB%BA%E5%92%8C%E8%AE%BF%E9%97%AE"><span class="nav-number">5.2.</span> <span class="nav-text">service的创建和访问</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#K8S%E5%B0%8F%E7%BB%93"><span class="nav-number">5.2.1.</span> <span class="nav-text">K8S小结</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="GongSheng"
+      src="/images/myavatar.png">
+  <p class="site-author-name" itemprop="name">GongSheng</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">48</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">GongSheng</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

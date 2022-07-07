@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="二、Rsync与数据备份2.1  备份概念为什么要做备份？ 数据非常的重要 保证数据不丢失 便于快速的恢复  备份方式 完全备份，每次都进行全部备份 (效率低下, 占用空间) 增量备份，仅备份客户端与服务端差异的部分 (提高备份效率,节省空间, 适合异地备份 )  用什么工具做备份？ scp  	网络之间的拷贝，全量拷贝的方式  （ssh协议） rsync	远程同步（增量）  2.2 rsync的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="运维之综合架构--02--Rsync服务器搭建">
+<meta property="og:url" content="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/02-Rsync%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/index.html">
+<meta property="og:site_name" content="GongSheng Blog">
+<meta property="og:description" content="二、Rsync与数据备份2.1  备份概念为什么要做备份？ 数据非常的重要 保证数据不丢失 便于快速的恢复  备份方式 完全备份，每次都进行全部备份 (效率低下, 占用空间) 增量备份，仅备份客户端与服务端差异的部分 (提高备份效率,节省空间, 适合异地备份 )  用什么工具做备份？ scp  	网络之间的拷贝，全量拷贝的方式  （ssh协议） rsync	远程同步（增量）  2.2 rsync的">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-07-06T03:19:52.000Z">
+<meta property="article:modified_time" content="2022-07-06T07:15:40.429Z">
+<meta property="article:author" content="GongSheng">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/02-Rsync%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>运维之综合架构--02--Rsync服务器搭建 | GongSheng Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GongSheng Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">山川異域，風月同天</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/02-Rsync%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          运维之综合架构--02--Rsync服务器搭建
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:15:40" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="二、Rsync与数据备份"><a href="#二、Rsync与数据备份" class="headerlink" title="二、Rsync与数据备份"></a>二、Rsync与数据备份</h2><h3 id="2-1-备份概念"><a href="#2-1-备份概念" class="headerlink" title="2.1  备份概念"></a>2.1  备份概念</h3><p>为什么要做备份？</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">数据非常的重要
+保证数据不丢失
+便于快速的恢复<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>备份方式</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">完全备份，每次都进行全部备份 (效率低下, 占用空间)
+增量备份，仅备份客户端与服务端差异的部分 (提高备份效率,节省空间, 适合异地备份 )<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>用什么工具做备份？</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">scp  	网络之间的拷贝，全量拷贝的方式  （ssh协议）
+rsync	远程同步（增量）<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<h3 id="2-2-rsync的基本概念"><a href="#2-2-rsync的基本概念" class="headerlink" title="2.2 rsync的基本概念"></a>2.2 rsync的基本概念</h3><blockquote>
+<p>rsync是一款开源的备份工具，<br>可以在不同主机之间进行同步（windows和Linux之间   Mac和Linux   Linux和Linux）<br>可实现全量备份与增量备份<br>因此非常适合用于架构集中式备份或异地备份等应用</p>
+</blockquote>
+<p>rsync数据的同步模式</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">推送： 本地将数据上传至备份服务器上	 （上传）
+拉取： 备份服务器获取本地服务器的数据  （下载）<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>rsync的数据传输方式</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">本地传输（类似于使用cp命令）
+远程传输（通过网络传输  a--&gt;b）
+守护进程（运行一个服务一直在后台）<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>rsync选项详解</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">rsync参数:
+-a           #归档模式传输, 等于-tropgDl *
+-v           #详细模式输出, 打印速率, 文件数量等 *
+-z           #传输时进行压缩以提高效率 *
+-r           #递归传输目录及子目录，即目录下得所有目录都同样传输。
+-t           #保持文件时间信息
+-o           #保持文件属主信息
+-p           #保持文件权限
+-g           #保持文件属组信息
+-l           #保留软连接
+-P           #显示同步的过程及传输时的进度等信息
+-D           #保持设备文件信息
+-L           #保留软连接指向的目标文件
+-e           #使用的信道协议,指定替代rsh的shell程序  ssh
+--exclude&#x3D;PATTERN   #指定排除不需要传输的文件模式
+--exclude-from&#x3D;file #文件名所在的目录文件
+--bwlimit&#x3D;100       #限速传输 *
+--partial           #断点续传
+--delete            #让目标目录和源目录数据保持一致 *<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-3-本地传输"><a href="#2-3-本地传输" class="headerlink" title="2.3 本地传输"></a>2.3 本地传输</h3><p>将&#x2F;boot文件夹拷贝到&#x2F;tmp中</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">rsync -avz &#x2F;boot &#x2F;tmp&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>将boot文件夹中的内容拷贝到&#x2F;tmp中</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">rsync -avz &#x2F;boot&#x2F; &#x2F;tmp&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h3 id="2-3-远程传输"><a href="#2-3-远程传输" class="headerlink" title="2.3 远程传输"></a>2.3 远程传输</h3><p>虚拟机准备</p>
+<table>
+<thead>
+<tr>
+<th>主机名</th>
+<th>IP地址</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>nfs</td>
+<td>172.16.1.31&#x2F;24 和 10.0.0.31&#x2F;24</td>
+</tr>
+<tr>
+<td>backup</td>
+<td>172.16.1.41&#x2F;24 和 10.0.0.41&#x2F;24</td>
+</tr>
+</tbody></table>
+<p>backup从nfs拉取&#x2F;boo目录到本地&#x2F;tmp文件夹</p>
+<pre class="line-numbers language-she" data-language="she"><code class="language-she">rsync -avz root@10.0.0.31:&#x2F;boot &#x2F;tmp<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>backup上传&#x2F;root&#x2F;test.txt到nfs主机的&#x2F;tmp文件夹中</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">rsync &#x2F;root&#x2F;test.txt root@10.0.0.31:&#x2F;tmp<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h3 id="2-4-守护进程传输（服务搭建）"><a href="#2-4-守护进程传输（服务搭建）" class="headerlink" title="2.4 守护进程传输（服务搭建）"></a>2.4 守护进程传输（服务搭建）</h3><blockquote>
+<p>为什么需要使用rsync守护进程传输？</p>
+<p>Rsync借助SSH协议同步数据存在的缺陷（临时发送数据）<br>    1.使用系统用户（不安全）<br>    2.使用普通用户（会导致权限不足情况）</p>
+</blockquote>
+<p>backup充当rsync服务端，nfs充当客户端，配置步骤：</p>
+<h4 id="2-4-1-服务端配置"><a href="#2-4-1-服务端配置" class="headerlink" title="2.4.1 服务端配置"></a>2.4.1 服务端配置</h4><p>获取配置文件路径</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@backup ~]# rpm -qc rsync
+	&#x2F;etc&#x2F;rsyncd.conf			# 主配置文件
+	&#x2F;etc&#x2F;sysconfig&#x2F;rsyncd		# 选项<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>编辑配置文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;rsyncd.conf
+---------------------
+uid &#x3D; rsync
+gid &#x3D; rsync
+port &#x3D; 873
+fake super &#x3D; yes
+use chroot &#x3D; no
+max connections &#x3D; 200
+timeout &#x3D; 600
+ignore errors
+read only &#x3D; false
+list &#x3D; false
+auth users &#x3D; rsync_backup
+secrets file &#x3D; &#x2F;etc&#x2F;rsync.passwd
+log file &#x3D; &#x2F;var&#x2F;log&#x2F;rsyncd.log
+#####################################
+[backup]
+comment &#x3D; welcome to oldboyedu backup!
+path &#x3D; &#x2F;backup<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>配置详细解析</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">uid &#x3D; rsync                      # 运行进程的用户
+gid &#x3D; rsync                      # 运行进程的用户组
+port &#x3D; 873                       # 监听端口
+fake super &#x3D; yes                 # 无需让rsync以root身份运行，允许接收文件的完整属性
+use chroot &#x3D; no                  # 禁锢推送的数据至某个目录, 不允许跳出该目录
+max connections &#x3D; 200            # 最大连接数
+timeout &#x3D; 600                    # 超时时间
+ignore errors                    # 忽略错误信息
+read only &#x3D; false                # 对备份数据可读写
+list &#x3D; false                     # 不允许查看模块信息
+auth users &#x3D; rsync_backup        # 定义虚拟用户，作为连接认证用户
+secrets file &#x3D; &#x2F;etc&#x2F;rsync.passwd # 定义rsync服务用户连接认证密码文件路径
+log file &#x3D; &#x2F;var&#x2F;log&#x2F;rsyncd.log   # 日志文件
+#####################################
+[backup]                # 定义模块信息
+comment &#x3D; commit        # 模块注释信息
+path &#x3D; &#x2F;backup          # 定义接收备份数据目录<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>创建rsync进程启动时需要使用的用户</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@backup ~]# useradd rsync -M -s &#x2F;sbin&#x2F;nologin 
+[root@backup ~]# id rsync
+uid&#x3D;1000(rsync) gid&#x3D;1000(rsync) groups&#x3D;1000(rsync)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>创建密码文件，在密码文件中写入对应的虚拟用户以及虚拟用户的密码</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">&#x2F;etc&#x2F;rsync.passwd---》rsync虚拟用户以及rsync虚拟用户的密码
+[root@backup ~]# echo &quot;rsync_backup:123456&quot; &gt; &#x2F;etc&#x2F;rsync.passwd
+[root@backup ~]# chmod 600 &#x2F;etc&#x2F;rsync.passwd <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>创建存储备份数据的目录，并进行授权</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@backup ~]# mkdir &#x2F;backup
+[root@backup ~]# chown -R rsync.rsync &#x2F;backup&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>启动rsync服务并加入开机自启动</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@backup ~]# systemctl start rsyncd.service 
+[root@backup ~]# systemctl enable rsyncd<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>检查rsync的873端口是否存在</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@backup ~]# netstat -lntup
+Active Internet connections (only servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID&#x2F;Program name
+tcp6       0      0 :::873                  :::*                    LISTEN      1269&#x2F;rsync<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-4-2-客户端测试"><a href="#2-4-2-客户端测试" class="headerlink" title="2.4.2 客户端测试"></a>2.4.2 客户端测试</h4><p>推送&#x2F;etc文件夹到服务端&#x2F;backup</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">rsync -avz &#x2F;etc&#x2F; rsync_backup@172.16.1.41::backup
+需要输入密码<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>从服务端&#x2F;backup拉取文件到&#x2F;tmp</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">rsync -avz rsync_backup@172.16.1.41::backup &#x2F;tmp
+需要输入密码<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<h3 id="2-5-rsync补充"><a href="#2-5-rsync补充" class="headerlink" title="2.5 rsync补充"></a>2.5 rsync补充</h3><h4 id="2-5-1-无差异同步-慎用"><a href="#2-5-1-无差异同步-慎用" class="headerlink" title="2.5.1 无差异同步(慎用)"></a>2.5.1 无差异同步(慎用)</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">#推送方式实现无差异，以客户端为准，客户端有什么服务端就有什么
+[root@nfs ~]# rsync -avz --delete &#x2F;root rsync_backup@172.16.1.41::backup		
+
+#拉取方式实现无差异，以服务端为准，服务端有什么客户端就有什么
+[root@nfs ~]# rsync -avz --delete rsync_backup@172.16.1.41::backup &#x2F;opt&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-5-2-传输限速"><a href="#2-5-2-传输限速" class="headerlink" title="2.5.2 传输限速"></a>2.5.2 传输限速</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 生成大文件
+[root@nfs ~]# dd if&#x3D;&#x2F;dev&#x2F;zero of&#x3D;.&#x2F;size.disk bs&#x3D;1M count&#x3D;500  
+
+# 限制传输的速率为1MB 
+[root@nfs ~]# rsync -avzP --bwlimit&#x3D;1 .&#x2F;size.disk rsync_backup@172.16.1.41::backup
+Password: 
+sending incremental file list
+size.disk
+    118,358,016  22%    1.01MB&#x2F;s    0:06:33<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-5-3-取消每次传输需要输密码"><a href="#2-5-3-取消每次传输需要输密码" class="headerlink" title="2.5.3 取消每次传输需要输密码"></a>2.5.3 取消每次传输需要输密码</h4><p>在客户端配置</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">方式一：
+[root@nfs ~]# echo &quot;123456&quot; &gt; &#x2F;etc&#x2F;rsync.pass
+[root@nfs ~]# chmod 600 &#x2F;etc&#x2F;rsync.pass #上该文件找123456
+[root@nfs ~]# rsync -avzP --bwlimit&#x3D;1 .&#x2F;size.disk rsync_backup@172.16.1.41::backup --password-file&#x3D;&#x2F;etc&#x2F;rsync.pass
+
+方式二：写Shell脚本
+[root@nfs ~]# export RSYNC_PASSWORD&#x3D;123456
+[root@nfs ~]# rsync -avzP .&#x2F;size.disk rsync_backup@172.16.1.41::backup<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="三、Rsync备份案例"><a href="#三、Rsync备份案例" class="headerlink" title="三、Rsync备份案例"></a>三、Rsync备份案例</h2><blockquote>
+<p>客户端需求<br>1.客户端提前准备存放的备份的目录，目录规则如下:&#x2F;backup&#x2F;nfs_172.16.1.31_2018-09-02<br>2.客户端在本地打包备份(系统配置文件、应用配置等)拷贝至&#x2F;backup&#x2F;nfs_172.16.1.31_2018-09-02<br>3.客户端最后将备份的数据进行推送至备份服务器<br>4.客户端每天凌晨1点定时执行该脚本<br>5.客户端本地保留最近7天的数据, 避免浪费磁盘空间</p>
+<p>服务端需求<br>1.服务端部署rsync，用于接收客户端推送过来的备份数据<br>2.服务端需要每天校验客户端推送过来的数据是否完整<br>3.服务端需要每天校验的结果通知给管理员<br>4.服务端仅保留6个月的备份数据,其余的全部删除</p>
+<p>注意：所有服务器的备份目录必须都为&#x2F;backup</p>
+<p>1.客户端将需要备份的文件放入指定的目录中   &#x2F;backup&#x2F;nfs_172.16.1.31_2018-09-02<br>2.客户端每天凌晨1点使用rsync命令推送一次nfs_172.16.1.31_2018-09-0<br>3.客户端保留最近7天的数据即可</p>
+</blockquote>
+<h3 id="3-1-需求分析"><a href="#3-1-需求分析" class="headerlink" title="3.1 需求分析"></a>3.1 需求分析</h3><blockquote>
+<p>1.我要备份什么？<br>&#x2F;etc&#x2F;fstab &#x2F;var&#x2F;spool&#x2F;cron&#x2F;USERNAME   &#x2F;server&#x2F;scripts</p>
+<p>2.我要怎么备份？<br>&#x2F;backup&#x2F;主机名_ip地址_时间  命名的目录中</p>
+<p>3.我要备份到哪？<br>rsync备份服务器   172.16.1.41</p>
+</blockquote>
+<h4 id="3-1-1-服务端配置"><a href="#3-1-1-服务端配置" class="headerlink" title="3.1.1 服务端配置"></a>3.1.1 服务端配置</h4><p>配置邮件服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@backup ~]# yum install mailx -y
+[root@backup ~]# vim &#x2F;etc&#x2F;mail.rc
+set from&#x3D;12345@qq.com
+set smtp&#x3D;smtps:&#x2F;&#x2F;smtp.qq.com:465
+set smtp-auth-user&#x3D;12345@qq.com
+set smtp-auth-password&#x3D;xxxxxx # 授权码
+set smtp-auth&#x3D;login
+set ssl-verify&#x3D;ignore
+set nss-config-dir&#x3D;&#x2F;etc&#x2F;pki&#x2F;nssdb&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>脚本编写</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@backup ~]# mkdir &#x2F;server&#x2F;scripts -p
+[root@backup ~]# cat &#x2F;server&#x2F;scripts&#x2F;check_client_data.sh
+#!&#x2F;bin&#x2F;bash
+#1.定义变量
+PATH&#x3D;&#x2F;usr&#x2F;local&#x2F;sbin:&#x2F;usr&#x2F;local&#x2F;bin:&#x2F;usr&#x2F;sbin:&#x2F;usr&#x2F;bin:&#x2F;root&#x2F;bin
+SRC&#x3D;&#x2F;backup
+DATE&#x3D;$(date +%F)
+
+#1.使用md5进行校验，并保存校验的结果
+md5sum -c $SRC&#x2F;*_$DATE&#x2F;flag_$DATE &gt; $SRC&#x2F;result_$DATE
+
+#2.将保存的结果文件发送给管理员
+mail -s &quot;Rsync Backup $DATE&quot; 572891887@qq.com &lt;$SRC&#x2F;result_$DATE
+
+#3.保留最近180天的数据
+find $SRC&#x2F; -type d -mtime +180|xargs rm -rf <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="3-1-2-客户端配置"><a href="#3-1-2-客户端配置" class="headerlink" title="3.1.2 客户端配置"></a>3.1.2 客户端配置</h4><p>创建目录</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">mkdir &#x2F;backup
+mkdir -p &#x2F;server&#x2F;scripts&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>编写备份脚本</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# cat &#x2F;server&#x2F;scripts&#x2F;client_push_data.sh
+#!&#x2F;bin&#x2F;bash
+#1.定义变量
+PATH&#x3D;&#x2F;usr&#x2F;local&#x2F;sbin:&#x2F;usr&#x2F;local&#x2F;bin:&#x2F;usr&#x2F;sbin:&#x2F;usr&#x2F;bin:&#x2F;root&#x2F;bin
+SRC&#x3D;&#x2F;backup
+HOST&#x3D;$(hostname)
+ADDR&#x3D;$(ifconfig eth1|awk &#39;NR&#x3D;&#x3D;2 &#123;print $2&#125;&#39;)
+DATE&#x3D;$(date +%F)
+DEST&#x3D;$&#123;HOST&#125;_$&#123;ADDR&#125;_$&#123;DATE&#125;
+
+#2.创建目录
+[ -d $SRC&#x2F;$DEST ] || mkdir -p $SRC&#x2F;$DEST
+
+#3.备份文件
+cd &#x2F; &amp;&amp; \
+[ -f $SRC&#x2F;$DEST&#x2F;sys.tar.gz ] || tar czf $SRC&#x2F;$DEST&#x2F;sys.tar.gz etc&#x2F;fstab etc&#x2F;passwd &amp;&amp; \
+[ -f $SRC&#x2F;$DEST&#x2F;other.tar.gz ] || tar czf $SRC&#x2F;$DEST&#x2F;other.tar.gz var&#x2F;spool&#x2F;cron&#x2F; server&#x2F;scripts &amp;&amp; \
+
+#4.使用md5打标记
+[ -f $SRC&#x2F;$DEST&#x2F;flag_$DATE ] || md5sum $SRC&#x2F;$DEST&#x2F;*.tar.gz  &gt; $SRC&#x2F;$DEST&#x2F;flag_$DATE 
+
+#4.本地推送到备份服务器
+export RSYNC_PASSWORD&#x3D;123456
+rsync -avz $SRC&#x2F;$DEST rsync_backup@172.16.1.41::backup
+
+#5.保留本地最近7天的数据
+find $SRC&#x2F; -type d -mtime +7|xargs rm -rf <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="3-1-3-整体测试-设置定时任务"><a href="#3-1-3-整体测试-设置定时任务" class="headerlink" title="3.1.3 整体测试:设置定时任务"></a>3.1.3 整体测试:设置定时任务</h4><p>客户端每两分钟备份推送一次</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs backup]# crontab -e
+*&#x2F;2 * * * * sh &#x2F;server&#x2F;scripts&#x2F;client_push_data.sh<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>服务端每3分钟校验一次，并发送确认邮件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@backup scripts]# crontab -e
+*&#x2F;3 * * * * sh &#x2F;server&#x2F;scripts&#x2F;check_client_data.sh<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<h4 id="3-1-5-增加客户端数量"><a href="#3-1-5-增加客户端数量" class="headerlink" title="3.1.5 增加客户端数量"></a>3.1.5 增加客户端数量</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">多创建几台客户端服务器，测试<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/03-NFS%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/" rel="prev" title="运维之综合架构--03-NFS服务器搭建">
+      <i class="fa fa-chevron-left"></i> 运维之综合架构--03-NFS服务器搭建
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/01-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E8%A7%84%E5%88%92/" rel="next" title="运维之综合架构--01-整体架构规划">
+      运维之综合架构--01-整体架构规划 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81Rsync%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%A4%87%E4%BB%BD"><span class="nav-number">1.</span> <span class="nav-text">二、Rsync与数据备份</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E5%A4%87%E4%BB%BD%E6%A6%82%E5%BF%B5"><span class="nav-number">1.1.</span> <span class="nav-text">2.1  备份概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-rsync%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="nav-number">1.2.</span> <span class="nav-text">2.2 rsync的基本概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E6%9C%AC%E5%9C%B0%E4%BC%A0%E8%BE%93"><span class="nav-number">1.3.</span> <span class="nav-text">2.3 本地传输</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E8%BF%9C%E7%A8%8B%E4%BC%A0%E8%BE%93"><span class="nav-number">1.4.</span> <span class="nav-text">2.3 远程传输</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-%E5%AE%88%E6%8A%A4%E8%BF%9B%E7%A8%8B%E4%BC%A0%E8%BE%93%EF%BC%88%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">2.4 守护进程传输（服务搭建）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-4-1-%E6%9C%8D%E5%8A%A1%E7%AB%AF%E9%85%8D%E7%BD%AE"><span class="nav-number">1.5.1.</span> <span class="nav-text">2.4.1 服务端配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-4-2-%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%B5%8B%E8%AF%95"><span class="nav-number">1.5.2.</span> <span class="nav-text">2.4.2 客户端测试</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-rsync%E8%A1%A5%E5%85%85"><span class="nav-number">1.6.</span> <span class="nav-text">2.5 rsync补充</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-5-1-%E6%97%A0%E5%B7%AE%E5%BC%82%E5%90%8C%E6%AD%A5-%E6%85%8E%E7%94%A8"><span class="nav-number">1.6.1.</span> <span class="nav-text">2.5.1 无差异同步(慎用)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-5-2-%E4%BC%A0%E8%BE%93%E9%99%90%E9%80%9F"><span class="nav-number">1.6.2.</span> <span class="nav-text">2.5.2 传输限速</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-5-3-%E5%8F%96%E6%B6%88%E6%AF%8F%E6%AC%A1%E4%BC%A0%E8%BE%93%E9%9C%80%E8%A6%81%E8%BE%93%E5%AF%86%E7%A0%81"><span class="nav-number">1.6.3.</span> <span class="nav-text">2.5.3 取消每次传输需要输密码</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81Rsync%E5%A4%87%E4%BB%BD%E6%A1%88%E4%BE%8B"><span class="nav-number">2.</span> <span class="nav-text">三、Rsync备份案例</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E9%9C%80%E6%B1%82%E5%88%86%E6%9E%90"><span class="nav-number">2.1.</span> <span class="nav-text">3.1 需求分析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-1-%E6%9C%8D%E5%8A%A1%E7%AB%AF%E9%85%8D%E7%BD%AE"><span class="nav-number">2.1.1.</span> <span class="nav-text">3.1.1 服务端配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-2-%E5%AE%A2%E6%88%B7%E7%AB%AF%E9%85%8D%E7%BD%AE"><span class="nav-number">2.1.2.</span> <span class="nav-text">3.1.2 客户端配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-3-%E6%95%B4%E4%BD%93%E6%B5%8B%E8%AF%95-%E8%AE%BE%E7%BD%AE%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1"><span class="nav-number">2.1.3.</span> <span class="nav-text">3.1.3 整体测试:设置定时任务</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-5-%E5%A2%9E%E5%8A%A0%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%95%B0%E9%87%8F"><span class="nav-number">2.1.4.</span> <span class="nav-text">3.1.5 增加客户端数量</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="GongSheng"
+      src="/images/myavatar.png">
+  <p class="site-author-name" itemprop="name">GongSheng</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">48</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">GongSheng</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

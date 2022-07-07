@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="一、LNMP简介(需补充)1.1 什么是LNMP1.2 LNMP架构是如何工作的浏览器 –http–&gt; Nginx(fastcgi_pass) –fastcgi–&gt;php(fastcgi_fpm调动wrapper再调动php解析再调用mysql) 大致流程： 用户在浏览器发起请求，如果请求的是静态资源，Nginx则直接返回，如果请求的是动态资源，Nginx会通过fastcgi协议，将请">
+<meta property="og:type" content="article">
+<meta property="og:title" content="运维之综合架构--07--Nginx(三)LNMP介绍">
+<meta property="og:url" content="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/09-Nginx(%E4%B8%89)LNMP%E6%9E%B6%E6%9E%84%E5%AE%89%E8%A3%85/index.html">
+<meta property="og:site_name" content="GongSheng Blog">
+<meta property="og:description" content="一、LNMP简介(需补充)1.1 什么是LNMP1.2 LNMP架构是如何工作的浏览器 –http–&gt; Nginx(fastcgi_pass) –fastcgi–&gt;php(fastcgi_fpm调动wrapper再调动php解析再调用mysql) 大致流程： 用户在浏览器发起请求，如果请求的是静态资源，Nginx则直接返回，如果请求的是动态资源，Nginx会通过fastcgi协议，将请">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-07-06T03:19:52.000Z">
+<meta property="article:modified_time" content="2022-07-06T07:16:26.333Z">
+<meta property="article:author" content="GongSheng">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/09-Nginx(%E4%B8%89)LNMP%E6%9E%B6%E6%9E%84%E5%AE%89%E8%A3%85/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>运维之综合架构--07--Nginx(三)LNMP介绍 | GongSheng Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GongSheng Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">山川異域，風月同天</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/09-Nginx(%E4%B8%89)LNMP%E6%9E%B6%E6%9E%84%E5%AE%89%E8%A3%85/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          运维之综合架构--07--Nginx(三)LNMP介绍
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:16:26" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="一、LNMP简介-需补充"><a href="#一、LNMP简介-需补充" class="headerlink" title="一、LNMP简介(需补充)"></a>一、LNMP简介(需补充)</h2><h3 id="1-1-什么是LNMP"><a href="#1-1-什么是LNMP" class="headerlink" title="1.1 什么是LNMP"></a>1.1 什么是LNMP</h3><h3 id="1-2-LNMP架构是如何工作的"><a href="#1-2-LNMP架构是如何工作的" class="headerlink" title="1.2 LNMP架构是如何工作的"></a>1.2 LNMP架构是如何工作的</h3><p>浏览器 –http–&gt; Nginx(fastcgi_pass) –fastcgi–&gt;php(fastcgi_fpm调动wrapper再调动php解析再调用mysql)</p>
+<p>大致流程：</p>
+<p>用户在浏览器发起请求，如果请求的是静态资源，Nginx则直接返回，如果请求的是动态资源，Nginx会通过fastcgi协议，将请求交给PHP服务器，再返回动态资源。</p>
+<h3 id="1-3-LNMP和LAMP的区别是什么"><a href="#1-3-LNMP和LAMP的区别是什么" class="headerlink" title="1.3 LNMP和LAMP的区别是什么"></a>1.3 LNMP和LAMP的区别是什么</h3><p>nginx 是以fastcgi协议调用的php<br>apache是以模块的方式加载的php</p>
+<h2 id="二、LNMP架构简单搭建"><a href="#二、LNMP架构简单搭建" class="headerlink" title="二、LNMP架构简单搭建"></a>二、LNMP架构简单搭建</h2><p>1、准备一台名为nginx的服务器</p>
+<p>2、使用官方仓库安装nginx</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 添加安装源
+[root@nginx ~]# cat &#x2F;etc&#x2F;yum.repos.d&#x2F;nginx.repo 
+[nginx]
+name&#x3D;nginx repo
+baseurl&#x3D;http:&#x2F;&#x2F;nginx.org&#x2F;packages&#x2F;centos&#x2F;7&#x2F;$basearch&#x2F;
+gpgcheck&#x3D;0
+enabled&#x3D;1
+
+#安装Nginx
+[root@nginx ~]# yum install nginx -y<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>3、安装php7.1</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nginx ~]# yum remove php-mysql-5.4 php php-fpm php-common # 卸载默认5.4版本的php
+[root@nginx ~]# cat &#x2F;etc&#x2F;yum.repos.d&#x2F;php.repo
+[php]
+name &#x3D; php Repository
+baseurl &#x3D; http:&#x2F;&#x2F;us-east.repo.webtatic.com&#x2F;yum&#x2F;el7&#x2F;x86_64&#x2F;
+gpgcheck &#x3D; 0
+
+[root@nginx ~]# yum -y install php71w php71w-cli php71w-common php71w-devel php71w-embedded php71w-gd php71w-mcrypt php71w-mbstring php71w-pdo php71w-xml php71w-fpm php71w-mysqlnd php71w-opcache php71w-pecl-memcached php71w-pecl-redis php71w-pecl-mongodb<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>4、安装maria数据库</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nginx ~]# yum install mariadb-server mariadb -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>5、配置nginx和php集成</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cd &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;
+[root@web01 conf.d]# cat php.conf 
+server &#123;
+	listen 80;
+	server_name php.oldboy.com;
+	root &#x2F;code;
+
+	location &#x2F; &#123;
+		index index.php index.html;
+	&#125;
+
+	location ~ \.php$ &#123;
+		fastcgi_pass 127.0.0.1:9000;
+		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+		include fastcgi_params;
+	&#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>6、重载nginx</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# nginx -t
+nginx: the configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf syntax is ok
+nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test is successful
+[root@web01 conf.d]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>7、启动php-fpm，并加入开机自启</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# systemctl start php-fpm
+[root@web01 conf.d]# systemctl enable  php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>8、准备一个php文件，测试nginx和php是否继承成功</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cat &#x2F;code&#x2F;page.php
+&lt;?php
+	phpinfo();
+?&gt;
+# 测试：网页访问:http:&#x2F;&#x2F;php.oldboy.com&#x2F;page.php<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>9、启动数据库</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# systemctl start mariadb
+[root@web01 conf.d]# systemctl enable mariadb
+[root@web01 conf.d]# mysqladmin password &#39;Bgx123.com&#39;		#配置密码（默认mysql是空密码）
+[root@web01 conf.d]# mysql -uroot -pBgx123.com				#使用账号和密码登录mysql<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>10、准备一个php文件，测试是否可以正常连接数据库</p>
+<pre class="line-numbers language-she" data-language="she"><code class="language-she">&lt;?php
+  $servername &#x3D; &quot;localhost&quot;;
+  $username &#x3D; &quot;root&quot;;
+  $password &#x3D; &quot;Bgx123.com&quot;;
+
+  &#x2F;&#x2F; 创建连接
+  $conn &#x3D; mysqli_connect($servername, $username, $password);
+
+  &#x2F;&#x2F; 检测连接
+  if (!$conn) &#123;
+      die(&quot;Connection failed: &quot; . mysqli_connect_error()); &#x2F;&#x2F; 注意格式
+  &#125;
+  echo &quot;php连接MySQL数据库成功&quot;;
+  ?&gt;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="三、案例-搭建wordpress博客"><a href="#三、案例-搭建wordpress博客" class="headerlink" title="三、案例-搭建wordpress博客"></a>三、案例-搭建wordpress博客</h2><h3 id="3-1-环境准备"><a href="#3-1-环境准备" class="headerlink" title="3.1 环境准备"></a>3.1 环境准备</h3><table>
+<thead>
+<tr>
+<th>用途</th>
+<th>公网IP地址</th>
+<th>内网IP地址</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>web服务器01</td>
+<td>10.0.0.7</td>
+<td>172.16.1.7</td>
+</tr>
+</tbody></table>
+<h3 id="3-2-部署安装"><a href="#3-2-部署安装" class="headerlink" title="3.2 部署安装"></a>3.2 部署安装</h3><p>1、添加nginx配置文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cat blog.oldboy.com.conf 
+server &#123;
+	listen 80;
+	server_name blog.oldboy.com;
+	root &#x2F;code&#x2F;wordpress;
+
+	location &#x2F; &#123;
+		index index.php index.html;
+	&#125;
+
+	location ~ \.php$ &#123;
+		fastcgi_pass 127.0.0.1:9000;
+		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+		include fastcgi_params;
+	&#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>2、根据nginx中定义的内容，创建站点目录并进行授权</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# mkdir &#x2F;code
+[root@web01 conf.d]# cd &#x2F;code
+[root@web01 code]# wget https:&#x2F;&#x2F;cn.wordpress.org&#x2F;wordpress-5.0.3-zh_CN.tar.gz
+[root@web01 code]# tar xf wordpress-5.0.3-zh_CN.tar.gz<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>3、修改nginx与php-fpm的运行用户为www，并授权代码属主和属组都为www</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">#注意：如果没有该用户，启动一定会报错
+[root@web01 code]# groupadd -g 666 www
+[root@web01 code]# useradd -u666 -g666 www
+
+修改nginx与php-fpm管理进程，的运行身份为www
+[root@web01 code]# sed -i &#39;&#x2F;^user &#x2F;c user  www;&#39; &#x2F;etc&#x2F;nginx&#x2F;nginx.conf
+[root@web01 code]# sed -i &#39;&#x2F;^user&#x2F;c user &#x3D; www&#39; &#x2F;etc&#x2F;php-fpm.d&#x2F;www.conf 
+[root@web01 code]# sed -i &#39;&#x2F;^group&#x2F;c group &#x3D; www&#39; &#x2F;etc&#x2F;php-fpm.d&#x2F;www.conf 
+
+一定要重启才生效
+[root@web01 code]# systemctl restart nginx
+[root@web01 code]# systemctl restart php-fpm
+
+最后授权代码为www
+[root@web01 code]# chown -R www.www &#x2F;code&#x2F;wordpress	<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>4、创建数据库</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">MariaDB [(none)]&gt; create database wordpress;			#创建一个库，名称叫wordpress
+Query OK, 1 row affected (0.00 sec)
+
+MariaDB [(none)]&gt; show databases;						#查询该台数据库服务有多少个库
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| test               |
+| wordpress          |
++--------------------+
+5 rows in set (0.00 sec)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>5、解决nginx上传文件大小限制（默认1M，超过大小会报413）</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">在wordpress的nginx配置文件中添加：client_max_body_size 100m;
+[root@web01 code]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;blog.oldboy.com.conf 
+server &#123;
+        listen 80;
+        server_name blog.oldboy.com;
+        root &#x2F;code&#x2F;wordpress;
+        client_max_body_size 100m;  # 默认1M，超过大小会报413
+
+        location &#x2F; &#123;
+                index index.php index.html;
+        &#125;
+
+        location ~ \.php$ &#123;
+                fastcgi_pass 127.0.0.1:9000;
+                fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                include fastcgi_params;
+        &#125;
+&#125;
+重启nginx：systemctl restart nginx	<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>测试在wordpress页面上传主题或者写文章上传图片，均出现500报错<br>查看日志文件&#x2F;var&#x2F;log&#x2F;nginx&#x2F;err.log<br>2021&#x2F;08&#x2F;16 18:59:31 [crit] 1228#1228: *2 open() “&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;client_body&#x2F;0000000001” failed (13: Permission denied), client: 10.0.0.1, server: php.gs.com, request: “POST &#x2F;wp-admin&#x2F;update.php?action&#x3D;upload-theme HTTP&#x2F;1.1”, host: “php.gs.com”, referrer: “<a target="_blank" rel="noopener" href="http://php.gs.com/wp-admin/theme-install.php?browse=popular&quot;">http://php.gs.com/wp-admin/theme-install.php?browse=popular&quot;</a><br>解决方法，参考<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_15941409/article/details/114640122">https://blog.csdn.net/qq_15941409/article/details/114640122</a><br>chown www:www -R &#x2F;var&#x2F;lib&#x2F;nginx&#x2F;</p>
+</blockquote>
+<h2 id="四、案例-搭建wecenter知乎"><a href="#四、案例-搭建wecenter知乎" class="headerlink" title="四、案例-搭建wecenter知乎"></a>四、案例-搭建wecenter知乎</h2><h3 id="4-1-部署安装"><a href="#4-1-部署安装" class="headerlink" title="4.1 部署安装"></a>4.1 部署安装</h3><p>1、添加nginx配置文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">server &#123;
+	listen 80;
+	server_name zh.oldboy.com;
+	root &#x2F;code&#x2F;zh;
+	client_max_body_size 100m;
+
+	location &#x2F; &#123;
+		index index.php index.html;
+	&#125;
+
+	location ~ \.php$ &#123;
+		fastcgi_pass 127.0.0.1:9000;
+		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+		include fastcgi_params;
+	&#125;
+&#125;
+[root@web01 code]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>2、wencenter部署</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# rz -E WeCenter_3-2-1.zip
+[root@web01 code]# unzip WeCenter_3-2-1.zip
+[root@web01 code]# mv WeCenter_3-2-1 zh
+[root@web01 code]# chown -R www.www zh&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>3、配置数据库</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# mysql -uroot -pBgx123.com
+MariaDB [(none)]&gt; create database zh;
+MariaDB [(none)]&gt; show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| test               |
+| wordpress          |
+| zh                 |
++--------------------+
+6 rows in set (0.00 sec)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="五、案例-搭建edusoho在线视频教育"><a href="#五、案例-搭建edusoho在线视频教育" class="headerlink" title="五、案例-搭建edusoho在线视频教育"></a>五、案例-搭建edusoho在线视频教育</h2><h3 id="5-1-部署安装"><a href="#5-1-部署安装" class="headerlink" title="5.1 部署安装"></a>5.1 部署安装</h3><p>1、添加nginx配置文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;edu.oldboy.com.conf 
+server &#123;
+    listen 80;
+    server_name edu.oldboy.com;
+    root &#x2F;code&#x2F;edusoho&#x2F;web;
+    client_max_body_size 200m;
+
+    location &#x2F; &#123;
+        index app.php;
+        try_files $uri @rewriteapp;
+    &#125;
+    location @rewriteapp &#123;
+        rewrite ^(.*)$ &#x2F;app.php&#x2F;$1 last;
+    &#125;
+
+    location ~ ^&#x2F;udisk &#123;
+        internal;
+        root &#x2F;code&#x2F;edusoho&#x2F;app&#x2F;data&#x2F;;
+    &#125;
+
+    location ~ ^&#x2F;(app|app_dev)\.php(&#x2F;|$) &#123;
+        fastcgi_pass   127.0.0.1:9000;
+        fastcgi_split_path_info ^(.+\.php)(&#x2F;.*)$;
+        include fastcgi_params;
+        fastcgi_param  SCRIPT_FILENAME    $document_root$fastcgi_script_name;
+        fastcgi_param  HTTPS              off;
+        fastcgi_param HTTP_X-Sendfile-Type X-Accel-Redirect;
+        fastcgi_param HTTP_X-Accel-Mapping &#x2F;udisk&#x3D;&#x2F;code&#x2F;edusoho&#x2F;app&#x2F;data&#x2F;udisk;
+        fastcgi_buffer_size 128k;
+        fastcgi_buffers 8 128k;
+    &#125;
+
+    # 配置设置图片格式文件
+    location ~* \.(jpg|jpeg|gif|png|ico|swf)$ &#123;
+        # 过期时间为3年
+        expires 3y;
+        # 关闭日志记录
+        access_log off;
+        # 关闭gzip压缩，减少CPU消耗，因为图片的压缩率不高。
+        gzip off;
+    &#125;
+    # 配置css&#x2F;js文件
+    location ~* \.(css|js)$ &#123;
+        access_log off;
+        expires 3y;
+    &#125;
+    # 禁止用户上传目录下所有.php文件的访问，提高安全性
+    location ~ ^&#x2F;files&#x2F;.*\.(php|php5)$ &#123;
+        deny all;
+    &#125;
+
+    # 以下配置允许运行.php的程序，方便于其他第三方系统的集成。
+    location ~ \.php$ &#123;
+        fastcgi_pass   127.0.0.1:9000;
+        fastcgi_split_path_info ^(.+\.php)(&#x2F;.*)$;
+        include fastcgi_params;
+        fastcgi_param  SCRIPT_FILENAME    $document_root$fastcgi_script_name;
+        fastcgi_param  HTTPS              off;
+    &#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>2、下载edusoho,并授权文件夹</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">wget http:&#x2F;&#x2F;download.edusoho.com&#x2F;edusoho-8.2.17.tar.gz
+tar xf edusoho-8.2.17.tar.gz
+chown -R www.www edusoho<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>3、调整php的上传大小(上传文件默认有限制大小)</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# vim &#x2F;etc&#x2F;php.ini
+post_max_size &#x3D; 200M
+upload_max_filesize &#x3D; 200M
+[root@web01 code]# systemctl restart php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="六、各开源项目网站"><a href="#六、各开源项目网站" class="headerlink" title="六、各开源项目网站"></a>六、各开源项目网站</h2><p>phpmyadmin	<a target="_blank" rel="noopener" href="https://www.phpmyadmin.net/">https://www.phpmyadmin.net/</a><br>zblog	<a target="_blank" rel="noopener" href="https://www.zblogcn.com/">https://www.zblogcn.com/</a><br>wordpress	<a target="_blank" rel="noopener" href="https://cn.wordpress.org/">https://cn.wordpress.org/</a><br>wecenter	<a target="_blank" rel="noopener" href="http://www.wecenter.com/downloads/">http://www.wecenter.com/downloads/</a><br>edusohu	<a target="_blank" rel="noopener" href="http://www.edusoho.com/open/show">http://www.edusoho.com/open/show</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/10-Nginx(%E5%9B%9B)LNMP%E6%9E%B6%E6%9E%84%E6%8B%86%E5%88%86/" rel="prev" title="运维之综合架构--07--Nginx(四)LNMP架构拆分">
+      <i class="fa fa-chevron-left"></i> 运维之综合架构--07--Nginx(四)LNMP架构拆分
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/08-Nginx(%E4%BA%8C)%E5%B8%B8%E7%94%A8%E5%AE%98%E6%96%B9%E6%A8%A1%E5%9D%97/" rel="next" title="运维之综合架构--07--Nginx(二)常用官方模块">
+      运维之综合架构--07--Nginx(二)常用官方模块 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81LNMP%E7%AE%80%E4%BB%8B-%E9%9C%80%E8%A1%A5%E5%85%85"><span class="nav-number">1.</span> <span class="nav-text">一、LNMP简介(需补充)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E4%BB%80%E4%B9%88%E6%98%AFLNMP"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 什么是LNMP</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-LNMP%E6%9E%B6%E6%9E%84%E6%98%AF%E5%A6%82%E4%BD%95%E5%B7%A5%E4%BD%9C%E7%9A%84"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 LNMP架构是如何工作的</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-LNMP%E5%92%8CLAMP%E7%9A%84%E5%8C%BA%E5%88%AB%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">1.3.</span> <span class="nav-text">1.3 LNMP和LAMP的区别是什么</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81LNMP%E6%9E%B6%E6%9E%84%E7%AE%80%E5%8D%95%E6%90%AD%E5%BB%BA"><span class="nav-number">2.</span> <span class="nav-text">二、LNMP架构简单搭建</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E6%A1%88%E4%BE%8B-%E6%90%AD%E5%BB%BAwordpress%E5%8D%9A%E5%AE%A2"><span class="nav-number">3.</span> <span class="nav-text">三、案例-搭建wordpress博客</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 环境准备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E9%83%A8%E7%BD%B2%E5%AE%89%E8%A3%85"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 部署安装</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E6%A1%88%E4%BE%8B-%E6%90%AD%E5%BB%BAwecenter%E7%9F%A5%E4%B9%8E"><span class="nav-number">4.</span> <span class="nav-text">四、案例-搭建wecenter知乎</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-%E9%83%A8%E7%BD%B2%E5%AE%89%E8%A3%85"><span class="nav-number">4.1.</span> <span class="nav-text">4.1 部署安装</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E6%A1%88%E4%BE%8B-%E6%90%AD%E5%BB%BAedusoho%E5%9C%A8%E7%BA%BF%E8%A7%86%E9%A2%91%E6%95%99%E8%82%B2"><span class="nav-number">5.</span> <span class="nav-text">五、案例-搭建edusoho在线视频教育</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E9%83%A8%E7%BD%B2%E5%AE%89%E8%A3%85"><span class="nav-number">5.1.</span> <span class="nav-text">5.1 部署安装</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E5%90%84%E5%BC%80%E6%BA%90%E9%A1%B9%E7%9B%AE%E7%BD%91%E7%AB%99"><span class="nav-number">6.</span> <span class="nav-text">六、各开源项目网站</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="GongSheng"
+      src="/images/myavatar.png">
+  <p class="site-author-name" itemprop="name">GongSheng</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">48</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">GongSheng</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

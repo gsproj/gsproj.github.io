@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="本篇主要介绍Nginx的常用官方模块     一、目录索引-autoindex1.1 使用方法1按此方法设置后，访问网页http:&#x2F;&#x2F;module.test.com将显示文件目录 实际目录位于: &#x2F;module a.准备配置文件 [root@web01 module]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;autoindex.con">
+<meta property="og:type" content="article">
+<meta property="og:title" content="运维之综合架构--07--Nginx(二)常用官方模块">
+<meta property="og:url" content="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/08-Nginx(%E4%BA%8C)%E5%B8%B8%E7%94%A8%E5%AE%98%E6%96%B9%E6%A8%A1%E5%9D%97/index.html">
+<meta property="og:site_name" content="GongSheng Blog">
+<meta property="og:description" content="本篇主要介绍Nginx的常用官方模块     一、目录索引-autoindex1.1 使用方法1按此方法设置后，访问网页http:&#x2F;&#x2F;module.test.com将显示文件目录 实际目录位于: &#x2F;module a.准备配置文件 [root@web01 module]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;autoindex.con">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-07-06T03:19:52.000Z">
+<meta property="article:modified_time" content="2022-07-06T07:16:20.254Z">
+<meta property="article:author" content="GongSheng">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/08-Nginx(%E4%BA%8C)%E5%B8%B8%E7%94%A8%E5%AE%98%E6%96%B9%E6%A8%A1%E5%9D%97/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>运维之综合架构--07--Nginx(二)常用官方模块 | GongSheng Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GongSheng Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">山川異域，風月同天</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/08-Nginx(%E4%BA%8C)%E5%B8%B8%E7%94%A8%E5%AE%98%E6%96%B9%E6%A8%A1%E5%9D%97/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          运维之综合架构--07--Nginx(二)常用官方模块
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:16:20" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>本篇主要介绍Nginx的常用官方模块</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+<h2 id="一、目录索引-autoindex"><a href="#一、目录索引-autoindex" class="headerlink" title="一、目录索引-autoindex"></a>一、目录索引-autoindex</h2><h3 id="1-1-使用方法1"><a href="#1-1-使用方法1" class="headerlink" title="1.1 使用方法1"></a>1.1 使用方法1</h3><p>按此方法设置后，访问网页<a target="_blank" rel="noopener" href="http://module.test.com将显示文件目录/">http://module.test.com将显示文件目录</a></p>
+<p>实际目录位于: &#x2F;module</p>
+<p>a.准备配置文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 module]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;autoindex.conf
+server &#123;
+	listen 80;
+	server_name module.test.com;
+	charset utf-8,gbk; # 解决中文乱码
+
+	location &#x2F; &#123;
+		root &#x2F;module;
+		autoindex on;	# 开启目录索引
+		autoindex_exact_size off;	# 显示文件大小，默认为on显示字节，off显示大概单位
+		autoindex_localtime on;	# 默认off显示UTC时间，on显示本地时间
+	&#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>b.准备对应的目录，并往目录中添加文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">mkdir &#x2F;module&#x2F;&#123;centos,ubuntu,redhat&#125;&#x2F; -p<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>c.检查语法并重新加载nginx</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">nginx -t 
+systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<h3 id="1-2-使用方法2（推荐）"><a href="#1-2-使用方法2（推荐）" class="headerlink" title="1.2 使用方法2（推荐）"></a>1.2 使用方法2（推荐）</h3><p>按此方法设置后，访问网页<a target="_blank" rel="noopener" href="http://www.module.test.com/download%E5%B0%86%E6%98%BE%E7%A4%BA%E6%96%87%E4%BB%B6%E7%9B%AE%E5%BD%95,%E4%B8%BB%E9%A1%B5%E5%8F%AF%E6%AD%A3%E5%B8%B8%E8%AE%BF%E9%97%AE">http://www.module.test.com/download将显示文件目录,主页可正常访问</a></p>
+<p>实际目录位于：&#x2F;module&#x2F;download</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 module]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;autoindex.conf 
+server &#123;
+	listen 80;
+	server_name module.oldboy.com;
+	charset utf-8,gbk;
+
+	location &#x2F; &#123;	# 主页可以正常访问
+		root &#x2F;code;
+		index index.html index.htm;
+	&#125;
+
+	location &#x2F;download &#123;	# 当访问http:&#x2F;&#x2F;xxxx&#x2F;download则访问&#x2F;module&#x2F;download文件夹，显示目录索引
+		root &#x2F;module; # 此时，访问的文件夹是&#x2F;module&#x2F;download
+		autoindex on;
+		autoindex_exact_size off;
+		autoindex_localtime on;
+	&#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="二、-状态监控页面-stub-status"><a href="#二、-状态监控页面-stub-status" class="headerlink" title="二、 状态监控页面-stub_status"></a>二、 状态监控页面-stub_status</h2><blockquote>
+<p>需要nginx附带–with-http_stub_status_module模块才能使用</p>
+</blockquote>
+<h3 id="2-1-使用方法"><a href="#2-1-使用方法" class="headerlink" title="2.1 使用方法"></a>2.1 使用方法</h3><p>a.设置配置文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">在&#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;autoindex.conf里面附加内容
+location &#x2F;nginx_status &#123;
+	stub_status;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>b.重启Nginx服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">重启nginx服务
+systemctl reload nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>c.网页访问测试</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">访问:
+http:&#x2F;&#x2F;module.test.com&#x2F;nginx_status
+网页显示：
+Active connections: 2 
+server accepts handled requests
+		3 			3 	33 
+Reading: 0 Writing: 1 Waiting: 1 <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>d.通过选项关闭长连接</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 注意, 一次TCP的连接，可以发起多次http的请求, 如下参数可配置进行验证
+keepalive_timeout  0;   # 类似于关闭长连接
+keepalive_timeout  65;  # 65s没有活动则断开连接<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">在&#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;autoindex.conf里面的附加内容修改为
+location &#x2F;nginx_status &#123;
+	stub_status;
+	keepalive_timeout  0; 
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>e.再次测试网页访问</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">关闭长连接后的显示：
+Active connections: 2 
+server accepts handled requests
+ 21 21 20 
+Reading: 0 Writing: 1 Waiting: 1 
+# 可见每次HTTP请求都要重新发起TCP连接<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-2-监控页面内容解释"><a href="#2-2-监控页面内容解释" class="headerlink" title="2.2 监控页面内容解释"></a>2.2 监控页面内容解释</h3><table>
+<thead>
+<tr>
+<th>参数项</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Active connections</td>
+<td>当前活动客户端连接数，包括Waiting等待连接数</td>
+</tr>
+<tr>
+<td>accepts</td>
+<td>已接受总的TCP连接数</td>
+</tr>
+<tr>
+<td>handled</td>
+<td>已处理总的TCP连接数</td>
+</tr>
+<tr>
+<td>requests</td>
+<td>客户端总的http请求数</td>
+</tr>
+<tr>
+<td>Reading</td>
+<td>当前nginx读取请求头的连接数</td>
+</tr>
+<tr>
+<td>Writing</td>
+<td>当前nginx将响应写回客户端的连接数</td>
+</tr>
+<tr>
+<td>Waiting</td>
+<td>当前等待请求的空闲客户端连接数</td>
+</tr>
+</tbody></table>
+<h2 id="三、基于IP的访问控制"><a href="#三、基于IP的访问控制" class="headerlink" title="三、基于IP的访问控制"></a>三、基于IP的访问控制</h2><blockquote>
+<p>某网页内的数据比较重要，怎么控制那些人可以访问，那些人不能访问呢？</p>
+</blockquote>
+<p>可以来源的IP地址做限制，常用的三种控制方法：</p>
+<ul>
+<li><p>拒绝10.0.0.1来源IP访问，其他人允许</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">location &#x2F;nginx_status &#123;
+    stub_status;
+    deny 10.0.0.1&#x2F;32;
+    allow all;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>允许10.0.0.1来源IP访问，其他人全部拒绝</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">location &#x2F;nginx_status &#123;
+    stub_status;
+    allow 10.0.0.1&#x2F;32;
+    deny all;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>实际配置监控Nginx状态时，仅允许该服务器的回环地址访问127.0.0.1</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 最安全
+location &#x2F;nginx_status &#123;
+    stub_status;
+    allow 127.0.0.1;
+    deny all;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+<h2 id="四、基于密码的身份验证"><a href="#四、基于密码的身份验证" class="headerlink" title="四、基于密码的身份验证"></a>四、基于密码的身份验证</h2><blockquote>
+<p>重要数据网站，要实现需要用户名密码认证，怎么做呢？</p>
+</blockquote>
+<ol>
+<li><p>生成一个密码文件，密码文件的格式  name:password(加密)  （建议使用htpasswd）  openssl password</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# yum install httpd-tools -y
+[root@web01 conf.d]# htpasswd -c -b &#x2F;etc&#x2F;nginx&#x2F;auth_conf oldboy oldboy
+[root@web01 conf.d]# cat &#x2F;etc&#x2F;nginx&#x2F;auth_conf
+oldboy:$apr1$Kp87VSae$658Nt5bm4iiblQkUvP7u61<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>配置Nginx，限制对应的资源</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">location &#x2F;download &#123;
+	root &#x2F;module;
+	autoindex on;
+	autoindex_exact_size off;
+	autoindex_localtime on;
+	
+	auth_basic &quot;Please Password!!!&quot;;
+	auth_basic_user_file &#x2F;etc&#x2F;nginx&#x2F;auth_conf; 
+	# 注意认证文件路径，否则网页认证后会403，可是为什么放其他目录就不行？
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+</ol>
+<h2 id="五、Nginx连接限制"><a href="#五、Nginx连接限制" class="headerlink" title="五、Nginx连接限制"></a>五、Nginx连接限制</h2><blockquote>
+<p>网站请求数太多，不堪重负了，怎么保障部分用户能够正常访问</p>
+</blockquote>
+<h3 id="5-1-限制连接数"><a href="#5-1-限制连接数" class="headerlink" title="5.1 限制连接数"></a>5.1 限制连接数</h3><p><code>设置共享内存区域和给定键值的最大允许连接数。超过此限制时，服务器将返回错误以回复请求</code></p>
+<ul>
+<li><p>编辑配置文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># http标签段定义连接限制
+http&#123;
+    limit_conn_zone $binary_remote_addr zone&#x3D;conn_zone:10m;
+&#125;
+server &#123;
+    # 同一时刻只允许一个客户端连接
+    limit_conn conn_zone 1; 
+
+    location &#x2F; &#123;
+        root &#x2F;code;
+        index index.html;
+    &#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>使用ab工具进行压力测试</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 使用ab工具进行压力测试
+[root@xuliangwei ~]# yum install -y httpd-tools
+[root@xuliangwei ~]# ab -n 500 -c 2  http:&#x2F;&#x2F;127.0.0.1&#x2F;index.html
+# 可见500次中有失败的请求<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>查看拦截日志</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">tail -f &#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log
+类似于
+2019&#x2F;01&#x2F;14 11:11:22 [error] 29962#29962: *19 limiting connections by zone &quot;conn_zone&quot;, client: 47.110.176.164, server: www.xuliangwei.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;www.xuliangwei.com&quot;
+2019&#x2F;01&#x2F;14 11:11:23 [error] 29962#29962: *19 limiting connections by zone &quot;conn_zone&quot;, client: 47.110.176.164, server: www.xuliangwei.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;www.xuliangwei.com&quot;
+2019&#x2F;01&#x2F;14 11:11:25 [error] 29962#29962: *19 limiting connections by zone &quot;conn_zone&quot;, client: 47.110.176.164, server: www.xuliangwei.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;www.xuliangwei.com&quot;
+2019&#x2F;01&#x2F;14 11:11:25 [error] 29962#29962: *19 limiting connections by zone &quot;conn_zone&quot;, client: 47.110.176.164, server: www.xuliangwei.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;www.xuliangwei.com&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+<h3 id="5-2-限制请求数（更精准）"><a href="#5-2-限制请求数（更精准）" class="headerlink" title="5.2 限制请求数（更精准）"></a>5.2 限制请求数（更精准）</h3><p><code>设置共享内存区域和请求的最大突发大小。过多的请求被延迟，直到它们的数量超过最大突发大小，在这种情况下请求以错误终止。默认情况下，最大突发大小等于零。</code></p>
+<ul>
+<li><p>定义限制的Key</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cat test1.oldboy.com.conf 
+limit_req_zone $binary_remote_addr zone&#x3D;req_zone:10m rate&#x3D;1r&#x2F;s;
+server &#123;
+	listen 80;
+	server_name test1.oldboy.com;
+	
+	limit_req zone&#x3D;req_zone burst&#x3D;5 nodelay;
+	limit_req_status 412;
+	error_page 412 &#x2F;err.html;    #这个文件必须存在&#x2F;code&#x2F;test1&#x2F;err.html
+
+	location &#x2F; &#123;
+		root &#x2F;code&#x2F;test1;
+		index index.html;
+	&#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>填写hosts域名解析 （测试：域名访问才有效果，直接访问没效果）</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">echo &quot;10.0.0.7 test1.oldboy.com&quot; &gt;&gt; &#x2F;etc&#x2F;hosts<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+</li>
+<li><p>压力测试</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">ab -n 50 -c 20 http:&#x2F;&#x2F;test1.oldboy.com&#x2F;index.html<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+</li>
+<li><p>查看错误日志</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">2019&#x2F;01&#x2F;14 11:28:22 [error] 2073#2073: *3 limiting requests, excess: 5.737 by zone &quot;req_zone&quot;, client: 10.0.0.1, server: test1.oldboy.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;test1.oldboy.com&quot;
+2019&#x2F;01&#x2F;14 11:28:22 [error] 2073#2073: *3 limiting requests, excess: 5.611 by zone &quot;req_zone&quot;, client: 10.0.0.1, server: test1.oldboy.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;test1.oldboy.com&quot;
+2019&#x2F;01&#x2F;14 11:28:22 [error] 2073#2073: *3 limiting requests, excess: 5.450 by zone &quot;req_zone&quot;, client: 10.0.0.1, server: test1.oldboy.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;test1.oldboy.com&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+<h2 id="六、Nginx匹配符和优先级"><a href="#六、Nginx匹配符和优先级" class="headerlink" title="六、Nginx匹配符和优先级"></a>六、Nginx匹配符和优先级</h2><p>Location语法示例</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">location [&#x3D;|^~|~|~*|!~|!~*|&#x2F;] &#x2F;uri&#x2F; &#123; ...
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>匹配优先级</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">匹配符	匹配规则						优先级
+&#x3D;		精确匹配						1 	用到
+^~		以某个字符串开头				2
+~		区分大小写的正则匹配			3	常用
+~*		不区分大小写的正则匹配			4
+!~		区分大小写不匹配的正则			5
+!~*		不区分大小写不匹配的正则		6
+&#x2F;		通用匹配，任何请求都会匹配到	7	常用<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="6-1-匹配案例"><a href="#6-1-匹配案例" class="headerlink" title="6.1 匹配案例"></a>6.1 匹配案例</h3><blockquote>
+<p>参考网站：<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_41980405/article/details/111402208">https://blog.csdn.net/qq_41980405/article/details/111402208</a></p>
+</blockquote>
+<ul>
+<li><p>通用匹配，任何请求都会匹配到</p>
+<pre class="line-numbers language-nginx" data-language="nginx"><code class="language-nginx"><span class="token directive"><span class="token keyword">location</span> /</span> <span class="token punctuation">&#123;</span>
+    ...
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>严格区分大小写，匹配以.php结尾的都走这个location    </p>
+<pre class="line-numbers language-nginx" data-language="nginx"><code class="language-nginx"><span class="token directive"><span class="token keyword">location</span> ~ \.php$</span> <span class="token punctuation">&#123;</span>
+    ...
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>严格区分大小写，匹配以.jsp结尾的都走这个location </p>
+<pre class="line-numbers language-nginx" data-language="nginx"><code class="language-nginx"><span class="token directive"><span class="token keyword">location</span> ~ \.jsp$</span> <span class="token punctuation">&#123;</span>
+    ...
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>不区分大小写匹配，只要用户访问.jpg,gif,png,js,css 都走这条location</p>
+<pre class="line-numbers language-nginx" data-language="nginx"><code class="language-nginx"><span class="token directive"><span class="token keyword">location</span> ~* .*\.(jpg|gif|png|js|css|mp4)$</span> <span class="token punctuation">&#123;</span>
+    ...
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>不区分大小写匹配</p>
+<pre class="line-numbers language-nginx" data-language="nginx"><code class="language-nginx"><span class="token directive"><span class="token keyword">location</span> ~* <span class="token string">"\.(sql|bak|tgz|tar.gz|.git)$"</span></span> <span class="token punctuation">&#123;</span>
+    ...
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/09-Nginx(%E4%B8%89)LNMP%E6%9E%B6%E6%9E%84%E5%AE%89%E8%A3%85/" rel="prev" title="运维之综合架构--07--Nginx(三)LNMP介绍">
+      <i class="fa fa-chevron-left"></i> 运维之综合架构--07--Nginx(三)LNMP介绍
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/06-HTTP%E5%8D%8F%E8%AE%AE/" rel="next" title="运维之综合架构--06--HTTP协议介绍">
+      运维之综合架构--06--HTTP协议介绍 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E7%9B%AE%E5%BD%95%E7%B4%A2%E5%BC%95-autoindex"><span class="nav-number">1.</span> <span class="nav-text">一、目录索引-autoindex</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%951"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 使用方法1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%952%EF%BC%88%E6%8E%A8%E8%8D%90%EF%BC%89"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 使用方法2（推荐）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81-%E7%8A%B6%E6%80%81%E7%9B%91%E6%8E%A7%E9%A1%B5%E9%9D%A2-stub-status"><span class="nav-number">2.</span> <span class="nav-text">二、 状态监控页面-stub_status</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 使用方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E7%9B%91%E6%8E%A7%E9%A1%B5%E9%9D%A2%E5%86%85%E5%AE%B9%E8%A7%A3%E9%87%8A"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 监控页面内容解释</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E5%9F%BA%E4%BA%8EIP%E7%9A%84%E8%AE%BF%E9%97%AE%E6%8E%A7%E5%88%B6"><span class="nav-number">3.</span> <span class="nav-text">三、基于IP的访问控制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E5%9F%BA%E4%BA%8E%E5%AF%86%E7%A0%81%E7%9A%84%E8%BA%AB%E4%BB%BD%E9%AA%8C%E8%AF%81"><span class="nav-number">4.</span> <span class="nav-text">四、基于密码的身份验证</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81Nginx%E8%BF%9E%E6%8E%A5%E9%99%90%E5%88%B6"><span class="nav-number">5.</span> <span class="nav-text">五、Nginx连接限制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E9%99%90%E5%88%B6%E8%BF%9E%E6%8E%A5%E6%95%B0"><span class="nav-number">5.1.</span> <span class="nav-text">5.1 限制连接数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E9%99%90%E5%88%B6%E8%AF%B7%E6%B1%82%E6%95%B0%EF%BC%88%E6%9B%B4%E7%B2%BE%E5%87%86%EF%BC%89"><span class="nav-number">5.2.</span> <span class="nav-text">5.2 限制请求数（更精准）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81Nginx%E5%8C%B9%E9%85%8D%E7%AC%A6%E5%92%8C%E4%BC%98%E5%85%88%E7%BA%A7"><span class="nav-number">6.</span> <span class="nav-text">六、Nginx匹配符和优先级</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-%E5%8C%B9%E9%85%8D%E6%A1%88%E4%BE%8B"><span class="nav-number">6.1.</span> <span class="nav-text">6.1 匹配案例</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="GongSheng"
+      src="/images/myavatar.png">
+  <p class="site-author-name" itemprop="name">GongSheng</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">48</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">GongSheng</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

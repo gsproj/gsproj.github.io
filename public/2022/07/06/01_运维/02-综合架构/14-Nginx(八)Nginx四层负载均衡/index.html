@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="一、Nginx四层负载均衡介绍四层负载均衡：（OSI传输层   ip:port）    nginx1.9 版本加入硬件：F5软件：LVS、Haproxy、Nginx 1.四层+七层来作负载均衡，4层可以保证7层的负载均衡的高可用性。如:nginx就无法保证自己的服务高可用，需要依赖lvs或者keepalive来作。 2.如:tcp协议的负载均衡，有些请求是TCP协议的(mysql、ssh)，或者说">
+<meta property="og:type" content="article">
+<meta property="og:title" content="运维之综合架构--07--Nginx(八)四层负载均衡">
+<meta property="og:url" content="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/14-Nginx(%E5%85%AB)Nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/index.html">
+<meta property="og:site_name" content="GongSheng Blog">
+<meta property="og:description" content="一、Nginx四层负载均衡介绍四层负载均衡：（OSI传输层   ip:port）    nginx1.9 版本加入硬件：F5软件：LVS、Haproxy、Nginx 1.四层+七层来作负载均衡，4层可以保证7层的负载均衡的高可用性。如:nginx就无法保证自己的服务高可用，需要依赖lvs或者keepalive来作。 2.如:tcp协议的负载均衡，有些请求是TCP协议的(mysql、ssh)，或者说">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://gsproj.github.io/12-Nginx(%E5%85%AB)Nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1.assets/image-20210823230415237.png">
+<meta property="og:image" content="http://gsproj.github.io/12-Nginx(%E5%85%AB)Nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1.assets/image-20210824001613717.png">
+<meta property="og:image" content="http://gsproj.github.io/12-Nginx(%E5%85%AB)Nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1.assets/image-20210824001638506.png">
+<meta property="article:published_time" content="2022-07-06T03:19:52.000Z">
+<meta property="article:modified_time" content="2022-07-06T07:16:54.615Z">
+<meta property="article:author" content="GongSheng">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://gsproj.github.io/12-Nginx(%E5%85%AB)Nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1.assets/image-20210823230415237.png">
+
+<link rel="canonical" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/14-Nginx(%E5%85%AB)Nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>运维之综合架构--07--Nginx(八)四层负载均衡 | GongSheng Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GongSheng Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">山川異域，風月同天</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/14-Nginx(%E5%85%AB)Nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          运维之综合架构--07--Nginx(八)四层负载均衡
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:16:54" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="一、Nginx四层负载均衡介绍"><a href="#一、Nginx四层负载均衡介绍" class="headerlink" title="一、Nginx四层负载均衡介绍"></a>一、Nginx四层负载均衡介绍</h2><p>四层负载均衡：（OSI传输层   ip:port）<br>    nginx1.9 版本加入<br>硬件：F5<br>软件：LVS、Haproxy、Nginx</p>
+<p>1.四层+七层来作负载均衡，4层可以保证7层的负载均衡的高可用性。如:nginx就无法保证自己的服务高可用，需要依赖lvs或者keepalive来作。</p>
+<p>2.如:tcp协议的负载均衡，有些请求是TCP协议的(mysql、ssh)，或者说这些请求只需要使用4层进行端口的转发就可以了，所以使用4层负载均衡。<br>    比如做：mysql读的负载均衡（轮询）<br>    比如做：端口映射、端口转发         tcp&#x2F;udp</p>
+<p>四层负载均衡总结<br>1.四层负载均衡仅能转发TCP&#x2F;IP协议、UDP协议，通常用来转发端口，如: tcp&#x2F;3306，tcp&#x2F;22，udp&#x2F;53。<br>2.四层负载均衡可以用来解决七层负载均衡的端口限制问题。（七层负载均衡最大使用65535个端口号）<br>3.可以用来解决七层负载均衡的高可用问题。（多台后端七层负载均衡能同时的使用）<br>4.四层的转发效率比七层的高的多，但仅支持tcp&#x2F;ip协议，不支持http或者https协议</p>
+<p><img src="/12-Nginx(%E5%85%AB)Nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1.assets/image-20210823230415237.png" alt="image-20210823230415237"></p>
+<h2 id="二、四层负载均衡配置"><a href="#二、四层负载均衡配置" class="headerlink" title="二、四层负载均衡配置"></a>二、四层负载均衡配置</h2><h3 id="2-1-环境准备"><a href="#2-1-环境准备" class="headerlink" title="2.1 环境准备"></a>2.1 环境准备</h3><table>
+<thead>
+<tr>
+<th>服务器名</th>
+<th>公网IP</th>
+<th>内网IP</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>lb4-01</td>
+<td>10.0.0.3</td>
+<td></td>
+</tr>
+<tr>
+<td>lb01</td>
+<td>10.0.0.5</td>
+<td>172.16.1.5</td>
+</tr>
+<tr>
+<td>lb02</td>
+<td>10.0.0.6</td>
+<td>172.16.1.6</td>
+</tr>
+<tr>
+<td>web、nfs、mysql服务器若干</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="2-2-新增lb02负载均衡服务器"><a href="#2-2-新增lb02负载均衡服务器" class="headerlink" title="2.2 新增lb02负载均衡服务器"></a>2.2 新增lb02负载均衡服务器</h3><p>1、准备<code>lb02</code>，安装Nginx服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb02 ~]# cat &#x2F;etc&#x2F;yum.repos.d&#x2F;nginx.repo 
+[nginx]
+name&#x3D;nginx repo
+baseurl&#x3D;http:&#x2F;&#x2F;nginx.org&#x2F;packages&#x2F;centos&#x2F;7&#x2F;$basearch&#x2F;
+gpgcheck&#x3D;0
+enabled&#x3D;1
+[root@lb02 ~]#  yum install nginx -y<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>2、拷贝<code>lb01</code>的 Nginx配置到<code>lb02</code></p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb02 ~]# scp -rp root@172.16.1.5:&#x2F;etc&#x2F;nginx &#x2F;etc&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>3、启动Nginx</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb02 conf.d]# nginx -t
+[root@lb02 conf.d]# systemctl start nginx
+[root@lb02 conf.d]# systemctl enable nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>报错：</p>
+<p>[root@lb02 ~]# nginx -t<br>nginx: [emerg] unknown directive “check” in &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf:4<br>nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test failed<br>[root@lb02 ~]# vim &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf<br>[root@lb02 ~]# nginx -t<br>nginx: [emerg] unknown directive “check_status” in &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf:17<br>nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test failed</p>
+<p>解决方法：</p>
+<p>因为lb01安装过第三方健康检查工具，而lb02上没有，先将这些报错点注释掉</p>
+</blockquote>
+<p>4、测试lb02是否正常</p>
+<p>将hosts中的10.0.0.5换成10.0.0.6，phpadmin、wordpress网页可以正常访问,<br>但是wecenter异常502 Bad Gateway<br>解决方法: 将web01、02上的的php.ini中的session.auto_start改为0,不然会502</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 php]# vim &#x2F;etc&#x2F;php.ini
+session.auto_start &#x3D; 0
+[root@web01 php]# systemctl restart php-fpm.service<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>网上搜索的解释：<br>日常开发中，php.ini配置session.auto_start&#x3D;0默认关闭会话时如果想开启会话需要调用session_start：<br>session.auto_start 开启就自动完成了session_start()<br>区别就在于在用SESSION前是否需要session_start();<br>当session.auto_start &#x3D; on时，执行 session_start() 将产生新的 session_id<br>session.auto_start &#x3D; on 的优点在于，任何时候都不会因忘记执行 session_start() 或 session_start() 在程序里的位置不对，而导致错误<br>缺点在于，如果你使用的是第三方代码，则必须删去其中的全部 session_start() 。否则将不能得到正确的结果</p>
+</blockquote>
+<h3 id="2-3-配置四层负载均衡"><a href="#2-3-配置四层负载均衡" class="headerlink" title="2.3 配置四层负载均衡"></a>2.3 配置四层负载均衡</h3><p>1、新增<code>lb4-01</code>服务器，安装nginx</p>
+<blockquote>
+<p>nginx需要带–with-stream模块</p>
+</blockquote>
+<pre class="line-numbers language-she" data-language="she"><code class="language-she">[root@lb4-01 ~]# cat &#x2F;etc&#x2F;yum.repos.d&#x2F;nginx.repo 
+[nginx]
+name&#x3D;nginx repo
+baseurl&#x3D;http:&#x2F;&#x2F;nginx.org&#x2F;packages&#x2F;centos&#x2F;7&#x2F;$basearch&#x2F;
+gpgcheck&#x3D;0
+enabled&#x3D;1
+[root@lb4-01 ~]#  yum install nginx -y	
+[root@lb4-01 ~]# vim &#x2F;etc&#x2F;nginx&#x2F;nginx.conf
+events &#123;
+    ....
+&#125;
+
+include &#x2F;etc&#x2F;nginx&#x2F;conf.c&#x2F;*.conf;
+
+http &#123;
+	.....
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>2、创建四层负载均衡配置的目录</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb4-01 conf.c]# rm -f &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;default.conf   #删除http的80端口
+[root@lb4-01 ~]# mkdir &#x2F;etc&#x2F;nginx&#x2F;conf.c
+[root@lb4-01 ~]# cd &#x2F;etc&#x2F;nginx&#x2F;conf.c
+[root@lb4-01 conf.c]# cat lb_domain.conf 
+stream &#123;
+    upstream lb &#123;
+        server 172.16.1.5:80 weight&#x3D;5 max_fails&#x3D;3 fail_timeout&#x3D;30s;
+        server 172.16.1.6:80 weight&#x3D;5 max_fails&#x3D;3 fail_timeout&#x3D;30s;
+    &#125;
+
+    server &#123;
+        listen 80;
+        proxy_connect_timeout 3s;
+        proxy_timeout 3s;
+        proxy_pass lb;
+    &#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>3、重载服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb4-01 conf.c]# nginx -t
+nginx: the configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf syntax is ok
+nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test is successful
+[root@lb4-01 conf.c]# systemctl restart nginx
+[root@lb4-01 conf.c]# systemctl enable nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>报错：<br>[root@lb4-01 nginx]# nginx  -t<br>nginx: [emerg] unknown directive “stream” in &#x2F;etc&#x2F;nginx&#x2F;conf.c&#x2F;lb_domain.conf:1<br>nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test failed<br>解决方法：<br>yum install nginx-mod-stream.x86_64 -y</p>
+</blockquote>
+<blockquote>
+<p>报错：<br>[root@lb4-01 nginx]# systemctl status nginx<br>nginx.service - The nginx HTTP and reverse proxy server<br>Loaded: loaded (&#x2F;usr&#x2F;lib&#x2F;systemd&#x2F;system&#x2F;nginx.service; enabled; vendor preset: disabled)<br>Active: failed (Result: exit-code) since Tue 2021-08-24 07:48:42 CST; 13s ago<br>Process: 2969 ExecStart&#x3D;&#x2F;usr&#x2F;sbin&#x2F;nginx (code&#x3D;exited, status&#x3D;1&#x2F;FAILURE)<br>Process: 2967 ExecStartPre&#x3D;&#x2F;usr&#x2F;sbin&#x2F;nginx -t (code&#x3D;exited, status&#x3D;0&#x2F;SUCCESS)<br>Process: 2965 ExecStartPre&#x3D;&#x2F;usr&#x2F;bin&#x2F;rm -f &#x2F;run&#x2F;nginx.pid (code&#x3D;exited, status&#x3D;0&#x2F;SUCCESS)<br>Main PID: 1959 (code&#x3D;exited, status&#x3D;0&#x2F;SUCCESS)</p>
+<p>Aug 24 07:48:40 lb4-01 nginx[2969]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)<br>Aug 24 07:48:40 lb4-01 nginx[2969]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)<br>Aug 24 07:48:41 lb4-01 nginx[2969]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)<br>Aug 24 07:48:41 lb4-01 nginx[2969]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)<br>Aug 24 07:48:42 lb4-01 nginx[2969]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)<br>Aug 24 07:48:42 lb4-01 nginx[2969]: nginx: [emerg] still could not bind()<br>解决方法：<br>需要将[root@lb4-01 nginx]# vim &#x2F;etc&#x2F;nginx&#x2F;nginx.conf<br>中默认的80端口改掉，比如改成81,这样才不冲突（奇怪。。）</p>
+</blockquote>
+<p>4、访问测试</p>
+<p>将Hosts中的对应网站地址的IP改成10.0.0.3，尝试访问，可以正常通过四层负载均衡来调度10.0.0.5和10.0.0.6七层负载均衡</p>
+<p><img src="/12-Nginx(%E5%85%AB)Nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1.assets/image-20210824001613717.png" alt="image-20210824001613717"></p>
+<p><img src="/12-Nginx(%E5%85%AB)Nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1.assets/image-20210824001638506.png" alt="image-20210824001638506"></p>
+<h2 id="三、四层负载均衡日志"><a href="#三、四层负载均衡日志" class="headerlink" title="三、四层负载均衡日志"></a>三、四层负载均衡日志</h2><h3 id="3-1-配置过程"><a href="#3-1-配置过程" class="headerlink" title="3.1 配置过程"></a>3.1 配置过程</h3><p>在四层负载均衡中配置Nginx</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb4-01 ~]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.c&#x2F;lb_domain.conf
+stream &#123;
+    log_format  proxy &#39;$remote_addr $remote_port - [$time_local] $status $protocol &#39;
+                  &#39;&quot;$upstream_addr&quot; &quot;$upstream_bytes_sent&quot; &quot;$upstream_connect_time&quot;&#39; ;
+    access_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;proxy.log proxy;
+
+    upstream lb &#123;
+....<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="3-2-查看日志"><a href="#3-2-查看日志" class="headerlink" title="3.2 查看日志"></a>3.2 查看日志</h3><p>网页访问后，可见产生的日志</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb4-01 ~]# tail -f &#x2F;var&#x2F;log&#x2F;nginx&#x2F;proxy.log
+10.0.0.1 56396 - [25&#x2F;Aug&#x2F;2021:19:25:33 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;15150&quot; &quot;0.000&quot;
+10.0.0.1 59800 - [25&#x2F;Aug&#x2F;2021:19:25:34 +0800] 200 TCP &quot;172.16.1.6:80&quot; &quot;8327&quot; &quot;0.000&quot;
+10.0.0.1 63468 - [25&#x2F;Aug&#x2F;2021:19:25:34 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;17882&quot; &quot;0.000&quot;
+10.0.0.1 50394 - [25&#x2F;Aug&#x2F;2021:19:25:35 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;24490&quot; &quot;0.000&quot;
+10.0.0.1 55549 - [25&#x2F;Aug&#x2F;2021:19:25:35 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;13201&quot; &quot;0.000&quot;
+10.0.0.1 64324 - [25&#x2F;Aug&#x2F;2021:19:25:42 +0800] 200 TCP &quot;172.16.1.6:80&quot; &quot;70995&quot; &quot;0.000&quot;
+10.0.0.1 64566 - [25&#x2F;Aug&#x2F;2021:19:25:42 +0800] 200 TCP &quot;172.16.1.6:80&quot; &quot;72650&quot; &quot;0.000&quot;
+10.0.0.1 65216 - [25&#x2F;Aug&#x2F;2021:19:25:42 +0800] 200 TCP &quot;172.16.1.6:80&quot; &quot;68171&quot; &quot;0.000&quot;
+10.0.0.1 49668 - [25&#x2F;Aug&#x2F;2021:19:25:42 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;82071&quot; &quot;0.004&quot;
+10.0.0.1 49745 - [25&#x2F;Aug&#x2F;2021:19:25:42 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;63941&quot; &quot;0.001&quot;
+10.0.0.1 50574 - [25&#x2F;Aug&#x2F;2021:19:25:42 +0800] 200 TCP &quot;172.16.1.6:80&quot; &quot;103581&quot; &quot;0.000&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="三、使用nginx四层负载均衡实现tcp的转发（跳板）"><a href="#三、使用nginx四层负载均衡实现tcp的转发（跳板）" class="headerlink" title="三、使用nginx四层负载均衡实现tcp的转发（跳板）"></a>三、使用nginx四层负载均衡实现tcp的转发（跳板）</h2><p>实现跳板机的功能，比如：</p>
+<pre><code>请求负载均衡 5555    ---&gt;     172.16.1.7:22;
+请求负载均衡 6666    ---&gt;     172.16.1.51:3306;
+</code></pre>
+<h3 id="3-1-配置过程-1"><a href="#3-1-配置过程-1" class="headerlink" title="3.1 配置过程"></a>3.1 配置过程</h3><p>配置Nginx</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb4-01 ~]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.c&#x2F;lb_domain.conf 
+stream &#123;
+log_format  proxy &#39;$remote_addr $remote_port - [$time_local] $status $protocol &#39;
+                  &#39;&quot;$upstream_addr&quot; &quot;$upstream_bytes_sent&quot; &quot;$upstream_connect_time&quot;&#39; ;
+    access_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;proxy.log proxy;
+
+#定义转发ssh的22端口
+	upstream ssh_7 &#123;
+		server 10.0.0.7:22;
+	&#125;
+#定义转发mysql的3306端口
+	upstream mysql_51 &#123;
+		server 10.0.0.51:3306;
+	&#125;
+    server &#123;
+        listen 5555;
+        proxy_connect_timeout 3s;
+        proxy_timeout 300s;
+        proxy_pass ssh_7;
+    &#125;
+
+    server &#123;
+        listen 6666;
+        proxy_connect_timeout 3s;
+        proxy_timeout 3s;
+        proxy_pass mysql_51;
+    &#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>测试访问</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 连接web01
+ssh root@10.0.0.3 -p 5555
+
+# 连接db01
+ssh root@10.0.0.3 -p 6666<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+
+
+
+
+
+
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/15-Nginx(%E4%B9%9D)%E5%8A%A8%E9%9D%99%E5%88%86%E7%A6%BB%E5%92%8Crewrite/" rel="prev" title="运维之综合架构--07--Nginx(九)动静分离">
+      <i class="fa fa-chevron-left"></i> 运维之综合架构--07--Nginx(九)动静分离
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/13-Nginx(%E4%B8%83)Nginx%E4%B8%83%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5/" rel="next" title="运维之综合架构--07--Nginx(七)均衡调度">
+      运维之综合架构--07--Nginx(七)均衡调度 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81Nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.</span> <span class="nav-text">一、Nginx四层负载均衡介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E9%85%8D%E7%BD%AE"><span class="nav-number">2.</span> <span class="nav-text">二、四层负载均衡配置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 环境准备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E6%96%B0%E5%A2%9Elb02%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 新增lb02负载均衡服务器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E9%85%8D%E7%BD%AE%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 配置四层负载均衡</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E6%97%A5%E5%BF%97"><span class="nav-number">3.</span> <span class="nav-text">三、四层负载均衡日志</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E9%85%8D%E7%BD%AE%E8%BF%87%E7%A8%8B"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 配置过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E6%9F%A5%E7%9C%8B%E6%97%A5%E5%BF%97"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 查看日志</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E4%BD%BF%E7%94%A8nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E5%AE%9E%E7%8E%B0tcp%E7%9A%84%E8%BD%AC%E5%8F%91%EF%BC%88%E8%B7%B3%E6%9D%BF%EF%BC%89"><span class="nav-number">4.</span> <span class="nav-text">三、使用nginx四层负载均衡实现tcp的转发（跳板）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E9%85%8D%E7%BD%AE%E8%BF%87%E7%A8%8B-1"><span class="nav-number">4.1.</span> <span class="nav-text">3.1 配置过程</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="GongSheng"
+      src="/images/myavatar.png">
+  <p class="site-author-name" itemprop="name">GongSheng</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">48</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">GongSheng</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

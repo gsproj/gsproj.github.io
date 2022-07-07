@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="一、Sersync服务介绍  1 为什么要用sersync sersync是基于inotify开发的，类似于inotify-tools的工具 sersync可以记录下被监听目录中发生变化的（包括增加、删除、修改）具体某一个文件或者某一个目录的名字，然后使用rsync同步的时候，只同步发生变化的文件或者目录 因为服务异常导致的同步失败有记录，便于恢复，确保高可用！  2 rsync+inotify-">
+<meta property="og:type" content="article">
+<meta property="og:title" content="运维之综合架构--04--Sersync实时备份">
+<meta property="og:url" content="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/04-sersync%E5%AE%9E%E6%97%B6%E5%90%8C%E6%AD%A5%E5%A4%87%E4%BB%BD/index.html">
+<meta property="og:site_name" content="GongSheng Blog">
+<meta property="og:description" content="一、Sersync服务介绍  1 为什么要用sersync sersync是基于inotify开发的，类似于inotify-tools的工具 sersync可以记录下被监听目录中发生变化的（包括增加、删除、修改）具体某一个文件或者某一个目录的名字，然后使用rsync同步的时候，只同步发生变化的文件或者目录 因为服务异常导致的同步失败有记录，便于恢复，确保高可用！  2 rsync+inotify-">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://gsproj.github.io/03-sersync%E5%AE%9E%E6%97%B6%E5%90%8C%E6%AD%A5%E5%A4%87%E4%BB%BD.assets/sersync%E6%B5%81%E7%A8%8B-1628145534424.png">
+<meta property="article:published_time" content="2022-07-06T03:19:52.000Z">
+<meta property="article:modified_time" content="2022-07-06T07:15:53.104Z">
+<meta property="article:author" content="GongSheng">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://gsproj.github.io/03-sersync%E5%AE%9E%E6%97%B6%E5%90%8C%E6%AD%A5%E5%A4%87%E4%BB%BD.assets/sersync%E6%B5%81%E7%A8%8B-1628145534424.png">
+
+<link rel="canonical" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/04-sersync%E5%AE%9E%E6%97%B6%E5%90%8C%E6%AD%A5%E5%A4%87%E4%BB%BD/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>运维之综合架构--04--Sersync实时备份 | GongSheng Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GongSheng Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">山川異域，風月同天</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/04-sersync%E5%AE%9E%E6%97%B6%E5%90%8C%E6%AD%A5%E5%A4%87%E4%BB%BD/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          运维之综合架构--04--Sersync实时备份
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:15:53" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="一、Sersync服务介绍"><a href="#一、Sersync服务介绍" class="headerlink" title="一、Sersync服务介绍"></a>一、Sersync服务介绍</h2><blockquote>
+</blockquote>
+<h3 id="1-为什么要用sersync"><a href="#1-为什么要用sersync" class="headerlink" title="1 为什么要用sersync"></a>1 为什么要用sersync</h3><ul>
+<li>sersync是基于inotify开发的，类似于inotify-tools的工具</li>
+<li>sersync可以记录下被监听目录中发生变化的（包括增加、删除、修改）具体某一个文件或者某一个目录的名字，然后使用rsync同步的时候，只同步发生变化的文件或者目录</li>
+<li>因为服务异常导致的同步失败有记录，便于恢复，确保高可用！</li>
+</ul>
+<h3 id="2-rsync-inotify-tools与rsync-sersync架构的区别？"><a href="#2-rsync-inotify-tools与rsync-sersync架构的区别？" class="headerlink" title="2 rsync+inotify-tools与rsync+sersync架构的区别？"></a>2 rsync+inotify-tools与rsync+sersync架构的区别？</h3><ul>
+<li><p>rsync+inotify-tools</p>
+<p>a、inotify只能记录下被监听的目录发生了变化（增，删，改）并没有把具体是哪个文件或者哪个目录发生了变化记录下来；</p>
+<p>b、rsync在同步的时候，并不知道具体是哪个文件或目录发生了变化，每次都是对整个目录进行同步，当数据量很大时，整个目录同步非常耗时（rsync要对整个目录遍历查找对比文件），因此效率很低</p>
+</li>
+<li><p>rsync+sersync</p>
+<p>a、sersync可以记录被监听目录中发生变化的（增，删，改）具体某个文件或目录的名字；</p>
+<p>b、rsync在同步时，只同步发生变化的文件或目录（每次发生变化的数据相对整个同步目录数据来说很小，rsync在遍历查找对比文件时，速度很快），因此效率很高。</p>
+</li>
+</ul>
+<h2 id="二、同步过程和原理"><a href="#二、同步过程和原理" class="headerlink" title="二、同步过程和原理"></a>二、同步过程和原理</h2><h3 id="1-同步过程"><a href="#1-同步过程" class="headerlink" title="1 同步过程"></a>1 同步过程</h3><ol>
+<li>在同步服务器上开启sersync服务，sersync负责监控配置路径中的文件系统事件变化</li>
+<li>调用rsync命令把更新的文件同步到目标服务器；</li>
+<li>需要在主服务器配置sersync，在同步目标服务器配置rsync server（注意：是rsync服务</li>
+</ol>
+<h3 id="2-同步原理"><a href="#2-同步原理" class="headerlink" title="2 同步原理"></a>2 同步原理</h3><ol>
+<li>用户实时的往sersync服务器上写入更新文件数据；</li>
+<li>此时需要在同步主服务器上配置sersync服务；</li>
+<li>在另一台服务器开启rsync守护进程服务，以同步拉取来自sersync服务器上的数据；</li>
+</ol>
+<blockquote>
+<p>通过rsync的守护进程服务后可以发现，实际上sersync就是监控本地的数据写入或更新事件；然后，再调用rsync客户端的命令，将写入或更新事件对应的文件通过rsync推送到目标服务器。</p>
+</blockquote>
+<h2 id="三、案例"><a href="#三、案例" class="headerlink" title="三、案例"></a>三、案例</h2><blockquote>
+<p>案例: 实现web上传视频文件，实则是写入NFS至存储，当NFS存在新的数据则会实时的复制到备份服务器</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>内网IP(LAN)</th>
+<th>外网IP(NAT)</th>
+<th>安装工具</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>web01</td>
+<td>eth1:172.16.1.7</td>
+<td>eth0:10.0.0.7</td>
+<td>httpd php</td>
+</tr>
+<tr>
+<td>nfs-server</td>
+<td>eth1:172.16.1.31</td>
+<td>eth0:10.0.0.31</td>
+<td>nfsServer、rsync+inotify+sersync</td>
+</tr>
+<tr>
+<td>backup</td>
+<td>eth1:172.16.1.41</td>
+<td>eth0:10.0.0.41</td>
+<td>rsync-server</td>
+</tr>
+</tbody></table>
+<p><img src="/03-sersync%E5%AE%9E%E6%97%B6%E5%90%8C%E6%AD%A5%E5%A4%87%E4%BB%BD.assets/sersync%E6%B5%81%E7%A8%8B-1628145534424.png" alt="sersync流程"></p>
+<h3 id="1-web上传视频至nfs存储"><a href="#1-web上传视频至nfs存储" class="headerlink" title="1 web上传视频至nfs存储"></a>1 web上传视频至nfs存储</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">nfs存储服务  172.16.1.31
+	1.安装
+		[root@nfs ~]# yum install nfs-utils -y
+	2.配置
+		[root@nfs ~]# cat &#x2F;etc&#x2F;exports
+		&#x2F;data 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
+		
+		[root@nfs ~]# groupadd -g666 www
+		[root@nfs ~]# useradd -u666 -g666 www
+		
+		[root@nfs ~]# mkdir &#x2F;data
+		[root@nfs ~]# chown -R www.www &#x2F;data
+		
+	3.启动
+		[root@nfs ~]# systemctl restart nfs-server
+		[root@nfs ~]# sysytemctl enable nfs-server
+		
+web服务器操作：172.16.1.7
+	1.安装
+		[root@web01 ~]# yum install httpd php -y
+	2.配置
+		进程运行的身份（最好是和nfs的匿名用户保持一致）
+			# sed c 匹配到User开头的字段，替换为User www
+			[root@web01 html]# sed -i &#39;&#x2F;^User&#x2F;c User www&#39; &#x2F;etc&#x2F;httpd&#x2F;conf&#x2F;httpd.conf 	
+			[root@web01 html]# sed -i &#39;&#x2F;^Group&#x2F;c Group www&#39; &#x2F;etc&#x2F;httpd&#x2F;conf&#x2F;httpd.conf
+		挂载
+			[root@web01 ~]# mount -t nfs 172.16.1.31:&#x2F;data &#x2F;var&#x2F;www&#x2F;html		#核心
+		上传代码
+			[root@web01 ~]# cd &#x2F;var&#x2F;www&#x2F;html&#x2F;
+			[root@web01 html]# rz kaoshi.zip
+			[root@web01 html]# unzip kaoshi.zip
+	3.启动
+		[root@web01 ~]# systemctl start httpd
+
+	4.修改上传大小
+		[root@web01 ~]# vim &#x2F;etc&#x2F;php.ini中设置：
+		upload_max_filesize &#x3D; 200M;
+		post_max_size &#x3D; 200M;
+	
+	5.注意: 修改完配置记得重启服务
+	[root@web01 ~]#  systemctl restart httpd<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-web和nfs的数据都备份在备份服务器的-x2F-backup"><a href="#2-web和nfs的数据都备份在备份服务器的-x2F-backup" class="headerlink" title="2 web和nfs的数据都备份在备份服务器的&#x2F;backup"></a>2 web和nfs的数据都备份在备份服务器的&#x2F;backup</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">备份服务器操作如下：172.16.1.41
+	1.安装
+		[root@backup ~]# yum install rsync -y
+	2.配置
+		[root@backup ~]# cat &#x2F;etc&#x2F;rsyncd.conf
+		uid &#x3D; www
+		gid &#x3D; www
+		port &#x3D; 873
+		fake super &#x3D; yes
+		use chroot &#x3D; no
+		max connections &#x3D; 200
+		timeout &#x3D; 600
+		ignore errors
+		read only &#x3D; false
+		list &#x3D; true
+		auth users &#x3D; rsync_backup
+		secrets file &#x3D; &#x2F;etc&#x2F;rsync.passwd
+		log file &#x3D; &#x2F;var&#x2F;log&#x2F;rsyncd.log
+		#####################################
+		[backup]
+		path &#x3D; &#x2F;backup
+		
+		[data]
+		path &#x3D; &#x2F;data
+		
+		创建用户
+			[root@backup ~]# groupadd -g666 www
+			[root@backup ~]# useradd -u666 -g666 www
+		
+		准备虚拟连接用户账号和密码
+		[root@backup ~]# cat &#x2F;etc&#x2F;rsync.passwd 
+		rsync_backup:123456
+		[root@backup ~]# chmod 600 &#x2F;etc&#x2F;rsync.passwd
+		
+		创建数据存放的目录
+		[root@backup ~]# mkdir -p &#x2F;data &#x2F;backup
+		[root@backup ~]# chown -R www.www &#x2F;data&#x2F; &#x2F;backup&#x2F;
+
+	3.启动
+		[root@backup ~]# systemctl restart rsyncd
+
+	4.客户端执行脚本。测试rsync的备份是否ok   （客户端的数据都写入到&#x2F;backup目录中） 172.16.1.7 172.16.1.31
+	[root@web01 ~]# sh &#x2F;server&#x2F;scripts&#x2F;client_push_data.sh 
+	sending incremental file list
+	web01_172.16.1.7_2019-01-08&#x2F;
+	web01_172.16.1.7_2019-01-08&#x2F;flag_2019-01-08
+	web01_172.16.1.7_2019-01-08&#x2F;other.tar.gz
+	web01_172.16.1.7_2019-01-08&#x2F;sys.tar.gz<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="3-如何将nfs的数据实时的同步到备份服务器的-x2F-data目录"><a href="#3-如何将nfs的数据实时的同步到备份服务器的-x2F-data目录" class="headerlink" title="3 如何将nfs的数据实时的同步到备份服务器的&#x2F;data目录"></a>3 如何将nfs的数据实时的同步到备份服务器的&#x2F;data目录</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">监控nfs服务器上面的&#x2F;data目录，如果发生变化则触发动作，动作可以是执行一次同步。
+1.安装
+	[root@nfs ~]# yum install inotify-tools		监控工具
+	
+	[root@nfs ~]# rz -E sersync2.5.4_64bit_binary_stable_final.tar.gz	
+	[root@nfs ~]# tar xf sersync2.5.4_64bit_binary_stable_final.tar.gz
+	[root@nfs ~]# mv GNU-Linux-x86&#x2F; &#x2F;usr&#x2F;local&#x2F;sersync
+2.配置
+	[root@nfs sersync]# diff confxml.xml confxml.xml.bak
+       5c5
+       &lt;     &lt;fileSystem xfs&#x3D;&quot;true&quot;&#x2F;&gt;
+       ---
+       &gt;     &lt;fileSystem xfs&#x3D;&quot;false&quot;&#x2F;&gt;
+       15c15
+       &lt;       &lt;createFile start&#x3D;&quot;true&quot;&#x2F;&gt;
+       ---
+       &gt;       &lt;createFile start&#x3D;&quot;false&quot;&#x2F;&gt;
+       19,20c19,20
+       &lt;       &lt;attrib start&#x3D;&quot;true&quot;&#x2F;&gt;
+       &lt;       &lt;modify start&#x3D;&quot;true&quot;&#x2F;&gt;
+       ---
+       &gt;       &lt;attrib start&#x3D;&quot;false&quot;&#x2F;&gt;
+       &gt;       &lt;modify start&#x3D;&quot;false&quot;&#x2F;&gt;
+       24,25c24,25
+       &lt;       &lt;localpath watch&#x3D;&quot;&#x2F;data&quot;&gt;
+       &lt;           &lt;remote ip&#x3D;&quot;172.16.1.41&quot; name&#x3D;&quot;data&quot;&#x2F;&gt;
+       ---
+       &gt;       &lt;localpath watch&#x3D;&quot;&#x2F;opt&#x2F;tongbu&quot;&gt;
+       &gt;           &lt;remote ip&#x3D;&quot;127.0.0.1&quot; name&#x3D;&quot;tongbu1&quot;&#x2F;&gt;
+       30,31c30,31
+       &lt;           &lt;commonParams params&#x3D;&quot;-az&quot;&#x2F;&gt;
+       &lt;           &lt;auth start&#x3D;&quot;true&quot; users&#x3D;&quot;rsync_backup&quot; passwordfile&#x3D;&quot;&#x2F;etc&#x2F;rsync.pass&quot;&#x2F;&gt;
+       ---
+       &gt;           &lt;commonParams params&#x3D;&quot;-artuz&quot;&#x2F;&gt;
+       &gt;           &lt;auth start&#x3D;&quot;false&quot; users&#x3D;&quot;root&quot; passwordfile&#x3D;&quot;&#x2F;etc&#x2F;rsync.pas&quot;&#x2F;&gt;
+       33c33
+       &lt;           &lt;timeout start&#x3D;&quot;true&quot; time&#x3D;&quot;100&quot;&#x2F;&gt;&lt;!-- timeout&#x3D;100 --&gt;
+       ---
+       &gt;           &lt;timeout start&#x3D;&quot;false&quot; time&#x3D;&quot;100&quot;&#x2F;&gt;&lt;!-- timeout&#x3D;100 --&gt;
+
+	创建客户端密码文件
+	[root@nfs ~]# cat &#x2F;etc&#x2F;rsync.pass
+	123456
+	[root@nfs ~]# chmod 600 &#x2F;etc&#x2F;rsync.pass
+
+3.启动
+[root@nfs ~]# &#x2F;usr&#x2F;local&#x2F;sersync&#x2F;sersync2  -h
+set the system param
+execute：echo 50000000 &gt; &#x2F;proc&#x2F;sys&#x2F;fs&#x2F;inotify&#x2F;max_user_watches
+execute：echo 327679 &gt; &#x2F;proc&#x2F;sys&#x2F;fs&#x2F;inotify&#x2F;max_queued_events
+parse the command param
+_______________________________________________________
+参数-d:启用守护进程模式
+参数-r:在监控前，将监控目录与远程主机用rsync命令推送一遍
+参数-n: 指定开启守护线程的数量，默认为10个
+参数-o:指定配置文件，默认使用confxml.xml文件
+参数-m:单独启用其他模块，使用 -m refreshCDN 开启刷新CDN模块
+参数-m:单独启用其他模块，使用 -m socket 开启socket模块
+参数-m:单独启用其他模块，使用 -m http 开启http模块
+不加-m参数，则默认执行同步程序
+
+启动
+[root@nfs ~]#  &#x2F;usr&#x2F;local&#x2F;sersync&#x2F;sersync2 -dro &#x2F;usr&#x2F;local&#x2F;sersync&#x2F;confxml.xml
+
+#启动sersync后一定要提取同步的命令，手动运行一次，检查是否存在错误
+[root@nfs ~]#  cd &#x2F;data &amp;&amp; rsync -az -R --delete .&#x2F;  --timeout&#x3D;100 rsync_backup@172.16.1.41::data --password-file&#x3D;&#x2F;etc&#x2F;rsync.pass
+
+停止
+[root@nfs data]# pkill sersync<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="4-如何平滑的迁移nfs数据到backup服务器。并且让后续的上传都是上传至backup-（不能出现业务中断）"><a href="#4-如何平滑的迁移nfs数据到backup服务器。并且让后续的上传都是上传至backup-（不能出现业务中断）" class="headerlink" title="4 如何平滑的迁移nfs数据到backup服务器。并且让后续的上传都是上传至backup   （不能出现业务中断）"></a>4 如何平滑的迁移nfs数据到backup服务器。并且让后续的上传都是上传至backup   （不能出现业务中断）</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.backup服务器上需要运行和nfs服务器上一样的业务环境 
+	创建用户
+	[root@backup ~]# groupadd -g 666 www
+	[root@backup ~]# useradd -u666 -g666 www
+	配置
+	[root@backup ~]# yum install -y nfs-utils -y
+	[root@backup ~]# cat &#x2F;etc&#x2F;exports
+	&#x2F;data 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
+	启动
+	[root@backup ~]# systemctl restart nfs-server
+	
+2.先实现实时的同步 √
+
+3.在web上实现切换，卸载nfs的&#x2F;data目录，重新挂载backup服务的&#x2F;data目录
+	[root@web01 ~]# umount -lf &#x2F;var&#x2F;www&#x2F;html&#x2F; &amp;&amp; mount -t nfs 172.16.1.41:&#x2F;data &#x2F;var&#x2F;www&#x2F;html&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+
+
+
+
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/05-ssh%E6%9C%8D%E5%8A%A1%E8%B7%B3%E6%9D%BF%E6%9C%BA%E6%90%AD%E5%BB%BA/" rel="prev" title="运维之综合架构--05--SSH服务器搭建">
+      <i class="fa fa-chevron-left"></i> 运维之综合架构--05--SSH服务器搭建
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/03-NFS%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/" rel="next" title="运维之综合架构--03-NFS服务器搭建">
+      运维之综合架构--03-NFS服务器搭建 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81Sersync%E6%9C%8D%E5%8A%A1%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.</span> <span class="nav-text">一、Sersync服务介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E7%94%A8sersync"><span class="nav-number">1.1.</span> <span class="nav-text">1 为什么要用sersync</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-rsync-inotify-tools%E4%B8%8Ersync-sersync%E6%9E%B6%E6%9E%84%E7%9A%84%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="nav-number">1.2.</span> <span class="nav-text">2 rsync+inotify-tools与rsync+sersync架构的区别？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E5%90%8C%E6%AD%A5%E8%BF%87%E7%A8%8B%E5%92%8C%E5%8E%9F%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">二、同步过程和原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E5%90%8C%E6%AD%A5%E8%BF%87%E7%A8%8B"><span class="nav-number">2.1.</span> <span class="nav-text">1 同步过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E5%90%8C%E6%AD%A5%E5%8E%9F%E7%90%86"><span class="nav-number">2.2.</span> <span class="nav-text">2 同步原理</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E6%A1%88%E4%BE%8B"><span class="nav-number">3.</span> <span class="nav-text">三、案例</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-web%E4%B8%8A%E4%BC%A0%E8%A7%86%E9%A2%91%E8%87%B3nfs%E5%AD%98%E5%82%A8"><span class="nav-number">3.1.</span> <span class="nav-text">1 web上传视频至nfs存储</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-web%E5%92%8Cnfs%E7%9A%84%E6%95%B0%E6%8D%AE%E9%83%BD%E5%A4%87%E4%BB%BD%E5%9C%A8%E5%A4%87%E4%BB%BD%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%9A%84-x2F-backup"><span class="nav-number">3.2.</span> <span class="nav-text">2 web和nfs的数据都备份在备份服务器的&#x2F;backup</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E5%A6%82%E4%BD%95%E5%B0%86nfs%E7%9A%84%E6%95%B0%E6%8D%AE%E5%AE%9E%E6%97%B6%E7%9A%84%E5%90%8C%E6%AD%A5%E5%88%B0%E5%A4%87%E4%BB%BD%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%9A%84-x2F-data%E7%9B%AE%E5%BD%95"><span class="nav-number">3.3.</span> <span class="nav-text">3 如何将nfs的数据实时的同步到备份服务器的&#x2F;data目录</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E5%A6%82%E4%BD%95%E5%B9%B3%E6%BB%91%E7%9A%84%E8%BF%81%E7%A7%BBnfs%E6%95%B0%E6%8D%AE%E5%88%B0backup%E6%9C%8D%E5%8A%A1%E5%99%A8%E3%80%82%E5%B9%B6%E4%B8%94%E8%AE%A9%E5%90%8E%E7%BB%AD%E7%9A%84%E4%B8%8A%E4%BC%A0%E9%83%BD%E6%98%AF%E4%B8%8A%E4%BC%A0%E8%87%B3backup-%EF%BC%88%E4%B8%8D%E8%83%BD%E5%87%BA%E7%8E%B0%E4%B8%9A%E5%8A%A1%E4%B8%AD%E6%96%AD%EF%BC%89"><span class="nav-number">3.4.</span> <span class="nav-text">4 如何平滑的迁移nfs数据到backup服务器。并且让后续的上传都是上传至backup   （不能出现业务中断）</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="GongSheng"
+      src="/images/myavatar.png">
+  <p class="site-author-name" itemprop="name">GongSheng</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">48</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">GongSheng</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

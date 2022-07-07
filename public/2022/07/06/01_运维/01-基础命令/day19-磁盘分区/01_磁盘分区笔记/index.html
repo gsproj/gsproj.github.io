@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="一、磁盘分区方案1.1 MBR与GPT介绍Linux中磁盘分区有两种方案  MBR（主引导记录） GPT（GUID分区表）  **MBR分区方案**的特点（支持的磁盘容量&lt;&#x3D;2T）：  最多支持四个主分区  在Linux上使用扩展分区和逻辑分区最多可以创建15个分区，  由于分区中的数据以32位存储，使用MBR分区是最大支持2T空间。  用fdisk管理工具来创建MBR分区  **">
+<meta property="og:type" content="article">
+<meta property="og:title" content="运维之基础命令--磁盘分区">
+<meta property="og:url" content="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day19-%E7%A3%81%E7%9B%98%E5%88%86%E5%8C%BA/01_%E7%A3%81%E7%9B%98%E5%88%86%E5%8C%BA%E7%AC%94%E8%AE%B0/index.html">
+<meta property="og:site_name" content="GongSheng Blog">
+<meta property="og:description" content="一、磁盘分区方案1.1 MBR与GPT介绍Linux中磁盘分区有两种方案  MBR（主引导记录） GPT（GUID分区表）  **MBR分区方案**的特点（支持的磁盘容量&lt;&#x3D;2T）：  最多支持四个主分区  在Linux上使用扩展分区和逻辑分区最多可以创建15个分区，  由于分区中的数据以32位存储，使用MBR分区是最大支持2T空间。  用fdisk管理工具来创建MBR分区  **">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-07-06T03:19:52.000Z">
+<meta property="article:modified_time" content="2022-07-06T07:14:36.999Z">
+<meta property="article:author" content="GongSheng">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day19-%E7%A3%81%E7%9B%98%E5%88%86%E5%8C%BA/01_%E7%A3%81%E7%9B%98%E5%88%86%E5%8C%BA%E7%AC%94%E8%AE%B0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>运维之基础命令--磁盘分区 | GongSheng Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GongSheng Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">山川異域，風月同天</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day19-%E7%A3%81%E7%9B%98%E5%88%86%E5%8C%BA/01_%E7%A3%81%E7%9B%98%E5%88%86%E5%8C%BA%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          运维之基础命令--磁盘分区
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:14:36" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="一、磁盘分区方案"><a href="#一、磁盘分区方案" class="headerlink" title="一、磁盘分区方案"></a>一、磁盘分区方案</h2><h3 id="1-1-MBR与GPT介绍"><a href="#1-1-MBR与GPT介绍" class="headerlink" title="1.1 MBR与GPT介绍"></a>1.1 MBR与GPT介绍</h3><p>Linux中磁盘分区有两种方案</p>
+<ul>
+<li><strong>MBR</strong>（主引导记录）</li>
+<li><strong>GPT</strong>（GUID分区表）</li>
+</ul>
+<p>**<font color='blue'>MBR分区方案</font>**的特点（支持的磁盘容量&lt;&#x3D;2T）：</p>
+<ol>
+<li>最多支持四个主分区 </li>
+<li>在Linux上使用扩展分区和逻辑分区最多可以创建15个分区， </li>
+<li>由于分区中的数据以32位存储，使用MBR分区是最大支持2T空间。 </li>
+<li>用fdisk管理工具来创建MBR分区</li>
+</ol>
+<p>**<font color='red'>GPT分区方案</font>**的特点（支持的磁盘容量&gt;2T）：</p>
+<ol>
+<li>是UEFI标准的一部分，主板必须要支持UEFI标准 </li>
+<li>GPT分区列表支持最大128PB(1PB&#x3D;1024TB) </li>
+<li>可以定义128个分区 </li>
+<li>没有主分区，扩展分区和逻辑分区的概念，所有分区都能格式化 </li>
+<li>gdisk和parted管理工具可以创建GPT分区</li>
+</ol>
+<h3 id="1-2-MBR与GTP的区别"><a href="#1-2-MBR与GTP的区别" class="headerlink" title="1.2 MBR与GTP的区别"></a>1.2 MBR与GTP的区别</h3><table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>MBR</th>
+<th>GPT</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>新旧度</td>
+<td>旧</td>
+<td>新</td>
+</tr>
+<tr>
+<td>支持的硬盘容量大小</td>
+<td>最大2TB</td>
+<td>支持2T以上</td>
+</tr>
+<tr>
+<td>分区计数</td>
+<td>最多支持4个主分区或3个主分区一个扩展分区</td>
+<td>最多支持128个分区,部分主分区、扩展分区</td>
+</tr>
+<tr>
+<td>安全功能</td>
+<td>不提供任何安全功能</td>
+<td>支持CRC32校验和机制</td>
+</tr>
+</tbody></table>
+<h2 id="二、分区工具使用"><a href="#二、分区工具使用" class="headerlink" title="二、分区工具使用"></a>二、分区工具使用</h2><h3 id="2-1-MBR分区工具fdisk"><a href="#2-1-MBR分区工具fdisk" class="headerlink" title="2.1 MBR分区工具fdisk"></a>2.1 MBR分区工具fdisk</h3><h3 id="2-2-GPT分区工具gdisk"><a href="#2-2-GPT分区工具gdisk" class="headerlink" title="2.2 GPT分区工具gdisk"></a>2.2 GPT分区工具gdisk</h3><h3 id="2-3-GPT分区工具parted"><a href="#2-3-GPT分区工具parted" class="headerlink" title="2.3 GPT分区工具parted"></a>2.3 GPT分区工具parted</h3><p>​	parted用于对磁盘（或RAID磁盘）进行分区及管理，与fdisk分区工具相比，支持2TB以上的磁盘分区，并且允许调整分区的大小，<font color='red'>支持命令行方式或交互式方式</font>，常用命令如下：</p>
+<table>
+<thead>
+<tr>
+<th>parted交互命令</th>
+<th>说 明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>check NUMBER</td>
+<td>做一次简单的文件系统检测</td>
+</tr>
+<tr>
+<td>cp [FROM-DEVICE] FROM-NUMBER TO-NUMBER</td>
+<td>复制文件系统到另一个分区</td>
+</tr>
+<tr>
+<td>help [COMMAND]</td>
+<td>显示所有的命令帮助</td>
+</tr>
+<tr>
+<td>mklabel,mktable LABEL-TYPE</td>
+<td>创建新的磁盘卷标（分区表）</td>
+</tr>
+<tr>
+<td>mkfs NUMBER FS-TYPE</td>
+<td>在分区上建立文件系统</td>
+</tr>
+<tr>
+<td>mkpart PART-TYPE [FS-TYPE] START END</td>
+<td>创建一个分区</td>
+</tr>
+<tr>
+<td>mkpartfs PART-TYPE FS-TYPE START END</td>
+<td>创建分区，并建立文件系统</td>
+</tr>
+<tr>
+<td>move NUMBER START END</td>
+<td>移动分区</td>
+</tr>
+<tr>
+<td>name NUMBER NAME</td>
+<td>给分区命名</td>
+</tr>
+<tr>
+<td>print [devices|free|list,all|NUMBER]</td>
+<td>显示分区表、活动设备、空闲空间、所有分区</td>
+</tr>
+<tr>
+<td>quit</td>
+<td>退出</td>
+</tr>
+<tr>
+<td>rescue START END</td>
+<td>修复丢失的分区</td>
+</tr>
+<tr>
+<td>resize NUMBER START END</td>
+<td>修改分区大小</td>
+</tr>
+<tr>
+<td>rm NUMBER</td>
+<td>删除分区</td>
+</tr>
+<tr>
+<td>select DEVICE</td>
+<td>选择需要编辑的设备</td>
+</tr>
+<tr>
+<td>set NUMBER FLAG STATE</td>
+<td>改变分区标记</td>
+</tr>
+<tr>
+<td>toggle [NUMBER [FLAG]]</td>
+<td>切换分区表的状态</td>
+</tr>
+<tr>
+<td>unit UNIT</td>
+<td>设置默认的单位</td>
+</tr>
+<tr>
+<td>Version</td>
+<td>显示版本</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>关于mkpart与PART-TYPE（FS-TYPE）的解释：</p>
+<p>Make a part-type partition for filesystem fs-type (if specified), beginning at start and ending at end (by default in megabytes).  fs-type can  be  one  of  “btrfs”,  “ext2”, “ext3”, “ext4”, “fat16”, “fat32”, “hfs”, “hfs+”, “linux-swap”, “ntfs”, “reiserfs”, or “xfs”.  part-type should be one of “primary”, “logical”, or “extended”.</p>
+</blockquote>
+<h4 id="2-3-1-使用parted"><a href="#2-3-1-使用parted" class="headerlink" title="2.3.1 使用parted"></a>2.3.1 使用parted</h4><h4 id="2-3-1-1-列出所有块设备分区情况"><a href="#2-3-1-1-列出所有块设备分区情况" class="headerlink" title="2.3.1.1 列出所有块设备分区情况"></a>2.3.1.1 列出所有块设备分区情况</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token comment"># 查看当前有哪些块设备</span>
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># lsblk</span>
+NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sda      <span class="token number">8</span>:0    <span class="token number">0</span>   50G  <span class="token number">0</span> disk
+├─sda1   <span class="token number">8</span>:1    <span class="token number">0</span>    1G  <span class="token number">0</span> part /boot
+├─sda2   <span class="token number">8</span>:2    <span class="token number">0</span>    2G  <span class="token number">0</span> part <span class="token punctuation">[</span>SWAP<span class="token punctuation">]</span>
+└─sda3   <span class="token number">8</span>:3    <span class="token number">0</span>   47G  <span class="token number">0</span> part /
+sdb      <span class="token number">8</span>:16   <span class="token number">0</span>   10G  <span class="token number">0</span> disk
+sr0     <span class="token number">11</span>:0    <span class="token number">1</span>  792M  <span class="token number">0</span> rom
+
+<span class="token comment"># 查看分区情况</span>
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># parted -l</span>
+Model: VMware, VMware Virtual S <span class="token punctuation">(</span>scsi<span class="token punctuation">)</span>
+Disk /dev/sda: <span class="token number">53</span>.7GB
+Sector size <span class="token punctuation">(</span>logical/physical<span class="token punctuation">)</span>: 512B/512B
+Partition Table: msdos
+Disk Flags:
+
+Number  Start   End     Size    Type     File system     Flags
+ <span class="token number">1</span>      1049kB  1075MB  1074MB  primary  xfs             boot
+ <span class="token number">2</span>      1075MB  3223MB  2149MB  primary  linux-swap<span class="token punctuation">(</span>v1<span class="token punctuation">)</span>
+ <span class="token number">3</span>      3223MB  <span class="token number">53</span>.7GB  <span class="token number">50</span>.5GB  primary  xfs
+
+
+Error: /dev/sdb: unrecognised disk label	<span class="token comment"># sdb还没有分区</span>
+Model: VMware, VMware Virtual S <span class="token punctuation">(</span>scsi<span class="token punctuation">)</span>
+Disk /dev/sdb: <span class="token number">10</span>.7GB
+Sector size <span class="token punctuation">(</span>logical/physical<span class="token punctuation">)</span>: 512B/512B
+Partition Table: unknown
+Disk Flags:
+
+Warning: Unable to <span class="token function">open</span> /dev/sr0 read-write <span class="token punctuation">(</span>Read-only <span class="token function">file</span> system<span class="token punctuation">)</span>.  /dev/sr0
+has been opened read-only.
+Model: NECVMWar VMware IDE CDR10 <span class="token punctuation">(</span>scsi<span class="token punctuation">)</span>
+Disk /dev/sr0: 830MB
+Sector size <span class="token punctuation">(</span>logical/physical<span class="token punctuation">)</span>: 2048B/2048B
+Partition Table: msdos
+Disk Flags:
+
+Number  Start  End     Size    Type     File system  Flags
+ <span class="token number">2</span>      885kB  <span class="token number">37</span>.7MB  <span class="token number">36</span>.8MB  primary<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-3-1-2-创建分区"><a href="#2-3-1-2-创建分区" class="headerlink" title="2.3.1.2 创建分区"></a>2.3.1.2 创建分区</h4><blockquote>
+<p>案例：在&#x2F;dev&#x2F;sdb中创建一个1GB的分区</p>
+</blockquote>
+<p>a、命令行方式，创建一个主分区</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token comment"># 转换为MBR分区方案msdos, GPT方案为gpt</span>
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># parted /dev/sdb mklabel msdos</span>
+Information: You may need to update /etc/fstab.
+
+<span class="token comment"># 创建主分区</span>
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># parted /dev/sdb mkpart primary ext4 0GB 1GB  # 把1GB换成100%就是分完剩余空间</span>
+Information: You may need to update /etc/fstab.
+
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># lsblk</span>
+NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sda      <span class="token number">8</span>:0    <span class="token number">0</span>   50G  <span class="token number">0</span> disk
+├─sda1   <span class="token number">8</span>:1    <span class="token number">0</span>    1G  <span class="token number">0</span> part /boot
+├─sda2   <span class="token number">8</span>:2    <span class="token number">0</span>    2G  <span class="token number">0</span> part <span class="token punctuation">[</span>SWAP<span class="token punctuation">]</span>
+└─sda3   <span class="token number">8</span>:3    <span class="token number">0</span>   47G  <span class="token number">0</span> part /
+sdb      <span class="token number">8</span>:16   <span class="token number">0</span>   10G  <span class="token number">0</span> disk
+└─sdb1   <span class="token number">8</span>:17   <span class="token number">0</span>  953M  <span class="token number">0</span> part
+sr0     <span class="token number">11</span>:0    <span class="token number">1</span>  792M  <span class="token number">0</span> rom
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>b、再用交互方式，继续创建一个主分区</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># parted</span>
+GNU Parted <span class="token number">3.1</span>
+Using /dev/sda
+Welcome to GNU Parted<span class="token operator">!</span> Type <span class="token string">'help'</span> to view a list of commands.
+<span class="token punctuation">(</span>parted<span class="token punctuation">)</span> <span class="token keyword">select</span> /dev/sdb <span class="token comment"># 选择块设备</span>
+Using /dev/sdb
+<span class="token punctuation">(</span>parted<span class="token punctuation">)</span> mkpart	<span class="token comment"># 新建分区</span>
+Partition type?  primary/extended? primary
+File system type?  <span class="token punctuation">[</span>ext2<span class="token punctuation">]</span>? ext4
+Start? 1GB
+End? 2GB<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>c、扩展分区与逻辑分区的创建</p>
+<blockquote>
+<p>扩展分区最多只有一个，再创建会提示选择primary&#x2F;logical</p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">(</span>parted<span class="token punctuation">)</span> <span class="token keyword">select</span> /dev/sdb
+Using /dev/sdb
+<span class="token punctuation">(</span>parted<span class="token punctuation">)</span> print
+Model: VMware, VMware Virtual S <span class="token punctuation">(</span>scsi<span class="token punctuation">)</span>
+Disk /dev/sdb: <span class="token number">10</span>.7GB
+Sector size <span class="token punctuation">(</span>logical/physical<span class="token punctuation">)</span>: 512B/512B
+Partition Table: msdos
+Disk Flags:
+
+Number  Start   End     Size    Type      File system  Flags
+ <span class="token number">1</span>      1049kB  1000MB  999MB   primary   ext4
+ <span class="token number">2</span>      1000MB  4000MB  3000MB  extended               lba
+
+<span class="token comment"># 给扩展分区2创建一个逻辑分区（使用范围只能在扩展分区2的范围内）</span>
+<span class="token punctuation">(</span>parted<span class="token punctuation">)</span> mkpart logical 1GB 2GB
+<span class="token punctuation">(</span>parted<span class="token punctuation">)</span> print
+Model: VMware, VMware Virtual S <span class="token punctuation">(</span>scsi<span class="token punctuation">)</span>
+Disk /dev/sdb: <span class="token number">10</span>.7GB
+Sector size <span class="token punctuation">(</span>logical/physical<span class="token punctuation">)</span>: 512B/512B
+Partition Table: msdos
+Disk Flags:
+
+Number  Start   End     Size    Type      File system  Flags
+ <span class="token number">1</span>      1049kB  1000MB  999MB   primary   ext4
+ <span class="token number">2</span>      1000MB  4000MB  3000MB  extended               lba
+ <span class="token number">5</span>      1001MB  2000MB  998MB   logical
+
+<span class="token comment"># 给扩展分区2再创建一个逻辑分区</span>
+<span class="token punctuation">(</span>parted<span class="token punctuation">)</span> mkpart logical 2GB 3GB
+<span class="token punctuation">(</span>parted<span class="token punctuation">)</span> print
+Model: VMware, VMware Virtual S <span class="token punctuation">(</span>scsi<span class="token punctuation">)</span>
+Disk /dev/sdb: <span class="token number">10</span>.7GB
+Sector size <span class="token punctuation">(</span>logical/physical<span class="token punctuation">)</span>: 512B/512B
+Partition Table: msdos
+Disk Flags:
+
+Number  Start   End     Size    Type      File system  Flags
+ <span class="token number">1</span>      1049kB  1000MB  999MB   primary   ext4
+ <span class="token number">2</span>      1000MB  4000MB  3000MB  extended               lba
+ <span class="token number">5</span>      1001MB  2000MB  998MB   logical
+ <span class="token number">6</span>      2001MB  3000MB  999MB   logical<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-3-1-3-查看分区"><a href="#2-3-1-3-查看分区" class="headerlink" title="2.3.1.3 查看分区"></a>2.3.1.3 查看分区</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">(</span>parted<span class="token punctuation">)</span> print <span class="token comment"># 打印分区</span>
+Model: VMware, VMware Virtual S <span class="token punctuation">(</span>scsi<span class="token punctuation">)</span>
+Disk /dev/sdb: <span class="token number">10</span>.7GB
+Sector size <span class="token punctuation">(</span>logical/physical<span class="token punctuation">)</span>: 512B/512B
+Partition Table: msdos
+Disk Flags:
+
+Number  Start   End     Size   Type     File system  Flags
+ <span class="token number">1</span>      1049kB  1000MB  999MB  primary
+ <span class="token number">2</span>      1000MB  2000MB  999MB  primary
+ 
+ <span class="token punctuation">(</span>parted<span class="token punctuation">)</span> print <span class="token function">free</span> <span class="token comment"># 查看剩余空间</span>
+Model: VMware, VMware Virtual S <span class="token punctuation">(</span>scsi<span class="token punctuation">)</span>
+Disk /dev/sdb: <span class="token number">10</span>.7GB
+Sector size <span class="token punctuation">(</span>logical/physical<span class="token punctuation">)</span>: 512B/512B
+Partition Table: msdos
+Disk Flags:
+
+Number  Start   End     Size    Type     File system  Flags
+        <span class="token number">32</span>.3kB  1049kB  1016kB           Free Space
+ <span class="token number">1</span>      1049kB  1000MB  999MB   primary
+ <span class="token number">2</span>      1000MB  2000MB  999MB   primary
+        2000MB  <span class="token number">10</span>.7GB  8738MB           Free Space
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-3-1-4-调整分区大小"><a href="#2-3-1-4-调整分区大小" class="headerlink" title="2.3.1.4 调整分区大小"></a>2.3.1.4 调整分区大小</h4><blockquote>
+<p>将分区2从1GB扩展到2GB</p>
+<p>PS：v2.4之后的版本，resize命令已经移除，更新到3.1-32版本有resizepart</p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># parted /dev/sdb print</span>
+Model: VMware, VMware Virtual S <span class="token punctuation">(</span>scsi<span class="token punctuation">)</span>
+Disk /dev/sdb: <span class="token number">10</span>.7GB
+Sector size <span class="token punctuation">(</span>logical/physical<span class="token punctuation">)</span>: 512B/512B
+Partition Table: msdos
+Disk Flags:
+
+Number  Start   End     Size   Type     File system  Flags
+ <span class="token number">1</span>      1049kB  1000MB  999MB  primary
+ <span class="token number">2</span>      1000MB  2000MB  999MB  primary
+
+<span class="token comment"># 调整分区2的大小为2GB</span>
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># parted /dev/sdb resizepart 2 3GB	(3GB是指END位置，即使用1GB-3GB的空间，共2GB)</span>
+Information: You may need to update /etc/fstab.
+
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># parted /dev/sdb print</span>
+Model: VMware, VMware Virtual S <span class="token punctuation">(</span>scsi<span class="token punctuation">)</span>
+Disk /dev/sdb: <span class="token number">10</span>.7GB
+Sector size <span class="token punctuation">(</span>logical/physical<span class="token punctuation">)</span>: 512B/512B
+Partition Table: msdos
+Disk Flags:
+
+Number  Start   End     Size    Type     File system  Flags
+ <span class="token number">1</span>      1049kB  1000MB  999MB   primary
+ <span class="token number">2</span>      1000MB  3000MB  2000MB  primary
+ 
+ <span class="token comment"># 如果已经格式化并挂载使用，需要重新调整文件系统大小</span>
+ <span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># resize2fs /dev/sdb2</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>缩小分区大小会怎样？将提示有数据丢失的风险</p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># parted /dev/sdb resizepart 2 2GB</span>
+Warning: Shrinking a partition can cause data loss, are you sure you want to continue?
+Yes/No?<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-3-1-5-删除分区"><a href="#2-3-1-5-删除分区" class="headerlink" title="2.3.1.5 删除分区"></a>2.3.1.5 删除分区</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># parted /dev/sdb print</span>
+Model: VMware, VMware Virtual S <span class="token punctuation">(</span>scsi<span class="token punctuation">)</span>
+Disk /dev/sdb: <span class="token number">10</span>.7GB
+Sector size <span class="token punctuation">(</span>logical/physical<span class="token punctuation">)</span>: 512B/512B
+Partition Table: msdos
+Disk Flags:
+
+Number  Start   End     Size    Type     File system  Flags
+ <span class="token number">1</span>      1049kB  1000MB  999MB   primary
+ <span class="token number">2</span>      1000MB  4000MB  3000MB  primary  ext4
+
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># parted /dev/sdb rm 2   // 删除2号分区，因为已挂载，会提示要先卸载</span>
+Error: Partition /dev/sdb2 is being used. You must unmount it before you modify it with Parted.
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># umount /dev/sdb2</span>
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># parted /dev/sdb rm 2 // 删除成功</span>
+Information: You may need to update /etc/fstab.
+
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># print</span>
+-bash: print: <span class="token builtin class-name">command</span> not found
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># parted /dev/sdb print</span>
+Model: VMware, VMware Virtual S <span class="token punctuation">(</span>scsi<span class="token punctuation">)</span>
+Disk /dev/sdb: <span class="token number">10</span>.7GB
+Sector size <span class="token punctuation">(</span>logical/physical<span class="token punctuation">)</span>: 512B/512B
+Partition Table: msdos
+Disk Flags:
+
+Number  Start   End     Size   Type     File system  Flags
+ <span class="token number">1</span>      1049kB  1000MB  999MB  primary<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-3-1-6-设置-x2F-更改分区标志"><a href="#2-3-1-6-设置-x2F-更改分区标志" class="headerlink" title="2.3.1.6 设置&#x2F;更改分区标志"></a>2.3.1.6 设置&#x2F;更改分区标志</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># parted /dev/sdb set 1 lvm on</span>
+Information: You may need to update /etc/fstab.
+
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># parted /dev/sdb print</span>
+Model: VMware, VMware Virtual S <span class="token punctuation">(</span>scsi<span class="token punctuation">)</span>
+Disk /dev/sdb: <span class="token number">10</span>.7GB
+Sector size <span class="token punctuation">(</span>logical/physical<span class="token punctuation">)</span>: 512B/512B
+Partition Table: msdos
+Disk Flags:
+
+Number  Start   End     Size   Type     File system  Flags
+ <span class="token number">1</span>      1049kB  1000MB  999MB  primary               lvm<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>查看有哪些标志可以设置</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># parted</span>
+GNU Parted <span class="token number">3.1</span>
+Using /dev/sda
+Welcome to GNU Parted<span class="token operator">!</span> Type <span class="token string">'help'</span> to view a list of commands.
+<span class="token punctuation">(</span>parted<span class="token punctuation">)</span> <span class="token builtin class-name">help</span> <span class="token builtin class-name">set</span>
+  <span class="token builtin class-name">set</span> NUMBER FLAG STATE                    change the FLAG on partition NUMBER
+
+        NUMBER is the partition number used by Linux.  On MS-DOS disk labels, the primary partitions number from <span class="token number">1</span> to <span class="token number">4</span>, logical partitions from <span class="token number">5</span> onwards.
+        FLAG is one of: boot, root, swap, hidden, raid, lvm, lba, hp-service, palo, prep, msftres, bios_grub, atvrecv, diag, legacy_boot
+        STATE is one of: on, off<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-3-16-GPT分区方案下的NAME标签"><a href="#2-3-16-GPT分区方案下的NAME标签" class="headerlink" title="2.3.16 GPT分区方案下的NAME标签"></a>2.3.16 GPT分区方案下的NAME标签</h4><p>GPT分区的print</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># parted /dev/sdb print</span>
+Model: VMware, VMware Virtual S <span class="token punctuation">(</span>scsi<span class="token punctuation">)</span>
+Disk /dev/sdb: <span class="token number">10</span>.7GB
+Sector size <span class="token punctuation">(</span>logical/physical<span class="token punctuation">)</span>: 512B/512B
+Partition Table: gpt
+Disk Flags:
+
+Number  Start  End  Size  File system  Name  Flags<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>MBR分区的print</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># parted /dev/sdb mklabel msdos</span>
+Warning: The existing disk label on /dev/sdb will be destroyed and all data on this disk will be lost. Do you want to continue?
+Yes/No? Yes
+Information: You may need to update /etc/fstab.
+
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># parted /dev/sdb print</span>
+Model: VMware, VMware Virtual S <span class="token punctuation">(</span>scsi<span class="token punctuation">)</span>
+Disk /dev/sdb: <span class="token number">10</span>.7GB
+Sector size <span class="token punctuation">(</span>logical/physical<span class="token punctuation">)</span>: 512B/512B
+Partition Table: msdos
+Disk Flags:
+
+Number  Start  End  Size  Type  File system  Flags<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p><strong><font color='red'>可见GPT标志中多了一个Name标签</font></strong></p>
+</blockquote>
+<p>使用的时候GPT分区方式可以指定分区名，不用指定主分区、扩展分区这些类型</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># parted /dev/sdb mkpart BOOT 0GB 1GB</span>
+Information: You may need to update /etc/fstab.
+
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># parted /dev/sdb print</span>
+Model: VMware, VMware Virtual S <span class="token punctuation">(</span>scsi<span class="token punctuation">)</span>
+Disk /dev/sdb: <span class="token number">10</span>.7GB
+Sector size <span class="token punctuation">(</span>logical/physical<span class="token punctuation">)</span>: 512B/512B
+Partition Table: gpt
+Disk Flags:
+
+Number  Start   End     Size   File system  Name  Flags
+ <span class="token number">1</span>      1049kB  1000MB  999MB  xfs          BOOT<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>但是MBR就不能</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># parted /dev/sdb mkpart BOOT 0GB 1GB</span>
+parted: invalid token: BOOT
+Partition type?  primary/extended?
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># parted /dev/sdb mkpart primary BOOT 0GB 1GB</span>
+parted: invalid token: BOOT
+File system type?  <span class="token punctuation">[</span>ext2<span class="token punctuation">]</span>?<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="三、磁盘挂载"><a href="#三、磁盘挂载" class="headerlink" title="三、磁盘挂载"></a>三、磁盘挂载</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token number">1</span>、开机自动挂载
+	开机自动执行：/etc/rc.local
+	
+	<span class="token function">chmod</span> +x /etc/ec.local
+	
+	<span class="token builtin class-name">echo</span> <span class="token string">"mount /dev/sdc1 /root/test"</span> <span class="token operator">>></span> /etc/rc.local
+
+<span class="token number">2</span>、修改配置文件 /etc/fstab
+/dev/sdc100     /opt    xfs         defaults   <span class="token number">0</span>      <span class="token number">0</span>
+设备				挂载点  文件系统类型   挂载类型  是否备份  是否检测
+<span class="token assign-left variable">UUID</span><span class="token operator">=</span>1327e665-44b3-4223-a93b-69c36ec602f9   /root/oldboy  xfs   defaults <span class="token number">0</span> <span class="token number">0</span>
+
+ /dev/sdc100  等价于  UUID
+
+<span class="token number">3</span>、查询设备UUID
+	<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># blkid </span>
+/dev/sdc1: <span class="token assign-left variable">UUID</span><span class="token operator">=</span><span class="token string">"b5797ad6-9b98-452c-8962-fa12f6590fa6"</span> <span class="token assign-left variable">TYPE</span><span class="token operator">=</span><span class="token string">"xfs"</span> <span class="token assign-left variable">PARTLABEL</span><span class="token operator">=</span><span class="token string">"Linux filesystem"</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="四、创建SWAP分区"><a href="#四、创建SWAP分区" class="headerlink" title="四、创建SWAP分区"></a>四、创建SWAP分区</h2><pre class="line-numbers language-she" data-language="she"><code class="language-she">1、创建一个硬盘分区
+
+2、制作swap分区
+mkswap &#x2F;dev&#x2F;sdb3
+
+3、激活swap
+swapon &#x2F;dev&#x2F;sdb3
+
+4、关闭swap
+swapoff 
+
+5、自动挂载
+	5.1、
+        echo &quot;mkswap &#x2F;dev&#x2F;sdb3&quot; &gt;&gt; &#x2F;etc&#x2F;rc.local
+        echo &quot;swapon &#x2F;dev&#x2F;sdb3&quot; &gt;&gt; &#x2F;etc&#x2F;rc.local
+	5.2、
+		echo &quot;&#x2F;dev&#x2F;sdb3  swap  swap  defaults 0  0&quot; &gt;&gt; &#x2F;etc&#x2F;fstab<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day19-%E7%A3%81%E7%9B%98%E5%88%86%E5%8C%BA/02_%E9%80%BB%E8%BE%91%E5%8D%B7%E7%AE%A1%E7%90%86/" rel="prev" title="运维之基础命令--逻辑卷管理">
+      <i class="fa fa-chevron-left"></i> 运维之基础命令--逻辑卷管理
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day18-netstat%E4%BD%BF%E7%94%A8/%E7%AC%94%E8%AE%B0/" rel="next" title="运维之基础命令--netstat使用">
+      运维之基础命令--netstat使用 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E7%A3%81%E7%9B%98%E5%88%86%E5%8C%BA%E6%96%B9%E6%A1%88"><span class="nav-number">1.</span> <span class="nav-text">一、磁盘分区方案</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-MBR%E4%B8%8EGPT%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 MBR与GPT介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-MBR%E4%B8%8EGTP%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 MBR与GTP的区别</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E5%88%86%E5%8C%BA%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8"><span class="nav-number">2.</span> <span class="nav-text">二、分区工具使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-MBR%E5%88%86%E5%8C%BA%E5%B7%A5%E5%85%B7fdisk"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 MBR分区工具fdisk</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-GPT%E5%88%86%E5%8C%BA%E5%B7%A5%E5%85%B7gdisk"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 GPT分区工具gdisk</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-GPT%E5%88%86%E5%8C%BA%E5%B7%A5%E5%85%B7parted"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 GPT分区工具parted</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-1-%E4%BD%BF%E7%94%A8parted"><span class="nav-number">2.3.1.</span> <span class="nav-text">2.3.1 使用parted</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-1-1-%E5%88%97%E5%87%BA%E6%89%80%E6%9C%89%E5%9D%97%E8%AE%BE%E5%A4%87%E5%88%86%E5%8C%BA%E6%83%85%E5%86%B5"><span class="nav-number">2.3.2.</span> <span class="nav-text">2.3.1.1 列出所有块设备分区情况</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-1-2-%E5%88%9B%E5%BB%BA%E5%88%86%E5%8C%BA"><span class="nav-number">2.3.3.</span> <span class="nav-text">2.3.1.2 创建分区</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-1-3-%E6%9F%A5%E7%9C%8B%E5%88%86%E5%8C%BA"><span class="nav-number">2.3.4.</span> <span class="nav-text">2.3.1.3 查看分区</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-1-4-%E8%B0%83%E6%95%B4%E5%88%86%E5%8C%BA%E5%A4%A7%E5%B0%8F"><span class="nav-number">2.3.5.</span> <span class="nav-text">2.3.1.4 调整分区大小</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-1-5-%E5%88%A0%E9%99%A4%E5%88%86%E5%8C%BA"><span class="nav-number">2.3.6.</span> <span class="nav-text">2.3.1.5 删除分区</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-1-6-%E8%AE%BE%E7%BD%AE-x2F-%E6%9B%B4%E6%94%B9%E5%88%86%E5%8C%BA%E6%A0%87%E5%BF%97"><span class="nav-number">2.3.7.</span> <span class="nav-text">2.3.1.6 设置&#x2F;更改分区标志</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-16-GPT%E5%88%86%E5%8C%BA%E6%96%B9%E6%A1%88%E4%B8%8B%E7%9A%84NAME%E6%A0%87%E7%AD%BE"><span class="nav-number">2.3.8.</span> <span class="nav-text">2.3.16 GPT分区方案下的NAME标签</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E7%A3%81%E7%9B%98%E6%8C%82%E8%BD%BD"><span class="nav-number">3.</span> <span class="nav-text">三、磁盘挂载</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E5%88%9B%E5%BB%BASWAP%E5%88%86%E5%8C%BA"><span class="nav-number">4.</span> <span class="nav-text">四、创建SWAP分区</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="GongSheng"
+      src="/images/myavatar.png">
+  <p class="site-author-name" itemprop="name">GongSheng</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">48</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">GongSheng</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

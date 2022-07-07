@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="修改用户信息(usermod) 修改用户信息最主要的命令是usermod命令，其参数跟useradd基本一致。   修改UID [root@localhost ~]# tail -1 &#x2F;etc&#x2F;passwd xiaoyu:x:2002:2002::&#x2F;home&#x2F;xiaoyu:&#x2F;bin&#x2F;bash [root@localhost ~]# usermod -u 2302 xiaoyu [root@loca">
+<meta property="og:type" content="article">
+<meta property="og:title" content="运维之基础命令--用户权限">
+<meta property="og:url" content="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day10-Linux%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/%E7%AC%94%E8%AE%B0/index.html">
+<meta property="og:site_name" content="GongSheng Blog">
+<meta property="og:description" content="修改用户信息(usermod) 修改用户信息最主要的命令是usermod命令，其参数跟useradd基本一致。   修改UID [root@localhost ~]# tail -1 &#x2F;etc&#x2F;passwd xiaoyu:x:2002:2002::&#x2F;home&#x2F;xiaoyu:&#x2F;bin&#x2F;bash [root@localhost ~]# usermod -u 2302 xiaoyu [root@loca">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-07-06T03:19:52.000Z">
+<meta property="article:modified_time" content="2022-07-06T07:13:19.071Z">
+<meta property="article:author" content="GongSheng">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day10-Linux%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/%E7%AC%94%E8%AE%B0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>运维之基础命令--用户权限 | GongSheng Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GongSheng Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">山川異域，風月同天</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day10-Linux%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          运维之基础命令--用户权限
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:13:19" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="修改用户信息-usermod"><a href="#修改用户信息-usermod" class="headerlink" title="修改用户信息(usermod)"></a>修改用户信息(usermod)</h1><blockquote>
+<p>修改用户信息最主要的命令是usermod命令，其参数跟useradd基本一致。</p>
+</blockquote>
+<ul>
+<li><p>修改UID</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+xiaoyu:x:2002:2002::/home/xiaoyu:/bin/bash
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># usermod -u 2302 xiaoyu</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+xiaoyu:x:2302:2002::/home/xiaoyu:/bin/bash<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>修改基本组及附加组</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 基本组 : 一个用户必须拥有的哪个组</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+xiaoyu:x:2302:2002::/home/xiaoyu:/bin/bash
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># id xiaoyu</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>xiaoyu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2002</span><span class="token punctuation">(</span>xiaoyu<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2002</span><span class="token punctuation">(</span>xiaoyu<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># usermod -g group1 xiaoyu</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># id xiaoyu</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>xiaoyu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+xiaoyu:x:2302:2003::/home/xiaoyu:/bin/bash
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># </span>
+
+<span class="token comment"># 附加组 ： 用户加入的其他用户组</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># groupadd group1</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># id</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">(</span>root<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">(</span>root<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">(</span>root<span class="token punctuation">)</span>,1000<span class="token punctuation">(</span>oldboy<span class="token punctuation">)</span>,1001<span class="token punctuation">(</span>sssssssssssssssssssssss<span class="token punctuation">)</span>,1002<span class="token punctuation">(</span>test<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># usermod -G group1 root</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># vim /etc/group</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/group</span>
+group1:x:2003:root<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>修改家目录</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># usermod  -d /home/xiaoyu123 xiaoyu</span>
+
+<span class="token comment"># 注：修改家目录仅仅修改了配置，而原来的家目录文件没有迁移</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>修改用户描述信息</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+xiaoyu:x:2302:2003::/home/xiaoyu123:/bin/bash
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># usermod -c "这是一个甩锅" xiaoyu</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+xiaoyu:x:2302:2003:这是一个甩锅:/home/xiaoyu123:/bin/bash<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>修改用户默认解析器</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># usermod -s /bin/sh xiaoyu</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+xiaoyu:x:2302:2003:这是一个甩锅:/home/xiaoyu123:/bin/sh<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>锁定与解锁</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># usermod -L xiaoyu</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># usermod -U xiaoyu</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+</li>
+<li><p>修改登录名称</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># usermod -l dayu xiaoyu</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+dayu:x:2302:2003:这是一个甩锅:/home/xiaoyu123:/bin/bash<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>追加</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id dayu</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>dayu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span>,1000<span class="token punctuation">(</span>oldboy<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># usermod -G root dayu</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id dayu</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>dayu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span>,0<span class="token punctuation">(</span>root<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># usermod -G oldboy dayu</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id dayu</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>dayu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span>,1000<span class="token punctuation">(</span>oldboy<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># usermod -a -G root dayu</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id dayu</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>dayu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span>,0<span class="token punctuation">(</span>root<span class="token punctuation">)</span>,1000<span class="token punctuation">(</span>oldboy<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+<h1 id="密码（passwd）"><a href="#密码（passwd）" class="headerlink" title="密码（passwd）"></a>密码（passwd）</h1><blockquote>
+<p>修改或添加Linux普通用户的密码。直接影响的文件是&#x2F;etc&#x2F;shadow</p>
+</blockquote>
+<ul>
+<li><p>增加或修改密码</p>
+<p>当用户密码不存在的时候即为增加密码，当用户密码存在时即为修改密码。</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># useradd password</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+password:x:2303:2303::/home/password:/bin/bash
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/shadow</span>
+password:<span class="token operator">!</span><span class="token operator">!</span>:18701:0:99999:7:::
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># passwd password</span>
+Changing password <span class="token keyword">for</span> user password.
+New password: 
+BAD PASSWORD: The password is a palindrome
+Retype new password: 
+passwd: all authentication tokens updated successfully.
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+password:x:2303:2303::/home/password:/bin/bash
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/shadow</span>
+password:<span class="token variable">$6</span>$.EmM.4Bl<span class="token variable">$f</span>.LimfvMsxxFZq6yFklfyk08JKQORdQovlk2a2dtrpkP31lAMLQpezFqLheBYOTm4Sur9aAqZlC/6MN6wHFBM1:18701:0:99999:7:::
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>免交互修改密码</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># echo "123" | passwd --stdin dayu</span>
+Changing password <span class="token keyword">for</span> user dayu.
+passwd: all authentication tokens updated successfully.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+<h1 id="用户组"><a href="#用户组" class="headerlink" title="用户组"></a>用户组</h1><blockquote>
+<p>就类似于班级，是某个同权限用户的集合。</p>
+</blockquote>
+<h2 id="创建组"><a href="#创建组" class="headerlink" title="创建组"></a>创建组</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># groupadd group2</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/group</span>
+group2:x:2304:
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<ul>
+<li>指定gid</li>
+</ul>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># groupadd -g 2204 group3</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/group</span>
+group3:x:2204:<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<ul>
+<li>创建系统组</li>
+</ul>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># groupadd -r group4</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/group</span>
+group4:x:996:<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="修改组"><a href="#修改组" class="headerlink" title="修改组"></a>修改组</h2><ul>
+<li><p>修改名称</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -8 /etc/group</span>
+girl:x:2001:
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># groupmod -n boy girl</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -8 /etc/group</span>
+boy:x:2001:<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>修改gid</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># groupmod -g 2021 boy</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -8 /etc/group</span>
+boy:x:2021:<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+<h2 id="删除组"><a href="#删除组" class="headerlink" title="删除组"></a>删除组</h2><blockquote>
+<p>用户组在系统中删除，如果一个组被用户占用则不能删除。</p>
+</blockquote>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># groupdel group4</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -8 /etc/group</span>
+dajige:x:1003:
+abc:x:2000:
+xiaoyu:x:2002:
+group1:x:2003:root
+password:x:2303:
+group2:x:2304:
+group3:x:2204:
+boy:x:2021:
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># </span>
+
+<span class="token comment"># 注：用户被删除，用户基本组也会被删除</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># useradd test-group-del</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+test-group-del:x:2304:2305::/home/test-group-del:/bin/bash
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/group</span>
+test-group-del:x:2305:
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># userdel -r test-group-del</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+password:x:2303:2303::/home/password:/bin/bash
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/group</span>
+boy:x:2021:
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="组成员管理"><a href="#组成员管理" class="headerlink" title="组成员管理"></a>组成员管理</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 添加一个组到用户</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># useradd gtest</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># vim /etc/group</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id gtest</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2304</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2305</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2305</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span>,2204<span class="token punctuation">(</span>group3<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># gpasswd -a gtest group2</span>
+Adding user gtest to group group2
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id gtest</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2304</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2305</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2305</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span>,2304<span class="token punctuation">(</span>group2<span class="token punctuation">)</span>,2204<span class="token punctuation">(</span>group3<span class="token punctuation">)</span>
+
+<span class="token comment"># 添加多个组到用户</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># gpasswd -M gtest,root,dayu group</span>
+gpasswd: group <span class="token string">'group'</span> does not exist <span class="token keyword">in</span> /etc/group
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># gpasswd -M gtest,root,dayu group3</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id root</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">(</span>root<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">(</span>root<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">(</span>root<span class="token punctuation">)</span>,2000<span class="token punctuation">(</span>abc<span class="token punctuation">)</span>,2003<span class="token punctuation">(</span>group1<span class="token punctuation">)</span>,2204<span class="token punctuation">(</span>group3<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id dayu</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>dayu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span>,0<span class="token punctuation">(</span>root<span class="token punctuation">)</span>,1000<span class="token punctuation">(</span>oldboy<span class="token punctuation">)</span>,2204<span class="token punctuation">(</span>group3<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id gtest</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2304</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2305</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2305</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span>,2304<span class="token punctuation">(</span>group2<span class="token punctuation">)</span>,2204<span class="token punctuation">(</span>group3<span class="token punctuation">)</span>
+
+<span class="token comment"># 为一个组添加组长(组长有权限向组内添加用户，其他用户[除root外]没有权限添加用户到该组)</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># gpasswd -A dayu group3</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># cat /etc/gshadow</span>
+group3:<span class="token operator">!</span>:dayu:gtest,dayu,oldboy
+
+<span class="token comment"># 组权限</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># id dayu</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>dayu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span>,1000<span class="token punctuation">(</span>oldboy<span class="token punctuation">)</span>,2204<span class="token punctuation">(</span>group3<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># chown .group3 /tmp/12.txt </span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># ls -l /tmp/12.txt</span>
+-rw-r--r-- <span class="token number">1</span> root group3 <span class="token number">4</span> Mar <span class="token number">15</span> <span class="token number">11</span>:35 /tmp/12.txt
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># chmod g+w /tmp/12.txt</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># ls -l /tmp/12.txt</span>
+-rw-rw-r-- <span class="token number">1</span> root group3 <span class="token number">4</span> Mar <span class="token number">15</span> <span class="token number">11</span>:35 /tmp/12.txt
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># su - dayu</span>
+Last login: Mon Mar <span class="token number">15</span> <span class="token number">11</span>:37:05 CST <span class="token number">2021</span> on pts/3
+<span class="token punctuation">[</span>dayu@localhost ~<span class="token punctuation">]</span>$ <span class="token builtin class-name">echo</span> <span class="token string">"456"</span> <span class="token operator">></span> /tmp/12.txt 
+<span class="token punctuation">[</span>dayu@localhost ~<span class="token punctuation">]</span>$ <span class="token function">cat</span> /tmp/12.txt
+<span class="token number">456</span>
+<span class="token punctuation">[</span>dayu@localhost ~<span class="token punctuation">]</span>$ <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day11-sudo%E4%B8%8Esu/facl/" rel="prev" title="运维之基础命令--文件ACL">
+      <i class="fa fa-chevron-left"></i> 运维之基础命令--文件ACL
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day09-%E7%94%A8%E6%88%B7%E7%BB%84%E7%AE%A1%E7%90%86/%E7%AC%94%E8%AE%B0/" rel="next" title="运维之基础命令--用户组管理">
+      运维之基础命令--用户组管理 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BF%AE%E6%94%B9%E7%94%A8%E6%88%B7%E4%BF%A1%E6%81%AF-usermod"><span class="nav-number">1.</span> <span class="nav-text">修改用户信息(usermod)</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%EF%BC%88passwd%EF%BC%89"><span class="nav-number">2.</span> <span class="nav-text">密码（passwd）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%94%A8%E6%88%B7%E7%BB%84"><span class="nav-number">3.</span> <span class="nav-text">用户组</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E7%BB%84"><span class="nav-number">3.1.</span> <span class="nav-text">创建组</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BF%AE%E6%94%B9%E7%BB%84"><span class="nav-number">3.2.</span> <span class="nav-text">修改组</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%A0%E9%99%A4%E7%BB%84"><span class="nav-number">3.3.</span> <span class="nav-text">删除组</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%84%E6%88%90%E5%91%98%E7%AE%A1%E7%90%86"><span class="nav-number">3.4.</span> <span class="nav-text">组成员管理</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="GongSheng"
+      src="/images/myavatar.png">
+  <p class="site-author-name" itemprop="name">GongSheng</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">48</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">GongSheng</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

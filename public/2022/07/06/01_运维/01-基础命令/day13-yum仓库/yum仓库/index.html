@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="yum仓库1、克隆两台主机 yum仓库主机 	外网地址：192.168.15.30 	内网地址：172.16.1.30  yum测试主机 	外网地址：192.168.15.31 	内网地址：172.16.1.31  修改的命令： 	vim &#x2F;etc&#x2F;sysconfig&#x2F;network-scripts&#x2F;ifcfg-eth0 	vim &#x2F;etc&#x2F;sysconfig&#x2F;network-scripts&#x2F;if">
+<meta property="og:type" content="article">
+<meta property="og:title" content="运维之基础命令--yum仓库">
+<meta property="og:url" content="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day13-yum%E4%BB%93%E5%BA%93/yum%E4%BB%93%E5%BA%93/index.html">
+<meta property="og:site_name" content="GongSheng Blog">
+<meta property="og:description" content="yum仓库1、克隆两台主机 yum仓库主机 	外网地址：192.168.15.30 	内网地址：172.16.1.30  yum测试主机 	外网地址：192.168.15.31 	内网地址：172.16.1.31  修改的命令： 	vim &#x2F;etc&#x2F;sysconfig&#x2F;network-scripts&#x2F;ifcfg-eth0 	vim &#x2F;etc&#x2F;sysconfig&#x2F;network-scripts&#x2F;if">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://gsproj.github.io/.%5Cassets%5Cimage-20210318112338781.png">
+<meta property="article:published_time" content="2022-07-06T03:19:52.000Z">
+<meta property="article:modified_time" content="2022-07-06T07:14:09.239Z">
+<meta property="article:author" content="GongSheng">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://gsproj.github.io/.%5Cassets%5Cimage-20210318112338781.png">
+
+<link rel="canonical" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day13-yum%E4%BB%93%E5%BA%93/yum%E4%BB%93%E5%BA%93/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>运维之基础命令--yum仓库 | GongSheng Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GongSheng Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">山川異域，風月同天</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day13-yum%E4%BB%93%E5%BA%93/yum%E4%BB%93%E5%BA%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          运维之基础命令--yum仓库
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:14:09" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="yum仓库"><a href="#yum仓库" class="headerlink" title="yum仓库"></a>yum仓库</h1><p>1、克隆两台主机</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">yum仓库主机
+	外网地址：192.168.15.30
+	内网地址：172.16.1.30
+
+yum测试主机
+	外网地址：192.168.15.31
+	内网地址：172.16.1.31
+
+修改的命令：
+	<span class="token function">vim</span> /etc/sysconfig/network-scripts/ifcfg-eth0
+	<span class="token function">vim</span> /etc/sysconfig/network-scripts/ifcfg-eth1
+	
+	重启网卡：systemctl restart network
+	
+	修改主机名：
+		yum仓库主机：hostnamectl set-hostname warehouse
+		yum测试主机：hostnamectl set-hostname yum-test
+	<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>2、配置yum仓库</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>、需要有一个软件包目录，存放软件包的
+<span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># mkdir /backup</span>
+	
+	<span class="token number">1.1</span>、缓存yum安装下载的软件包
+	<span class="token punctuation">[</span>root@warehouse <span class="token number">7</span><span class="token punctuation">]</span><span class="token comment"># vim /etc/yum.conf</span>
+	<span class="token punctuation">[</span>main<span class="token punctuation">]</span>
+    <span class="token assign-left variable">cachedir</span><span class="token operator">=</span>/var/cache/yum/<span class="token variable">$basearch</span>/<span class="token variable">$releasever</span>
+    <span class="token assign-left variable">keepcache</span><span class="token operator">=</span><span class="token number">1</span>
+    <span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># yum install mariadb -y</span>
+	
+	<span class="token number">1.2</span>、将缓存的软件包复制到yum仓库目录
+	<span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># cd /var/cache/yum/x86_64/7/base/packages/</span>
+	<span class="token punctuation">[</span>root@warehouse packages<span class="token punctuation">]</span><span class="token comment"># cp -rp ./* /backup/</span>
+    <span class="token punctuation">[</span>root@warehouse packages<span class="token punctuation">]</span><span class="token comment"># cd /backup/</span>
+    <span class="token punctuation">[</span>root@warehouse backup<span class="token punctuation">]</span><span class="token comment"># ll</span>
+    total <span class="token number">8964</span>
+    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">9175948</span> Oct <span class="token number">15</span> 02:55 mariadb-5.5.68-1.el7.x86_64.rpm
+	
+<span class="token number">2</span>、建立软件包依赖关系
+	<span class="token punctuation">[</span>root@warehouse backup<span class="token punctuation">]</span><span class="token comment"># yum install createrepo -y</span>
+	<span class="token punctuation">[</span>root@warehouse backup<span class="token punctuation">]</span><span class="token comment"># createrepo /backup/</span>
+    Spawning worker <span class="token number">0</span> with <span class="token number">1</span> pkgs
+    Spawning worker <span class="token number">1</span> with <span class="token number">0</span> pkgs
+    Workers Finished
+    Saving Primary metadata
+    Saving <span class="token function">file</span> lists metadata
+    Saving other metadata
+    Generating sqlite DBs
+    Sqlite DBs complete
+    <span class="token punctuation">[</span>root@warehouse backup<span class="token punctuation">]</span><span class="token comment"># ll</span>
+    total <span class="token number">8968</span>
+    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">9175948</span> Oct <span class="token number">15</span> 02:55 mariadb-5.5.68-1.el7.x86_64.rpm
+    drwxr-xr-x <span class="token number">2</span> root root    <span class="token number">4096</span> Mar <span class="token number">18</span> 08:54 repodata
+    <span class="token punctuation">[</span>root@warehouse backup<span class="token punctuation">]</span><span class="token comment"># ll repodata/</span>
+    total <span class="token number">28</span>
+    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">1970</span> Mar <span class="token number">18</span> 08:54 5d54624b2aa7a1fe974ff5553a9a78289683189c6a7b60c8c1421ecf011d270f-other.sqlite.bz2
+    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">3449</span> Mar <span class="token number">18</span> 08:54 5e68ee34f7e8f1a11a039f55c990bcc044f16bceb6af7f4486b55d518ad91346-primary.sqlite.bz2
+    -rw-r--r-- <span class="token number">1</span> root root  <span class="token number">539</span> Mar <span class="token number">18</span> 08:54 6e94b0fa1d98955542fb8238348ea171be7a130ba97573eb3ac756e1aadcec50-filelists.xml.gz
+    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">1291</span> Mar <span class="token number">18</span> 08:54 a9afb0b2457f41f5c2d64744a07d5d12599e6c2588c870ae73568cf345a0abca-other.xml.gz
+    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">1333</span> Mar <span class="token number">18</span> 08:54 cf41627875b17ef4bea5f0ea566ac63a5c83adc606d3ca730a74944ceb969028-primary.xml.gz
+    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">1158</span> Mar <span class="token number">18</span> 08:54 f34cbfd9e5608e8402041e98100f853e913f3df04d6946874c73ba31a78969ba-filelists.sqlite.bz2
+    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">2969</span> Mar <span class="token number">18</span> 08:54 repomd.xml
+    <span class="token punctuation">[</span>root@warehouse backup<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>3、测试连接（本地版本）</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>、备份系统所有的yum源
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># cd /etc/yum.repos.d/</span>
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mkdir backup1</span>
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mv *.repo backup1</span>
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># vim local.repo</span>
+<span class="token punctuation">[</span>local<span class="token punctuation">]</span>
+<span class="token assign-left variable">name</span><span class="token operator">=</span><span class="token string">"This is xxx"</span>
+<span class="token assign-left variable">baseurl</span><span class="token operator">=</span>file:///backup
+<span class="token assign-left variable">gpgcheck</span><span class="token operator">=</span><span class="token number">0</span>
+<span class="token assign-left variable">enabled</span><span class="token operator">=</span><span class="token number">1</span>
+
+<span class="token comment"># 清理yum缓存</span>
+<span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># yum clean all</span>
+<span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># rm -rf /var/cache/yum/x86_64/7/*</span>
+
+<span class="token comment"># 生成新的yum缓存</span>
+<span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># yum makecache</span>
+
+<span class="token comment"># 测试连接</span>
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># rpm -e mariadb</span>
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># rpm -ql mariadb</span>
+package mariadb is not installed
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum install mariadb</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+
+<p>4、测试连接（远程版本）</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#########################  yum仓库机器上执行  ###################################</span>
+<span class="token number">1</span>、备份系统所有的yum源
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># cd /etc/yum.repos.d/</span>
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mkdir local</span>
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mv *.repo local</span>
+
+<span class="token number">2</span>、安装远程访问软件
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># cd /etc/yum.repos.d/</span>
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mv backup1/*  .</span>
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum install vsftpd -y</span>
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># systemctl enable --now vsftpd </span>
+Created symlink from /etc/systemd/system/multi-user.target.wants/vsftpd.service to /usr/lib/systemd/system/vsftpd.service.
+
+<span class="token number">3</span>、配置系统yum仓库
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># cd /var/ftp</span>
+<span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># mkdir yum_warehouse</span>
+
+<span class="token number">4</span>、将软件包复制到yum仓库目录
+<span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># cp -rp /backup/* /var/ftp/yum_warehouse/</span>
+<span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># ll yum_warehouse/</span>
+total <span class="token number">8968</span>
+-rw-r--r-- <span class="token number">1</span> root root <span class="token number">9175948</span> Oct <span class="token number">15</span> 02:55 mariadb-5.5.68-1.el7.x86_64.rpm
+drwxr-xr-x <span class="token number">2</span> root root    <span class="token number">4096</span> Mar <span class="token number">18</span> 08:54 repodata
+
+<span class="token number">5</span>、建立yum软件包依赖关系
+<span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># createrepo /var/ftp/yum_warehouse/</span>
+
+
+<span class="token comment">#########################  yum测试机器上执行  ###################################</span>
+<span class="token number">1</span>、本机测试网络连接
+    <span class="token number">1</span>、备份系统所有的yum源
+    <span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># cd /etc/yum.repos.d/</span>
+    <span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mv *.repo backup1</span>
+    <span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># vim local.repo</span>
+    <span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># cat local.repo </span>
+    <span class="token punctuation">[</span>local-ftp<span class="token punctuation">]</span>
+    <span class="token assign-left variable">name</span><span class="token operator">=</span><span class="token string">"This is ftp server"</span>
+    <span class="token assign-left variable">baseurl</span><span class="token operator">=</span>ftp://172.16.1.30/yum_warehouse
+    <span class="token assign-left variable">gpgcheck</span><span class="token operator">=</span><span class="token number">0</span>
+    <span class="token assign-left variable">enabled</span><span class="token operator">=</span><span class="token number">1</span>
+
+    <span class="token comment"># 清理yum缓存</span>
+    <span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># yum clean all</span>
+    <span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># rm -rf /var/cache/yum/x86_64/7/*</span>
+
+    <span class="token comment"># 生成新的yum缓存</span>
+    <span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># yum makecache</span>
+
+    <span class="token comment"># 测试连接</span>
+    <span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># rpm -e mariadb</span>
+    <span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># rpm -ql mariadb</span>
+    package mariadb is not installed
+    <span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum install mariadb</span>
+
+<span class="token number">2</span>、yum测试机器执行
+	<span class="token number">1</span>、备份yum仓库内容
+	<span class="token punctuation">[</span>root@yum-test ~<span class="token punctuation">]</span><span class="token comment"># cd /etc/yum.repos.d/</span>
+    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mkdir backup1</span>
+    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mv *.repo backup1</span>
+    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># ll</span>
+    total <span class="token number">0</span>
+    drwxr-xr-x. <span class="token number">2</span> root root <span class="token number">187</span> Mar  <span class="token number">4</span> 09:55 backup
+    drwxr-xr-x  <span class="token number">2</span> root root <span class="token number">220</span> Mar <span class="token number">18</span> 09:20 backup1
+    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># </span>
+    
+    <span class="token number">2</span>、编写本地yum源配置文件
+    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># vim local.repo</span>
+    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># cat local.repo </span>
+    <span class="token punctuation">[</span>loacl-ftp-30<span class="token punctuation">]</span>
+    <span class="token assign-left variable">name</span><span class="token operator">=</span><span class="token string">"This is 30 ftp server"</span>
+    <span class="token assign-left variable">baseurl</span><span class="token operator">=</span>ftp://172.16.1.30/yum_warehouse
+    <span class="token assign-left variable">gpgcheck</span><span class="token operator">=</span><span class="token number">0</span>
+    <span class="token assign-left variable">enabled</span><span class="token operator">=</span><span class="token number">1</span>
+    
+    <span class="token number">3</span>、清理yum缓存
+    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum clean all</span>
+    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># rm -rf /var/cache/yum/x86_64/7/*</span>
+    
+    <span class="token number">4</span>、生成yum缓存
+    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum makecache</span>
+    
+    <span class="token number">5</span>、测试安装
+    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum install mariadb</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+
+<p>4、同步远程yum仓库内容到本机</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>、安装华为云镜像仓库
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># rm -rf /etc/yum.repos.d/*</span>
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># wget -O /etc/yum.repos.d/CentOS-Base.repo https://repo.huaweicloud.com/repository/conf/CentOS-7-reg.repo</span>
+
+<span class="token number">2</span>、生成yum缓存
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum clean all</span>
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># rm -rf /var/cache/yum/x86_64/7/*</span>
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum makecache</span>
+
+<span class="token number">3</span>、同步华为云镜像站软件包到本地yum仓库
+<span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># yum install yum-utils -y</span>
+<span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># reposync -r (仓库名称：yum repolist)</span>
+
+<span class="token number">4</span>、建立依赖关系
+<span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># createrepo base</span>
+
+<span class="token number">5</span>、测试
+    <span class="token punctuation">[</span>loacl-ftp-30<span class="token punctuation">]</span>
+    <span class="token assign-left variable">name</span><span class="token operator">=</span><span class="token string">"This is 30 ftp server"</span>
+    <span class="token assign-left variable">baseurl</span><span class="token operator">=</span>ftp://172.16.1.30/base
+    <span class="token assign-left variable">gpgcheck</span><span class="token operator">=</span><span class="token number">0</span>
+    <span class="token assign-left variable">enabled</span><span class="token operator">=</span><span class="token number">1</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p><img src="/.%5Cassets%5Cimage-20210318112338781.png" alt="image-20210318112338781"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day16-%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/%E7%AC%94%E8%AE%B0/" rel="prev" title="运维之基础命令--进程管理">
+      <i class="fa fa-chevron-left"></i> 运维之基础命令--进程管理
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day12-%E8%BD%AF%E4%BB%B6%E5%8C%85%E7%AE%A1%E7%90%86/%E8%BD%AF%E4%BB%B6%E5%8C%85/" rel="next" title="运维之基础命令--软件包管理">
+      运维之基础命令--软件包管理 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#yum%E4%BB%93%E5%BA%93"><span class="nav-number">1.</span> <span class="nav-text">yum仓库</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="GongSheng"
+      src="/images/myavatar.png">
+  <p class="site-author-name" itemprop="name">GongSheng</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">48</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">GongSheng</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

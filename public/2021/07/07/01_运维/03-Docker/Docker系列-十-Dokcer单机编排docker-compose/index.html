@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="docker-compose 单机版的容器编排工具  一、安装docker-compose添加Centos7的epel源 curl -o epel-7.repo http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;repo&#x2F;epel-7.repo yum clean all yum makecache  安装pip  Python 2.7已于2020年1月">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Docker系列(十)-Dokcer单机编排docker-compose">
+<meta property="og:url" content="http://gsproj.github.io/2021/07/07/01_%E8%BF%90%E7%BB%B4/03-Docker/Docker%E7%B3%BB%E5%88%97-%E5%8D%81-Dokcer%E5%8D%95%E6%9C%BA%E7%BC%96%E6%8E%92docker-compose/index.html">
+<meta property="og:site_name" content="GongSheng Blog">
+<meta property="og:description" content="docker-compose 单机版的容器编排工具  一、安装docker-compose添加Centos7的epel源 curl -o epel-7.repo http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;repo&#x2F;epel-7.repo yum clean all yum makecache  安装pip  Python 2.7已于2020年1月">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-07-07T01:51:12.000Z">
+<meta property="article:modified_time" content="2022-07-06T07:19:45.956Z">
+<meta property="article:author" content="GongSheng">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://gsproj.github.io/2021/07/07/01_%E8%BF%90%E7%BB%B4/03-Docker/Docker%E7%B3%BB%E5%88%97-%E5%8D%81-Dokcer%E5%8D%95%E6%9C%BA%E7%BC%96%E6%8E%92docker-compose/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Docker系列(十)-Dokcer单机编排docker-compose | GongSheng Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GongSheng Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">山川異域，風月同天</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2021/07/07/01_%E8%BF%90%E7%BB%B4/03-Docker/Docker%E7%B3%BB%E5%88%97-%E5%8D%81-Dokcer%E5%8D%95%E6%9C%BA%E7%BC%96%E6%8E%92docker-compose/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Docker系列(十)-Dokcer单机编排docker-compose
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-07-07 09:51:12" itemprop="dateCreated datePublished" datetime="2021-07-07T09:51:12+08:00">2021-07-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-06 15:19:45" itemprop="dateModified" datetime="2022-07-06T15:19:45+08:00">2022-07-06</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%89%EF%BC%89Docker/" itemprop="url" rel="index"><span itemprop="name">（三）Docker</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>docker-compose 单机版的容器编排工具</p>
+</blockquote>
+<h2 id="一、安装docker-compose"><a href="#一、安装docker-compose" class="headerlink" title="一、安装docker-compose"></a>一、安装docker-compose</h2><p>添加Centos7的epel源</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">curl -o epel-7.repo http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;repo&#x2F;epel-7.repo
+yum clean all
+yum makecache<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>安装pip</p>
+<blockquote>
+<p>Python 2.7已于2020年1月1日到期，请停止使用。请升级您的Python，因为不再维护Python 2.7。pip 21.0将于2021年1月停止对Python 2.7的支持。pip 21.0将删除对此功能的支持。因此安装&lt;21.0的版本</p>
+</blockquote>
+<pre class="line-numbers language-she" data-language="she"><code class="language-she">yum install -y python2-pip
+pip install --upgrade &quot;pip &lt; 21.0&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>安装docker-compose</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">pip install docker-compose<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>创建文件夹用于存放docker-compose脚本</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">mkdir &#x2F;opt&#x2F;docker-compose<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h2 id="一、案例：compose构建wordpress并使用nginx负载均衡"><a href="#一、案例：compose构建wordpress并使用nginx负载均衡" class="headerlink" title="一、案例：compose构建wordpress并使用nginx负载均衡"></a>一、案例：compose构建wordpress并使用nginx负载均衡</h2><p>docker01主机创建docker-compose文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;opt&#x2F;docker-compose&#x2F;wordpress&#x2F;docker-compose.yml<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<pre class="line-numbers language-yaml" data-language="yaml"><code class="language-yaml"><span class="token key atrule">version</span><span class="token punctuation">:</span> <span class="token string">'3'</span>
+
+<span class="token key atrule">services</span><span class="token punctuation">:</span>
+  <span class="token key atrule">db</span><span class="token punctuation">:</span>
+    <span class="token key atrule">image</span><span class="token punctuation">:</span> mysql<span class="token punctuation">:</span><span class="token number">5.7</span>
+    <span class="token key atrule">volumes</span><span class="token punctuation">:</span>
+      <span class="token punctuation">-</span> db_data<span class="token punctuation">:</span>/var/lib/mysql
+    <span class="token key atrule">restart</span><span class="token punctuation">:</span> always
+    <span class="token key atrule">environment</span><span class="token punctuation">:</span>
+      <span class="token key atrule">MYSQL_ROOT_PASSWORD</span><span class="token punctuation">:</span> somewordpress
+      <span class="token key atrule">MYSQL_DATABASE</span><span class="token punctuation">:</span> wordpress
+      <span class="token key atrule">MYSQL_USER</span><span class="token punctuation">:</span> wordpress
+      <span class="token key atrule">MYSQL_PASSWORD</span><span class="token punctuation">:</span> wordpress
+
+  <span class="token key atrule">wordpress</span><span class="token punctuation">:</span>
+    <span class="token key atrule">depends_on</span><span class="token punctuation">:</span>
+      <span class="token punctuation">-</span> db
+    <span class="token key atrule">image</span><span class="token punctuation">:</span> wordpress<span class="token punctuation">:</span>latest
+    <span class="token key atrule">volumes</span><span class="token punctuation">:</span>
+      <span class="token punctuation">-</span> web_data<span class="token punctuation">:</span>/var/www/html
+    <span class="token key atrule">ports</span><span class="token punctuation">:</span>
+     <span class="token punctuation">-</span> <span class="token string">"80"</span>  <span class="token comment"># 随机端口映射到内网80端口</span>
+    <span class="token key atrule">restart</span><span class="token punctuation">:</span> always
+    <span class="token key atrule">environment</span><span class="token punctuation">:</span>
+     <span class="token key atrule">WORDPRESS_DB_HOST</span><span class="token punctuation">:</span> db<span class="token punctuation">:</span><span class="token number">3306</span>
+     <span class="token key atrule">WORDPRESS_DB_USER</span><span class="token punctuation">:</span> wordpress
+     <span class="token key atrule">WORDPRESS_DB_PASSWORD</span><span class="token punctuation">:</span> wordpress
+<span class="token key atrule">volumes</span><span class="token punctuation">:</span>
+  <span class="token key atrule">db_data</span><span class="token punctuation">:</span>
+  web_data<span class="token punctuation">:</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>构建Docker容器(三个wordpress，一个mysql）</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker-compose up --scale wordpress&#x3D;3 -d
+-d 后台运行
+--scale 生成的实例数<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-she" data-language="she"><code class="language-she">netstaus -lntup可以看到3个连续的端口号
+tcp        0      0 0.0.0.0:49156           0.0.0.0:*               LISTEN      2110&#x2F;docker-proxy
+tcp        0      0 0.0.0.0:49157           0.0.0.0:*               LISTEN      2126&#x2F;docker-proxy
+tcp        0      0 0.0.0.0:49158           0.0.0.0:*               LISTEN      2143&#x2F;docker-proxy<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>docker02主机安装nginx，用于负载均衡</p>
+<pre class="line-numbers language-she" data-language="she"><code class="language-she">curl -o epel-7.repo http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;repo&#x2F;epel-7.repo
+yum clean all
+yum makecache
+yum install nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>配置nginx</p>
+<pre class="line-numbers language-she" data-language="she"><code class="language-she">cd &#x2F;etc&#x2F;nginx&#x2F;
+mv nginx.conf nginx.conf.bak
+grep -Ev &#39;^$|#&#39; nginx.conf.default  &gt; nginx.conf
+vim nginx.conf<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">worker_processes  1;
+events &#123;
+    worker_connections  1024;
+&#125;
+http &#123;
+    include       mime.types;
+    default_type  application&#x2F;octet-stream;
+    sendfile        on;
+    keepalive_timeout  65;
+
+    upstream wordpress &#123;
+        server 10.0.0.11:49156;
+        server 10.0.0.11:49157;
+        server 10.0.0.11:49158;
+    &#125;
+
+    server &#123;
+        listen       80;
+        server_name  localhost;
+        location &#x2F; &#123;
+            proxy_pass  http:&#x2F;&#x2F;wordpress;
+            proxy_set_header Host $host;  # 不加上网页没有Host信息，显示不全
+        &#125;
+    &#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>重启nginx服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">nginx -t
+systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>测试访问</p>
+<pre class="line-numbers language-she" data-language="she"><code class="language-she">浏览器访问:10.0.0.12,可以进入wordpress<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>查看是否负载均衡</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 创建一个查看信息的页面
+cd &#x2F;var&#x2F;lib&#x2F;docker&#x2F;volumes&#x2F;wordpress_web_data&#x2F;_data&#x2F;
+vim info.php<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-php" data-language="php"><code class="language-php"><span class="token php language-php"><span class="token delimiter important">&lt;?php</span> <span class="token function">phpinfo</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token delimiter important">?></span></span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>浏览器访问：10.0.0.12&#x2F;info.php，查看其中IP信息</p>
+<h2 id="二、案例：构建zabbix"><a href="#二、案例：构建zabbix" class="headerlink" title="二、案例：构建zabbix"></a>二、案例：构建zabbix</h2>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/07/06/01_%E8%BF%90%E7%BB%B4/03-Docker/Docker%E7%B3%BB%E5%88%97-%E4%B9%9D-Dokcer%E8%B7%A8%E4%B8%BB%E6%9C%BA%E5%AE%B9%E5%99%A8%E4%BA%92%E8%BF%9E/" rel="prev" title="Docker系列(九)-Dokcer跨主机容器互连">
+      <i class="fa fa-chevron-left"></i> Docker系列(九)-Dokcer跨主机容器互连
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/07/08/01_%E8%BF%90%E7%BB%B4/05-K8S/K8S%E7%B3%BB%E5%88%97-%E4%B8%80-%E5%AE%89%E8%A3%85K8S/" rel="next" title="K8S系列(一)-安装K8S">
+      K8S系列(一)-安装K8S <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E5%AE%89%E8%A3%85docker-compose"><span class="nav-number">1.</span> <span class="nav-text">一、安装docker-compose</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E6%A1%88%E4%BE%8B%EF%BC%9Acompose%E6%9E%84%E5%BB%BAwordpress%E5%B9%B6%E4%BD%BF%E7%94%A8nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1"><span class="nav-number">2.</span> <span class="nav-text">一、案例：compose构建wordpress并使用nginx负载均衡</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E6%A1%88%E4%BE%8B%EF%BC%9A%E6%9E%84%E5%BB%BAzabbix"><span class="nav-number">3.</span> <span class="nav-text">二、案例：构建zabbix</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="GongSheng"
+      src="/images/myavatar.png">
+  <p class="site-author-name" itemprop="name">GongSheng</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">48</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">GongSheng</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

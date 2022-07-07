@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="学习笔记   一、NFS简介 NFS是Network File System的缩写及网络文件系统。NFS主要功能是通过局域网络让不同的主机系统之间可以共享文件或目录。NFS系统和Windows网络共享、网络驱动器类似, 只不过windows用于局域网, NFS用于企业集群架构中如果是大型网站, 会用到更复杂的分布式文件系统FastDFS（音频、小说、视频）,glusterfs（iso镜像）,HD">
+<meta property="og:type" content="article">
+<meta property="og:title" content="运维之综合架构--03-NFS服务器搭建">
+<meta property="og:url" content="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/03-NFS%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/index.html">
+<meta property="og:site_name" content="GongSheng Blog">
+<meta property="og:description" content="学习笔记   一、NFS简介 NFS是Network File System的缩写及网络文件系统。NFS主要功能是通过局域网络让不同的主机系统之间可以共享文件或目录。NFS系统和Windows网络共享、网络驱动器类似, 只不过windows用于局域网, NFS用于企业集群架构中如果是大型网站, 会用到更复杂的分布式文件系统FastDFS（音频、小说、视频）,glusterfs（iso镜像）,HD">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-07-06T03:19:52.000Z">
+<meta property="article:modified_time" content="2022-07-06T07:15:48.532Z">
+<meta property="article:author" content="GongSheng">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/03-NFS%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>运维之综合架构--03-NFS服务器搭建 | GongSheng Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GongSheng Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">山川異域，風月同天</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/03-NFS%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          运维之综合架构--03-NFS服务器搭建
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:15:48" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <ul>
+<li>学习笔记</li>
+</ul>
+<hr>
+<h2 id="一、NFS简介"><a href="#一、NFS简介" class="headerlink" title="一、NFS简介"></a>一、NFS简介</h2><blockquote>
+<p>NFS是Network File System的缩写及网络文件系统。NFS主要功能是通过局域网络让不同的主机系统之间可以共享文件或目录。<br>NFS系统和Windows网络共享、网络驱动器类似, 只不过windows用于局域网, NFS用于企业集群架构中<br>如果是大型网站, 会用到更复杂的分布式文件系统FastDFS（音频、小说、视频）,glusterfs（iso镜像）,HDFS<br>NFS（图片、）解决共享前端web共享</p>
+</blockquote>
+<h3 id="1-1-NFS有什么用？"><a href="#1-1-NFS有什么用？" class="headerlink" title="1.1 NFS有什么用？"></a>1.1 NFS有什么用？</h3><p>解决前端web静态资源的共享<br>解决前端web静态资源一致性<br>解决前端web磁盘空间的浪费</p>
+<h3 id="1-2-NFS的文件操作方式"><a href="#1-2-NFS的文件操作方式" class="headerlink" title="1.2 NFS的文件操作方式"></a>1.2 NFS的文件操作方式</h3><p>1.当用户执行mkdir命令, 该命令会调用shell解释器翻译给内核。<br>2.内核解析完成后会驱动对应的硬件设备，完成相应的操作。</p>
+<h3 id="1-3-NFS的实现原理"><a href="#1-3-NFS的实现原理" class="headerlink" title="1.3 NFS的实现原理"></a>1.3 NFS的实现原理</h3><p>1.用户进程访问NFS客户端，使用不同的函数对数据进行处理<br>2.NFS客户端通过TCP&#x2F;IP的方式传递给NFS服务端。<br>3.NFS服务端接收到请求后，会先调用portmap进程进行端口映射。<br>4.nfsd进程用于判断NFS客户端是否拥有权限连接NFS服务端。<br>5.Rpc.mount进程判断客户端是否有对应的权限进行验证。<br>6.idmap进程实现用户映射和压缩<br>7.最后NFS服务端会将对应请求的函数转换为本地能识别的命令，传递至内核，由内核驱动硬件。<br>注意: rpc是一个远程过程调用，那么使用nfs必须有rpc服务</p>
+<h3 id="1-4-NFS的优缺点"><a href="#1-4-NFS的优缺点" class="headerlink" title="1.4 NFS的优缺点"></a>1.4 NFS的优缺点</h3><p>优点</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.NFS文件系统简单易用、方便部署、数据可靠、服务稳定、满足中小企业需求。
+2.NFS文件系统内存放的数据都在文件系统之上，所有数据都是能看得见。<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>缺点</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.存在单点故障, 如果构建高可用维护麻烦
+web-&gt;nfs(sersync)-&gt;backup
+2.NFS数据明文, 并不对数据做任何校验。
+3.客户端挂载NFS服务没有密码验证, 安全性一般(内网使用)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>3.NFS应用建议<br>1.生产场景应将静态数据尽可能往前端推, 减少后端存储压力<br>2.必须将存储里的静态资源通过CDN缓存jpg\png\mp4\avi\css\js<br>3.如果没有缓存或架构本身历史遗留问题太大, 在多存储也无用</p>
+</blockquote>
+<h2 id="二、NFS部署"><a href="#二、NFS部署" class="headerlink" title="二、NFS部署"></a>二、NFS部署</h2><h3 id="2-1-服务端"><a href="#2-1-服务端" class="headerlink" title="2.1 服务端"></a>2.1 服务端</h3><p>安装</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# yum install nfs-utils -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>配置</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# cat &#x2F;etc&#x2F;exports
+&#x2F;data 172.16.1.0&#x2F;24(rw,sync,all_squash)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>授权</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# mkdir &#x2F;data
+[root@nfs ~]# chown -R nfsnobody.nfsnobody &#x2F;data&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>启动服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# systemctl start nfs-server
+[root@nfs ~]# systemctl enable nfs-server<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>检查</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# cat &#x2F;var&#x2F;lib&#x2F;nfs&#x2F;etab 
+&#x2F;data	172.16.1.0&#x2F;24(rw,sync,wdelay,hide,nocrossmnt,secure,root_squash,all_squash,no_subtree_check,secure_locks,acl,no_pnfs,anonuid&#x3D;65534,anongid&#x3D;65534,sec&#x3D;sys,rw,secure,root_squash,all_squash)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<h3 id="2-2-客户端"><a href="#2-2-客户端" class="headerlink" title="2.2 客户端"></a>2.2 客户端</h3><p>安装</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# yum install nfs-utils -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>检查nfs是否有共享内容</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# showmount -e 172.16.1.31
+Export list for 172.16.1.31:	
+&#x2F;data 172.16.1.0&#x2F;24<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>挂载nfs目录（临时）</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# mount -t nfs 172.16.1.31:&#x2F;data &#x2F;opt
+[root@web01 ~]# df -h
+Filesystem         Size  Used Avail Use% Mounted on
+172.16.1.31:&#x2F;data   99G  1.8G   98G   2% &#x2F;opt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>挂载nfs目录（永久）</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# vim &#x2F;etc&#x2F;fstab 
+172.16.1.31:&#x2F;data  &#x2F;opt  nfs  defaults  0  0
+[root@web01 ~]# mount -a   #验证fstab开机启动是否填写错误。<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-3-NFS配置参数说明"><a href="#2-3-NFS配置参数说明" class="headerlink" title="2.3 NFS配置参数说明"></a>2.3 NFS配置参数说明</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">ro				只读权限
+root_squash		当NFS客户端以root管理员访问时，映射为NFS服务器的匿名用户(不常用)
+no_root_squash	当NFS客户端以root管理员访问时，映射为NFS服务器的root管理员(不常用)
+no_all_squash	无论NFS客户端使用什么账户访问，都不进行压缩
+async			优先将数据保存到内存，然后再写入硬盘；这样效率更高，但可能会丢失数据
+
+rw*				读写权限
+sync*			同时将数据写入到内存与硬盘中，保证不丢失数据
+all_squash*		无论NFS客户端使用什么账户访问，均映射为NFS服务器的匿名用户(常用)
+anonuid*		配置all_squash使用,指定NFS的用户UID,必须存在系统
+anongid*		配置all_squash使用,指定NFS的用户UID,必须存在系统<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-4-验证ro权限"><a href="#2-4-验证ro权限" class="headerlink" title="2.4 验证ro权限"></a>2.4 验证ro权限</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# cat &#x2F;etc&#x2F;exports
+&#x2F;data 172.16.1.0&#x2F;24(ro,sync,all_squash)
+[root@nfs ~]# systemctl restart nfs-server
+
+[root@web01 ~]# touch &#x2F;opt&#x2F;ttt
+touch: cannot touch ‘&#x2F;opt&#x2F;ttt’: Read-only file system		#通常这样的错误都是设定的ro权限导致<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-5-验证all-squash、anonuid、anongid权限"><a href="#2-5-验证all-squash、anonuid、anongid权限" class="headerlink" title="2.5 验证all_squash、anonuid、anongid权限"></a>2.5 验证all_squash、anonuid、anongid权限</h3><p>服务端</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# cat &#x2F;etc&#x2F;exports
+&#x2F;data 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
+创建用户
+[root@nfs ~]# groupadd -g 666 www
+[root@nfs ~]# useradd -u666 -g666 www
+[root@nfs ~]# id www
+uid&#x3D;666(www) gid&#x3D;666(www) groups&#x3D;666(www)
+授权
+[root@nfs ~]# chown -R www.www &#x2F;data&#x2F;
+重启
+[root@nfs ~]# systemctl restart nfs-server<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>客户端重新挂载验证</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 opt]# touch file
+[root@web01 opt]# touch test
+[root@web01 opt]# ll
+total 4
+-rw-r--r-- 1 666 666 0 Jan  7 11:29 file
+-rw-r--r-- 1 666 666 0 Jan  7 11:29 test<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>PS:由于客户端没有创建id为666的www用户，因此看到的属组和属主都是666</p>
+</blockquote>
+<p>客户端如果觉得666不好看，建议在客户端上创建同名的用户以及uid</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# groupadd -g 666 www
+[root@web01 ~]# useradd -u 666 -g 666 www
+[root@web01 ~]# id www
+uid&#x3D;666(www) gid&#x3D;666(www) groups&#x3D;666(www)
+[root@web01 ~]# ll &#x2F;opt&#x2F;
+total 4
+-rw-r--r-- 1 www www 0 Jan  7 11:29 file
+-rw-r--r-- 1 www www 0 Jan  7 11:29 test<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/04-sersync%E5%AE%9E%E6%97%B6%E5%90%8C%E6%AD%A5%E5%A4%87%E4%BB%BD/" rel="prev" title="运维之综合架构--04--Sersync实时备份">
+      <i class="fa fa-chevron-left"></i> 运维之综合架构--04--Sersync实时备份
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/02-Rsync%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/" rel="next" title="运维之综合架构--02--Rsync服务器搭建">
+      运维之综合架构--02--Rsync服务器搭建 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81NFS%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">一、NFS简介</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-NFS%E6%9C%89%E4%BB%80%E4%B9%88%E7%94%A8%EF%BC%9F"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 NFS有什么用？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-NFS%E7%9A%84%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C%E6%96%B9%E5%BC%8F"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 NFS的文件操作方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-NFS%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86"><span class="nav-number">1.3.</span> <span class="nav-text">1.3 NFS的实现原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-NFS%E7%9A%84%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="nav-number">1.4.</span> <span class="nav-text">1.4 NFS的优缺点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81NFS%E9%83%A8%E7%BD%B2"><span class="nav-number">2.</span> <span class="nav-text">二、NFS部署</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E6%9C%8D%E5%8A%A1%E7%AB%AF"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 服务端</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 客户端</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-NFS%E9%85%8D%E7%BD%AE%E5%8F%82%E6%95%B0%E8%AF%B4%E6%98%8E"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 NFS配置参数说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-%E9%AA%8C%E8%AF%81ro%E6%9D%83%E9%99%90"><span class="nav-number">2.4.</span> <span class="nav-text">2.4 验证ro权限</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-%E9%AA%8C%E8%AF%81all-squash%E3%80%81anonuid%E3%80%81anongid%E6%9D%83%E9%99%90"><span class="nav-number">2.5.</span> <span class="nav-text">2.5 验证all_squash、anonuid、anongid权限</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="GongSheng"
+      src="/images/myavatar.png">
+  <p class="site-author-name" itemprop="name">GongSheng</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">48</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">GongSheng</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

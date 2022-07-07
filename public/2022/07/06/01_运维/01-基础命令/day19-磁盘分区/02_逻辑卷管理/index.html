@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="一、LVM介绍​	逻辑卷管理LVM是一个多才多艺的硬盘系统工具。无论在Linux或者其他类似的系统，都是非常的好用。传统分区使用固定大小分区，重新调整大小十分麻烦。但是，LVM可以创建和管理“逻辑”卷，而不是直接使用物理硬盘。可以让管理员弹性的管理逻辑卷的扩大缩小，操作简单，而不损坏已存储的数据。可以随意将新的硬盘添加到LVM，以直接扩展已经存在的逻辑卷。LVM并不需要重启就可以让内核知道分区的存">
+<meta property="og:type" content="article">
+<meta property="og:title" content="运维之基础命令--逻辑卷管理">
+<meta property="og:url" content="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day19-%E7%A3%81%E7%9B%98%E5%88%86%E5%8C%BA/02_%E9%80%BB%E8%BE%91%E5%8D%B7%E7%AE%A1%E7%90%86/index.html">
+<meta property="og:site_name" content="GongSheng Blog">
+<meta property="og:description" content="一、LVM介绍​	逻辑卷管理LVM是一个多才多艺的硬盘系统工具。无论在Linux或者其他类似的系统，都是非常的好用。传统分区使用固定大小分区，重新调整大小十分麻烦。但是，LVM可以创建和管理“逻辑”卷，而不是直接使用物理硬盘。可以让管理员弹性的管理逻辑卷的扩大缩小，操作简单，而不损坏已存储的数据。可以随意将新的硬盘添加到LVM，以直接扩展已经存在的逻辑卷。LVM并不需要重启就可以让内核知道分区的存">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://gsproj.github.io/02_%E9%80%BB%E8%BE%91%E5%8D%B7%E7%AE%A1%E7%90%86.assets/134408sa12dauefffyszfg.jpg">
+<meta property="article:published_time" content="2022-07-06T03:19:52.000Z">
+<meta property="article:modified_time" content="2022-07-06T07:14:41.390Z">
+<meta property="article:author" content="GongSheng">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://gsproj.github.io/02_%E9%80%BB%E8%BE%91%E5%8D%B7%E7%AE%A1%E7%90%86.assets/134408sa12dauefffyszfg.jpg">
+
+<link rel="canonical" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day19-%E7%A3%81%E7%9B%98%E5%88%86%E5%8C%BA/02_%E9%80%BB%E8%BE%91%E5%8D%B7%E7%AE%A1%E7%90%86/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>运维之基础命令--逻辑卷管理 | GongSheng Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GongSheng Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">山川異域，風月同天</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day19-%E7%A3%81%E7%9B%98%E5%88%86%E5%8C%BA/02_%E9%80%BB%E8%BE%91%E5%8D%B7%E7%AE%A1%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          运维之基础命令--逻辑卷管理
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:14:41" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="一、LVM介绍"><a href="#一、LVM介绍" class="headerlink" title="一、LVM介绍"></a>一、LVM介绍</h2><p>​	逻辑卷管理LVM是一个多才多艺的硬盘系统工具。无论在Linux或者其他类似的系统，都是非常的好用。传统分区使用固定大小分区，重新调整大小十分麻烦。但是，LVM可以创建和管理“逻辑”卷，而不是直接使用物理硬盘。可以让管理员弹性的管理逻辑卷的扩大缩小，操作简单，而不损坏已存储的数据。可以随意将新的硬盘添加到LVM，以直接扩展已经存在的逻辑卷。LVM并不需要重启就可以让内核知道分区的存在。</p>
+<p>LVM使用分层结构，如下如所示：</p>
+<p><img src="/02_%E9%80%BB%E8%BE%91%E5%8D%B7%E7%AE%A1%E7%90%86.assets/134408sa12dauefffyszfg.jpg" alt="img"></p>
+<p>​	图中顶部，首先是实际的物理磁盘及其划分的分区和其上的物理卷（PV）。一个或多个物理卷可以用来创建卷组（VG）。然后基于卷组可以创建逻辑卷（LV）。只要在卷组中有可用空间，就可以随心所欲的创建逻辑卷。文件系统就是在逻辑卷上创建的，然后可以在操作系统挂载和访问</p>
+<h2 id="二、LVM使用"><a href="#二、LVM使用" class="headerlink" title="二、LVM使用"></a>二、LVM使用</h2><h3 id="2-1-磁盘准备"><a href="#2-1-磁盘准备" class="headerlink" title="2.1 磁盘准备"></a>2.1 磁盘准备</h3><p>加装两块硬盘，sdb-10G与sdc-5G</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># lsblk</span>
+NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sda      <span class="token number">8</span>:0    <span class="token number">0</span>   50G  <span class="token number">0</span> disk
+├─sda1   <span class="token number">8</span>:1    <span class="token number">0</span>    1G  <span class="token number">0</span> part /boot
+├─sda2   <span class="token number">8</span>:2    <span class="token number">0</span>    2G  <span class="token number">0</span> part <span class="token punctuation">[</span>SWAP<span class="token punctuation">]</span>
+└─sda3   <span class="token number">8</span>:3    <span class="token number">0</span>   47G  <span class="token number">0</span> part /
+sdb      <span class="token number">8</span>:16   <span class="token number">0</span>   10G  <span class="token number">0</span> disk
+sdc      <span class="token number">8</span>:32   <span class="token number">0</span>    5G  <span class="token number">0</span> disk
+sr0     <span class="token number">11</span>:0    <span class="token number">1</span>  792M  <span class="token number">0</span> rom<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>给sbd创建LVM分区</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># fdisk /dev/sdb</span>
+Welcome to <span class="token function">fdisk</span> <span class="token punctuation">(</span>util-linux <span class="token number">2.23</span>.2<span class="token punctuation">)</span>.
+
+Changes will remain <span class="token keyword">in</span> memory only, <span class="token keyword">until</span> you decide to <span class="token function">write</span> them.
+Be careful before using the <span class="token function">write</span> command.
+
+
+Command <span class="token punctuation">(</span>m <span class="token keyword">for</span> <span class="token builtin class-name">help</span><span class="token punctuation">)</span>: n  <span class="token comment"># 新建分区</span>
+Partition type:
+   p   primary <span class="token punctuation">(</span><span class="token number">0</span> primary, <span class="token number">0</span> extended, <span class="token number">4</span> <span class="token function">free</span><span class="token punctuation">)</span>
+   e   extended
+Select <span class="token punctuation">(</span>default p<span class="token punctuation">)</span>:
+Using default response p
+Partition number <span class="token punctuation">(</span><span class="token number">1</span>-4, default <span class="token number">1</span><span class="token punctuation">)</span>:
+First sector <span class="token punctuation">(</span><span class="token number">2048</span>-20971519, default <span class="token number">2048</span><span class="token punctuation">)</span>:
+Using default value <span class="token number">2048</span>
+Last sector, +sectors or +size<span class="token punctuation">&#123;</span>K,M,G<span class="token punctuation">&#125;</span> <span class="token punctuation">(</span><span class="token number">2048</span>-20971519, default <span class="token number">20971519</span><span class="token punctuation">)</span>: +2G
+Partition <span class="token number">1</span> of <span class="token builtin class-name">type</span> Linux and of size <span class="token number">2</span> GiB is <span class="token builtin class-name">set</span>
+
+Command <span class="token punctuation">(</span>m <span class="token keyword">for</span> <span class="token builtin class-name">help</span><span class="token punctuation">)</span>: t  <span class="token comment"># 将分区改为LVM分区</span>
+Selected partition <span class="token number">1</span>
+Hex code <span class="token punctuation">(</span>type L to list all codes<span class="token punctuation">)</span>: L
+
+ <span class="token number">0</span>  Empty           <span class="token number">24</span>  NEC DOS         <span class="token number">81</span>  Minix / old Lin bf  Solaris
+ <span class="token number">1</span>  FAT12           <span class="token number">27</span>  Hidden NTFS Win <span class="token number">82</span>  Linux swap / So c1  DRDOS/sec <span class="token punctuation">(</span>FAT-
+ <span class="token number">2</span>  XENIX root      <span class="token number">39</span>  Plan <span class="token number">9</span>          <span class="token number">83</span>  Linux           c4  DRDOS/sec <span class="token punctuation">(</span>FAT-
+ <span class="token number">3</span>  XENIX usr       3c  PartitionMagic  <span class="token number">84</span>  OS/2 hidden C:  c6  DRDOS/sec <span class="token punctuation">(</span>FAT-
+ <span class="token number">4</span>  FAT16 <span class="token operator">&lt;</span>32M      <span class="token number">40</span>  Venix <span class="token number">80286</span>     <span class="token number">85</span>  Linux extended  c7  Syrinx
+ <span class="token number">5</span>  Extended        <span class="token number">41</span>  PPC PReP Boot   <span class="token number">86</span>  NTFS volume <span class="token builtin class-name">set</span> da  Non-FS data
+ <span class="token number">6</span>  FAT16           <span class="token number">42</span>  SFS             <span class="token number">87</span>  NTFS volume <span class="token builtin class-name">set</span> db  CP/M / CTOS / <span class="token builtin class-name">.</span>
+ <span class="token number">7</span>  HPFS/NTFS/exFAT 4d  QNX4.x          <span class="token number">88</span>  Linux plaintext de  Dell Utility
+ <span class="token number">8</span>  AIX             4e  QNX4.x 2nd part 8e  Linux LVM       <span class="token function">df</span>  BootIt
+ <span class="token number">9</span>  AIX bootable    4f  QNX4.x 3rd part <span class="token number">93</span>  Amoeba          e1  DOS access
+ a  OS/2 Boot Manag <span class="token number">50</span>  OnTrack DM      <span class="token number">94</span>  Amoeba BBT      e3  DOS R/O
+ b  W95 FAT32       <span class="token number">51</span>  OnTrack DM6 Aux 9f  BSD/OS          e4  SpeedStor
+ c  W95 FAT32 <span class="token punctuation">(</span>LBA<span class="token punctuation">)</span> <span class="token number">52</span>  CP/M            a0  IBM Thinkpad hi eb  BeOS fs
+ e  W95 FAT16 <span class="token punctuation">(</span>LBA<span class="token punctuation">)</span> <span class="token number">53</span>  OnTrack DM6 Aux a5  FreeBSD         ee  GPT
+ f  W95 Ext<span class="token string">'d (LBA) 54  OnTrackDM6      a6  OpenBSD         ef  EFI (FAT-12/16/
+10  OPUS            55  EZ-Drive        a7  NeXTSTEP        f0  Linux/PA-RISC b
+11  Hidden FAT12    56  Golden Bow      a8  Darwin UFS      f1  SpeedStor
+12  Compaq diagnost 5c  Priam Edisk     a9  NetBSD          f4  SpeedStor
+14  Hidden FAT16 &lt;3 61  SpeedStor       ab  Darwin boot     f2  DOS secondary
+16  Hidden FAT16    63  GNU HURD or Sys af  HFS / HFS+      fb  VMware VMFS
+17  Hidden HPFS/NTF 64  Novell Netware  b7  BSDI fs         fc  VMware VMKCORE
+18  AST SmartSleep  65  Novell Netware  b8  BSDI swap       fd  Linux raid auto
+1b  Hidden W95 FAT3 70  DiskSecure Mult bb  Boot Wizard hid fe  LANstep
+1c  Hidden W95 FAT3 75  PC/IX           be  Solaris boot    ff  BBT
+1e  Hidden W95 FAT1 80  Old Minix
+Hex code (type L to list all codes): 8e
+Changed type of partition '</span>Linux<span class="token string">' to '</span>Linux LVM'
+
+Command <span class="token punctuation">(</span>m <span class="token keyword">for</span> <span class="token builtin class-name">help</span><span class="token punctuation">)</span>: p
+
+Disk /dev/sdb: <span class="token number">10.7</span> GB, <span class="token number">10737418240</span> bytes, <span class="token number">20971520</span> sectors
+Units <span class="token operator">=</span> sectors of <span class="token number">1</span> * <span class="token number">512</span> <span class="token operator">=</span> <span class="token number">512</span> bytes
+Sector size <span class="token punctuation">(</span>logical/physical<span class="token punctuation">)</span>: <span class="token number">512</span> bytes / <span class="token number">512</span> bytes
+I/O size <span class="token punctuation">(</span>minimum/optimal<span class="token punctuation">)</span>: <span class="token number">512</span> bytes / <span class="token number">512</span> bytes
+Disk label type: dos
+Disk identifier: 0x0005122b
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdb1            <span class="token number">2048</span>     <span class="token number">4196351</span>     <span class="token number">2097152</span>   8e  Linux LVM<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>重复添加，再加一个3G，一个2G的分区，可见分区表如下：</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># fdisk -l /dev/sdb</span>
+
+Disk /dev/sdb: <span class="token number">10.7</span> GB, <span class="token number">10737418240</span> bytes, <span class="token number">20971520</span> sectors
+Units <span class="token operator">=</span> sectors of <span class="token number">1</span> * <span class="token number">512</span> <span class="token operator">=</span> <span class="token number">512</span> bytes
+Sector size <span class="token punctuation">(</span>logical/physical<span class="token punctuation">)</span>: <span class="token number">512</span> bytes / <span class="token number">512</span> bytes
+I/O size <span class="token punctuation">(</span>minimum/optimal<span class="token punctuation">)</span>: <span class="token number">512</span> bytes / <span class="token number">512</span> bytes
+Disk label type: dos
+Disk identifier: 0x0005122b
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdb1            <span class="token number">2048</span>     <span class="token number">4196351</span>     <span class="token number">2097152</span>   8e  Linux LVM
+/dev/sdb2         <span class="token number">4196352</span>    <span class="token number">10487807</span>     <span class="token number">3145728</span>   8e  Linux LVM
+/dev/sdb3        <span class="token number">10487808</span>    <span class="token number">14682111</span>     <span class="token number">2097152</span>   8e  Linux LVM<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-2-创建物理卷（PV）"><a href="#2-2-创建物理卷（PV）" class="headerlink" title="2.2 创建物理卷（PV）"></a>2.2 创建物理卷（PV）</h3><p>安装LVM工具</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># yum install lvm2 </span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>将准备好的LVM分区生成为物理卷</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># pvcreate /dev/sdb1</span>
+WARNING: ext4 signature detected on /dev/sdb1 at offset <span class="token number">1080</span>. Wipe it? <span class="token punctuation">[</span>y/n<span class="token punctuation">]</span>: y
+  Wiping ext4 signature on /dev/sdb1.
+  Physical volume <span class="token string">"/dev/sdb1"</span> successfully created.
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># pvcreate /dev/sdb2</span>
+  Physical volume <span class="token string">"/dev/sdb2"</span> successfully created.
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># pvcreate /dev/sdb3</span>
+  Physical volume <span class="token string">"/dev/sdb3"</span> successfully created.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>查看物理卷信息</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># pvdisplay</span>
+  <span class="token string">"/dev/sdb1"</span> is a new physical volume of <span class="token string">"2.00 GiB"</span>
+  --- NEW Physical volume ---
+  PV Name               /dev/sdb1
+  VG Name
+  PV Size               <span class="token number">2.00</span> GiB
+  Allocatable           NO
+  PE Size               <span class="token number">0</span>
+  Total PE              <span class="token number">0</span>
+  Free PE               <span class="token number">0</span>
+  Allocated PE          <span class="token number">0</span>
+  PV UUID               YUHdrd-AH1x-ew0m-Mp9i-3GHp-S4zc-XxlDJM
+
+  <span class="token string">"/dev/sdb2"</span> is a new physical volume of <span class="token string">"3.00 GiB"</span>
+  --- NEW Physical volume ---
+  PV Name               /dev/sdb2
+  VG Name
+  PV Size               <span class="token number">3.00</span> GiB
+  Allocatable           NO
+  PE Size               <span class="token number">0</span>
+  Total PE              <span class="token number">0</span>
+  Free PE               <span class="token number">0</span>
+  Allocated PE          <span class="token number">0</span>
+  PV UUID               wGDQvx-7zfs-g018-wqx4-Y8rh-1kWT-PnLuFu
+
+  <span class="token string">"/dev/sdb3"</span> is a new physical volume of <span class="token string">"2.00 GiB"</span>
+  --- NEW Physical volume ---
+  PV Name               /dev/sdb3
+  VG Name
+  PV Size               <span class="token number">2.00</span> GiB
+  Allocatable           NO
+  PE Size               <span class="token number">0</span>
+  Total PE              <span class="token number">0</span>
+  Free PE               <span class="token number">0</span>
+  Allocated PE          <span class="token number">0</span>
+  PV UUID               fykcuR-jooY-WKbi-yM8j-7fQ5-mhnH-JCkXC8<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>补充：如何删除物理卷</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># pvremove /dev/sdb1</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h3 id="2-3-创建卷组（VG）"><a href="#2-3-创建卷组（VG）" class="headerlink" title="2.3 创建卷组（VG）"></a>2.3 创建卷组（VG）</h3><p>将&#x2F;dev&#x2F;sdb{1,2,3}合并为卷组vg01</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># vgcreate vg01 /dev/sdb1 /dev/sdb2 /dev/sdb3</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>查看卷组信息</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># vgdisplay</span>
+  --- Volume group ---
+  VG Name               vg01
+  System ID
+  Format                lvm2
+  Metadata Areas        <span class="token number">3</span>
+  Metadata Sequence No  <span class="token number">1</span>
+  VG Access             read/write
+  VG Status             resizable
+  MAX LV                <span class="token number">0</span>
+  Cur LV                <span class="token number">0</span>
+  Open LV               <span class="token number">0</span>
+  Max PV                <span class="token number">0</span>
+  Cur PV                <span class="token number">3</span>
+  Act PV                <span class="token number">3</span>
+  VG Size               <span class="token operator">&lt;</span><span class="token number">6.99</span> GiB
+  PE Size               <span class="token number">4.00</span> MiB
+  Total PE              <span class="token number">1789</span>
+  Alloc PE / Size       <span class="token number">0</span> / <span class="token number">0</span>
+  Free  PE / Size       <span class="token number">1789</span> / <span class="token operator">&lt;</span><span class="token number">6.99</span> GiB
+  VG UUID               gzeouH-16qO-n6xv-V6VM-A9ep-eK6E-ODuIwU<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>补充：如何删除卷组</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># vgremove vg01</span>
+  Volume group <span class="token string">"vg01"</span> successfully removed<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<h3 id="2-4-创建逻辑卷（LV）"><a href="#2-4-创建逻辑卷（LV）" class="headerlink" title="2.4 创建逻辑卷（LV）"></a>2.4 创建逻辑卷（LV）</h3><p>创建一个名为lv01，大小为100M的逻辑卷</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># lvcreate -L 100M -n lv01 vg01</span>
+  Logical volume <span class="token string">"lv01"</span> created.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>查看逻辑卷</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># lvdisplay</span>
+  --- Logical volume ---
+  LV Path                /dev/vg01/lv01
+  LV Name                lv01
+  VG Name                vg01
+  LV UUID                xFksnb-ENc2-mEo4-5gEb-yaJj-wP2c-oFuBeT
+  LV Write Access        read/write
+  LV Creation host, <span class="token function">time</span> lb01, <span class="token number">2021</span>-09-01 <span class="token number">20</span>:39:16 +0800
+  LV Status              available
+  <span class="token comment"># open                 0</span>
+  LV Size                <span class="token number">100.00</span> MiB
+  Current LE             <span class="token number">25</span>
+  Segments               <span class="token number">1</span>
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently <span class="token builtin class-name">set</span> to     <span class="token number">8192</span>
+  Block device           <span class="token number">253</span>:0<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>补充：删除逻辑卷</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># lvremove /dev/vg01/lv02</span>
+Do you really want to remove active logical volume vg01/lv02? <span class="token punctuation">[</span>y/n<span class="token punctuation">]</span>: y
+  Logical volume <span class="token string">"lv02"</span> successfully removed<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-5-逻辑卷挂载"><a href="#2-5-逻辑卷挂载" class="headerlink" title="2.5 逻辑卷挂载"></a>2.5 逻辑卷挂载</h3><p>格式化逻辑卷</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># mkfs.ext4 /dev/vg01/lv01</span>
+<span class="token function">mke2fs</span> <span class="token number">1.42</span>.9 <span class="token punctuation">(</span><span class="token number">28</span>-Dec-2013<span class="token punctuation">)</span>
+Filesystem <span class="token assign-left variable">label</span><span class="token operator">=</span>
+OS type: Linux
+Block <span class="token assign-left variable">size</span><span class="token operator">=</span><span class="token number">1024</span> <span class="token punctuation">(</span>log<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">)</span>
+Fragment <span class="token assign-left variable">size</span><span class="token operator">=</span><span class="token number">1024</span> <span class="token punctuation">(</span>log<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">)</span>
+<span class="token assign-left variable">Stride</span><span class="token operator">=</span><span class="token number">0</span> blocks, Stripe <span class="token assign-left variable">width</span><span class="token operator">=</span><span class="token number">0</span> blocks
+<span class="token number">25688</span> inodes, <span class="token number">102400</span> blocks
+<span class="token number">5120</span> blocks <span class="token punctuation">(</span><span class="token number">5.00</span>%<span class="token punctuation">)</span> reserved <span class="token keyword">for</span> the super user
+First data <span class="token assign-left variable">block</span><span class="token operator">=</span><span class="token number">1</span>
+Maximum filesystem <span class="token assign-left variable">blocks</span><span class="token operator">=</span><span class="token number">33685504</span>
+<span class="token number">13</span> block <span class="token function">groups</span>
+<span class="token number">8192</span> blocks per group, <span class="token number">8192</span> fragments per group
+<span class="token number">1976</span> inodes per group
+Superblock backups stored on blocks:
+        <span class="token number">8193</span>, <span class="token number">24577</span>, <span class="token number">40961</span>, <span class="token number">57345</span>, <span class="token number">73729</span>
+
+Allocating group tables: <span class="token keyword">done</span>
+Writing inode tables: <span class="token keyword">done</span>
+Creating journal <span class="token punctuation">(</span><span class="token number">4096</span> blocks<span class="token punctuation">)</span>: <span class="token keyword">done</span>
+Writing superblocks and filesystem accounting information: <span class="token keyword">done</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>挂载逻辑卷</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># mkdir /mnt/test-lv01</span>
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># mount /dev/vg01/lv01 /mnt/test-lv01</span>
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># df -h</span>
+Filesystem             Size  Used Avail Use% Mounted on
+/dev/sda3               47G  <span class="token number">1</span>.9G   46G   <span class="token number">4</span>% /
+devtmpfs               479M     <span class="token number">0</span>  479M   <span class="token number">0</span>% /dev
+tmpfs                  489M     <span class="token number">0</span>  489M   <span class="token number">0</span>% /dev/shm
+tmpfs                  489M  <span class="token number">6</span>.8M  482M   <span class="token number">2</span>% /run
+tmpfs                  489M     <span class="token number">0</span>  489M   <span class="token number">0</span>% /sys/fs/cgroup
+/dev/sda1             1014M  119M  896M  <span class="token number">12</span>% /boot
+tmpfs                   98M     <span class="token number">0</span>   98M   <span class="token number">0</span>% /run/user/0
+/dev/mapper/vg01-lv01   93M  <span class="token number">1</span>.6M   85M   <span class="token number">2</span>% /mnt/test-lv01<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-6-扩展逻辑卷"><a href="#2-6-扩展逻辑卷" class="headerlink" title="2.6 扩展逻辑卷"></a>2.6 扩展逻辑卷</h3><p>卸载逻辑卷</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># umount /dev/vg01/lv01</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>将逻辑卷lv01调整为200M</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># lvresize -L 200M /dev/vg01/lv01 </span>
+  Size of logical volume vg01/lv01 changed from <span class="token number">100.00</span> MiB <span class="token punctuation">(</span><span class="token number">25</span> extents<span class="token punctuation">)</span> to <span class="token number">200.00</span> MiB <span class="token punctuation">(</span><span class="token number">50</span> extents<span class="token punctuation">)</span>.
+  Logical volume vg01/lv01 successfully resized.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>检查磁盘错误</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># e2fsck -f /dev/vg01/lv01</span>
+e2fsck <span class="token number">1.42</span>.9 <span class="token punctuation">(</span><span class="token number">28</span>-Dec-2013<span class="token punctuation">)</span>
+Pass <span class="token number">1</span>: Checking inodes, blocks, and sizes
+Pass <span class="token number">2</span>: Checking directory structure
+Pass <span class="token number">3</span>: Checking directory connectivity
+Pass <span class="token number">4</span>: Checking reference counts
+Pass <span class="token number">5</span>: Checking group summary information
+/dev/vg01/lv01: <span class="token number">11</span>/25688 files <span class="token punctuation">(</span><span class="token number">9.1</span>% non-contiguous<span class="token punctuation">)</span>, <span class="token number">8896</span>/102400 blocks<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>调整文件系统大小</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># resize2fs /dev/vg01/lv01</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>查看逻辑卷信息</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># lvdisplay</span>
+  --- Logical volume ---
+  LV Path                /dev/vg01/lv01
+  LV Name                lv01
+  VG Name                vg01
+  LV UUID                svm5Xk-B8jZ-QhZw-egCm-x6b2-e5Jt-wvMi2F
+  LV Write Access        read/write
+  LV Creation host, <span class="token function">time</span> lb01, <span class="token number">2021</span>-09-01 <span class="token number">20</span>:41:53 +0800
+  LV Status              available
+  <span class="token comment"># open                 0</span>
+  LV Size                <span class="token number">200.00</span> MiB
+  Current LE             <span class="token number">50</span>
+  Segments               <span class="token number">2</span>
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently <span class="token builtin class-name">set</span> to     <span class="token number">8192</span>
+  Block device           <span class="token number">253</span>:0
+  <span class="token punctuation">..</span>.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>重新挂载使用</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># !mount</span>
+<span class="token function">mount</span> /dev/vg01/lv01 /mnt/test-lv01
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># df -h</span>
+Filesystem             Size  Used Avail Use% Mounted on
+/dev/sda3               47G  <span class="token number">1</span>.9G   46G   <span class="token number">4</span>% /
+devtmpfs               479M     <span class="token number">0</span>  479M   <span class="token number">0</span>% /dev
+tmpfs                  489M     <span class="token number">0</span>  489M   <span class="token number">0</span>% /dev/shm
+tmpfs                  489M  <span class="token number">6</span>.8M  482M   <span class="token number">2</span>% /run
+tmpfs                  489M     <span class="token number">0</span>  489M   <span class="token number">0</span>% /sys/fs/cgroup
+/dev/sda1             1014M  119M  896M  <span class="token number">12</span>% /boot
+tmpfs                   98M     <span class="token number">0</span>   98M   <span class="token number">0</span>% /run/user/0
+/dev/mapper/vg01-lv01  190M  <span class="token number">1</span>.6M  175M   <span class="token number">1</span>% /mnt/test-lv01<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-7-缩减逻辑卷"><a href="#2-7-缩减逻辑卷" class="headerlink" title="2.7 缩减逻辑卷"></a>2.7 缩减逻辑卷</h3><p>卸载逻辑卷</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># umount /dev/vg01/lv01</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>检查磁盘错误</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># e2fsck -f /dev/vg01/lv01</span>
+e2fsck <span class="token number">1.42</span>.9 <span class="token punctuation">(</span><span class="token number">28</span>-Dec-2013<span class="token punctuation">)</span>
+Pass <span class="token number">1</span>: Checking inodes, blocks, and sizes
+Pass <span class="token number">2</span>: Checking directory structure
+Pass <span class="token number">3</span>: Checking directory connectivity
+Pass <span class="token number">4</span>: Checking reference counts
+Pass <span class="token number">5</span>: Checking group summary information
+/dev/vg01/lv01: <span class="token number">11</span>/49400 files <span class="token punctuation">(</span><span class="token number">9.1</span>% non-contiguous<span class="token punctuation">)</span>, <span class="token number">11884</span>/204800 blocks<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>缩减文件系统大小，更新ext4信息</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># resize2fs /dev/vg01/lv01 100M</span>
+resize2fs <span class="token number">1.42</span>.9 <span class="token punctuation">(</span><span class="token number">28</span>-Dec-2013<span class="token punctuation">)</span>
+Resizing the filesystem on /dev/vg01/lv01 to <span class="token number">102400</span> <span class="token punctuation">(</span>1k<span class="token punctuation">)</span> blocks.
+The filesystem on /dev/vg01/lv01 is now <span class="token number">102400</span> blocks long.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>完成后，减小逻辑卷大小</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># lvresize -L 100M /dev/vg01/lv01</span>
+  WARNING: Reducing active logical volume to <span class="token number">100.00</span> MiB.
+  THIS MAY DESTROY YOUR DATA <span class="token punctuation">(</span>filesystem etc.<span class="token punctuation">)</span>
+Do you really want to reduce vg01/lv01? <span class="token punctuation">[</span>y/n<span class="token punctuation">]</span>: y
+  Size of logical volume vg01/lv01 changed from <span class="token number">200.00</span> MiB <span class="token punctuation">(</span><span class="token number">50</span> extents<span class="token punctuation">)</span> to <span class="token number">100.00</span> MiB <span class="token punctuation">(</span><span class="token number">25</span> extents<span class="token punctuation">)</span>.
+  Logical volume vg01/lv01 successfully resized.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>查看逻辑卷信息</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># lvdisplay</span>
+  --- Logical volume ---
+  LV Path                /dev/vg01/lv01
+  LV Name                lv01
+  VG Name                vg01
+  LV UUID                svm5Xk-B8jZ-QhZw-egCm-x6b2-e5Jt-wvMi2F
+  LV Write Access        read/write
+  LV Creation host, <span class="token function">time</span> lb01, <span class="token number">2021</span>-09-01 <span class="token number">20</span>:41:53 +0800
+  LV Status              available
+  <span class="token comment"># open                 0</span>
+  LV Size                <span class="token number">100.00</span> MiB
+  Current LE             <span class="token number">25</span>
+  Segments               <span class="token number">1</span>
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently <span class="token builtin class-name">set</span> to     <span class="token number">8192</span>
+  Block device           <span class="token number">253</span>:0
+  <span class="token punctuation">..</span>.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>挂载使用</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># !mo</span>
+<span class="token function">mount</span> /dev/vg01/lv01 /mnt/test-lv01
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># df -h</span>
+Filesystem             Size  Used Avail Use% Mounted on
+/dev/sda3               47G  <span class="token number">1</span>.9G   46G   <span class="token number">4</span>% /
+devtmpfs               479M     <span class="token number">0</span>  479M   <span class="token number">0</span>% /dev
+tmpfs                  489M     <span class="token number">0</span>  489M   <span class="token number">0</span>% /dev/shm
+tmpfs                  489M  <span class="token number">6</span>.8M  482M   <span class="token number">2</span>% /run
+tmpfs                  489M     <span class="token number">0</span>  489M   <span class="token number">0</span>% /sys/fs/cgroup
+/dev/sda1             1014M  119M  896M  <span class="token number">12</span>% /boot
+tmpfs                   98M     <span class="token number">0</span>   98M   <span class="token number">0</span>% /run/user/0
+/dev/mapper/vg01-lv01   93M  <span class="token number">1</span>.6M   85M   <span class="token number">2</span>% /mnt/test-lv01<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-8-VG增加一块磁盘"><a href="#2-8-VG增加一块磁盘" class="headerlink" title="2.8 VG增加一块磁盘"></a>2.8 VG增加一块磁盘</h3><p>新盘创建lvm分区</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># fdisk /dev/sdc</span>
+Welcome to <span class="token function">fdisk</span> <span class="token punctuation">(</span>util-linux <span class="token number">2.23</span>.2<span class="token punctuation">)</span>.
+
+Changes will remain <span class="token keyword">in</span> memory only, <span class="token keyword">until</span> you decide to <span class="token function">write</span> them.
+Be careful before using the <span class="token function">write</span> command.
+
+Device does not contain a recognized partition table
+Building a new DOS disklabel with disk identifier 0x05ff27fa.
+
+Command <span class="token punctuation">(</span>m <span class="token keyword">for</span> <span class="token builtin class-name">help</span><span class="token punctuation">)</span>: n
+Partition type:
+   p   primary <span class="token punctuation">(</span><span class="token number">0</span> primary, <span class="token number">0</span> extended, <span class="token number">4</span> <span class="token function">free</span><span class="token punctuation">)</span>
+   e   extended
+Select <span class="token punctuation">(</span>default p<span class="token punctuation">)</span>:
+Using default response p
+Partition number <span class="token punctuation">(</span><span class="token number">1</span>-4, default <span class="token number">1</span><span class="token punctuation">)</span>:
+First sector <span class="token punctuation">(</span><span class="token number">2048</span>-10485759, default <span class="token number">2048</span><span class="token punctuation">)</span>:
+Using default value <span class="token number">2048</span>
+Last sector, +sectors or +size<span class="token punctuation">&#123;</span>K,M,G<span class="token punctuation">&#125;</span> <span class="token punctuation">(</span><span class="token number">2048</span>-10485759, default <span class="token number">10485759</span><span class="token punctuation">)</span>: +4G
+Partition <span class="token number">1</span> of <span class="token builtin class-name">type</span> Linux and of size <span class="token number">4</span> GiB is <span class="token builtin class-name">set</span>
+
+Command <span class="token punctuation">(</span>m <span class="token keyword">for</span> <span class="token builtin class-name">help</span><span class="token punctuation">)</span>: t
+Selected partition <span class="token number">1</span>
+Hex code <span class="token punctuation">(</span>type L to list all codes<span class="token punctuation">)</span>:
+Hex code <span class="token punctuation">(</span>type L to list all codes<span class="token punctuation">)</span>: 8e
+Changed <span class="token builtin class-name">type</span> of partition <span class="token string">'Linux'</span> to <span class="token string">'Linux LVM'</span>
+
+Command <span class="token punctuation">(</span>m <span class="token keyword">for</span> <span class="token builtin class-name">help</span><span class="token punctuation">)</span>: p
+
+Disk /dev/sdc: <span class="token number">5368</span> MB, <span class="token number">5368709120</span> bytes, <span class="token number">10485760</span> sectors
+Units <span class="token operator">=</span> sectors of <span class="token number">1</span> * <span class="token number">512</span> <span class="token operator">=</span> <span class="token number">512</span> bytes
+Sector size <span class="token punctuation">(</span>logical/physical<span class="token punctuation">)</span>: <span class="token number">512</span> bytes / <span class="token number">512</span> bytes
+I/O size <span class="token punctuation">(</span>minimum/optimal<span class="token punctuation">)</span>: <span class="token number">512</span> bytes / <span class="token number">512</span> bytes
+Disk label type: dos
+Disk identifier: 0x05ff27fa
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdc1            <span class="token number">2048</span>     <span class="token number">8390655</span>     <span class="token number">4194304</span>   8e  Linux LVM<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>创建物理卷</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># pvcreate /dev/sdc1</span>
+  Physical volume <span class="token string">"/dev/sdc1"</span> successfully created.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>扩容VG</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># vgextend vg01 /dev/sdc1</span>
+  Volume group <span class="token string">"vg01"</span> successfully extended<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>查看VG信息</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># vgdisplay vg01</span>
+  --- Volume group ---
+  VG Name               vg01
+  System ID
+  Format                lvm2
+  Metadata Areas        <span class="token number">4</span>
+  Metadata Sequence No  <span class="token number">10</span>
+  VG Access             read/write
+  VG Status             resizable
+  MAX LV                <span class="token number">0</span>
+  Cur LV                <span class="token number">2</span>
+  Open LV               <span class="token number">1</span>
+  Max PV                <span class="token number">0</span>
+  Cur PV                <span class="token number">4</span>
+  Act PV                <span class="token number">4</span>
+  VG Size               <span class="token number">10.98</span> GiB
+  PE Size               <span class="token number">4.00</span> MiB
+  Total PE              <span class="token number">2812</span>
+  Alloc PE / Size       <span class="token number">50</span> / <span class="token number">200.00</span> MiB
+  Free  PE / Size       <span class="token number">2762</span> / <span class="token operator">&lt;</span><span class="token number">10.79</span> GiB
+  VG UUID               2Tjzna-XmXI-9MQ7-zeyc-AARV-84r5-jyymkf<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>PS：尽管我们使用一个单独的磁盘做示范，其实只要是‘8e’类型的磁盘分区都可以用来扩展卷组。</p>
+</blockquote>
+<p>在VG中创建LV，可以看到磁盘都用上了</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># lvcreate -L 10G -n lv03 vg01</span>
+  Logical volume <span class="token string">"lv03"</span> created.
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment"># lsblk</span>
+NAME          MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sda             <span class="token number">8</span>:0    <span class="token number">0</span>   50G  <span class="token number">0</span> disk
+├─sda1          <span class="token number">8</span>:1    <span class="token number">0</span>    1G  <span class="token number">0</span> part /boot
+├─sda2          <span class="token number">8</span>:2    <span class="token number">0</span>    2G  <span class="token number">0</span> part <span class="token punctuation">[</span>SWAP<span class="token punctuation">]</span>
+└─sda3          <span class="token number">8</span>:3    <span class="token number">0</span>   47G  <span class="token number">0</span> part /
+sdb             <span class="token number">8</span>:16   <span class="token number">0</span>   10G  <span class="token number">0</span> disk
+├─sdb1          <span class="token number">8</span>:17   <span class="token number">0</span>    2G  <span class="token number">0</span> part
+│ ├─vg01-lv01 <span class="token number">253</span>:0    <span class="token number">0</span>  100M  <span class="token number">0</span> lvm  /mnt/test-lv01
+│ ├─vg01-lv02 <span class="token number">253</span>:1    <span class="token number">0</span>  100M  <span class="token number">0</span> lvm
+│ └─vg01-lv03 <span class="token number">253</span>:2    <span class="token number">0</span>   10G  <span class="token number">0</span> lvm
+├─sdb2          <span class="token number">8</span>:18   <span class="token number">0</span>    3G  <span class="token number">0</span> part
+│ └─vg01-lv03 <span class="token number">253</span>:2    <span class="token number">0</span>   10G  <span class="token number">0</span> lvm
+└─sdb3          <span class="token number">8</span>:19   <span class="token number">0</span>    2G  <span class="token number">0</span> part
+  └─vg01-lv03 <span class="token number">253</span>:2    <span class="token number">0</span>   10G  <span class="token number">0</span> lvm
+sdc             <span class="token number">8</span>:32   <span class="token number">0</span>    5G  <span class="token number">0</span> disk
+└─sdc1          <span class="token number">8</span>:33   <span class="token number">0</span>    4G  <span class="token number">0</span> part
+  └─vg01-lv03 <span class="token number">253</span>:2    <span class="token number">0</span>   10G  <span class="token number">0</span> lvm
+sr0            <span class="token number">11</span>:0    <span class="token number">1</span>  792M  <span class="token number">0</span> rom<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day21-%E8%AE%A1%E5%88%92%E4%BB%BB%E5%8A%A1/%E8%AE%A1%E5%88%92%E4%BB%BB%E5%8A%A1/" rel="prev" title="运维之基础命令--计划任务">
+      <i class="fa fa-chevron-left"></i> 运维之基础命令--计划任务
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day19-%E7%A3%81%E7%9B%98%E5%88%86%E5%8C%BA/01_%E7%A3%81%E7%9B%98%E5%88%86%E5%8C%BA%E7%AC%94%E8%AE%B0/" rel="next" title="运维之基础命令--磁盘分区">
+      运维之基础命令--磁盘分区 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81LVM%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.</span> <span class="nav-text">一、LVM介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81LVM%E4%BD%BF%E7%94%A8"><span class="nav-number">2.</span> <span class="nav-text">二、LVM使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E7%A3%81%E7%9B%98%E5%87%86%E5%A4%87"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 磁盘准备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E5%88%9B%E5%BB%BA%E7%89%A9%E7%90%86%E5%8D%B7%EF%BC%88PV%EF%BC%89"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 创建物理卷（PV）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E5%88%9B%E5%BB%BA%E5%8D%B7%E7%BB%84%EF%BC%88VG%EF%BC%89"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 创建卷组（VG）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-%E5%88%9B%E5%BB%BA%E9%80%BB%E8%BE%91%E5%8D%B7%EF%BC%88LV%EF%BC%89"><span class="nav-number">2.4.</span> <span class="nav-text">2.4 创建逻辑卷（LV）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-%E9%80%BB%E8%BE%91%E5%8D%B7%E6%8C%82%E8%BD%BD"><span class="nav-number">2.5.</span> <span class="nav-text">2.5 逻辑卷挂载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-6-%E6%89%A9%E5%B1%95%E9%80%BB%E8%BE%91%E5%8D%B7"><span class="nav-number">2.6.</span> <span class="nav-text">2.6 扩展逻辑卷</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-7-%E7%BC%A9%E5%87%8F%E9%80%BB%E8%BE%91%E5%8D%B7"><span class="nav-number">2.7.</span> <span class="nav-text">2.7 缩减逻辑卷</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-8-VG%E5%A2%9E%E5%8A%A0%E4%B8%80%E5%9D%97%E7%A3%81%E7%9B%98"><span class="nav-number">2.8.</span> <span class="nav-text">2.8 VG增加一块磁盘</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="GongSheng"
+      src="/images/myavatar.png">
+  <p class="site-author-name" itemprop="name">GongSheng</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">48</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">GongSheng</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

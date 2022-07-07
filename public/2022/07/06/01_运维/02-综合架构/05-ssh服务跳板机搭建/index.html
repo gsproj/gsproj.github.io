@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="一、SSH服务器介绍 SSH是一个安全协议，在进行数据传输时，会对数据包进行加密处理，加密后在进行数据传输。确保了数据传输安全。   1 ssh的功能 提供远程连接服务器的服务 对传输的数据进行加密  2 常用服务的端口 ftp – tcp&#x2F;20  tcp&#x2F;21 dns – tcp&#x2F;53  udp&#x2F;53 ssh  –  tcp&#x2F;22 telnet">
+<meta property="og:type" content="article">
+<meta property="og:title" content="运维之综合架构--05--SSH服务器搭建">
+<meta property="og:url" content="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/05-ssh%E6%9C%8D%E5%8A%A1%E8%B7%B3%E6%9D%BF%E6%9C%BA%E6%90%AD%E5%BB%BA/index.html">
+<meta property="og:site_name" content="GongSheng Blog">
+<meta property="og:description" content="一、SSH服务器介绍 SSH是一个安全协议，在进行数据传输时，会对数据包进行加密处理，加密后在进行数据传输。确保了数据传输安全。   1 ssh的功能 提供远程连接服务器的服务 对传输的数据进行加密  2 常用服务的端口 ftp – tcp&#x2F;20  tcp&#x2F;21 dns – tcp&#x2F;53  udp&#x2F;53 ssh  –  tcp&#x2F;22 telnet">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://gsproj.github.io/04-ssh%E6%9C%8D%E5%8A%A1%E8%B7%B3%E6%9D%BF%E6%9C%BA%E6%90%AD%E5%BB%BA.assets/ssh%E5%85%8D%E5%AF%86%E7%99%BB%E5%BD%95.png">
+<meta property="article:published_time" content="2022-07-06T03:19:52.000Z">
+<meta property="article:modified_time" content="2022-07-06T07:15:58.892Z">
+<meta property="article:author" content="GongSheng">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://gsproj.github.io/04-ssh%E6%9C%8D%E5%8A%A1%E8%B7%B3%E6%9D%BF%E6%9C%BA%E6%90%AD%E5%BB%BA.assets/ssh%E5%85%8D%E5%AF%86%E7%99%BB%E5%BD%95.png">
+
+<link rel="canonical" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/05-ssh%E6%9C%8D%E5%8A%A1%E8%B7%B3%E6%9D%BF%E6%9C%BA%E6%90%AD%E5%BB%BA/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>运维之综合架构--05--SSH服务器搭建 | GongSheng Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GongSheng Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">山川異域，風月同天</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/05-ssh%E6%9C%8D%E5%8A%A1%E8%B7%B3%E6%9D%BF%E6%9C%BA%E6%90%AD%E5%BB%BA/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          运维之综合架构--05--SSH服务器搭建
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:15:58" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="一、SSH服务器介绍"><a href="#一、SSH服务器介绍" class="headerlink" title="一、SSH服务器介绍"></a>一、SSH服务器介绍</h2><blockquote>
+<p>SSH是一个安全协议，在进行数据传输时，会对数据包进行加密处理，加密后在进行数据传输。确保了数据传输安全。</p>
+</blockquote>
+<p><img src="/04-ssh%E6%9C%8D%E5%8A%A1%E8%B7%B3%E6%9D%BF%E6%9C%BA%E6%90%AD%E5%BB%BA.assets/ssh%E5%85%8D%E5%AF%86%E7%99%BB%E5%BD%95.png" alt="ssh免密登录"></p>
+<h3 id="1-ssh的功能"><a href="#1-ssh的功能" class="headerlink" title="1 ssh的功能"></a>1 ssh的功能</h3><ol>
+<li>提供远程连接服务器的服务</li>
+<li>对传输的数据进行加密</li>
+</ol>
+<h3 id="2-常用服务的端口"><a href="#2-常用服务的端口" class="headerlink" title="2 常用服务的端口"></a>2 常用服务的端口</h3><ul>
+<li>ftp – tcp&#x2F;20  tcp&#x2F;21</li>
+<li>dns – tcp&#x2F;53  udp&#x2F;53</li>
+<li>ssh  –  tcp&#x2F;22</li>
+<li>telnet – tcp&#x2F;23 </li>
+<li>mysql – tcp&#x2F;3306</li>
+<li>http – tcp&#x2F;80</li>
+<li>https – tcp&#x2F;443</li>
+</ul>
+<h3 id="3-telnet服务搭建"><a href="#3-telnet服务搭建" class="headerlink" title="3 telnet服务搭建"></a>3 telnet服务搭建</h3><p>安装并启动telnet服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@backup ~]# yum install telnet-server -y
+[root@backup ~]# systemctl start telnet.socket 
+[root@backup ~]# useradd gs
+[root@backup ~]# echo &quot;1&quot; | passwd --stdin gs<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>使用终端软件通过telnet使用gs用户登录连接</p>
+<h3 id="4-telnet与ssh的对比"><a href="#4-telnet与ssh的对比" class="headerlink" title="4 telnet与ssh的对比"></a>4 telnet与ssh的对比</h3><table>
+<thead>
+<tr>
+<th>服务连接方式</th>
+<th>服务数据传输</th>
+<th>服务监听端口</th>
+<th>服务登陆用户</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ssh</td>
+<td>加密</td>
+<td>tcp&#x2F;22</td>
+<td>默认支持root登录</td>
+</tr>
+<tr>
+<td>telnet</td>
+<td>明文</td>
+<td>tcp&#x2F;23</td>
+<td>不支持root登录</td>
+</tr>
+</tbody></table>
+<h2 id="二、ssh与scp的使用"><a href="#二、ssh与scp的使用" class="headerlink" title="二、ssh与scp的使用"></a>二、ssh与scp的使用</h2><h3 id="1-使用ssh"><a href="#1-使用ssh" class="headerlink" title="1 使用ssh"></a>1 使用ssh</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">ssh命令
+	ssh 172.16.1.31					#取决当前执行此命令的用户
+	ssh root@172.16.1.31			#标准的写法
+	ssh -p22 root@172.16.1.31		#带端口<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-使用scp"><a href="#2-使用scp" class="headerlink" title="2 使用scp"></a>2 使用scp</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">scp 
+# -P 指定端口，默认22端口可不写
+# -r 表示递归拷贝目录
+# -p 表示在拷贝文件前后保持文件或目录属性不变
+# -l 限制传输使用带宽(默认kb) &#x2F;8 -&gt;KB  &#x2F;1024  -&gt;MB <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="三、使用ssh密钥登录"><a href="#三、使用ssh密钥登录" class="headerlink" title="三、使用ssh密钥登录"></a>三、使用ssh密钥登录</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.生成密钥对    公钥  私钥
+[root@m01 ~]# ssh-keygen -C 7242xxxxx@qq.com
+	
+2.将公钥推送到你需要连接的主机，第一次需要输入对端主机的密码
+[root@m01 ~]# ssh-copy-id -i ~&#x2F;.ssh&#x2F;id_rsa.pub root@172.16.1.31
+root@172.16.1.31&#39;s password:
+	
+3.通过ssh命令测试连接是否需要密码
+[root@m01 ~]# ssh 172.16.1.31
+Last login: Wed Jan  9 10:39:16 2019 from 172.16.1.61<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="四、ssh安全"><a href="#四、ssh安全" class="headerlink" title="四、ssh安全"></a>四、ssh安全</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@jumpserver ~]# vim &#x2F;etc&#x2F;ssh&#x2F;sshd_config
+[root@jumpserver ~]# systemctl restart sshd<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>SSH作为远程连接服务，通常我们需要考虑到该服务的安全，所以需要对该服务进行安全方面的配置。<br>1.更改远程连接登陆的端口		6666<br>2.禁止ROOT管理员直接登录		<br>3.密码认证方式改为密钥认证<br>4.重要服务不使用公网IP地址<br>5.使用防火墙限制来源IP地址</p>
+<p>Port 6666                       # 变更SSH服务远程连接端口√<br>PermitRootLogin         no      # 禁止root用户直接远程登录√<br>PasswordAuthentication  no      # 禁止使用密码直接远程登录√<br>UseDNS                  no      # 禁止ssh进行dns反向解析，影响ssh连接效率参数√<br>GSSAPIAuthentication    no      # 禁止GSS认证，减少连接时产生的延迟√</p>
+<h2 id="五、防ssh暴力破解工具fail2ban"><a href="#五、防ssh暴力破解工具fail2ban" class="headerlink" title="五、防ssh暴力破解工具fail2ban"></a>五、防ssh暴力破解工具fail2ban</h2><blockquote>
+<p>fail2ban可以监控系统日志，并且根据一定规则匹配异常IP后使用Firewalld将其屏蔽，尤其是针对一些爆破&#x2F;扫描等非常有效。</p>
+</blockquote>
+<p>部署流程</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.开启Firewalld防火墙
+[root@bgx ~]# systemctl start firewalld
+[root@bgx ~]# systemctl enable firewalld
+[root@bgx ~]# firewall-cmd --state
+running
+
+2.修改firewalld规则，启用Firewalld后会禁止一些服务的传输，但默认会放行常用的22端口, 如果想添加更多，以下是放行SSH端口（22）示例，供参考：
+#放行SSHD服务端口
+[root@bgx ~]# firewall-cmd --permanent --add-service&#x3D;ssh --add-service&#x3D;http 
+#重载配
+[root@bgx ~]# firewall-cmd --reload
+#查看已放行端口
+[root@bgx ~]# firewall-cmd  --list-service
+
+3.安装fail2ban,需要有epel
+[root@bgx ~]# yum install fail2ban fail2ban-firewalld mailx -y
+
+4.配置fail2ban规则.local会覆盖.conf文件
+[root@bgx fail2ban]# cat &#x2F;etc&#x2F;fail2ban&#x2F;jail.local
+[DEFAULT]
+ignoreip &#x3D; 127.0.0.1&#x2F;8
+bantime  &#x3D; 86400
+findtime &#x3D; 600
+maxretry &#x3D; 5
+banaction &#x3D; firewallcmd-ipset
+action &#x3D; %(action_mwl)s
+
+[sshd]
+enabled &#x3D; true
+filter  &#x3D; sshd
+port    &#x3D; 22
+action &#x3D; %(action_mwl)s
+logpath &#x3D; &#x2F;var&#x2F;log&#x2F;secure
+
+5.启动服务，并检查状态
+[root@bgx ~]# systemctl start fail2ban.service
+[root@bgx ~]# fail2ban-client status sshd
+
+6.清除被封掉的IP地址
+[root@bgx ~]# fail2ban-client set sshd unbanip 10.0.0.1<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/07-Nginx(%E4%B8%80)%E5%AE%89%E8%A3%85%E4%B8%8E%E9%85%8D%E7%BD%AE/" rel="prev" title="运维之综合架构--07--Nginx(一)安装与配置">
+      <i class="fa fa-chevron-left"></i> 运维之综合架构--07--Nginx(一)安装与配置
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/04-sersync%E5%AE%9E%E6%97%B6%E5%90%8C%E6%AD%A5%E5%A4%87%E4%BB%BD/" rel="next" title="运维之综合架构--04--Sersync实时备份">
+      运维之综合架构--04--Sersync实时备份 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81SSH%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.</span> <span class="nav-text">一、SSH服务器介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-ssh%E7%9A%84%E5%8A%9F%E8%83%BD"><span class="nav-number">1.1.</span> <span class="nav-text">1 ssh的功能</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E5%B8%B8%E7%94%A8%E6%9C%8D%E5%8A%A1%E7%9A%84%E7%AB%AF%E5%8F%A3"><span class="nav-number">1.2.</span> <span class="nav-text">2 常用服务的端口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-telnet%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA"><span class="nav-number">1.3.</span> <span class="nav-text">3 telnet服务搭建</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-telnet%E4%B8%8Essh%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="nav-number">1.4.</span> <span class="nav-text">4 telnet与ssh的对比</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81ssh%E4%B8%8Escp%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="nav-number">2.</span> <span class="nav-text">二、ssh与scp的使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E4%BD%BF%E7%94%A8ssh"><span class="nav-number">2.1.</span> <span class="nav-text">1 使用ssh</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E4%BD%BF%E7%94%A8scp"><span class="nav-number">2.2.</span> <span class="nav-text">2 使用scp</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E4%BD%BF%E7%94%A8ssh%E5%AF%86%E9%92%A5%E7%99%BB%E5%BD%95"><span class="nav-number">3.</span> <span class="nav-text">三、使用ssh密钥登录</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81ssh%E5%AE%89%E5%85%A8"><span class="nav-number">4.</span> <span class="nav-text">四、ssh安全</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E9%98%B2ssh%E6%9A%B4%E5%8A%9B%E7%A0%B4%E8%A7%A3%E5%B7%A5%E5%85%B7fail2ban"><span class="nav-number">5.</span> <span class="nav-text">五、防ssh暴力破解工具fail2ban</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="GongSheng"
+      src="/images/myavatar.png">
+  <p class="site-author-name" itemprop="name">GongSheng</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">48</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">GongSheng</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

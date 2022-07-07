@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="一、Nginx均衡调度算法Nginx七层负载均衡分为5种调度算法    调度算法 概述    轮询（常用） 按时间顺序逐一分配到不同的后端服务器(默认)   weight（面试点） 加权轮询,weight值越大,分配到的访问几率越高   ip_hash（面试点） 每个请求按访问IP的hash结果分配,这样来自同一IP的固定访问一个后端服务器   url_hash 按照访问URL的hash结果来分配">
+<meta property="og:type" content="article">
+<meta property="og:title" content="运维之综合架构--07--Nginx(七)均衡调度">
+<meta property="og:url" content="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/13-Nginx(%E4%B8%83)Nginx%E4%B8%83%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5/index.html">
+<meta property="og:site_name" content="GongSheng Blog">
+<meta property="og:description" content="一、Nginx均衡调度算法Nginx七层负载均衡分为5种调度算法    调度算法 概述    轮询（常用） 按时间顺序逐一分配到不同的后端服务器(默认)   weight（面试点） 加权轮询,weight值越大,分配到的访问几率越高   ip_hash（面试点） 每个请求按访问IP的hash结果分配,这样来自同一IP的固定访问一个后端服务器   url_hash 按照访问URL的hash结果来分配">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://gsproj.github.io/11-Nginx(%E4%B8%83)Nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5.assets/image-20210821113447825.png">
+<meta property="og:image" content="http://gsproj.github.io/11-Nginx(%E4%B8%83)Nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5.assets/image-20210821114011230.png">
+<meta property="og:image" content="http://gsproj.github.io/11-Nginx(%E4%B8%83)Nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5.assets/image-20210823225246243.png">
+<meta property="og:image" content="http://gsproj.github.io/11-Nginx(%E4%B8%83)Nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5.assets/image-20210823225305632.png">
+<meta property="og:image" content="http://gsproj.github.io/11-Nginx(%E4%B8%83)Nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5.assets/image-20210823225412626.png">
+<meta property="article:published_time" content="2022-07-06T03:19:52.000Z">
+<meta property="article:modified_time" content="2022-07-06T07:16:49.817Z">
+<meta property="article:author" content="GongSheng">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://gsproj.github.io/11-Nginx(%E4%B8%83)Nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5.assets/image-20210821113447825.png">
+
+<link rel="canonical" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/13-Nginx(%E4%B8%83)Nginx%E4%B8%83%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>运维之综合架构--07--Nginx(七)均衡调度 | GongSheng Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GongSheng Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">山川異域，風月同天</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/13-Nginx(%E4%B8%83)Nginx%E4%B8%83%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          运维之综合架构--07--Nginx(七)均衡调度
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:16:49" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="一、Nginx均衡调度算法"><a href="#一、Nginx均衡调度算法" class="headerlink" title="一、Nginx均衡调度算法"></a>一、Nginx均衡调度算法</h2><p>Nginx七层负载均衡分为5种调度算法</p>
+<table>
+<thead>
+<tr>
+<th>调度算法</th>
+<th>概述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>轮询（常用）</td>
+<td>按时间顺序逐一分配到不同的后端服务器(默认)</td>
+</tr>
+<tr>
+<td>weight（面试点）</td>
+<td>加权轮询,weight值越大,分配到的访问几率越高</td>
+</tr>
+<tr>
+<td>ip_hash（面试点）</td>
+<td>每个请求按访问IP的hash结果分配,这样来自同一IP的固定访问一个后端服务器</td>
+</tr>
+<tr>
+<td>url_hash</td>
+<td>按照访问URL的hash结果来分配请求,是每个URL定向到同一个后端服务器</td>
+</tr>
+<tr>
+<td>least_hash</td>
+<td>最少链接数,那个机器链接数少就分发</td>
+</tr>
+</tbody></table>
+<h3 id="1-1-加权轮询"><a href="#1-1-加权轮询" class="headerlink" title="1.1 加权轮询"></a>1.1 加权轮询</h3><p>比如实现访问5次web01，1次web02</p>
+<p>当web服务器配置不相同，有差距时，可以用此方法</p>
+<p>在<code>lb01</code>配置</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
+upstream node &#123;
+        server 172.16.1.7:80 weight&#x3D;5;
+        server 172.16.1.8:80 weight&#x3D;1;
+&#125;
+
+server &#123;
+...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="1-2-ip-hash"><a href="#1-2-ip-hash" class="headerlink" title="1.2 ip_hash"></a>1.2 ip_hash</h3><blockquote>
+<p>PS：不能与weight一起使用</p>
+</blockquote>
+<p>根据请求的IP地址，固定访问到某一后端，除非已选择的后端down了，有点浪费资源</p>
+<p>在<code>lb01</code>配置</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
+upstream node &#123;
+        ip_hash;
+        server 172.16.1.7:80;
+        server 172.16.1.8:80;
+&#125;
+
+server &#123; 
+...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="二、Nginx负载均衡后端状态"><a href="#二、Nginx负载均衡后端状态" class="headerlink" title="二、Nginx负载均衡后端状态"></a>二、Nginx负载均衡后端状态</h2><table>
+<thead>
+<tr>
+<th>状态</th>
+<th>概述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>down</td>
+<td>当前的server暂时不参与负载均衡</td>
+</tr>
+<tr>
+<td>backup</td>
+<td>预留的备份服务器</td>
+</tr>
+<tr>
+<td>max_conns</td>
+<td>限制最大的接收连接数</td>
+</tr>
+<tr>
+<td>max_fails（健康检查）</td>
+<td>允许请求失败的次数（不够精准，作用不大，得知道，面试会问）</td>
+</tr>
+<tr>
+<td>fail_timeout（健康检查）</td>
+<td>经过max_fails失败后, 服务暂停时间</td>
+</tr>
+</tbody></table>
+<h3 id="2-1-down状态"><a href="#2-1-down状态" class="headerlink" title="2.1 down状态"></a>2.1 down状态</h3><blockquote>
+<p>一般用于停机维护</p>
+</blockquote>
+<p>在<code>lb01</code>配置，可见当两台web的Nginx服务都正常时，只能访问web02，当web02的Nginx服务挂了，返回502</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
+upstream node &#123;
+        server 172.16.1.7:80 down;
+        server 172.16.1.8:80;
+&#125;
+
+server &#123;
+...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-2-backup状态"><a href="#2-2-backup状态" class="headerlink" title="2.2 backup状态"></a>2.2 backup状态</h3><p>在<code>lb01</code>配置，可见当两台web都正常时，只能访问web02，如果web02的服务挂了，会访问web01，当web02恢复后，再次访问到的是web02</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
+upstream node &#123;
+        server 172.16.1.7:80 backup;
+        server 172.16.1.8:80;
+&#125;
+
+server &#123;
+...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-3-健康检查"><a href="#2-3-健康检查" class="headerlink" title="2.3 健康检查"></a>2.3 健康检查</h3><blockquote>
+<p>自带的健康检查不够精准，且看不到信息，面试会问</p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
+upstream node &#123;
+        server 172.16.1.7:80 max_fails&#x3D;2 fail_timeout&#x3D;10s;
+        server 172.16.1.8:80 max_fails&#x3D;2 fail_timeout&#x3D;10s;
+&#125;
+
+server &#123;
+...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="三、第三方健康检查模块check-upstream"><a href="#三、第三方健康检查模块check-upstream" class="headerlink" title="三、第三方健康检查模块check_upstream"></a>三、第三方健康检查模块check_upstream</h2><blockquote>
+<p>检测更精准，且有页面可以展示服务端的状态，需要编译安装</p>
+</blockquote>
+<h3 id="3-1-编译安装Nginx"><a href="#3-1-编译安装Nginx" class="headerlink" title="3.1 编译安装Nginx"></a>3.1 编译安装Nginx</h3><p>1、安装依赖包</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb02 ~]# yum install -y gcc glibc gcc-c++ pcre-devel openssl-devel  patch libxml2 -libxml2-devel libxslt libxslt-devel gd-devel perl-ExtUtils-Embed gperftools-devel.x86_64 gperftools-libs.x86_64 gperftools.x86_64<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>2、下载Nginx源码及第三方模块源码</p>
+<blockquote>
+<p>PS：为保持一致，先通过yum源安装nginx，这是当前实验环境的Nginx版本</p>
+<p>[root@lb01 nginx]# nginx -version<br>nginx version: nginx&#x2F;1.20.1</p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb02 ~]# wget http:&#x2F;&#x2F;nginx.org&#x2F;download&#x2F;nginx-1.20.1.tar.gz
+[root@lb02 ~]# wget https:&#x2F;&#x2F;github.com&#x2F;yaoweibin&#x2F;nginx_upstream_check_module&#x2F;archive&#x2F;master.zip<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>3、解压nginx源码包以及第三方模块</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 ~]# unzip master.zip
+[root@lb01 ~]# tar -vxf nginx-1.20.1.tar.gz<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>4、打补丁</p>
+<blockquote>
+<p>打补丁(nginx的版本是1.20.1补丁就选择1.20.1的,p1代表在nginx目录，p0是不在nginx目录)</p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx-1.20.1]# cd nginx-1.20.1&#x2F;
+[root@lb01 nginx-1.20.1]# patch -p1 &lt; ..&#x2F;nginx_upstream_check_module-master&#x2F;check_1.20.1+.patch<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>5、编译Nginx，附带模块参数</p>
+<blockquote>
+<p>通过nginx -V获取configure参数，尽量保持一致</p>
+</blockquote>
+<p>–add-module&#x3D;&#x2F;root&#x2F;nginx_upstream_check_module-master</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx-1.20.1]# .&#x2F;configure --prefix&#x3D;&#x2F;usr&#x2F;share&#x2F;nginx --sbin-path&#x3D;&#x2F;usr&#x2F;sbin&#x2F;nginx --modules-path&#x3D;&#x2F;usr&#x2F;lib64&#x2F;nginx&#x2F;modules --conf-path&#x3D;&#x2F;etc&#x2F;nginx&#x2F;nginx.conf --error-log-path&#x3D;&#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log --http-log-path&#x3D;&#x2F;var&#x2F;log&#x2F;nginx&#x2F;access.log --http-client-body-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;client_body --http-proxy-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;proxy --http-fastcgi-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;fastcgi --http-uwsgi-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;uwsgi --http-scgi-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;scgi --pid-path&#x3D;&#x2F;run&#x2F;nginx.pid --lock-path&#x3D;&#x2F;run&#x2F;lock&#x2F;subsys&#x2F;nginx --user&#x3D;nginx --group&#x3D;nginx --with-compat --with-debug --with-google_perftools_module --with-http_addition_module --with-http_auth_request_module --with-http_dav_module --with-http_degradation_module --with-http_flv_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_image_filter_module&#x3D;dynamic --with-http_mp4_module --with-http_perl_module&#x3D;dynamic --with-http_random_index_module --with-http_realip_module --with-http_secure_link_module --with-http_slice_module --with-http_ssl_module --with-http_stub_status_module --with-http_sub_module --with-http_v2_module --with-http_xslt_module&#x3D;dynamic --with-mail&#x3D;dynamic --with-mail_ssl_module --with-pcre --with-pcre-jit --with-stream&#x3D;dynamic --with-stream_ssl_module --with-stream_ssl_preread_module --with-threads --add-module&#x3D;&#x2F;root&#x2F;nginx_upstream_check_module-master<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>6、在已有的负载均衡上增加健康检查的功能</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx-1.20.1]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
+upstream node &#123;
+        server 172.16.1.7:80;
+        server 172.16.1.8:80;
+        check interval&#x3D;3000 rise&#x3D;2 fall&#x3D;3 timeout&#x3D;1000 type&#x3D;tcp;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="3-2-功能测试"><a href="#3-2-功能测试" class="headerlink" title="3.2 功能测试"></a>3.2 功能测试</h3><p>1、正常情况下的检测数据</p>
+<p><img src="/11-Nginx(%E4%B8%83)Nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5.assets/image-20210821113447825.png" alt="image-20210821113447825"></p>
+<p>2、测试将web01的nginx服务关掉</p>
+<p><img src="/11-Nginx(%E4%B8%83)Nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5.assets/image-20210821114011230.png" alt="image-20210821114011230"></p>
+<p>3、日志分析</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx-1.20.1]# tail -f &#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log
+# 两web服务正常，能获取peer
+2021&#x2F;08&#x2F;21 02:42:11 [error] 50522#50522: enable check peer: 172.16.1.8:80
+2021&#x2F;08&#x2F;21 02:42:12 [error] 50522#50522: enable check peer: 172.16.1.7:80
+2021&#x2F;08&#x2F;21 02:46:17 [error] 50522#50522: *13 connect() failed (111: Connection refused) while connecting to upstream, client: 10.0.0.1, server: node.oldboy.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, upstream: &quot;http:&#x2F;&#x2F;172.16.1.7:80&#x2F;&quot;, host: &quot;node.oldboy.com&quot;
+# 停止web01的nginx服务
+2021&#x2F;08&#x2F;21 02:46:20 [error] 50522#50522: disable check peer: 172.16.1.7:80
+# 重新启动web01的nginx服务
+2021&#x2F;08&#x2F;21 02:47:59 [error] 50522#50522: enable check peer: 172.16.1.7:80<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="四、如何解决网站重复登录的问题"><a href="#四、如何解决网站重复登录的问题" class="headerlink" title="四、如何解决网站重复登录的问题"></a>四、如何解决网站重复登录的问题</h2><p>有三种方法解决：</p>
+<ol>
+<li>ip_hash – 会造成某一台主机的压力过大</li>
+<li>session复制</li>
+<li>session共享<ol>
+<li>本地文件 –&gt; nfs共享</li>
+<li>通过程序，写入redis数据库（常用）</li>
+<li>通过程序，写入mysql数据库</li>
+</ol>
+</li>
+</ol>
+<p>本案例，选用3.2配置，session共享，写入redis数据库</p>
+<h3 id="4-1-安装phpmyadmin重现问题"><a href="#4-1-安装phpmyadmin重现问题" class="headerlink" title="4.1 安装phpmyadmin重现问题"></a>4.1 安装phpmyadmin重现问题</h3><p><code>web01</code>和<code>web02</code>都需要安装</p>
+<p>1、配置Nginx</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cat php.conf
+server &#123;
+	listen 80;
+	server_name php.oldboy.com;
+	root &#x2F;code&#x2F;phpMyAdmin-4.8.4-all-languages;
+
+	location &#x2F; &#123;
+		index index.php index.html;
+	&#125;
+
+	location ~ \.php$ &#123;
+		fastcgi_pass 127.0.0.1:9000;
+		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+		include fastcgi_params;
+	&#125;
+&#125;
+[root@web01 conf.d]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>2、安装phpmyadmin</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cd &#x2F;code
+[root@web01 code]# wget https:&#x2F;&#x2F;files.phpmyadmin.net&#x2F;phpMyAdmin&#x2F;4.8.4&#x2F;phpMyAdmin-4.8.4-all-languages.zip
+[root@web01 code]# unzip phpMyAdmin-4.8.4-all-languages.zip<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>3、配置phpmyadmin连接远程数据库</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# cd phpMyAdmin-4.8.4-all-languages&#x2F;
+[root@web01 phpMyAdmin-4.8.4-all-languages]# cp config.sample.inc.php config.inc.php
+[root@web01 phpMyAdmin-4.8.4-all-languages]# vim config.inc.php
+&#x2F;* Server parameters *&#x2F;
+$cfg[&#39;Servers&#39;][$i][&#39;host&#39;] &#x3D; &#39;172.16.1.51&#39;;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>4、配置授权</p>
+<blockquote>
+<p>这个文件夹中会记录session，需要权限</p>
+<p>session_start(): Failed to read session data: files (path: &#x2F;var&#x2F;lib&#x2F;php&#x2F;session)</p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# chown -R www.www &#x2F;var&#x2F;lib&#x2F;php&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>5、将web01上配置好的phpmyadmin以及nginx的配置文件推送到web02主机上</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# scp -rp  phpMyAdmin-4.8.4-all-languages root@172.16.1.8:&#x2F;code&#x2F;
+[root@web01 code]# scp &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;php.conf  root@172.16.1.8:&#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>6、重载Nginx服务，授权访问权限</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web02 code]# systemctl restart nginx
+[root@web02 code]# chown -R www.www &#x2F;var&#x2F;lib&#x2F;php&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>7、接入负载均衡，并重启nginx服务，<code>lb01</code>操作</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 conf.d]# vim proxy_php.com.conf 
+upstream php &#123;
+        server 172.16.1.7:80;
+        server 172.16.1.8:80;
+&#125;
+server &#123;
+        listen 80;
+        server_name php.oldboy.com;
+        location &#x2F; &#123;
+                proxy_pass http:&#x2F;&#x2F;php;
+                include proxy_params;
+        &#125;
+&#125;
+
+[root@lb01 conf.d]# nginx -t
+nginx: the configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf syntax is ok
+nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test is successful
+[root@lb01 conf.d]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>9、测试访问</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">网页访问：
+	http:&#x2F;&#x2F;php.oldboy.com
+登录账户:
+	采用db01（172.16.1.51）的mysql远程账户oldboy&#x2F;Bgx123.com
+此时访问phpmyadmin登录将一直失败，因为轮询访问，session一直变：
+报错：
+Failed to set session cookie. Maybe you are using HTTP instead of HTTPS to access phpMyAdmin.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="4-2-解决问题"><a href="#4-2-解决问题" class="headerlink" title="4.2 解决问题"></a>4.2 解决问题</h3><p>1、在<code>db01</code>安装redis数据库</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@db01 ~]# yum install redis -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>2、配置并启动redis</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@db01 ~]# sed  -i &#39;&#x2F;^bind&#x2F;c bind 127.0.0.1 172.16.1.51&#39; &#x2F;etc&#x2F;redis.conf
+[root@db01 ~]# systemctl start redis
+[root@db01 ~]# systemctl enable redis<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>3、<code>web01</code>的php配置session连接redis</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">#1.修改&#x2F;etc&#x2F;php.ini文件
+[root@web01 ~]# vim &#x2F;etc&#x2F;php.ini
+session.save_handler &#x3D; redis
+session.save_path &#x3D; &quot;tcp:&#x2F;&#x2F;172.16.1.51:6379&quot;
+;session.save_path &#x3D; &quot;tcp:&#x2F;&#x2F;172.16.1.51:6379?auth&#x3D;123&quot; #如果redis存在密码，则使用该方式
+session.auto_start &#x3D; 1<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>4、注释php-fpm.d&#x2F;<a target="_blank" rel="noopener" href="http://www.conf里面的两条内容,否则session内容会一直写入/var/lib/php/session%E7%9B%AE%E5%BD%95%E4%B8%AD">www.conf里面的两条内容，否则session内容会一直写入/var/lib/php/session目录中</a></p>
+<pre class="line-numbers language-she" data-language="she"><code class="language-she">;php_value[session.save_handler] &#x3D; files
+;php_value[session.save_path]    &#x3D; &#x2F;var&#x2F;lib&#x2F;php&#x2F;session<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>5、重启php-fpm</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web02 code]# systemctl restart php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>6、将<code>web01</code>的配置文件推送到<code>web02</code>上</p>
+<pre class="line-numbers language-she" data-language="she"><code class="language-she">[root@web01 code]# scp &#x2F;etc&#x2F;php.ini root@172.16.1.8:&#x2F;etc&#x2F;php.ini  
+[root@web01 code]# scp &#x2F;etc&#x2F;php-fpm.d&#x2F;www.conf root@172.16.1.8:&#x2F;etc&#x2F;php-fpm.d&#x2F;www.conf <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>7、重启服务</p>
+<pre class="line-numbers language-she" data-language="she"><code class="language-she">[root@web02 code]# systemctl restart php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>8、再次测试访问网站</p>
+<p>可以登录，并且session的值将记录到redis数据库</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@db01 ~]# redis-cli -h 172.16.1.51
+172.16.1.51:6379&gt; KEYS *
+1) &quot;PHPREDIS_SESSION:716e61cabeb40f974fcbcdcac65f8607&quot;
+2) &quot;PHPREDIS_SESSION:42ca5a8ea9375a93a7974427b77b3dd7&quot;
+172.16.1.51:6379&gt;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>9、刷新页面的负载均衡效果展示</p>
+<p><img src="/11-Nginx(%E4%B8%83)Nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5.assets/image-20210823225246243.png" alt="image-20210823225246243"></p>
+<p><img src="/11-Nginx(%E4%B8%83)Nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5.assets/image-20210823225305632.png" alt="image-20210823225305632"></p>
+<p>10、cookie保存到redis展示</p>
+<p><img src="/11-Nginx(%E4%B8%83)Nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5.assets/image-20210823225412626.png" alt="image-20210823225412626"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/14-Nginx(%E5%85%AB)Nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/" rel="prev" title="运维之综合架构--07--Nginx(八)四层负载均衡">
+      <i class="fa fa-chevron-left"></i> 运维之综合架构--07--Nginx(八)四层负载均衡
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/12-Nginx(%E5%85%AD)Nginx%E4%B8%83%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/" rel="next" title="运维之综合架构--07--Nginx(六)七层负载均衡">
+      运维之综合架构--07--Nginx(六)七层负载均衡 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81Nginx%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E7%AE%97%E6%B3%95"><span class="nav-number">1.</span> <span class="nav-text">一、Nginx均衡调度算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E5%8A%A0%E6%9D%83%E8%BD%AE%E8%AF%A2"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 加权轮询</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-ip-hash"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 ip_hash</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81Nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E5%90%8E%E7%AB%AF%E7%8A%B6%E6%80%81"><span class="nav-number">2.</span> <span class="nav-text">二、Nginx负载均衡后端状态</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-down%E7%8A%B6%E6%80%81"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 down状态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-backup%E7%8A%B6%E6%80%81"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 backup状态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 健康检查</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E7%AC%AC%E4%B8%89%E6%96%B9%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5%E6%A8%A1%E5%9D%97check-upstream"><span class="nav-number">3.</span> <span class="nav-text">三、第三方健康检查模块check_upstream</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85Nginx"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 编译安装Nginx</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E5%8A%9F%E8%83%BD%E6%B5%8B%E8%AF%95"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 功能测试</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3%E7%BD%91%E7%AB%99%E9%87%8D%E5%A4%8D%E7%99%BB%E5%BD%95%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">4.</span> <span class="nav-text">四、如何解决网站重复登录的问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-%E5%AE%89%E8%A3%85phpmyadmin%E9%87%8D%E7%8E%B0%E9%97%AE%E9%A2%98"><span class="nav-number">4.1.</span> <span class="nav-text">4.1 安装phpmyadmin重现问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-%E8%A7%A3%E5%86%B3%E9%97%AE%E9%A2%98"><span class="nav-number">4.2.</span> <span class="nav-text">4.2 解决问题</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="GongSheng"
+      src="/images/myavatar.png">
+  <p class="site-author-name" itemprop="name">GongSheng</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">48</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">GongSheng</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

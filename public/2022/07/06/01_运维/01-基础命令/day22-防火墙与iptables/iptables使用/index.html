@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="iptables使用手册一、简单实践 从信息查看、保存规则、清除规则、恢复规则、更改规则五个方面来学习。  1.1 信息查看查看现有规则 [root@controller ~]# iptables -L Chain INPUT (policy ACCEPT) target     prot opt source               destination neutron-linuxbri-">
+<meta property="og:type" content="article">
+<meta property="og:title" content="运维之基础命令--防火墙与iptables">
+<meta property="og:url" content="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day22-%E9%98%B2%E7%81%AB%E5%A2%99%E4%B8%8Eiptables/iptables%E4%BD%BF%E7%94%A8/index.html">
+<meta property="og:site_name" content="GongSheng Blog">
+<meta property="og:description" content="iptables使用手册一、简单实践 从信息查看、保存规则、清除规则、恢复规则、更改规则五个方面来学习。  1.1 信息查看查看现有规则 [root@controller ~]# iptables -L Chain INPUT (policy ACCEPT) target     prot opt source               destination neutron-linuxbri-">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-07-06T03:19:52.000Z">
+<meta property="article:modified_time" content="2022-07-06T07:15:01.813Z">
+<meta property="article:author" content="GongSheng">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day22-%E9%98%B2%E7%81%AB%E5%A2%99%E4%B8%8Eiptables/iptables%E4%BD%BF%E7%94%A8/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>运维之基础命令--防火墙与iptables | GongSheng Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GongSheng Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">山川異域，風月同天</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day22-%E9%98%B2%E7%81%AB%E5%A2%99%E4%B8%8Eiptables/iptables%E4%BD%BF%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          运维之基础命令--防火墙与iptables
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:15:01" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="iptables使用手册"><a href="#iptables使用手册" class="headerlink" title="iptables使用手册"></a>iptables使用手册</h1><h2 id="一、简单实践"><a href="#一、简单实践" class="headerlink" title="一、简单实践"></a>一、简单实践</h2><blockquote>
+<p>从信息查看、保存规则、清除规则、恢复规则、更改规则五个方面来学习。</p>
+</blockquote>
+<h3 id="1-1-信息查看"><a href="#1-1-信息查看" class="headerlink" title="1.1 信息查看"></a>1.1 信息查看</h3><p>查看现有规则</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -L</span>
+Chain INPUT <span class="token punctuation">(</span>policy ACCEPT<span class="token punctuation">)</span>
+target     prot opt <span class="token builtin class-name">source</span>               destination
+neutron-linuxbri-INPUT  all  --  anywhere             anywhere
+nova-api-INPUT  all  --  anywhere             anywhere
+
+Chain FORWARD <span class="token punctuation">(</span>policy ACCEPT<span class="token punctuation">)</span>
+target     prot opt <span class="token builtin class-name">source</span>               destination
+neutron-filter-top  all  --  anywhere             anywhere
+neutron-linuxbri-FORWARD  all  --  anywhere             anywhere
+nova-filter-top  all  --  anywhere             anywhere
+nova-api-FORWARD  all  --  anywhere             anywhere
+<span class="token punctuation">..</span><span class="token punctuation">..</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>查看现有规则，显示主机ip和端口号，-n</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -L -n</span>
+Chain INPUT <span class="token punctuation">(</span>policy ACCEPT<span class="token punctuation">)</span>
+target     prot opt <span class="token builtin class-name">source</span>               destination
+neutron-linuxbri-INPUT  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+nova-api-INPUT  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+
+Chain FORWARD <span class="token punctuation">(</span>policy ACCEPT<span class="token punctuation">)</span>
+target     prot opt <span class="token builtin class-name">source</span>               destination
+neutron-filter-top  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+neutron-linuxbri-FORWARD  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+nova-filter-top  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+nova-api-FORWARD  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+<span class="token punctuation">..</span><span class="token punctuation">..</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>结果显示：</p>
+<p>默认显示三条链的规则INPUT、FORWARD、OUTPUT，而且所有的规则都是默认接受的</p>
+<p>每条链下面显示的信息是：</p>
+<p>动作  协议 参数 源地址 目标地址</p>
+</blockquote>
+<p>显示详细信息，-v</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -L -n -v</span>
+Chain INPUT <span class="token punctuation">(</span>policy ACCEPT <span class="token number">11839</span> packets, 2842K bytes<span class="token punctuation">)</span>
+ pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
+<span class="token number">11839</span> 2842K neutron-linuxbri-INPUT  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+<span class="token number">12985</span> 3090K nova-api-INPUT  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+
+Chain FORWARD <span class="token punctuation">(</span>policy ACCEPT <span class="token number">0</span> packets, <span class="token number">0</span> bytes<span class="token punctuation">)</span>
+ pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
+    <span class="token number">0</span>     <span class="token number">0</span> neutron-filter-top  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+    <span class="token number">0</span>     <span class="token number">0</span> neutron-linuxbri-FORWARD  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+    <span class="token number">0</span>     <span class="token number">0</span> nova-filter-top  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+    <span class="token number">0</span>     <span class="token number">0</span> nova-api-FORWARD  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+<span class="token punctuation">..</span><span class="token punctuation">..</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>结果显示：</p>
+<p>-v显示的内容比-L -n 显示的内容多了四个字段</p>
+<p>pkts  规则匹配到的报文数量的多少</p>
+<p>bytes 规则匹配到的报文内容量的大小</p>
+<p>in   规则匹配到的流入的接口，*代表任意接口</p>
+<p>out   规则匹配到的流出的接口</p>
+</blockquote>
+<p>显示规则的标号 –line-numbers</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -L -n -v --line-numbers</span>
+Chain INPUT <span class="token punctuation">(</span>policy ACCEPT <span class="token number">13663</span> packets, 3221K bytes<span class="token punctuation">)</span>
+num   pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
+<span class="token number">1</span>    <span class="token number">13663</span> 3221K neutron-linuxbri-INPUT  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+<span class="token number">2</span>    <span class="token number">14809</span> 3469K nova-api-INPUT  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+
+Chain FORWARD <span class="token punctuation">(</span>policy ACCEPT <span class="token number">0</span> packets, <span class="token number">0</span> bytes<span class="token punctuation">)</span>
+num   pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
+<span class="token number">1</span>        <span class="token number">0</span>     <span class="token number">0</span> neutron-filter-top  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+<span class="token number">2</span>        <span class="token number">0</span>     <span class="token number">0</span> neutron-linuxbri-FORWARD  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+<span class="token number">3</span>        <span class="token number">0</span>     <span class="token number">0</span> nova-filter-top  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+<span class="token number">4</span>        <span class="token number">0</span>     <span class="token number">0</span> nova-api-FORWARD  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+<span class="token punctuation">..</span><span class="token punctuation">..</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>打印规则命令，将防火墙的编写命令给我们打印出来，可以通过这种方式来学习规则的编写。</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -S</span>
+-P INPUT ACCEPT
+-P FORWARD ACCEPT
+-P OUTPUT ACCEPT
+-N neutron-filter-top
+-N neutron-linuxbri-FORWARD
+-N neutron-linuxbri-INPUT
+-N neutron-linuxbri-OUTPUT
+-N neutron-linuxbri-local
+-N neutron-linuxbri-scope
+-N neutron-linuxbri-sg-chain
+-N neutron-linuxbri-sg-fallback
+-N nova-api-FORWARD
+-N nova-api-INPUT
+-N nova-api-OUTPUT
+-N nova-api-local
+-N nova-filter-top
+-A INPUT -j neutron-linuxbri-INPUT
+-A INPUT -j nova-api-INPUT
+-A FORWARD -j neutron-filter-top
+-A FORWARD -j neutron-linuxbri-FORWARD
+-A FORWARD -j nova-filter-top
+-A FORWARD -j nova-api-FORWARD
+<span class="token punctuation">..</span><span class="token punctuation">..</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="1-2-保存规则"><a href="#1-2-保存规则" class="headerlink" title="1.2 保存规则"></a>1.2 保存规则</h3><blockquote>
+<p>使用 iptables-save命令可以保存规则</p>
+</blockquote>
+<p>将当前的规则保存到文件中</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables-save > iptables.rules</span>
+<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># cat iptables.rules</span>
+<span class="token comment"># Generated by iptables-save v1.4.21 on Wed Oct 20 09:22:53 2021</span>
+*filter
+:INPUT ACCEPT <span class="token punctuation">[</span><span class="token number">16785</span>:3861723<span class="token punctuation">]</span>
+:FORWARD ACCEPT <span class="token punctuation">[</span><span class="token number">0</span>:0<span class="token punctuation">]</span>
+:OUTPUT ACCEPT <span class="token punctuation">[</span><span class="token number">16549</span>:3883715<span class="token punctuation">]</span>
+:neutron-filter-top - <span class="token punctuation">[</span><span class="token number">0</span>:0<span class="token punctuation">]</span>
+:neutron-linuxbri-FORWARD - <span class="token punctuation">[</span><span class="token number">0</span>:0<span class="token punctuation">]</span>
+:neutron-linuxbri-INPUT - <span class="token punctuation">[</span><span class="token number">0</span>:0<span class="token punctuation">]</span>
+:neutron-linuxbri-OUTPUT - <span class="token punctuation">[</span><span class="token number">0</span>:0<span class="token punctuation">]</span>
+:neutron-linuxbri-local - <span class="token punctuation">[</span><span class="token number">0</span>:0<span class="token punctuation">]</span>
+:neutron-linuxbri-scope - <span class="token punctuation">[</span><span class="token number">0</span>:0<span class="token punctuation">]</span>
+:neutron-linuxbri-sg-chain - <span class="token punctuation">[</span><span class="token number">0</span>:0<span class="token punctuation">]</span>
+:neutron-linuxbri-sg-fallback - <span class="token punctuation">[</span><span class="token number">0</span>:0<span class="token punctuation">]</span>
+:nova-api-FORWARD - <span class="token punctuation">[</span><span class="token number">0</span>:0<span class="token punctuation">]</span>
+:nova-api-INPUT - <span class="token punctuation">[</span><span class="token number">0</span>:0<span class="token punctuation">]</span>
+<span class="token punctuation">..</span><span class="token punctuation">..</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="1-3-清除规则"><a href="#1-3-清除规则" class="headerlink" title="1.3 清除规则"></a>1.3 清除规则</h3><p>清除单个规则</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token comment"># 先查看</span>
+<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -L -n --line-numbers</span>
+Chain INPUT <span class="token punctuation">(</span>policy ACCEPT<span class="token punctuation">)</span>
+num  target     prot opt <span class="token builtin class-name">source</span>               destination
+<span class="token number">1</span>    neutron-linuxbri-INPUT  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+<span class="token number">2</span>    nova-api-INPUT  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+
+Chain FORWARD <span class="token punctuation">(</span>policy ACCEPT<span class="token punctuation">)</span>
+num  target     prot opt <span class="token builtin class-name">source</span>               destination
+<span class="token number">1</span>    neutron-filter-top  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+<span class="token number">2</span>    neutron-linuxbri-FORWARD  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+<span class="token number">3</span>    nova-filter-top  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+<span class="token number">4</span>    nova-api-FORWARD  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+<span class="token punctuation">..</span><span class="token punctuation">..</span>
+
+<span class="token comment"># 删除FORWARD的第2条规则</span>
+<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -D FORWARD 2</span>
+
+<span class="token comment"># 再次查看，删除成功</span>
+<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -L -n --line-numbers</span>
+Chain INPUT <span class="token punctuation">(</span>policy ACCEPT<span class="token punctuation">)</span>
+num  target     prot opt <span class="token builtin class-name">source</span>               destination
+<span class="token number">1</span>    neutron-linuxbri-INPUT  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+<span class="token number">2</span>    nova-api-INPUT  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+
+Chain FORWARD <span class="token punctuation">(</span>policy ACCEPT<span class="token punctuation">)</span>
+num  target     prot opt <span class="token builtin class-name">source</span>               destination
+<span class="token number">1</span>    neutron-filter-top  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+<span class="token number">2</span>    nova-filter-top  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+<span class="token number">3</span>    nova-api-FORWARD  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+<span class="token punctuation">..</span><span class="token punctuation">..</span>
+
+<span class="token comment"># 如果不指定删除的序号，会报错</span>
+<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -D FORWARD</span>
+iptables: Bad rule <span class="token punctuation">(</span>does a matching rule exist <span class="token keyword">in</span> that chain?<span class="token punctuation">)</span>.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>清除规则计数</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token comment"># 查看原内容</span>
+<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -L -n -v</span>
+Chain INPUT <span class="token punctuation">(</span>policy ACCEPT <span class="token number">3196</span> packets, 657K bytes<span class="token punctuation">)</span>
+ pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
+<span class="token number">23118</span> 5147K neutron-linuxbri-INPUT  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+<span class="token number">24264</span> 5395K nova-api-INPUT  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+
+Chain FORWARD <span class="token punctuation">(</span>policy ACCEPT <span class="token number">0</span> packets, <span class="token number">0</span> bytes<span class="token punctuation">)</span>
+ pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
+    <span class="token number">0</span>     <span class="token number">0</span> neutron-filter-top  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+    <span class="token number">0</span>     <span class="token number">0</span> nova-filter-top  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+    <span class="token number">0</span>     <span class="token number">0</span> nova-api-FORWARD  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+<span class="token punctuation">..</span><span class="token punctuation">..</span>
+
+<span class="token comment"># 清除规则计数 -Z</span>
+<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -Z</span>
+
+<span class="token comment"># 查看效果，pkts与bytes减少，即规则匹配到的报文数量与报文内容大小均减少，清除成功</span>
+<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -L -n -v</span>
+Chain INPUT <span class="token punctuation">(</span>policy ACCEPT <span class="token number">58</span> packets, <span class="token number">11344</span> bytes<span class="token punctuation">)</span>
+ pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
+   <span class="token number">58</span> <span class="token number">11344</span> neutron-linuxbri-INPUT  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+   <span class="token number">58</span> <span class="token number">11344</span> nova-api-INPUT  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+
+Chain FORWARD <span class="token punctuation">(</span>policy ACCEPT <span class="token number">0</span> packets, <span class="token number">0</span> bytes<span class="token punctuation">)</span>
+ pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
+    <span class="token number">0</span>     <span class="token number">0</span> neutron-filter-top  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+    <span class="token number">0</span>     <span class="token number">0</span> nova-filter-top  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+    <span class="token number">0</span>     <span class="token number">0</span> nova-api-FORWARD  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+<span class="token punctuation">..</span><span class="token punctuation">..</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>清除所有规则</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token comment"># 清除默认规则</span>
+<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -F</span>
+
+<span class="token comment"># 清除自定义规则</span>
+<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -X</span>
+
+<span class="token comment"># 查看效果</span>
+<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -L -n -v</span>
+Chain INPUT <span class="token punctuation">(</span>policy ACCEPT <span class="token number">424</span> packets, <span class="token number">84770</span> bytes<span class="token punctuation">)</span>
+ pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
+
+Chain FORWARD <span class="token punctuation">(</span>policy ACCEPT <span class="token number">0</span> packets, <span class="token number">0</span> bytes<span class="token punctuation">)</span>
+ pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
+
+Chain OUTPUT <span class="token punctuation">(</span>policy ACCEPT <span class="token number">398</span> packets, <span class="token number">83826</span> bytes<span class="token punctuation">)</span>
+ pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="1-4-恢复规则"><a href="#1-4-恢复规则" class="headerlink" title="1.4 恢复规则"></a>1.4 恢复规则</h3><p>从备份文件恢复规则</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token comment"># 从文件恢复</span>
+<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables-restore &lt; iptables.rules</span>
+
+<span class="token comment"># 查看确认已恢复</span>
+<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -L -n -v</span>
+Chain INPUT <span class="token punctuation">(</span>policy ACCEPT <span class="token number">268</span> packets, <span class="token number">46570</span> bytes<span class="token punctuation">)</span>
+ pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
+  <span class="token number">268</span> <span class="token number">46570</span> neutron-linuxbri-INPUT  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+  <span class="token number">268</span> <span class="token number">46570</span> nova-api-INPUT  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+
+Chain FORWARD <span class="token punctuation">(</span>policy ACCEPT <span class="token number">0</span> packets, <span class="token number">0</span> bytes<span class="token punctuation">)</span>
+ pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
+    <span class="token number">0</span>     <span class="token number">0</span> neutron-filter-top  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+    <span class="token number">0</span>     <span class="token number">0</span> neutron-linuxbri-FORWARD  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+    <span class="token number">0</span>     <span class="token number">0</span> nova-filter-top  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+    <span class="token number">0</span>     <span class="token number">0</span> nova-api-FORWARD  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+<span class="token punctuation">..</span><span class="token punctuation">..</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="1-5-更改规则"><a href="#1-5-更改规则" class="headerlink" title="1.5 更改规则"></a>1.5 更改规则</h3><p>可以从ACCEPT改为DROP</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token comment"># 查看原规则</span>
+<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -L -n -v</span>
+Chain INPUT <span class="token punctuation">(</span>policy ACCEPT <span class="token number">342</span> packets, <span class="token number">49890</span> bytes<span class="token punctuation">)</span>
+ pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
+ <span class="token number">4455</span>  836K neutron-linuxbri-INPUT  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+ <span class="token number">4455</span>  836K nova-api-INPUT  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+
+Chain FORWARD <span class="token punctuation">(</span>policy ACCEPT <span class="token number">0</span> packets, <span class="token number">0</span> bytes<span class="token punctuation">)</span>
+ pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
+    <span class="token number">0</span>     <span class="token number">0</span> neutron-filter-top  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+    <span class="token number">0</span>     <span class="token number">0</span> neutron-linuxbri-FORWARD  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+    <span class="token number">0</span>     <span class="token number">0</span> nova-filter-top  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+    <span class="token number">0</span>     <span class="token number">0</span> nova-api-FORWARD  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+<span class="token punctuation">..</span><span class="token punctuation">..</span>
+
+<span class="token comment"># -P 修改</span>
+<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -P FORWARD DROP</span>
+
+<span class="token comment"># 再次查看，FORWARD链修改DROP成功</span>
+<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -L -n -v</span>
+Chain INPUT <span class="token punctuation">(</span>policy ACCEPT <span class="token number">38</span> packets, <span class="token number">5017</span> bytes<span class="token punctuation">)</span>
+ pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
+ <span class="token number">4849</span>  905K neutron-linuxbri-INPUT  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+ <span class="token number">4849</span>  905K nova-api-INPUT  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+
+Chain FORWARD <span class="token punctuation">(</span>policy DROP <span class="token number">0</span> packets, <span class="token number">0</span> bytes<span class="token punctuation">)</span>
+ pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
+    <span class="token number">0</span>     <span class="token number">0</span> neutron-filter-top  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+    <span class="token number">0</span>     <span class="token number">0</span> neutron-linuxbri-FORWARD  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+    <span class="token number">0</span>     <span class="token number">0</span> nova-filter-top  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+    <span class="token number">0</span>     <span class="token number">0</span> nova-api-FORWARD  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+<span class="token punctuation">..</span><span class="token punctuation">..</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>-P 更改的规则，使用 -F 不能自动还原</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token operator">></span><span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -F</span>
+<span class="token operator">></span><span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -L -n -v</span>
+<span class="token operator">></span>Chain INPUT <span class="token punctuation">(</span>policy ACCEPT <span class="token number">36</span> packets, <span class="token number">6554</span> bytes<span class="token punctuation">)</span>
+<span class="token operator">></span>pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
+
+<span class="token operator">></span>Chain FORWARD <span class="token punctuation">(</span>policy DROP <span class="token number">0</span> packets, <span class="token number">0</span> bytes<span class="token punctuation">)</span>
+<span class="token operator">></span>pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
+<span class="token operator">></span><span class="token punctuation">..</span><span class="token punctuation">..</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</blockquote>
+<p>重启iptables服务后，可以使用系统所有默认规则</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token comment"># 清除所有默认规则</span>
+<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -F</span>
+
+<span class="token comment"># 查看，没有默认规则</span>
+<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -L -n -v</span>
+Chain INPUT <span class="token punctuation">(</span>policy ACCEPT <span class="token number">8</span> packets, <span class="token number">520</span> bytes<span class="token punctuation">)</span>
+ pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
+
+Chain FORWARD <span class="token punctuation">(</span>policy ACCEPT <span class="token number">0</span> packets, <span class="token number">0</span> bytes<span class="token punctuation">)</span>
+ pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
+
+Chain OUTPUT <span class="token punctuation">(</span>policy ACCEPT <span class="token number">4</span> packets, <span class="token number">448</span> bytes<span class="token punctuation">)</span>
+ pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
+ 
+<span class="token comment"># 重启iptables服务</span>
+<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># systemctl restart iptables</span>
+
+<span class="token comment"># 再次查看，新增了系统的默认规则</span>
+<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -L -n -v</span>
+Chain INPUT <span class="token punctuation">(</span>policy ACCEPT <span class="token number">0</span> packets, <span class="token number">0</span> bytes<span class="token punctuation">)</span>
+ pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
+    <span class="token number">6</span>   <span class="token number">432</span> ACCEPT     all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0            state RELATED,ESTABLISHED
+    <span class="token number">0</span>     <span class="token number">0</span> ACCEPT     icmp --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+    <span class="token number">0</span>     <span class="token number">0</span> ACCEPT     all  --  lo     *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+    <span class="token number">0</span>     <span class="token number">0</span> ACCEPT     tcp  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0            state NEW tcp dpt:22
+    <span class="token number">0</span>     <span class="token number">0</span> REJECT     all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0            reject-with icmp-host-prohibited
+
+Chain FORWARD <span class="token punctuation">(</span>policy ACCEPT <span class="token number">0</span> packets, <span class="token number">0</span> bytes<span class="token punctuation">)</span>
+ pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
+    <span class="token number">0</span>     <span class="token number">0</span> REJECT     all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0            reject-with icmp-host-prohibited
+
+Chain OUTPUT <span class="token punctuation">(</span>policy ACCEPT <span class="token number">4</span> packets, <span class="token number">544</span> bytes<span class="token punctuation">)</span>
+ pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/04-%E8%99%9A%E6%8B%9F%E5%8C%96/OpenStack%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="prev" title="OpenStack学习笔记">
+      <i class="fa fa-chevron-left"></i> OpenStack学习笔记
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day20-dd%E4%B8%8E%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%A4%87%E4%BB%BD/%E7%AC%94%E8%AE%B0/" rel="next" title="运维之基础命令--dd与文件系统备份">
+      运维之基础命令--dd与文件系统备份 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#iptables%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C"><span class="nav-number">1.</span> <span class="nav-text">iptables使用手册</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E7%AE%80%E5%8D%95%E5%AE%9E%E8%B7%B5"><span class="nav-number">1.1.</span> <span class="nav-text">一、简单实践</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E4%BF%A1%E6%81%AF%E6%9F%A5%E7%9C%8B"><span class="nav-number">1.1.1.</span> <span class="nav-text">1.1 信息查看</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-%E4%BF%9D%E5%AD%98%E8%A7%84%E5%88%99"><span class="nav-number">1.1.2.</span> <span class="nav-text">1.2 保存规则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-%E6%B8%85%E9%99%A4%E8%A7%84%E5%88%99"><span class="nav-number">1.1.3.</span> <span class="nav-text">1.3 清除规则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-%E6%81%A2%E5%A4%8D%E8%A7%84%E5%88%99"><span class="nav-number">1.1.4.</span> <span class="nav-text">1.4 恢复规则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-5-%E6%9B%B4%E6%94%B9%E8%A7%84%E5%88%99"><span class="nav-number">1.1.5.</span> <span class="nav-text">1.5 更改规则</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="GongSheng"
+      src="/images/myavatar.png">
+  <p class="site-author-name" itemprop="name">GongSheng</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">48</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">GongSheng</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
