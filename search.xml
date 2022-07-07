@@ -1,6 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>运维之综合架构--01-整体架构规划</title>
+    <url>/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/01-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E8%A7%84%E5%88%92/</url>
+    <content><![CDATA[<h2 id="一-、综合架构规划"><a href="#一-、综合架构规划" class="headerlink" title="一 、综合架构规划"></a>一 、综合架构规划</h2><blockquote>
+<p>项目中涵盖了架构，架构中又涵盖了不同的角色（高可用、负载均衡、web集群）<br>五层架构模型–&gt; 负载均衡 web服务 存储服务 缓存服务 数据库服务（通过tcp连接）</p>
+</blockquote>
+<p><img src="/01-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E8%A7%84%E5%88%92.assets/%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84%E5%9B%BE.png" alt="综合架构图"></p>
+<h3 id="1-架构访问流程"><a href="#1-架构访问流程" class="headerlink" title="1 架构访问流程"></a>1 架构访问流程</h3><h4 id="1-1-用户视角"><a href="#1-1-用户视角" class="headerlink" title="1.1 用户视角"></a>1.1 用户视角</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.用户通过浏览器输入oldboyedu.com-&gt;回车
+2.浏览器会发生一次跳转，分析URL-&gt;然后进行DNS解析-&gt;获取真实的公网IP地址
+3.用户通过tcp的三次握手发起连接-&gt;真实的公网IP
+4.连接会通过公网-&gt;路由器-&gt;交换机-&gt;抵达前端的硬件防火墙
+5.防火墙根据自身访问规则，进行匹配-&gt;如果恶意的连接则拒绝-&gt;如果是正常的连接则放行
+6.防火墙会将连接转发给负载均衡器-&gt;查看用户请求的内容-&gt;根据内容进行任务下发-&gt;下发给web服务器
+7.web服务接收请求后会根据请求进行判断
+如果是请求图片或者附件-&gt;查找存储服务器存储的静态资源
+如果请求的网站上的内容-&gt;缓存服务器-&gt;如果缓存服务器没有-&gt;数据库
+数据库查询完数据之后会返回数据给web服务器-&gt;同时也会返回一份给缓存服务器
+8.数据库返回内容-&gt;web服务器-&gt;负载均衡-&gt;用户<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="1-2-运维视角"><a href="#1-2-运维视角" class="headerlink" title="1.2 运维视角"></a>1.2 运维视角</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.用户通过公网连接（隧道）VPN服务器，这样方便管理内部主机，
+2.自动化配置管理，节省人力成本，便于后期维护。统一环境，标准化
+3.自动化监控服务，监控系统的运行状态，事前预警，事后追溯。<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-架构环境规划"><a href="#2-架构环境规划" class="headerlink" title="2 架构环境规划"></a>2 架构环境规划</h3><h4 id="2-1-IP分配"><a href="#2-1-IP分配" class="headerlink" title="2.1 IP分配"></a>2.1 IP分配</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"> wanip         lanip       hostname
+10.0.0.5     172.16.1.5     lb01
+10.0.0.6     172.16.1.6     lb02
+10.0.0.7     172.16.1.7     web01
+10.0.0.8     172.16.1.8     web02
+10.0.0.9     172.16.1.9     web03
+10.0.0.31    172.16.1.31    nfs
+10.0.0.41    172.16.1.41    backup
+10.0.0.51    172.16.1.51    db01
+10.0.0.61    172.16.1.61    m01
+10.0.0.71    172.16.1.71    zabbix<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-2-基础环境准备"><a href="#2-2-基础环境准备" class="headerlink" title="2.2 基础环境准备"></a>2.2 基础环境准备</h4><h5 id="2-2-1-虚拟机系统和网卡准备"><a href="#2-2-1-虚拟机系统和网卡准备" class="headerlink" title="2.2.1 虚拟机系统和网卡准备"></a>2.2.1 虚拟机系统和网卡准备</h5><blockquote>
+<p>安装全新Centos7系统，配置网卡为eth0及eth1命名模式<br>1.第一块网卡为NAT模式[公网环境]，配置的网段为10.0.0.0网段<br>2.第二块网卡为LAN模式[私网环境]，配置的网段为172.16.1.0网段<br>3.优化安装好的Centos7虚拟机，安装常用软件、关闭防火墙等等</p>
+</blockquote>
+<p>优化步骤</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 1.配置yum仓库
+rm -f &#x2F;etc&#x2F;yum.repos.d&#x2F;*
+curl -o &#x2F;etc&#x2F;yum.repos.d&#x2F;CentOS-Base.repo http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;repo&#x2F;Centos-7.repo
+curl -o &#x2F;etc&#x2F;yum.repos.d&#x2F;epel.repo http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;repo&#x2F;epel-7.repo
+
+# 2.安装基础软件包
+yum install net-tools vim tree htop iftop \
+iotop lrzsz sl wget unzip telnet nmap nc psmisc \
+dos2unix bash-completion bash-completion-extra sysstat \
+rsync nfs-utils httpd-tools -y
+
+# 3.关闭防火墙firewalld
+systemctl disable firewalld
+systemctl stop firewalld
+
+# 4.关闭selinux
+sed -i &#39;&#x2F;^SELINUX&#x3D;&#x2F;c SELINUX&#x3D;disabled&#39; &#x2F;etc&#x2F;selinux&#x2F;config
+
+# 5.调整单个进程最大能打开文件的数量
+echo &#39;* - nofile 65535&#39; &gt;&gt; &#x2F;etc&#x2F;security&#x2F;limits.conf<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>基于优化后的虚拟机进行克隆</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.连接克隆（需要依赖于母体）
+2.完整克隆（完完全全的复制一份，占用磁盘空间）<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>对新克隆的主机进行如下操作：</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 1.修改主机名  
+hostnamectl set-hostname backup
+
+# 2.修改IP地址  
+sed -i &#39;s#200#41#g&#39; &#x2F;etc&#x2F;sysconfig&#x2F;network-scripts&#x2F;ifcfg-eth[01]
+
+# 3.重启服务器<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+]]></content>
+      <categories>
+        <category>运维</category>
+        <category>（二）综合架构</category>
+      </categories>
+  </entry>
+  <entry>
     <title>国产化POC测试工具使用指南</title>
     <url>/2022/07/06/02_%E6%B5%8B%E8%AF%95/01_POC%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97/</url>
     <content><![CDATA[<h1 id="一、性能测试"><a href="#一、性能测试" class="headerlink" title="一、性能测试"></a>一、性能测试</h1><blockquote>
@@ -317,84 +395,6 @@ glxgears<span aria-hidden="true" class="line-numbers-rows"><span></span><span></
       <tags>
         <tag>工作</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>运维之综合架构--01-整体架构规划</title>
-    <url>/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/01-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E8%A7%84%E5%88%92/</url>
-    <content><![CDATA[<h2 id="一-、综合架构规划"><a href="#一-、综合架构规划" class="headerlink" title="一 、综合架构规划"></a>一 、综合架构规划</h2><blockquote>
-<p>项目中涵盖了架构，架构中又涵盖了不同的角色（高可用、负载均衡、web集群）<br>五层架构模型–&gt; 负载均衡 web服务 存储服务 缓存服务 数据库服务（通过tcp连接）</p>
-</blockquote>
-<p><img src="/01-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E8%A7%84%E5%88%92.assets/%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84%E5%9B%BE.png" alt="综合架构图"></p>
-<h3 id="1-架构访问流程"><a href="#1-架构访问流程" class="headerlink" title="1 架构访问流程"></a>1 架构访问流程</h3><h4 id="1-1-用户视角"><a href="#1-1-用户视角" class="headerlink" title="1.1 用户视角"></a>1.1 用户视角</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.用户通过浏览器输入oldboyedu.com-&gt;回车
-2.浏览器会发生一次跳转，分析URL-&gt;然后进行DNS解析-&gt;获取真实的公网IP地址
-3.用户通过tcp的三次握手发起连接-&gt;真实的公网IP
-4.连接会通过公网-&gt;路由器-&gt;交换机-&gt;抵达前端的硬件防火墙
-5.防火墙根据自身访问规则，进行匹配-&gt;如果恶意的连接则拒绝-&gt;如果是正常的连接则放行
-6.防火墙会将连接转发给负载均衡器-&gt;查看用户请求的内容-&gt;根据内容进行任务下发-&gt;下发给web服务器
-7.web服务接收请求后会根据请求进行判断
-如果是请求图片或者附件-&gt;查找存储服务器存储的静态资源
-如果请求的网站上的内容-&gt;缓存服务器-&gt;如果缓存服务器没有-&gt;数据库
-数据库查询完数据之后会返回数据给web服务器-&gt;同时也会返回一份给缓存服务器
-8.数据库返回内容-&gt;web服务器-&gt;负载均衡-&gt;用户<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h4 id="1-2-运维视角"><a href="#1-2-运维视角" class="headerlink" title="1.2 运维视角"></a>1.2 运维视角</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.用户通过公网连接（隧道）VPN服务器，这样方便管理内部主机，
-2.自动化配置管理，节省人力成本，便于后期维护。统一环境，标准化
-3.自动化监控服务，监控系统的运行状态，事前预警，事后追溯。<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="2-架构环境规划"><a href="#2-架构环境规划" class="headerlink" title="2 架构环境规划"></a>2 架构环境规划</h3><h4 id="2-1-IP分配"><a href="#2-1-IP分配" class="headerlink" title="2.1 IP分配"></a>2.1 IP分配</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"> wanip         lanip       hostname
-10.0.0.5     172.16.1.5     lb01
-10.0.0.6     172.16.1.6     lb02
-10.0.0.7     172.16.1.7     web01
-10.0.0.8     172.16.1.8     web02
-10.0.0.9     172.16.1.9     web03
-10.0.0.31    172.16.1.31    nfs
-10.0.0.41    172.16.1.41    backup
-10.0.0.51    172.16.1.51    db01
-10.0.0.61    172.16.1.61    m01
-10.0.0.71    172.16.1.71    zabbix<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h4 id="2-2-基础环境准备"><a href="#2-2-基础环境准备" class="headerlink" title="2.2 基础环境准备"></a>2.2 基础环境准备</h4><h5 id="2-2-1-虚拟机系统和网卡准备"><a href="#2-2-1-虚拟机系统和网卡准备" class="headerlink" title="2.2.1 虚拟机系统和网卡准备"></a>2.2.1 虚拟机系统和网卡准备</h5><blockquote>
-<p>安装全新Centos7系统，配置网卡为eth0及eth1命名模式<br>1.第一块网卡为NAT模式[公网环境]，配置的网段为10.0.0.0网段<br>2.第二块网卡为LAN模式[私网环境]，配置的网段为172.16.1.0网段<br>3.优化安装好的Centos7虚拟机，安装常用软件、关闭防火墙等等</p>
-</blockquote>
-<p>优化步骤</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 1.配置yum仓库
-rm -f &#x2F;etc&#x2F;yum.repos.d&#x2F;*
-curl -o &#x2F;etc&#x2F;yum.repos.d&#x2F;CentOS-Base.repo http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;repo&#x2F;Centos-7.repo
-curl -o &#x2F;etc&#x2F;yum.repos.d&#x2F;epel.repo http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;repo&#x2F;epel-7.repo
-
-# 2.安装基础软件包
-yum install net-tools vim tree htop iftop \
-iotop lrzsz sl wget unzip telnet nmap nc psmisc \
-dos2unix bash-completion bash-completion-extra sysstat \
-rsync nfs-utils httpd-tools -y
-
-# 3.关闭防火墙firewalld
-systemctl disable firewalld
-systemctl stop firewalld
-
-# 4.关闭selinux
-sed -i &#39;&#x2F;^SELINUX&#x3D;&#x2F;c SELINUX&#x3D;disabled&#39; &#x2F;etc&#x2F;selinux&#x2F;config
-
-# 5.调整单个进程最大能打开文件的数量
-echo &#39;* - nofile 65535&#39; &gt;&gt; &#x2F;etc&#x2F;security&#x2F;limits.conf<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>基于优化后的虚拟机进行克隆</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.连接克隆（需要依赖于母体）
-2.完整克隆（完完全全的复制一份，占用磁盘空间）<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>对新克隆的主机进行如下操作：</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 1.修改主机名  
-hostnamectl set-hostname backup
-
-# 2.修改IP地址  
-sed -i &#39;s#200#41#g&#39; &#x2F;etc&#x2F;sysconfig&#x2F;network-scripts&#x2F;ifcfg-eth[01]
-
-# 3.重启服务器<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-]]></content>
-      <categories>
-        <category>运维</category>
-        <category>（二）综合架构</category>
-      </categories>
   </entry>
   <entry>
     <title>测试工具使用说明-完善中</title>
@@ -1979,6 +1979,129 @@ vim org.eclipse.ptp.rm.slurm.proxy_4.0.7.201104291906&#x2F;src&#x2F;ptp_slurm_pr
       </tags>
   </entry>
   <entry>
+    <title>运维之综合架构--03-NFS服务器搭建</title>
+    <url>/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/03-NFS%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/</url>
+    <content><![CDATA[<ul>
+<li>学习笔记</li>
+</ul>
+<hr>
+<h2 id="一、NFS简介"><a href="#一、NFS简介" class="headerlink" title="一、NFS简介"></a>一、NFS简介</h2><blockquote>
+<p>NFS是Network File System的缩写及网络文件系统。NFS主要功能是通过局域网络让不同的主机系统之间可以共享文件或目录。<br>NFS系统和Windows网络共享、网络驱动器类似, 只不过windows用于局域网, NFS用于企业集群架构中<br>如果是大型网站, 会用到更复杂的分布式文件系统FastDFS（音频、小说、视频）,glusterfs（iso镜像）,HDFS<br>NFS（图片、）解决共享前端web共享</p>
+</blockquote>
+<h3 id="1-1-NFS有什么用？"><a href="#1-1-NFS有什么用？" class="headerlink" title="1.1 NFS有什么用？"></a>1.1 NFS有什么用？</h3><p>解决前端web静态资源的共享<br>解决前端web静态资源一致性<br>解决前端web磁盘空间的浪费</p>
+<h3 id="1-2-NFS的文件操作方式"><a href="#1-2-NFS的文件操作方式" class="headerlink" title="1.2 NFS的文件操作方式"></a>1.2 NFS的文件操作方式</h3><p>1.当用户执行mkdir命令, 该命令会调用shell解释器翻译给内核。<br>2.内核解析完成后会驱动对应的硬件设备，完成相应的操作。</p>
+<h3 id="1-3-NFS的实现原理"><a href="#1-3-NFS的实现原理" class="headerlink" title="1.3 NFS的实现原理"></a>1.3 NFS的实现原理</h3><p>1.用户进程访问NFS客户端，使用不同的函数对数据进行处理<br>2.NFS客户端通过TCP&#x2F;IP的方式传递给NFS服务端。<br>3.NFS服务端接收到请求后，会先调用portmap进程进行端口映射。<br>4.nfsd进程用于判断NFS客户端是否拥有权限连接NFS服务端。<br>5.Rpc.mount进程判断客户端是否有对应的权限进行验证。<br>6.idmap进程实现用户映射和压缩<br>7.最后NFS服务端会将对应请求的函数转换为本地能识别的命令，传递至内核，由内核驱动硬件。<br>注意: rpc是一个远程过程调用，那么使用nfs必须有rpc服务</p>
+<h3 id="1-4-NFS的优缺点"><a href="#1-4-NFS的优缺点" class="headerlink" title="1.4 NFS的优缺点"></a>1.4 NFS的优缺点</h3><p>优点</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.NFS文件系统简单易用、方便部署、数据可靠、服务稳定、满足中小企业需求。
+2.NFS文件系统内存放的数据都在文件系统之上，所有数据都是能看得见。<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>缺点</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.存在单点故障, 如果构建高可用维护麻烦
+web-&gt;nfs(sersync)-&gt;backup
+2.NFS数据明文, 并不对数据做任何校验。
+3.客户端挂载NFS服务没有密码验证, 安全性一般(内网使用)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>3.NFS应用建议<br>1.生产场景应将静态数据尽可能往前端推, 减少后端存储压力<br>2.必须将存储里的静态资源通过CDN缓存jpg\png\mp4\avi\css\js<br>3.如果没有缓存或架构本身历史遗留问题太大, 在多存储也无用</p>
+</blockquote>
+<h2 id="二、NFS部署"><a href="#二、NFS部署" class="headerlink" title="二、NFS部署"></a>二、NFS部署</h2><h3 id="2-1-服务端"><a href="#2-1-服务端" class="headerlink" title="2.1 服务端"></a>2.1 服务端</h3><p>安装</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# yum install nfs-utils -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>配置</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# cat &#x2F;etc&#x2F;exports
+&#x2F;data 172.16.1.0&#x2F;24(rw,sync,all_squash)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>授权</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# mkdir &#x2F;data
+[root@nfs ~]# chown -R nfsnobody.nfsnobody &#x2F;data&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>启动服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# systemctl start nfs-server
+[root@nfs ~]# systemctl enable nfs-server<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>检查</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# cat &#x2F;var&#x2F;lib&#x2F;nfs&#x2F;etab 
+&#x2F;data	172.16.1.0&#x2F;24(rw,sync,wdelay,hide,nocrossmnt,secure,root_squash,all_squash,no_subtree_check,secure_locks,acl,no_pnfs,anonuid&#x3D;65534,anongid&#x3D;65534,sec&#x3D;sys,rw,secure,root_squash,all_squash)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<h3 id="2-2-客户端"><a href="#2-2-客户端" class="headerlink" title="2.2 客户端"></a>2.2 客户端</h3><p>安装</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# yum install nfs-utils -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>检查nfs是否有共享内容</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# showmount -e 172.16.1.31
+Export list for 172.16.1.31:	
+&#x2F;data 172.16.1.0&#x2F;24<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>挂载nfs目录（临时）</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# mount -t nfs 172.16.1.31:&#x2F;data &#x2F;opt
+[root@web01 ~]# df -h
+Filesystem         Size  Used Avail Use% Mounted on
+172.16.1.31:&#x2F;data   99G  1.8G   98G   2% &#x2F;opt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>挂载nfs目录（永久）</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# vim &#x2F;etc&#x2F;fstab 
+172.16.1.31:&#x2F;data  &#x2F;opt  nfs  defaults  0  0
+[root@web01 ~]# mount -a   #验证fstab开机启动是否填写错误。<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-3-NFS配置参数说明"><a href="#2-3-NFS配置参数说明" class="headerlink" title="2.3 NFS配置参数说明"></a>2.3 NFS配置参数说明</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">ro				只读权限
+root_squash		当NFS客户端以root管理员访问时，映射为NFS服务器的匿名用户(不常用)
+no_root_squash	当NFS客户端以root管理员访问时，映射为NFS服务器的root管理员(不常用)
+no_all_squash	无论NFS客户端使用什么账户访问，都不进行压缩
+async			优先将数据保存到内存，然后再写入硬盘；这样效率更高，但可能会丢失数据
+
+rw*				读写权限
+sync*			同时将数据写入到内存与硬盘中，保证不丢失数据
+all_squash*		无论NFS客户端使用什么账户访问，均映射为NFS服务器的匿名用户(常用)
+anonuid*		配置all_squash使用,指定NFS的用户UID,必须存在系统
+anongid*		配置all_squash使用,指定NFS的用户UID,必须存在系统<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-4-验证ro权限"><a href="#2-4-验证ro权限" class="headerlink" title="2.4 验证ro权限"></a>2.4 验证ro权限</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# cat &#x2F;etc&#x2F;exports
+&#x2F;data 172.16.1.0&#x2F;24(ro,sync,all_squash)
+[root@nfs ~]# systemctl restart nfs-server
+
+[root@web01 ~]# touch &#x2F;opt&#x2F;ttt
+touch: cannot touch ‘&#x2F;opt&#x2F;ttt’: Read-only file system		#通常这样的错误都是设定的ro权限导致<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-5-验证all-squash、anonuid、anongid权限"><a href="#2-5-验证all-squash、anonuid、anongid权限" class="headerlink" title="2.5 验证all_squash、anonuid、anongid权限"></a>2.5 验证all_squash、anonuid、anongid权限</h3><p>服务端</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# cat &#x2F;etc&#x2F;exports
+&#x2F;data 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
+创建用户
+[root@nfs ~]# groupadd -g 666 www
+[root@nfs ~]# useradd -u666 -g666 www
+[root@nfs ~]# id www
+uid&#x3D;666(www) gid&#x3D;666(www) groups&#x3D;666(www)
+授权
+[root@nfs ~]# chown -R www.www &#x2F;data&#x2F;
+重启
+[root@nfs ~]# systemctl restart nfs-server<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>客户端重新挂载验证</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 opt]# touch file
+[root@web01 opt]# touch test
+[root@web01 opt]# ll
+total 4
+-rw-r--r-- 1 666 666 0 Jan  7 11:29 file
+-rw-r--r-- 1 666 666 0 Jan  7 11:29 test<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>PS:由于客户端没有创建id为666的www用户，因此看到的属组和属主都是666</p>
+</blockquote>
+<p>客户端如果觉得666不好看，建议在客户端上创建同名的用户以及uid</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# groupadd -g 666 www
+[root@web01 ~]# useradd -u 666 -g 666 www
+[root@web01 ~]# id www
+uid&#x3D;666(www) gid&#x3D;666(www) groups&#x3D;666(www)
+[root@web01 ~]# ll &#x2F;opt&#x2F;
+total 4
+-rw-r--r-- 1 www www 0 Jan  7 11:29 file
+-rw-r--r-- 1 www www 0 Jan  7 11:29 test<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+]]></content>
+      <categories>
+        <category>运维</category>
+        <category>（二）综合架构</category>
+      </categories>
+  </entry>
+  <entry>
     <title>运维之综合架构--02--Rsync服务器搭建</title>
     <url>/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/02-Rsync%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/</url>
     <content><![CDATA[<h2 id="二、Rsync与数据备份"><a href="#二、Rsync与数据备份" class="headerlink" title="二、Rsync与数据备份"></a>二、Rsync与数据备份</h2><h3 id="2-1-备份概念"><a href="#2-1-备份概念" class="headerlink" title="2.1  备份概念"></a>2.1  备份概念</h3><p>为什么要做备份？</p>
@@ -2246,129 +2369,6 @@ find $SRC&#x2F; -type d -mtime +7|xargs rm -rf <span aria-hidden="true" class="l
 *&#x2F;3 * * * * sh &#x2F;server&#x2F;scripts&#x2F;check_client_data.sh<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
 
 <h4 id="3-1-5-增加客户端数量"><a href="#3-1-5-增加客户端数量" class="headerlink" title="3.1.5 增加客户端数量"></a>3.1.5 增加客户端数量</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">多创建几台客户端服务器，测试<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-]]></content>
-      <categories>
-        <category>运维</category>
-        <category>（二）综合架构</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>运维之综合架构--03-NFS服务器搭建</title>
-    <url>/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/03-NFS%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/</url>
-    <content><![CDATA[<ul>
-<li>学习笔记</li>
-</ul>
-<hr>
-<h2 id="一、NFS简介"><a href="#一、NFS简介" class="headerlink" title="一、NFS简介"></a>一、NFS简介</h2><blockquote>
-<p>NFS是Network File System的缩写及网络文件系统。NFS主要功能是通过局域网络让不同的主机系统之间可以共享文件或目录。<br>NFS系统和Windows网络共享、网络驱动器类似, 只不过windows用于局域网, NFS用于企业集群架构中<br>如果是大型网站, 会用到更复杂的分布式文件系统FastDFS（音频、小说、视频）,glusterfs（iso镜像）,HDFS<br>NFS（图片、）解决共享前端web共享</p>
-</blockquote>
-<h3 id="1-1-NFS有什么用？"><a href="#1-1-NFS有什么用？" class="headerlink" title="1.1 NFS有什么用？"></a>1.1 NFS有什么用？</h3><p>解决前端web静态资源的共享<br>解决前端web静态资源一致性<br>解决前端web磁盘空间的浪费</p>
-<h3 id="1-2-NFS的文件操作方式"><a href="#1-2-NFS的文件操作方式" class="headerlink" title="1.2 NFS的文件操作方式"></a>1.2 NFS的文件操作方式</h3><p>1.当用户执行mkdir命令, 该命令会调用shell解释器翻译给内核。<br>2.内核解析完成后会驱动对应的硬件设备，完成相应的操作。</p>
-<h3 id="1-3-NFS的实现原理"><a href="#1-3-NFS的实现原理" class="headerlink" title="1.3 NFS的实现原理"></a>1.3 NFS的实现原理</h3><p>1.用户进程访问NFS客户端，使用不同的函数对数据进行处理<br>2.NFS客户端通过TCP&#x2F;IP的方式传递给NFS服务端。<br>3.NFS服务端接收到请求后，会先调用portmap进程进行端口映射。<br>4.nfsd进程用于判断NFS客户端是否拥有权限连接NFS服务端。<br>5.Rpc.mount进程判断客户端是否有对应的权限进行验证。<br>6.idmap进程实现用户映射和压缩<br>7.最后NFS服务端会将对应请求的函数转换为本地能识别的命令，传递至内核，由内核驱动硬件。<br>注意: rpc是一个远程过程调用，那么使用nfs必须有rpc服务</p>
-<h3 id="1-4-NFS的优缺点"><a href="#1-4-NFS的优缺点" class="headerlink" title="1.4 NFS的优缺点"></a>1.4 NFS的优缺点</h3><p>优点</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.NFS文件系统简单易用、方便部署、数据可靠、服务稳定、满足中小企业需求。
-2.NFS文件系统内存放的数据都在文件系统之上，所有数据都是能看得见。<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>缺点</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.存在单点故障, 如果构建高可用维护麻烦
-web-&gt;nfs(sersync)-&gt;backup
-2.NFS数据明文, 并不对数据做任何校验。
-3.客户端挂载NFS服务没有密码验证, 安全性一般(内网使用)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<blockquote>
-<p>3.NFS应用建议<br>1.生产场景应将静态数据尽可能往前端推, 减少后端存储压力<br>2.必须将存储里的静态资源通过CDN缓存jpg\png\mp4\avi\css\js<br>3.如果没有缓存或架构本身历史遗留问题太大, 在多存储也无用</p>
-</blockquote>
-<h2 id="二、NFS部署"><a href="#二、NFS部署" class="headerlink" title="二、NFS部署"></a>二、NFS部署</h2><h3 id="2-1-服务端"><a href="#2-1-服务端" class="headerlink" title="2.1 服务端"></a>2.1 服务端</h3><p>安装</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# yum install nfs-utils -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>配置</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# cat &#x2F;etc&#x2F;exports
-&#x2F;data 172.16.1.0&#x2F;24(rw,sync,all_squash)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>授权</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# mkdir &#x2F;data
-[root@nfs ~]# chown -R nfsnobody.nfsnobody &#x2F;data&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>启动服务</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# systemctl start nfs-server
-[root@nfs ~]# systemctl enable nfs-server<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>检查</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# cat &#x2F;var&#x2F;lib&#x2F;nfs&#x2F;etab 
-&#x2F;data	172.16.1.0&#x2F;24(rw,sync,wdelay,hide,nocrossmnt,secure,root_squash,all_squash,no_subtree_check,secure_locks,acl,no_pnfs,anonuid&#x3D;65534,anongid&#x3D;65534,sec&#x3D;sys,rw,secure,root_squash,all_squash)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<h3 id="2-2-客户端"><a href="#2-2-客户端" class="headerlink" title="2.2 客户端"></a>2.2 客户端</h3><p>安装</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# yum install nfs-utils -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>检查nfs是否有共享内容</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# showmount -e 172.16.1.31
-Export list for 172.16.1.31:	
-&#x2F;data 172.16.1.0&#x2F;24<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<p>挂载nfs目录（临时）</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# mount -t nfs 172.16.1.31:&#x2F;data &#x2F;opt
-[root@web01 ~]# df -h
-Filesystem         Size  Used Avail Use% Mounted on
-172.16.1.31:&#x2F;data   99G  1.8G   98G   2% &#x2F;opt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>挂载nfs目录（永久）</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# vim &#x2F;etc&#x2F;fstab 
-172.16.1.31:&#x2F;data  &#x2F;opt  nfs  defaults  0  0
-[root@web01 ~]# mount -a   #验证fstab开机启动是否填写错误。<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="2-3-NFS配置参数说明"><a href="#2-3-NFS配置参数说明" class="headerlink" title="2.3 NFS配置参数说明"></a>2.3 NFS配置参数说明</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">ro				只读权限
-root_squash		当NFS客户端以root管理员访问时，映射为NFS服务器的匿名用户(不常用)
-no_root_squash	当NFS客户端以root管理员访问时，映射为NFS服务器的root管理员(不常用)
-no_all_squash	无论NFS客户端使用什么账户访问，都不进行压缩
-async			优先将数据保存到内存，然后再写入硬盘；这样效率更高，但可能会丢失数据
-
-rw*				读写权限
-sync*			同时将数据写入到内存与硬盘中，保证不丢失数据
-all_squash*		无论NFS客户端使用什么账户访问，均映射为NFS服务器的匿名用户(常用)
-anonuid*		配置all_squash使用,指定NFS的用户UID,必须存在系统
-anongid*		配置all_squash使用,指定NFS的用户UID,必须存在系统<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="2-4-验证ro权限"><a href="#2-4-验证ro权限" class="headerlink" title="2.4 验证ro权限"></a>2.4 验证ro权限</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# cat &#x2F;etc&#x2F;exports
-&#x2F;data 172.16.1.0&#x2F;24(ro,sync,all_squash)
-[root@nfs ~]# systemctl restart nfs-server
-
-[root@web01 ~]# touch &#x2F;opt&#x2F;ttt
-touch: cannot touch ‘&#x2F;opt&#x2F;ttt’: Read-only file system		#通常这样的错误都是设定的ro权限导致<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="2-5-验证all-squash、anonuid、anongid权限"><a href="#2-5-验证all-squash、anonuid、anongid权限" class="headerlink" title="2.5 验证all_squash、anonuid、anongid权限"></a>2.5 验证all_squash、anonuid、anongid权限</h3><p>服务端</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# cat &#x2F;etc&#x2F;exports
-&#x2F;data 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
-创建用户
-[root@nfs ~]# groupadd -g 666 www
-[root@nfs ~]# useradd -u666 -g666 www
-[root@nfs ~]# id www
-uid&#x3D;666(www) gid&#x3D;666(www) groups&#x3D;666(www)
-授权
-[root@nfs ~]# chown -R www.www &#x2F;data&#x2F;
-重启
-[root@nfs ~]# systemctl restart nfs-server<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>客户端重新挂载验证</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 opt]# touch file
-[root@web01 opt]# touch test
-[root@web01 opt]# ll
-total 4
--rw-r--r-- 1 666 666 0 Jan  7 11:29 file
--rw-r--r-- 1 666 666 0 Jan  7 11:29 test<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<blockquote>
-<p>PS:由于客户端没有创建id为666的www用户，因此看到的属组和属主都是666</p>
-</blockquote>
-<p>客户端如果觉得666不好看，建议在客户端上创建同名的用户以及uid</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# groupadd -g 666 www
-[root@web01 ~]# useradd -u 666 -g 666 www
-[root@web01 ~]# id www
-uid&#x3D;666(www) gid&#x3D;666(www) groups&#x3D;666(www)
-[root@web01 ~]# ll &#x2F;opt&#x2F;
-total 4
--rw-r--r-- 1 www www 0 Jan  7 11:29 file
--rw-r--r-- 1 www www 0 Jan  7 11:29 test<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 ]]></content>
       <categories>
@@ -5180,6 +5180,878 @@ web02的Tomcat服务正常，关掉web01的nginx服务
       </categories>
   </entry>
   <entry>
+    <title>OpenStack学习笔记</title>
+    <url>/2022/07/06/01_%E8%BF%90%E7%BB%B4/04-%E8%99%9A%E6%8B%9F%E5%8C%96/OpenStack%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</url>
+    <content><![CDATA[<h1 id="OpenStack笔记"><a href="#OpenStack笔记" class="headerlink" title="OpenStack笔记"></a><strong><font color=green>OpenStack笔记</font></strong></h1><p>​	OpenStack实现的是云计算IAAS</p>
+<h2 id="一、服务架构发展"><a href="#一、服务架构发展" class="headerlink" title="一、服务架构发展"></a><font color=blue>一、服务架构发展</font></h2><h3 id="1-1-MVC架构"><a href="#1-1-MVC架构" class="headerlink" title="1.1 MVC架构"></a>1.1 MVC架构</h3><p>​	业务不拆分，一个服务挂，则所有的全挂</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">首页 www.jd.com&#x2F;index.html
+秒杀 www.jd.com&#x2F;miaosha&#x2F;index.html
+优惠券 www.jd.com&#x2F;juan&#x2F;index.html<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="1-2-SOA架构（千万级）"><a href="#1-2-SOA架构（千万级）" class="headerlink" title="1.2 SOA架构（千万级）"></a>1.2 SOA架构（千万级）</h3><p>​	业务拆分，每一个功能都拆分成一个独立的web服务，每个独立的web服务，都至少拥有一个集群</p>
+<pre class="line-numbers language-she" data-language="she"><code class="language-she">首页 www.jd.com&#x2F;index.html
+秒杀 miaosha.jd.com&#x2F;index.html
+优惠券 juan.jd.com&#x2F;index.html<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="1-3-微服务架构（亿级）"><a href="#1-3-微服务架构（亿级）" class="headerlink" title="1.3 微服务架构（亿级）"></a>1.3 微服务架构（亿级）</h3><p>阿里开源dubbo</p>
+<p>Spring Boot</p>
+<p>自动化代码上线：Jekins + gilab ci</p>
+<p>自动化代码质量检查：sonarqube</p>
+<h2 id="二、搭建OpenStack"><a href="#二、搭建OpenStack" class="headerlink" title="二、搭建OpenStack"></a><font color=blue>二、搭建OpenStack</font></h2><p>​	本流程为手动安装M版，脚本安装可以参考</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">https:&#x2F;&#x2F;my.oschina.net&#x2F;u&#x2F;4367225&#x2F;blog&#x2F;4255750<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>OpenStack的结构介绍：</p>
+<blockquote>
+<p>Nova – 提供VM虚拟化支持 8774</p>
+<p>Glance – 提供镜像 9292</p>
+<p>Clinder – 存储支持 8776</p>
+<p>Neutron – 网络支持 9696</p>
+<p>Cellometer –  监控计费 </p>
+<p>KeyStone – 登录认证</p>
+<p>Horizon – 网页UI，dashboard</p>
+<p>Heat – 部署编排，批量建虚拟机</p>
+<p>Switft – 对象存储（不是传统的文件夹存放，而是用数据库记录已上传的文件信息，当有文件上传，先查询数据库中是否有该文件的md5值，如果有，则不用重新上传，给个链接就是 — 百度云盘）</p>
+</blockquote>
+<p><img src="C:\Users\fr724\AppData\Roaming\Typora\typora-user-images\image-20210615135957367.png" alt="image-20210615135957367"></p>
+<h3 id="2-1-虚拟机准备"><a href="#2-1-虚拟机准备" class="headerlink" title="2.1 虚拟机准备"></a>2.1 虚拟机准备</h3><p>虚拟机规划</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 系统：CentOS7.4
+controller: 内存3G, CPU开启虚拟化	10.0.0.11
+compute1: 内存1G，CPU开启虚拟化	    10.0.0.31
+# 修改主机名，IP地址，host解析，测试ping百度<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>配置本地M版yum源</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 1、资源准备
+mount &#x2F;dev&#x2F;cdrom &#x2F;mnt # 追加到&#x2F;etc&#x2F;rc.local,自动挂载
+解压openstack_rpm.tar.gz到&#x2F;opt&#x2F;repo
+
+# 2、编辑repo文件
+vim &#x2F;etc&#x2F;yum.repo.d&#x2F;local&#x2F;repo
+
+#### 内容
+[local]
+name&#x3D;local
+baseurl&#x3D;file:&#x2F;&#x2F;&#x2F;mnt
+gpgcheck&#x3D;0
+
+[openstack]
+name&#x3D;openstack
+baseurl&#x3D;file:&#x2F;&#x2F;&#x2F;opt&#x2F;repo
+gpgcheck&#x3D;0
+####
+
+# 3、更新yum源
+yum makecache
+yum repolist<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+
+<h3 id="2-2-基础服务安装"><a href="#2-2-基础服务安装" class="headerlink" title="2.2 基础服务安装"></a>2.2 基础服务安装</h3><h4 id="2-2-1-NTP时间同步"><a href="#2-2-1-NTP时间同步" class="headerlink" title="2.2.1 NTP时间同步"></a>2.2.1 NTP时间同步</h4><p>controller与阿里NTP服务器同步</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;chrony.conf
+server ntp6.aliyun.com # 3行
+allow 10.0.0.0&#x2F;24 # 24行
+systemctl restart chronyd<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>computer与controller同步</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;chrony.conf
+server 10.0.0.11 iburst # 3行
+systemctl restart chronyd<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-2-2-扩展-公网安装O版OpenStack的方法介绍（跳过该步骤）"><a href="#2-2-2-扩展-公网安装O版OpenStack的方法介绍（跳过该步骤）" class="headerlink" title="2.2.2 扩展-公网安装O版OpenStack的方法介绍（跳过该步骤）"></a>2.2.2 扩展-公网安装O版OpenStack的方法介绍（跳过该步骤）</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">curl -o &#x2F;etc&#x2F;yum.repos.d&#x2F;CentOS-Base.repo http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;repo&#x2F;Centos-7.repo
+yum makecache
+yum list | grep openstack
+yum install centos-release-openstack-ocata.noarch -y # 安装O版<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-2-3-安装OpenStack客户端openstack-selinux-（所有节点执行）"><a href="#2-2-3-安装OpenStack客户端openstack-selinux-（所有节点执行）" class="headerlink" title="2.2.3 安装OpenStack客户端openstack-selinux （所有节点执行）"></a>2.2.3 安装OpenStack客户端openstack-selinux （所有节点执行）</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum install python-openstackclient openstack-selinux -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h4 id="2-2-4-安装和配置mariadb-仅控制节点执行"><a href="#2-2-4-安装和配置mariadb-仅控制节点执行" class="headerlink" title="2.2.4 安装和配置mariadb (仅控制节点执行)"></a>2.2.4 安装和配置mariadb (仅控制节点执行)</h4><p>安装</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum install mariadb mariadb-server python2-PyMySQL -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>配置</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;my.cnf.d&#x2F;openstack.cnf
+
+#----------------
+[mysqld]	
+bind-address &#x3D; 10.0.0.11	# 监听地址
+default-storage-engine &#x3D; innodb # 默认存储引擎
+innodb_file_per_table  # 独立表空间文件
+max_connections &#x3D; 4096	# 最大连接数
+collation-server &#x3D; utf8_general_ci	# 默认字符集utf8
+character-set-server &#x3D; utf8
+#-----------------
+
+# 启动服务
+systemctl start mariadb
+systemctl enable mariadb
+
+# 数据库安全初始化,保障数据库安全性，如果不执行，同步数据库表会报错
+mysql_secure_installation
+回车 n y y y y<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-2-5-消息队列配置-仅控制节点执行"><a href="#2-2-5-消息队列配置-仅控制节点执行" class="headerlink" title="2.2.5 消息队列配置(仅控制节点执行)"></a>2.2.5 消息队列配置(仅控制节点执行)</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 安装rabbitmq
+yum install rabbitmq-server -y
+# 启动服务
+systemctl start rabbitmq-server
+systemctl enable rabbitmq-server
+# 添加用户
+rabbitmqctl add_user openstack RABBIT_PASS
+# 设置用户权限（读、写、执行）
+rabbitmqctl set_permissions openstack &quot;.*&quot; &quot;.*&quot; &quot;.*&quot;
+rabbitmq-plugins enable rabbitmq_management
+# 查看是否开启15672端口
+netstat -lntup
+# 浏览器登录rabbitmq
+http:&#x2F;&#x2F;10.0.0.11:15672
+默认用户名和密码：guest<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-2-6-缓存系统配置memcache（仅控制节点执行）"><a href="#2-2-6-缓存系统配置memcache（仅控制节点执行）" class="headerlink" title="2.2.6 缓存系统配置memcache（仅控制节点执行）"></a>2.2.6 缓存系统配置memcache（仅控制节点执行）</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 安装
+yum install memcached python-memched -y
+# 配置
+sed -i &#39;s#127.0.0.1#10.0.0.11#g&#39; &#x2F;etc&#x2F;sysconfig&#x2F;memcached
+# 启动服务
+systemctl restart memcached
+systemctl enable memcached
+# 查询端口11211是否已监听，默认使用该端口<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-3-安装keystone认证服务-仅控制节点执行"><a href="#2-3-安装keystone认证服务-仅控制节点执行" class="headerlink" title="2.3 安装keystone认证服务(仅控制节点执行)"></a>2.3 安装keystone认证服务(仅控制节点执行)</h3><h4 id="2-3-1-Keystone功能介绍"><a href="#2-3-1-Keystone功能介绍" class="headerlink" title="2.3.1 Keystone功能介绍"></a>2.3.1 Keystone功能介绍</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1、认证管理：
+	账户密码
+2、授权管理
+3、服务目录：
+	跟电话本一样，keystone上可以查询到glance、nova等服务的地址端口等信息，每一个新加的服务都需要在keystone上注册<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-3-2-OpenStack服务器安装的通用步骤"><a href="#2-3-2-OpenStack服务器安装的通用步骤" class="headerlink" title="2.3.2 OpenStack服务器安装的通用步骤"></a>2.3.2 OpenStack服务器安装的通用步骤</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1、创库授权
+2、在Keystone创建用户，关联角色
+3、在keystone创建服务，注册api
+4、安装服务相关的软件包
+5、修改配置
+	数据库的连接
+	keystone认证授权信息
+	rabbitmq连接信息
+	其他配置
+6、同步数据库，创建表
+7、启动服务<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-3-3-安装步骤"><a href="#2-3-3-安装步骤" class="headerlink" title="2.3.3 安装步骤"></a>2.3.3 安装步骤</h4><p>1、创库授权</p>
+<pre class="line-numbers language-mysql" data-language="mysql"><code class="language-mysql"># 登录mysql
+$ mysql -u root -p
+# 创建keystone数据库
+CREATE DATABASE keystone;
+# 对&#96;&#96;keystone&#96;&#96;数据库授予恰当的权限
+GRANT ALL PRIVILEGES ON keystone.* TO &#39;keystone&#39;@&#39;localhost&#39; \
+  IDENTIFIED BY &#39;KEYSTONE_DBPASS&#39;;
+GRANT ALL PRIVILEGES ON keystone.* TO &#39;keystone&#39;@&#39;%&#39; \
+  IDENTIFIED BY &#39;KEYSTONE_DBPASS&#39;;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>2、安装keystone相关软件包</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum install openstack-keystone httpd mod_wsgi -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>3、修改配置文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 备份原配置文件
+\cp &#x2F;etc&#x2F;keystone&#x2F;keystone.conf&#123;,.bak&#125;
+# 去除配置文件中的空格行和注释行
+grep -Ev &#39;^$|#&#39; &#x2F;etc&#x2F;keystone&#x2F;keystone.conf.bak &gt; &#x2F;etc&#x2F;keystone&#x2F;keystone.conf
+
+# 安装自动配置工具
+yum install openstack-utils -y
+# 使用工具设置（也可以直接修改文件）修改项 参数 &#x3D; 值
+openstack-config --set &#x2F;etc&#x2F;keystone&#x2F;keystone.conf DEFAULT admin_token ADMIN_TOKEN
+openstack-config --set &#x2F;etc&#x2F;keystone&#x2F;keystone.conf database connection  mysql+pymysql:&#x2F;&#x2F;keystone:KEYSTONE_DBPASS@controller&#x2F;keystone # 注意hostname--controller
+openstack-config --set &#x2F;etc&#x2F;keystone&#x2F;keystone.conf token provider fernet
+# 校验
+md5sum &#x2F;etc&#x2F;keystone&#x2F;keystone.conf
+d5acb3db852fe3f247f4f872b051b7a9 
+
+# 同步数据库
+su -s &#x2F;bin&#x2F;sh -c &quot;keystone-manage db_sync&quot; keystone
+# 查询是否生成表
+mysql keystone -e &quot;show tables;&quot;
+
+# 初始化fernet
+keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
+# 验证
+&#x2F;etc&#x2F;keystone&#x2F;fernet-keys已创建
+
+# 配置httpd
+echo &quot;ServerName controller&quot; &gt;&gt; &#x2F;etc&#x2F;httpd&#x2F;conf&#x2F;httpd.conf
+
+# 创建wsgi配置文件
+vim &#x2F;etc&#x2F;httpd&#x2F;conf.d&#x2F;wsgi-keystone.conf
+###内容
+Listen 5000
+Listen 35357
+
+&lt;VirtualHost *:5000&gt;
+    WSGIDaemonProcess keystone-public processes&#x3D;5 threads&#x3D;1 user&#x3D;keystone group&#x3D;keystone display-name&#x3D;%&#123;GROUP&#125;
+    WSGIProcessGroup keystone-public
+    WSGIScriptAlias &#x2F; &#x2F;usr&#x2F;bin&#x2F;keystone-wsgi-public
+    WSGIApplicationGroup %&#123;GLOBAL&#125;
+    WSGIPassAuthorization On
+    ErrorLogFormat &quot;%&#123;cu&#125;t %M&quot;
+    ErrorLog &#x2F;var&#x2F;log&#x2F;httpd&#x2F;keystone-error.log
+    CustomLog &#x2F;var&#x2F;log&#x2F;httpd&#x2F;keystone-access.log combined
+
+    &lt;Directory &#x2F;usr&#x2F;bin&gt;
+        Require all granted
+    &lt;&#x2F;Directory&gt;
+&lt;&#x2F;VirtualHost&gt;
+
+&lt;VirtualHost *:35357&gt;
+    WSGIDaemonProcess keystone-admin processes&#x3D;5 threads&#x3D;1 user&#x3D;keystone group&#x3D;keystone display-name&#x3D;%&#123;GROUP&#125;
+    WSGIProcessGroup keystone-admin
+    WSGIScriptAlias &#x2F; &#x2F;usr&#x2F;bin&#x2F;keystone-wsgi-admin
+    WSGIApplicationGroup %&#123;GLOBAL&#125;
+    WSGIPassAuthorization On
+    ErrorLogFormat &quot;%&#123;cu&#125;t %M&quot;
+    ErrorLog &#x2F;var&#x2F;log&#x2F;httpd&#x2F;keystone-error.log
+    CustomLog &#x2F;var&#x2F;log&#x2F;httpd&#x2F;keystone-access.log combined
+
+    &lt;Directory &#x2F;usr&#x2F;bin&gt;
+        Require all granted
+    &lt;&#x2F;Directory&gt;
+&lt;&#x2F;VirtualHost&gt;
+# 校验
+md5sum &#x2F;etc&#x2F;httpd&#x2F;conf.d&#x2F;wsgi-keystone.conf
+8f051eb53577f67356ed03e4550315c2 
+
+# 启动httpd
+systemctl enable httpd
+systemctl start httpd
+
+# 创建服务和注册api
+export OS_TOKEN&#x3D;ADMIN_TOKEN
+export OS_URL&#x3D;http:&#x2F;&#x2F;controller:35357&#x2F;v3
+export OS_IDENTITY_API_VERSION&#x3D;3
+openstack service create --name keystone --description &quot;OpenStack Identity&quot; identity
+openstack endpoint create --region RegionOne identity public http:&#x2F;&#x2F;controller:5000&#x2F;v3
+openstack endpoint create --region RegionOne identity internal http:&#x2F;&#x2F;controller:5000&#x2F;v3
+openstack endpoint create --region RegionOne identity admin http:&#x2F;&#x2F;controller:35357&#x2F;v3
+
+# 创建域、项目（租户）、用户和角色
+openstack domain create --description &quot;Default Domain&quot; default
+openstack project create --domain default --description &quot;Admin Project&quot; admin
+openstack user create --domain default --password ADMIN_PASS admin
+openstack role create admin
+
+# 关联项目，用户，角色
+openstack role add --project admin --user admin admin
+# 在admin项目上，给admin用户赋予admin角色
+openstack project create --domain default --description &quot;Service Project&quot; service
+
+# 创建环境变量脚本
+export OS_PROJECT_DOMAIN_NAME&#x3D;default
+export OS_USER_DOMAIN_NAME&#x3D;default
+export OS_PROJECT_NAME&#x3D;admin
+export OS_USERNAME&#x3D;admin
+export OS_PASSWORD&#x3D;ADMIN_PASS
+export OS_IMAGE_API_VERSION&#x3D;2
+export OS_IDENTITY_API_VERSION&#x3D;3
+export OS_AUTH_URL&#x3D;http:&#x2F;&#x2F;controller:35357&#x2F;v3
+
+# 作为admin用户请求认证令牌
+openstack token issue  
+
+# 如果不设置环境变量可以通过传入参数的方式申请
+openstack --os-auth-url http:&#x2F;&#x2F;controller:35357&#x2F;v3   --os-project-domain-name default --os-user-domain-name default   --os-project-name admin --os-username admin --os-password ADMIN_PASS token issue
+
+# 查看用户列表
+openstack user list
+
+# 查看endpoint列表
+openstack endpoint list<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-4-安装glance镜像服务"><a href="#2-4-安装glance镜像服务" class="headerlink" title="2.4 安装glance镜像服务"></a>2.4 安装glance镜像服务</h3><p>​	镜像服务 (glance) 允许用户发现、注册和获取虚拟机镜像。</p>
+<h4 id="2-4-1-安装步骤"><a href="#2-4-1-安装步骤" class="headerlink" title="2.4.1 安装步骤"></a>2.4.1 安装步骤</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 数据库创库授权
+mysql &gt;&gt;
+CREATE DATABASE glance
+GRANT ALL PRIVILEGES ON glance.* TO &#39;glance&#39;@&#39;localhost&#39; \
+  IDENTIFIED BY &#39;GLANCE_DBPASS&#39;;
+GRANT ALL PRIVILEGES ON glance.* TO &#39;glance&#39;@&#39;%&#39; \
+  IDENTIFIED BY &#39;GLANCE_DBPASS&#39;;
+  
+ # 在keystone创建glance用户关联角色
+ openstack user create --domain default --password GLANCE_PASS glance
+ openstack role add --project service --user glance admin
+ 
+ # 在keystone上创建服务和注册api
+openstack service create --name glance   --description &quot;OpenStack Image&quot; image
+openstack endpoint create --region RegionOne \
+  image public http:&#x2F;&#x2F;controller:9292
+openstack endpoint create --region RegionOne \
+  image internal http:&#x2F;&#x2F;controller:9292
+openstack endpoint create --region RegionOne \
+  image admin http:&#x2F;&#x2F;controller:9292
+  
+# 查看已创建的信息
+openstack role assignment list
+openstack role list
+openstack project list
+openstack user list （要有glance用户）
+
+# mysql中验证表是否已创建
+[root@controller ~]# mysql keystone -e &quot;show tables;&quot; | grep user
+federated_user
+local_user
+user
+user_group_membership
+[root@controller ~]# mysql keystone -e &quot;show tables;&quot; | grep project
+project
+project_endpoint
+project_endpoint_group
+
+# 安装服务相应软件包
+yum install openstack-glance -y
+
+# 修改相应的配置文件--api
+cp &#x2F;etc&#x2F;glance&#x2F;glance-api.conf&#123;,.bak&#125;
+grep &#39;^[a-Z\[]&#39; &#x2F;etc&#x2F;glance&#x2F;glance-api.conf.bak &gt; &#x2F;etc&#x2F;glance&#x2F;glance-api.conf
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf database connection mysql+pymysql:&#x2F;&#x2F;glance:GLANCE_DBPASS@controller&#x2F;glance
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken auth_uri http:&#x2F;&#x2F;controller:5000
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken auth_url http:&#x2F;&#x2F;controller:35357
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken memcached_servers controller:11211
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken auth_type password
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken project_domain_name default
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken user_domain_name default
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken project_name service
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken username glance
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken password GLANCE_PASS
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf paste_deploy flavor keystone
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf glance_store stores file,http
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf glance_store default_store file
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf glance_store filesystem_store_datadir &#x2F;var&#x2F;lib&#x2F;glance&#x2F;images&#x2F;
+
+# 修改相应的配置文件--registry
+cp &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf&#123;,.bak&#125;
+grep &#39;^[a-Z\[]&#39; &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf.bak &gt; &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf database connection mysql+pymysql:&#x2F;&#x2F;glance:GLANCE_DBPASS@controller&#x2F;glance
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken auth_uri http:&#x2F;&#x2F;controller:5000
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken auth_url http:&#x2F;&#x2F;controller:35357
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken memcached_servers controller:11211
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken auth_type password
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken project_domain_name default
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken user_domain_name default
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken project_name service
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken username glance
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken password GLANCE_PASS
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf paste_deploy flavor keystone
+
+# md5值验证
+md5sum &#x2F;etc&#x2F;glance&#x2F;glance-api.conf
+3e1a4234c133eda11b413788e001cba3  &#x2F;etc&#x2F;glance&#x2F;glance-api.conf
+md5sum &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf
+46acabd81a65b924256f56fe34d90b8f  &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf
+
+# 写入镜像服务数据库
+su -s &#x2F;bin&#x2F;sh -c &quot;glance-manage db_sync&quot; glance # 会有Warning不用在意
+# 验证
+mysql glance -e &quot;show tables;&quot;
+
+# 启动服务
+systemctl enable openstack-glance-api.service   openstack-glance-registry.service
+systemctl start openstack-glance-api.service   openstack-glance-registry.service<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-4-2-上传镜像测试"><a href="#2-4-2-上传镜像测试" class="headerlink" title="2.4.2 上传镜像测试"></a>2.4.2 上传镜像测试</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 错误日志查看
+&#x2F;var&#x2F;log&#x2F;glance
+
+# 确保已获取token令牌
+openstack token issue
+
+# 下载测试镜像
+wget http:&#x2F;&#x2F;download.cirros-cloud.net&#x2F;0.3.4&#x2F;cirros-0.3.4-x86_64-disk.img
+
+# 上传测试镜像
+openstack image create &quot;cirros&quot; \
+--file cirros-0.3.4-x86_64-disk.img \
+--disk-format qcow2 --container-format bare \
+--public
+
+# 上传文件确认
+ls &#x2F;var&#x2F;lib&#x2F;glance&#x2F;images&#x2F; (在&#x2F;etc&#x2F;glance&#x2F;glance-api.conf中设置)
+mysql glance -e &quot;show tables;&quot; | grep image<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-5-安装nova计算服务"><a href="#2-5-安装nova计算服务" class="headerlink" title="2.5 安装nova计算服务"></a>2.5 安装nova计算服务</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">nova-api -- 接受并相应所有的计算服务请求，管理云主机生命周期
+nova-compute（多个）-- 真正管理虚拟机(nova-compute调用libvirt)
+nova-scheduler -- nova 调度器（挑选最合适的nova-compute）
+nova-conductor -- 帮助nova-compute连接数据库
+nova-network --  早期版本管理虚拟机的网络（已弃用，改用neutron，留着为了方便兼容早期版本）
+nova-consoleauth和nova-novncproxy -- web版的vnc来直接操作云主机
+novnproxy -- web版vnc客户端
+nova-api-metadata -- 接受来自虚拟机发送的元数据请求（配合neutron-metadata-agent实现虚拟机定制化）<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-5-1-控制节点–安装步骤"><a href="#2-5-1-控制节点–安装步骤" class="headerlink" title="2.5.1 控制节点–安装步骤"></a>2.5.1 控制节点–安装步骤</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 创库授权
+mysql &gt;&gt;
+CREATE DATABASE nova_api;
+CREATE DATABASE nova;
+GRANT ALL PRIVILEGES ON nova_api.* TO &#39;nova&#39;@&#39;localhost&#39; \
+  IDENTIFIED BY &#39;NOVA_DBPASS&#39;;
+GRANT ALL PRIVILEGES ON nova_api.* TO &#39;nova&#39;@&#39;%&#39; \
+  IDENTIFIED BY &#39;NOVA_DBPASS&#39;;
+GRANT ALL PRIVILEGES ON nova.* TO &#39;nova&#39;@&#39;localhost&#39; \
+  IDENTIFIED BY &#39;NOVA_DBPASS&#39;;
+GRANT ALL PRIVILEGES ON nova.* TO &#39;nova&#39;@&#39;%&#39; \
+  IDENTIFIED BY &#39;NOVA_DBPASS&#39;;
+  
+# 在keystone创建用户nova
+openstack user create --domain default   --password NOVA_PASS nova
+# 给Nova用户添加admin角色
+openstack role add --project service --user nova admin
+
+# 在keystone上创建服务和注册api
+openstack service create --name nova   --description &quot;OpenStack Compute&quot; compute
+openstack endpoint create --region RegionOne   compute public http:&#x2F;&#x2F;controller:8774&#x2F;v2.1&#x2F;%\(tenant_id\)s
+openstack endpoint create --region RegionOne   compute internal http:&#x2F;&#x2F;controller:8774&#x2F;v2.1&#x2F;%\(tenant_id\)s
+openstack endpoint create --region RegionOne   compute admin http:&#x2F;&#x2F;controller:8774&#x2F;v2.1&#x2F;%\(tenant_id\)s
+
+# 安装相应软件包
+yum install -y openstack-nova-api openstack-nova-conductor \
+  openstack-nova-console openstack-nova-novncproxy \
+  openstack-nova-scheduler
+  
+# 修改配置文件
+cp &#x2F;etc&#x2F;nova&#x2F;nova.conf&#123;,.bak&#125;
+grep -Ev &#39;^$|#&#39; &#x2F;etc&#x2F;nova&#x2F;nova.conf.bak &gt; &#x2F;etc&#x2F;nova&#x2F;nova.conf
+
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT enabled_apis osapi_compute,metadata
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT rpc_backend rabbit
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT auth_strategy keystone
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT my_ip 10.0.0.11
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT use_neutron True
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT firewall_driver nova.virt.firewall.NoopFirewallDriver
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf api_database connection mysql+pymysql:&#x2F;&#x2F;nova:NOVA_DBPASS@controller&#x2F;nova_api
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf database connection mysql+pymysql:&#x2F;&#x2F;nova:NOVA_DBPASS@controller&#x2F;nova
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf glance api_servers http:&#x2F;&#x2F;controller:9292
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken auth_uri http:&#x2F;&#x2F;controller:5000
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken auth_url http:&#x2F;&#x2F;controller:35357
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken memcached_servers controller:11211
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken auth_type password
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken project_domain_name default
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken user_domain_name default
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken project_name service
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken username nova
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken password NOVA_PASS
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_concurrency lock_path &#x2F;var&#x2F;lib&#x2F;nova&#x2F;tmp
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_messaging_rabbit rabbit_host controller
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_messaging_rabbit rabbit_userid openstack
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_messaging_rabbit rabbit_password RABBIT_PASS
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf vnc vncserver_listen &#39;$my_ip&#39;
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf vnc vncserver_proxyclient_address &#39;$my_ip&#39;
+
+# 校验
+md5sum &#x2F;etc&#x2F;nova&#x2F;nova.conf
+47ded61fdd1a79ab91bdb37ce59ef192  &#x2F;etc&#x2F;nova&#x2F;nova.conf
+
+# 同步数据库
+su -s &#x2F;bin&#x2F;sh -c &quot;nova-manage api_db sync&quot; nova
+su -s &#x2F;bin&#x2F;sh -c &quot;nova-manage db sync&quot; nova
+
+# 验证
+mysql nova_api -e &quot;show tables;&quot;
+mysql nova -e &quot;show tables;&quot;
+
+# 启动服务
+systemctl enable openstack-nova-api.service \
+openstack-nova-consoleauth.service openstack-nova-scheduler.service \
+openstack-nova-conductor.service openstack-nova-novncproxy.service
+systemctl restart openstack-nova-api.service \
+openstack-nova-consoleauth.service openstack-nova-scheduler.service \
+openstack-nova-conductor.service openstack-nova-novncproxy.service
+
+# 验证
+[root@controller ~]# nova service-list
++----+------------------+------------+----------+---------+-------+------------+-----------------+
+| Id | Binary           | Host       | Zone     | Status  | State | Updated_at | Disabled Reason |
++----+------------------+------------+----------+---------+-------+------------+-----------------+
+| 1  | nova-conductor   | controller | internal | enabled | down  | -          | -               |
+| 4  | nova-scheduler   | controller | internal | enabled | down  | -          | -               |
+| 5  | nova-consoleauth | controller | internal | enabled | down  | -          | -               |
++----+------------------+------------+----------+---------+-------+------------+-----------------+
+
+# novncproxy 怎么检测起来没有？
+[root@controller ~]# netstat -lntup | grep 6080
+tcp        0      0 0.0.0.0:6080            0.0.0.0:*               LISTEN      8719&#x2F;python2
+[root@controller ~]# ps -ef | grep 8719
+nova       8719      1  0 21:53 ?        00:00:01 &#x2F;usr&#x2F;bin&#x2F;python2 &#x2F;usr&#x2F;bin&#x2F;nova-novncproxy --web &#x2F;usr&#x2F;share&#x2F;novnc&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-5-1-计算节点–安装步骤"><a href="#2-5-1-计算节点–安装步骤" class="headerlink" title="2.5.1 计算节点–安装步骤"></a>2.5.1 计算节点–安装步骤</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 安装软件包
+yum install -y openstack-nova-compute openstack-utils
+
+# 修改配置文件
+cp &#x2F;etc&#x2F;nova&#x2F;nova.conf&#123;,.bak&#125;
+grep -Ev &#39;^$|#&#39; &#x2F;etc&#x2F;nova&#x2F;nova.conf.bak &gt; &#x2F;etc&#x2F;nova&#x2F;nova.conf
+
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT enabled_apis osapi_compute,metadata
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT rpc_backend rabbit
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT auth_strategy keystone
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT my_ip 10.0.0.31 # 注意ip
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT use_neutron True
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT firewall_driver nova.virt.firewall.NoopFirewallDriver
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf glance api_servers http:&#x2F;&#x2F;controller:9292
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken auth_uri http:&#x2F;&#x2F;controller:5000
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken auth_url http:&#x2F;&#x2F;controller:35357
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken memcached_servers controller:11211
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken auth_type password
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken project_domain_name default
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken user_domain_name default
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken project_name service
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken username nova
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken password NOVA_PASS
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_concurrency lock_path &#x2F;var&#x2F;lib&#x2F;nova&#x2F;tmp
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_messaging_rabbit rabbit_host controller
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_messaging_rabbit rabbit_userid openstack
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_messaging_rabbit rabbit_password RABBIT_PASS
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf vnc enabled  True
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf vnc vncserver_listen 0.0.0.0
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf vnc vncserver_proxyclient_address &#39;$my_ip&#39;
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf vnc novncproxy_base_url http:&#x2F;&#x2F;controller:6080&#x2F;vnc_auto.html
+
+# 校验
+md5sum &#x2F;etc&#x2F;nova&#x2F;nova.conf
+45cab6030a9ab82761e9f697d6d79e14  &#x2F;etc&#x2F;nova&#x2F;nova.conf
+
+# 启动服务
+systemctl enable libvirtd.service openstack-nova-compute.service
+systemctl restart libvirtd.service openstack-nova-compute.service
+
+# 服务启动错误排查
+参考博客：https:&#x2F;&#x2F;www.codeleading.com&#x2F;article&#x2F;89785382846&#x2F;
+cat &#x2F;etc&#x2F;nova&#x2F;nova.conf # compute1日志查看
+报错 nova AccessRefused: (0, 0): (403) ACCESS_REFUSED
+处理步骤：
+在controller
+cat &#x2F;var&#x2F;log&#x2F;rabbitmq&#x2F;rabbit@controller.log # 发现报错AMQPLAIN login refused: user &#39;openstack&#39; - invalid credentials 无效凭证
+rabbitmqctl list_users # 确认是否还有openstack用户
+rabbitmqctl add_user openstack RABBIT_PASS
+rabbitmqctl set_permissions openstack &quot;.*&quot; &quot;.*&quot; &quot;.*&quot;
+systemctl restart rabbitmq-server.service # 重新创用户，并重启服务<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-6-安装neutron网络服务"><a href="#2-6-安装neutron网络服务" class="headerlink" title="2.6 安装neutron网络服务"></a>2.6 安装neutron网络服务</h3><p>neutron-server – 端口9696，api接受和响应外部的网络管理请求</p>
+<p>neutron-linuxbridge-agent –  负责创建桥接网卡</p>
+<p>neutron-dhcp-agent – 负责分配ip</p>
+<p>neutron-metadata-agent –  配合nova-metadata-api实现虚拟机的定制化操作</p>
+<p>L3-agent – 实现三层网络vxlan（网络层）</p>
+<h4 id="2-6-1-控制节点–安装步骤"><a href="#2-6-1-控制节点–安装步骤" class="headerlink" title="2.6.1 控制节点–安装步骤"></a>2.6.1 控制节点–安装步骤</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 创库授权
+Mysql &gt;&gt;
+CREATE DATABASE neutron;
+GRANT ALL PRIVILEGES ON neutron.* TO &#39;neutron&#39;@&#39;localhost&#39; \
+  IDENTIFIED BY &#39;NEUTRON_DBPASS&#39;;
+GRANT ALL PRIVILEGES ON neutron.* TO &#39;neutron&#39;@&#39;%&#39; \
+  IDENTIFIED BY &#39;NEUTRON_DBPASS&#39;;
+  
+# 在keystone创建用户neutron
+openstack user create --domain default   --password NEUTRON_PASS neutron
+# 给neutron用户添加admin角色
+openstack role add --project service --user neutron admin
+
+# 在keystone上创建服务和注册api
+openstack service create --name neutron   --description &quot;OpenStack Networking&quot; network
+openstack endpoint create --region RegionOne   network public http:&#x2F;&#x2F;controller:9696
+openstack endpoint create --region RegionOne   network internal http:&#x2F;&#x2F;controller:9696
+openstack endpoint create --region RegionOne   network admin http:&#x2F;&#x2F;controller:9696
+
+# 网络配置--公共网络
+cp &#x2F;etc&#x2F;neutron&#x2F;neutron.conf&#123;,.bak&#125;
+grep -Ev &quot;^$|#&quot; &#x2F;etc&#x2F;neutron&#x2F;neutron.conf.bak  &gt; &#x2F;etc&#x2F;neutron&#x2F;neutron.conf
+&gt;&gt;&gt;&gt;&gt;
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf database connection mysql+pymysql:&#x2F;&#x2F;neutron:NEUTRON_DBPASS@controller&#x2F;neutron
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT core_plugin ml2
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT service_plugins
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT rpc_backend rabbit
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT auth_strategy keystone
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT notify_nova_on_port_status_changes True
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT notify_nova_on_port_data_changes True
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_messaging_rabbit rabbit_host controller
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_messaging_rabbit rabbit_userid openstack
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_messaging_rabbit rabbit_password RABBIT_PASS
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken auth_uri http:&#x2F;&#x2F;controller:5000
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken auth_url http:&#x2F;&#x2F;controller:35357
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken memcached_servers controller:11211
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken auth_type password
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken project_domain_name default
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken user_domain_name default
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken project_name service
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken username neutron
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken password NEUTRON_PASS
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova auth_url http:&#x2F;&#x2F;controller:35357
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova auth_type password
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova project_domain_name default
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova user_domain_name default
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova region_name RegionOne
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova project_name service
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova username nova
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova password NOVA_PASS
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_concurrency lock_path &#x2F;var&#x2F;lib&#x2F;neutron&#x2F;tmp
+&gt;&gt;&gt;&gt;&gt;
+
+cp &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini&#123;,.bak&#125;
+grep -Ev &quot;^$|#&quot; &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini.bak &gt; &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini
+&gt;&gt;&gt;&gt;&gt;
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini ml2 type_drivers flat,vlan
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini ml2 tenant_network_types
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini ml2 mechanism_drivers linuxbridge
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini ml2 extension_drivers port_security
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini ml2_type_flat flat_networks provider
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini securitygroup enable_ipset True
+&gt;&gt;&gt;&gt;&gt;
+
+cp &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini&#123;,.bak&#125;
+grep -Ev &quot;^$|#&quot; &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini.bak &gt; &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini
+&gt;&gt;&gt;&gt;&gt;
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini linux_bridge physical_interface_mappings provider:ens33  # 要修改网络接口名
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini vxlan enable_vxlan False
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini securitygroup enable_security_group True
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini securitygroup firewall_driver neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
+&gt;&gt;&gt;&gt;&gt;
+
+cp &#x2F;etc&#x2F;neutron&#x2F;dhcp_agent.ini&#123;,.bak&#125;
+grep -Ev &quot;^$|#&quot; &#x2F;etc&#x2F;neutron&#x2F;dhcp_agent.ini.bak &gt; &#x2F;etc&#x2F;neutron&#x2F;dhcp_agent.ini
+&gt;&gt;&gt;&gt;&gt;
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;dhcp_agent.ini DEFAULT interface_driver neutron.agent.linux.interface.BridgeInterfaceDriver
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;dhcp_agent.ini DEFAULT  dhcp_driver neutron.agent.linux.dhcp.Dnsmasq
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;dhcp_agent.ini DEFAULT  enable_isolated_metadata True
+&gt;&gt;&gt;&gt;&gt;
+
+cp &#x2F;etc&#x2F;neutron&#x2F;metadata_agent.ini&#123;,.bak&#125;
+grep -Ev &quot;^$|#&quot; &#x2F;etc&#x2F;neutron&#x2F;metadata_agent.ini.bak &gt; &#x2F;etc&#x2F;neutron&#x2F;metadata_agent.ini
+&gt;&gt;&gt;&gt;&gt;
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;metadata_agent.ini DEFAULT nova_metadata_ip controller
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;metadata_agent.ini DEFAULT metadata_proxy_shared_secret METADATA_SECRET
+&gt;&gt;&gt;&gt;&gt;
+
+# 再次修改nova配置文件，添加neutron服务
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron url http:&#x2F;&#x2F;controller:9696
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron auth_url http:&#x2F;&#x2F;controller:35357
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron auth_type password
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron project_domain_name default
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron user_domain_name default
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron region_name RegionOne
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron project_name service
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron username neutron
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron password NEUTRON_PASS
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron service_metadata_proxy True
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron metadata_proxy_shared_secret METADATA_SECRET
+# 校验文件
+[root@controller ~]# md5sum &#x2F;etc&#x2F;nova&#x2F;nova.conf
+6334f359655efdbcf083b812ab94efc1  &#x2F;etc&#x2F;nova&#x2F;nova.conf
+
+# 网络服务初始化脚本需要一个超链接
+ln -s &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini &#x2F;etc&#x2F;neutron&#x2F;plugin.ini
+
+# 同步数据库
+su -s &#x2F;bin&#x2F;sh -c &quot;neutron-db-manage --config-file &#x2F;etc&#x2F;neutron&#x2F;neutron.conf \
+  --config-file &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini upgrade head&quot; neutron
+  
+# 检查数据库
+mysql neutron -e &quot;show tables;&quot;
+
+# 重启Nova服务
+systemctl restart openstack-nova-api.service
+
+# 启动Neutron服务
+systemctl enable neutron-server.service   neutron-linuxbridge-agent.service neutron-dhcp-agent.service   neutron-metadata-agent.service
+systemctl start neutron-server.service   neutron-linuxbridge-agent.service neutron-dhcp-agent.service   neutron-metadata-agent.service
+
+# 查看服务有没有起来
+neutron agent-list
++--------------------------------------+--------------------+------------+-------------------+-------+----------------+---------------------------+
+| id                                   | agent_type         | host       | availability_zone | alive | admin_state_up | binary                    |
++--------------------------------------+--------------------+------------+-------------------+-------+----------------+---------------------------+
+| 0d68dc27-f2b8-4cae-9c30-cddd126076b4 | Linux bridge agent | controller |                   | :-)   | True           | neutron-linuxbridge-agent |
+| 688cc47d-424d-4243-ae2b-b1c4b298a2a8 | Metadata agent     | controller |                   | :-)   | True           | neutron-metadata-agent    |
+| c4c5e360-ee02-4b9b-a1a5-59a0d0d088b0 | DHCP agent         | controller | nova              | :-)   | True           | neutron-dhcp-agent        |
++--------------------------------------+--------------------+------------+-------------------+-------+----------------+---------------------------+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-6-2-计算节点–安装步骤"><a href="#2-6-2-计算节点–安装步骤" class="headerlink" title="2.6.2 计算节点–安装步骤"></a>2.6.2 计算节点–安装步骤</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 安装组件
+yum install -y openstack-neutron-linuxbridge ebtables ipset
+
+# 网络配置--公共网络
+cp &#x2F;etc&#x2F;neutron&#x2F;neutron.conf&#123;,.bak&#125;
+grep -Ev &quot;^$|#&quot; &#x2F;etc&#x2F;neutron&#x2F;neutron.conf.bak  &gt; &#x2F;etc&#x2F;neutron&#x2F;neutron.conf
+&gt;&gt;&gt;&gt;&gt;&gt;
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT rpc_backend rabbit
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT auth_strategy keystone
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_messaging_rabbit rabbit_host controller
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_messaging_rabbit rabbit_userid openstack
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_messaging_rabbit rabbit_password RABBIT_PASS
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken auth_uri http:&#x2F;&#x2F;controller:5000
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken auth_url http:&#x2F;&#x2F;controller:35357
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken memcached_servers controller:11211
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken auth_type password
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken project_domain_name default
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken user_domain_name default
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken project_name service
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken username neutron
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken password NEUTRON_PASS
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_concurrency lock_path &#x2F;var&#x2F;lib&#x2F;neutron&#x2F;tmp
+&gt;&gt;&gt;&gt;&gt;&gt;
+# md5校验
+md5sum &#x2F;etc&#x2F;nova&#x2F;nova.conf
+328cd5f0745e26a420e828b0dfc2934e  &#x2F;etc&#x2F;nova&#x2F;nova.conf
+
+cp &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini&#123;,.bak&#125;
+grep -Ev &quot;^$|#&quot; &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini.bak &gt; &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini
+&gt;&gt;&gt;&gt;&gt;&gt;
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini linux_bridge physical_interface_mappings provider:ens33  # 要修改网络接口名
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini vxlan enable_vxlan False
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini securitygroup enable_security_group True
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini securitygroup firewall_driver neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
+&gt;&gt;&gt;&gt;&gt;&gt;
+
+# 再次修改nova配置文件，添加neutron配置
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron url http:&#x2F;&#x2F;controller:9696
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron auth_url http:&#x2F;&#x2F;controller:35357
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron auth_type password
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron project_domain_name default
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron user_domain_name default
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron region_name RegionOne
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron project_name service
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron username neutron
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron password NEUTRON_PASS
+
+# 重启nova服务
+systemctl restart openstack-nova-compute.service
+
+# 启动linuxbridge代理服务
+systemctl enable neutron-linuxbridge-agent.service
+systemctl restart neutron-linuxbridge-agent.service
+
+# 查看是否配置成功
+controller执行 &gt;&gt; neutron agent-list
+配置正确会多出来一个
+Linux bridge agent | compute1   |                   | :-)   | True 
+
+# 查看计算资源
+openstack compute service list<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-7-安装horizon-（Dashboard）web界面"><a href="#2-7-安装horizon-（Dashboard）web界面" class="headerlink" title="2.7 安装horizon （Dashboard）web界面"></a>2.7 安装horizon （Dashboard）web界面</h3><h4 id="2-7-1-安装步骤（控制节点"><a href="#2-7-1-安装步骤（控制节点" class="headerlink" title="2.7.1 安装步骤（控制节点)"></a>2.7.1 安装步骤（控制节点)</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 安装组件包
+yum install -y openstack-dashboard
+
+# 修改配置文件
+vim &#x2F;etc&#x2F;openstack-dashboard&#x2F;local_settings
+&gt;&gt;&gt;&gt;
+OPENSTACK_HOST &#x3D; &quot;controller&quot;
+ALLOWED_HOSTS &#x3D; [&#39;*&#39;, ]
+SESSION_ENGINE &#x3D; &#39;django.contrib.sessions.backends.cache&#39;
+CACHES &#x3D; &#123;
+    &#39;default&#39;: &#123;
+         &#39;BACKEND&#39;: &#39;django.core.cache.backends.memcached.MemcachedCache&#39;,
+         &#39;LOCATION&#39;: &#39;controller:11211&#39;,
+    &#125;
+&#125;
+OPENSTACK_KEYSTONE_URL &#x3D; &quot;http:&#x2F;&#x2F;%s:5000&#x2F;v3&quot; % OPENSTACK_HOST
+OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT &#x3D; True
+OPENSTACK_API_VERSIONS &#x3D; &#123;
+    &quot;identity&quot;: 3,
+    &quot;image&quot;: 2,
+    &quot;volume&quot;: 2,
+&#125;
+OPENSTACK_KEYSTONE_DEFAULT_DOMAIN &#x3D; &quot;default&quot;
+OPENSTACK_KEYSTONE_DEFAULT_ROLE &#x3D; &quot;user&quot;
+OPENSTACK_NEUTRON_NETWORK &#x3D; &#123;
+    ...
+    &#39;enable_router&#39;: False,
+    &#39;enable_quotas&#39;: False,
+    &#39;enable_distributed_router&#39;: False,
+    &#39;enable_ha_router&#39;: False,
+    &#39;enable_lb&#39;: False,
+    &#39;enable_firewall&#39;: False,
+    &#39;enable_vpn&#39;: False,
+    &#39;enable_fip_topology_check&#39;: False,
+&#125;
+TIME_ZONE &#x3D; &quot;Asia&#x2F;Shanghai&quot;
+&gt;&gt;&gt;&gt;
+
+# 解决不能进入页面的BUG
+vim &#x2F;etc&#x2F;httpd&#x2F;conf.d&#x2F;openstack-dashboard.conf
+添加一行 &gt;&gt; WSGIAppicationGroup %&#123;GLOBAL&#125;
+
+# 重启服务
+systemctl restart httpd.service memcached.service
+
+# 登录界面
+https:&#x2F;&#x2F;10.0.0.11&#x2F;dashboard
+域:default
+用户名:admin
+密码:ADMIN_PASS
+
+# 扩展：查看文件输入那个rpm包
+rpm -qf &#x2F;etc&#x2F;openstack-dashboard&#x2F;local_settings<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-7-2-Dashboard报错解决"><a href="#2-7-2-Dashboard报错解决" class="headerlink" title="2.7.2 Dashboard报错解决"></a>2.7.2 Dashboard报错解决</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 问题1--Invalid service catalog service: image
+发生原因：
+	openstack service list 存在两个 glance
+解决方法：
+    openstack service delete c12c125edc2041e3aaf2f250442162c6
+    openstack service delete 6a11431b95bc44d1bd1e9371c0faa16b # 两个glance都删掉
+    重复2.4.1在keystone上创建glance服务和注册api
+    再重启服务systemctl restart httpd.service memcached.service<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-8-启动一个云主机"><a href="#2-8-启动一个云主机" class="headerlink" title="2.8 启动一个云主机"></a>2.8 启动一个云主机</h3><h3 id="2-8-1-创建步骤"><a href="#2-8-1-创建步骤" class="headerlink" title="2.8.1 创建步骤"></a>2.8.1 创建步骤</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 创建网络
+neutron net-create --shared --provider:physical_network provider \
+  --provider:network_type flat gs
+  
+# 在网络中创建一个子网
+neutron subnet-create --name gs2 \
+  --allocation-pool start&#x3D;10.0.0.101,end&#x3D;10.0.0.250 \
+  --dns-nameserver 223.5.5.5 --gateway 10.0.0.2 \
+  gs 10.0.0.0&#x2F;24
+  
+# 创建云主机硬件配置方案（规格）
+openstack flavor create --id 0 --vcpus 1 --ram 64 --disk 1 m1.nano
+
+# 创建密钥键值对
+ssh-keygen -q -N &quot;&quot; -f ~&#x2F;.ssh&#x2F;id_rsa
+openstack keypair create --public-key ~&#x2F;.ssh&#x2F;id_rsa.pub mykey
+# 验证公钥的添加
+openstack keypair list
+
+# 添加安全组规则
+openstack security group rule create --proto icmp default
+openstack security group rule create --proto tcp --dst-port 22 default
+
+# 在公有网络启动一个实例
+openstack flavor list # 查看可用的配置规格
+openstack image list # 查看可用镜像
+openstack network list # 查看可用网络
+openstack security group list # 查看已设置的安全组
+
+openstack server create --flavor 规格名&#x2F;ID --image 镜像名&#x2F;ID \
+  --nic net-id&#x3D;网络ID --security-group default \
+  --key-name mykey 实例名称
+示例：
+openstack server create --flavor m1.tiny --image cirros \
+--nic net-id&#x3D;cb032582-893b-414d-b78d-c89c6548612d --security-group default \
+--key-name mykey my-instance<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-8-2-创建云主机问题解决"><a href="#2-8-2-创建云主机问题解决" class="headerlink" title="2.8.2 创建云主机问题解决"></a>2.8.2 创建云主机问题解决</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 1、启动云主机时，No valid host was found
+【计算节点中】
+查看云主机创建日志：&#x2F;var&#x2F;log&#x2F;nova&#x2F;nova-compute.log，里面有记录问题原因是CPU feature spec-ctrl not found
+修改&#x2F;usr&#x2F;share&#x2F;libvirt&#x2F;cpu_map.xml，将和spec-ctrl相关的特性删除
+然后重启服务
+systemctl restart libvirtd openstack-nova-compute
+参考博客：https:&#x2F;&#x2F;www.cnblogs.com&#x2F;laolieren&#x2F;p&#x2F;solve_openstack_create_instance_error.html
+
+# 2、云主机控制台seabios -- Booting from Hard Disk错误
+【计算节点中】
+vim &#x2F;etc&#x2F;nova&#x2F;nova.conf
+&gt;&gt;&gt;&gt;
+[libvirt]
+virt_type &#x3D; qemu
+cpu_mode &#x3D; none
+&gt;&gt;&gt;&gt;
+systemctl restart libvirtd openstack-nova-compute
+重启云主机<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+
+
+
+
+
+]]></content>
+      <categories>
+        <category>运维</category>
+        <category>（四）虚拟化之OpenStack</category>
+      </categories>
+  </entry>
+  <entry>
     <title>Docker系列(一)-安装Docker</title>
     <url>/2021/06/28/01_%E8%BF%90%E7%BB%B4/03-Docker/Docker%E7%B3%BB%E5%88%97-%E4%B8%80-%E5%AE%89%E8%A3%85Docker/</url>
     <content><![CDATA[<h2 id="一、容器简介"><a href="#一、容器简介" class="headerlink" title="一、容器简介"></a>一、容器简介</h2><blockquote>
@@ -6746,878 +7618,6 @@ kubectl rolling-update myweb -f nginx-rc1.15.yaml --update-period&#x3D;5s<span a
       </categories>
   </entry>
   <entry>
-    <title>OpenStack学习笔记</title>
-    <url>/2022/07/06/01_%E8%BF%90%E7%BB%B4/04-%E8%99%9A%E6%8B%9F%E5%8C%96/OpenStack%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</url>
-    <content><![CDATA[<h1 id="OpenStack笔记"><a href="#OpenStack笔记" class="headerlink" title="OpenStack笔记"></a><strong><font color=green>OpenStack笔记</font></strong></h1><p>​	OpenStack实现的是云计算IAAS</p>
-<h2 id="一、服务架构发展"><a href="#一、服务架构发展" class="headerlink" title="一、服务架构发展"></a><font color=blue>一、服务架构发展</font></h2><h3 id="1-1-MVC架构"><a href="#1-1-MVC架构" class="headerlink" title="1.1 MVC架构"></a>1.1 MVC架构</h3><p>​	业务不拆分，一个服务挂，则所有的全挂</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">首页 www.jd.com&#x2F;index.html
-秒杀 www.jd.com&#x2F;miaosha&#x2F;index.html
-优惠券 www.jd.com&#x2F;juan&#x2F;index.html<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="1-2-SOA架构（千万级）"><a href="#1-2-SOA架构（千万级）" class="headerlink" title="1.2 SOA架构（千万级）"></a>1.2 SOA架构（千万级）</h3><p>​	业务拆分，每一个功能都拆分成一个独立的web服务，每个独立的web服务，都至少拥有一个集群</p>
-<pre class="line-numbers language-she" data-language="she"><code class="language-she">首页 www.jd.com&#x2F;index.html
-秒杀 miaosha.jd.com&#x2F;index.html
-优惠券 juan.jd.com&#x2F;index.html<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="1-3-微服务架构（亿级）"><a href="#1-3-微服务架构（亿级）" class="headerlink" title="1.3 微服务架构（亿级）"></a>1.3 微服务架构（亿级）</h3><p>阿里开源dubbo</p>
-<p>Spring Boot</p>
-<p>自动化代码上线：Jekins + gilab ci</p>
-<p>自动化代码质量检查：sonarqube</p>
-<h2 id="二、搭建OpenStack"><a href="#二、搭建OpenStack" class="headerlink" title="二、搭建OpenStack"></a><font color=blue>二、搭建OpenStack</font></h2><p>​	本流程为手动安装M版，脚本安装可以参考</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">https:&#x2F;&#x2F;my.oschina.net&#x2F;u&#x2F;4367225&#x2F;blog&#x2F;4255750<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>OpenStack的结构介绍：</p>
-<blockquote>
-<p>Nova – 提供VM虚拟化支持 8774</p>
-<p>Glance – 提供镜像 9292</p>
-<p>Clinder – 存储支持 8776</p>
-<p>Neutron – 网络支持 9696</p>
-<p>Cellometer –  监控计费 </p>
-<p>KeyStone – 登录认证</p>
-<p>Horizon – 网页UI，dashboard</p>
-<p>Heat – 部署编排，批量建虚拟机</p>
-<p>Switft – 对象存储（不是传统的文件夹存放，而是用数据库记录已上传的文件信息，当有文件上传，先查询数据库中是否有该文件的md5值，如果有，则不用重新上传，给个链接就是 — 百度云盘）</p>
-</blockquote>
-<p><img src="C:\Users\fr724\AppData\Roaming\Typora\typora-user-images\image-20210615135957367.png" alt="image-20210615135957367"></p>
-<h3 id="2-1-虚拟机准备"><a href="#2-1-虚拟机准备" class="headerlink" title="2.1 虚拟机准备"></a>2.1 虚拟机准备</h3><p>虚拟机规划</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 系统：CentOS7.4
-controller: 内存3G, CPU开启虚拟化	10.0.0.11
-compute1: 内存1G，CPU开启虚拟化	    10.0.0.31
-# 修改主机名，IP地址，host解析，测试ping百度<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>配置本地M版yum源</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 1、资源准备
-mount &#x2F;dev&#x2F;cdrom &#x2F;mnt # 追加到&#x2F;etc&#x2F;rc.local,自动挂载
-解压openstack_rpm.tar.gz到&#x2F;opt&#x2F;repo
-
-# 2、编辑repo文件
-vim &#x2F;etc&#x2F;yum.repo.d&#x2F;local&#x2F;repo
-
-#### 内容
-[local]
-name&#x3D;local
-baseurl&#x3D;file:&#x2F;&#x2F;&#x2F;mnt
-gpgcheck&#x3D;0
-
-[openstack]
-name&#x3D;openstack
-baseurl&#x3D;file:&#x2F;&#x2F;&#x2F;opt&#x2F;repo
-gpgcheck&#x3D;0
-####
-
-# 3、更新yum源
-yum makecache
-yum repolist<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-
-
-<h3 id="2-2-基础服务安装"><a href="#2-2-基础服务安装" class="headerlink" title="2.2 基础服务安装"></a>2.2 基础服务安装</h3><h4 id="2-2-1-NTP时间同步"><a href="#2-2-1-NTP时间同步" class="headerlink" title="2.2.1 NTP时间同步"></a>2.2.1 NTP时间同步</h4><p>controller与阿里NTP服务器同步</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;chrony.conf
-server ntp6.aliyun.com # 3行
-allow 10.0.0.0&#x2F;24 # 24行
-systemctl restart chronyd<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>computer与controller同步</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;chrony.conf
-server 10.0.0.11 iburst # 3行
-systemctl restart chronyd<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<h4 id="2-2-2-扩展-公网安装O版OpenStack的方法介绍（跳过该步骤）"><a href="#2-2-2-扩展-公网安装O版OpenStack的方法介绍（跳过该步骤）" class="headerlink" title="2.2.2 扩展-公网安装O版OpenStack的方法介绍（跳过该步骤）"></a>2.2.2 扩展-公网安装O版OpenStack的方法介绍（跳过该步骤）</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">curl -o &#x2F;etc&#x2F;yum.repos.d&#x2F;CentOS-Base.repo http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;repo&#x2F;Centos-7.repo
-yum makecache
-yum list | grep openstack
-yum install centos-release-openstack-ocata.noarch -y # 安装O版<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h4 id="2-2-3-安装OpenStack客户端openstack-selinux-（所有节点执行）"><a href="#2-2-3-安装OpenStack客户端openstack-selinux-（所有节点执行）" class="headerlink" title="2.2.3 安装OpenStack客户端openstack-selinux （所有节点执行）"></a>2.2.3 安装OpenStack客户端openstack-selinux （所有节点执行）</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum install python-openstackclient openstack-selinux -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<h4 id="2-2-4-安装和配置mariadb-仅控制节点执行"><a href="#2-2-4-安装和配置mariadb-仅控制节点执行" class="headerlink" title="2.2.4 安装和配置mariadb (仅控制节点执行)"></a>2.2.4 安装和配置mariadb (仅控制节点执行)</h4><p>安装</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum install mariadb mariadb-server python2-PyMySQL -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>配置</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;my.cnf.d&#x2F;openstack.cnf
-
-#----------------
-[mysqld]	
-bind-address &#x3D; 10.0.0.11	# 监听地址
-default-storage-engine &#x3D; innodb # 默认存储引擎
-innodb_file_per_table  # 独立表空间文件
-max_connections &#x3D; 4096	# 最大连接数
-collation-server &#x3D; utf8_general_ci	# 默认字符集utf8
-character-set-server &#x3D; utf8
-#-----------------
-
-# 启动服务
-systemctl start mariadb
-systemctl enable mariadb
-
-# 数据库安全初始化,保障数据库安全性，如果不执行，同步数据库表会报错
-mysql_secure_installation
-回车 n y y y y<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h4 id="2-2-5-消息队列配置-仅控制节点执行"><a href="#2-2-5-消息队列配置-仅控制节点执行" class="headerlink" title="2.2.5 消息队列配置(仅控制节点执行)"></a>2.2.5 消息队列配置(仅控制节点执行)</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 安装rabbitmq
-yum install rabbitmq-server -y
-# 启动服务
-systemctl start rabbitmq-server
-systemctl enable rabbitmq-server
-# 添加用户
-rabbitmqctl add_user openstack RABBIT_PASS
-# 设置用户权限（读、写、执行）
-rabbitmqctl set_permissions openstack &quot;.*&quot; &quot;.*&quot; &quot;.*&quot;
-rabbitmq-plugins enable rabbitmq_management
-# 查看是否开启15672端口
-netstat -lntup
-# 浏览器登录rabbitmq
-http:&#x2F;&#x2F;10.0.0.11:15672
-默认用户名和密码：guest<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h4 id="2-2-6-缓存系统配置memcache（仅控制节点执行）"><a href="#2-2-6-缓存系统配置memcache（仅控制节点执行）" class="headerlink" title="2.2.6 缓存系统配置memcache（仅控制节点执行）"></a>2.2.6 缓存系统配置memcache（仅控制节点执行）</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 安装
-yum install memcached python-memched -y
-# 配置
-sed -i &#39;s#127.0.0.1#10.0.0.11#g&#39; &#x2F;etc&#x2F;sysconfig&#x2F;memcached
-# 启动服务
-systemctl restart memcached
-systemctl enable memcached
-# 查询端口11211是否已监听，默认使用该端口<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="2-3-安装keystone认证服务-仅控制节点执行"><a href="#2-3-安装keystone认证服务-仅控制节点执行" class="headerlink" title="2.3 安装keystone认证服务(仅控制节点执行)"></a>2.3 安装keystone认证服务(仅控制节点执行)</h3><h4 id="2-3-1-Keystone功能介绍"><a href="#2-3-1-Keystone功能介绍" class="headerlink" title="2.3.1 Keystone功能介绍"></a>2.3.1 Keystone功能介绍</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1、认证管理：
-	账户密码
-2、授权管理
-3、服务目录：
-	跟电话本一样，keystone上可以查询到glance、nova等服务的地址端口等信息，每一个新加的服务都需要在keystone上注册<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h4 id="2-3-2-OpenStack服务器安装的通用步骤"><a href="#2-3-2-OpenStack服务器安装的通用步骤" class="headerlink" title="2.3.2 OpenStack服务器安装的通用步骤"></a>2.3.2 OpenStack服务器安装的通用步骤</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1、创库授权
-2、在Keystone创建用户，关联角色
-3、在keystone创建服务，注册api
-4、安装服务相关的软件包
-5、修改配置
-	数据库的连接
-	keystone认证授权信息
-	rabbitmq连接信息
-	其他配置
-6、同步数据库，创建表
-7、启动服务<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h4 id="2-3-3-安装步骤"><a href="#2-3-3-安装步骤" class="headerlink" title="2.3.3 安装步骤"></a>2.3.3 安装步骤</h4><p>1、创库授权</p>
-<pre class="line-numbers language-mysql" data-language="mysql"><code class="language-mysql"># 登录mysql
-$ mysql -u root -p
-# 创建keystone数据库
-CREATE DATABASE keystone;
-# 对&#96;&#96;keystone&#96;&#96;数据库授予恰当的权限
-GRANT ALL PRIVILEGES ON keystone.* TO &#39;keystone&#39;@&#39;localhost&#39; \
-  IDENTIFIED BY &#39;KEYSTONE_DBPASS&#39;;
-GRANT ALL PRIVILEGES ON keystone.* TO &#39;keystone&#39;@&#39;%&#39; \
-  IDENTIFIED BY &#39;KEYSTONE_DBPASS&#39;;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>2、安装keystone相关软件包</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum install openstack-keystone httpd mod_wsgi -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>3、修改配置文件</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 备份原配置文件
-\cp &#x2F;etc&#x2F;keystone&#x2F;keystone.conf&#123;,.bak&#125;
-# 去除配置文件中的空格行和注释行
-grep -Ev &#39;^$|#&#39; &#x2F;etc&#x2F;keystone&#x2F;keystone.conf.bak &gt; &#x2F;etc&#x2F;keystone&#x2F;keystone.conf
-
-# 安装自动配置工具
-yum install openstack-utils -y
-# 使用工具设置（也可以直接修改文件）修改项 参数 &#x3D; 值
-openstack-config --set &#x2F;etc&#x2F;keystone&#x2F;keystone.conf DEFAULT admin_token ADMIN_TOKEN
-openstack-config --set &#x2F;etc&#x2F;keystone&#x2F;keystone.conf database connection  mysql+pymysql:&#x2F;&#x2F;keystone:KEYSTONE_DBPASS@controller&#x2F;keystone # 注意hostname--controller
-openstack-config --set &#x2F;etc&#x2F;keystone&#x2F;keystone.conf token provider fernet
-# 校验
-md5sum &#x2F;etc&#x2F;keystone&#x2F;keystone.conf
-d5acb3db852fe3f247f4f872b051b7a9 
-
-# 同步数据库
-su -s &#x2F;bin&#x2F;sh -c &quot;keystone-manage db_sync&quot; keystone
-# 查询是否生成表
-mysql keystone -e &quot;show tables;&quot;
-
-# 初始化fernet
-keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
-# 验证
-&#x2F;etc&#x2F;keystone&#x2F;fernet-keys已创建
-
-# 配置httpd
-echo &quot;ServerName controller&quot; &gt;&gt; &#x2F;etc&#x2F;httpd&#x2F;conf&#x2F;httpd.conf
-
-# 创建wsgi配置文件
-vim &#x2F;etc&#x2F;httpd&#x2F;conf.d&#x2F;wsgi-keystone.conf
-###内容
-Listen 5000
-Listen 35357
-
-&lt;VirtualHost *:5000&gt;
-    WSGIDaemonProcess keystone-public processes&#x3D;5 threads&#x3D;1 user&#x3D;keystone group&#x3D;keystone display-name&#x3D;%&#123;GROUP&#125;
-    WSGIProcessGroup keystone-public
-    WSGIScriptAlias &#x2F; &#x2F;usr&#x2F;bin&#x2F;keystone-wsgi-public
-    WSGIApplicationGroup %&#123;GLOBAL&#125;
-    WSGIPassAuthorization On
-    ErrorLogFormat &quot;%&#123;cu&#125;t %M&quot;
-    ErrorLog &#x2F;var&#x2F;log&#x2F;httpd&#x2F;keystone-error.log
-    CustomLog &#x2F;var&#x2F;log&#x2F;httpd&#x2F;keystone-access.log combined
-
-    &lt;Directory &#x2F;usr&#x2F;bin&gt;
-        Require all granted
-    &lt;&#x2F;Directory&gt;
-&lt;&#x2F;VirtualHost&gt;
-
-&lt;VirtualHost *:35357&gt;
-    WSGIDaemonProcess keystone-admin processes&#x3D;5 threads&#x3D;1 user&#x3D;keystone group&#x3D;keystone display-name&#x3D;%&#123;GROUP&#125;
-    WSGIProcessGroup keystone-admin
-    WSGIScriptAlias &#x2F; &#x2F;usr&#x2F;bin&#x2F;keystone-wsgi-admin
-    WSGIApplicationGroup %&#123;GLOBAL&#125;
-    WSGIPassAuthorization On
-    ErrorLogFormat &quot;%&#123;cu&#125;t %M&quot;
-    ErrorLog &#x2F;var&#x2F;log&#x2F;httpd&#x2F;keystone-error.log
-    CustomLog &#x2F;var&#x2F;log&#x2F;httpd&#x2F;keystone-access.log combined
-
-    &lt;Directory &#x2F;usr&#x2F;bin&gt;
-        Require all granted
-    &lt;&#x2F;Directory&gt;
-&lt;&#x2F;VirtualHost&gt;
-# 校验
-md5sum &#x2F;etc&#x2F;httpd&#x2F;conf.d&#x2F;wsgi-keystone.conf
-8f051eb53577f67356ed03e4550315c2 
-
-# 启动httpd
-systemctl enable httpd
-systemctl start httpd
-
-# 创建服务和注册api
-export OS_TOKEN&#x3D;ADMIN_TOKEN
-export OS_URL&#x3D;http:&#x2F;&#x2F;controller:35357&#x2F;v3
-export OS_IDENTITY_API_VERSION&#x3D;3
-openstack service create --name keystone --description &quot;OpenStack Identity&quot; identity
-openstack endpoint create --region RegionOne identity public http:&#x2F;&#x2F;controller:5000&#x2F;v3
-openstack endpoint create --region RegionOne identity internal http:&#x2F;&#x2F;controller:5000&#x2F;v3
-openstack endpoint create --region RegionOne identity admin http:&#x2F;&#x2F;controller:35357&#x2F;v3
-
-# 创建域、项目（租户）、用户和角色
-openstack domain create --description &quot;Default Domain&quot; default
-openstack project create --domain default --description &quot;Admin Project&quot; admin
-openstack user create --domain default --password ADMIN_PASS admin
-openstack role create admin
-
-# 关联项目，用户，角色
-openstack role add --project admin --user admin admin
-# 在admin项目上，给admin用户赋予admin角色
-openstack project create --domain default --description &quot;Service Project&quot; service
-
-# 创建环境变量脚本
-export OS_PROJECT_DOMAIN_NAME&#x3D;default
-export OS_USER_DOMAIN_NAME&#x3D;default
-export OS_PROJECT_NAME&#x3D;admin
-export OS_USERNAME&#x3D;admin
-export OS_PASSWORD&#x3D;ADMIN_PASS
-export OS_IMAGE_API_VERSION&#x3D;2
-export OS_IDENTITY_API_VERSION&#x3D;3
-export OS_AUTH_URL&#x3D;http:&#x2F;&#x2F;controller:35357&#x2F;v3
-
-# 作为admin用户请求认证令牌
-openstack token issue  
-
-# 如果不设置环境变量可以通过传入参数的方式申请
-openstack --os-auth-url http:&#x2F;&#x2F;controller:35357&#x2F;v3   --os-project-domain-name default --os-user-domain-name default   --os-project-name admin --os-username admin --os-password ADMIN_PASS token issue
-
-# 查看用户列表
-openstack user list
-
-# 查看endpoint列表
-openstack endpoint list<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="2-4-安装glance镜像服务"><a href="#2-4-安装glance镜像服务" class="headerlink" title="2.4 安装glance镜像服务"></a>2.4 安装glance镜像服务</h3><p>​	镜像服务 (glance) 允许用户发现、注册和获取虚拟机镜像。</p>
-<h4 id="2-4-1-安装步骤"><a href="#2-4-1-安装步骤" class="headerlink" title="2.4.1 安装步骤"></a>2.4.1 安装步骤</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 数据库创库授权
-mysql &gt;&gt;
-CREATE DATABASE glance
-GRANT ALL PRIVILEGES ON glance.* TO &#39;glance&#39;@&#39;localhost&#39; \
-  IDENTIFIED BY &#39;GLANCE_DBPASS&#39;;
-GRANT ALL PRIVILEGES ON glance.* TO &#39;glance&#39;@&#39;%&#39; \
-  IDENTIFIED BY &#39;GLANCE_DBPASS&#39;;
-  
- # 在keystone创建glance用户关联角色
- openstack user create --domain default --password GLANCE_PASS glance
- openstack role add --project service --user glance admin
- 
- # 在keystone上创建服务和注册api
-openstack service create --name glance   --description &quot;OpenStack Image&quot; image
-openstack endpoint create --region RegionOne \
-  image public http:&#x2F;&#x2F;controller:9292
-openstack endpoint create --region RegionOne \
-  image internal http:&#x2F;&#x2F;controller:9292
-openstack endpoint create --region RegionOne \
-  image admin http:&#x2F;&#x2F;controller:9292
-  
-# 查看已创建的信息
-openstack role assignment list
-openstack role list
-openstack project list
-openstack user list （要有glance用户）
-
-# mysql中验证表是否已创建
-[root@controller ~]# mysql keystone -e &quot;show tables;&quot; | grep user
-federated_user
-local_user
-user
-user_group_membership
-[root@controller ~]# mysql keystone -e &quot;show tables;&quot; | grep project
-project
-project_endpoint
-project_endpoint_group
-
-# 安装服务相应软件包
-yum install openstack-glance -y
-
-# 修改相应的配置文件--api
-cp &#x2F;etc&#x2F;glance&#x2F;glance-api.conf&#123;,.bak&#125;
-grep &#39;^[a-Z\[]&#39; &#x2F;etc&#x2F;glance&#x2F;glance-api.conf.bak &gt; &#x2F;etc&#x2F;glance&#x2F;glance-api.conf
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf database connection mysql+pymysql:&#x2F;&#x2F;glance:GLANCE_DBPASS@controller&#x2F;glance
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken auth_uri http:&#x2F;&#x2F;controller:5000
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken auth_url http:&#x2F;&#x2F;controller:35357
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken memcached_servers controller:11211
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken auth_type password
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken project_domain_name default
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken user_domain_name default
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken project_name service
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken username glance
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken password GLANCE_PASS
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf paste_deploy flavor keystone
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf glance_store stores file,http
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf glance_store default_store file
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf glance_store filesystem_store_datadir &#x2F;var&#x2F;lib&#x2F;glance&#x2F;images&#x2F;
-
-# 修改相应的配置文件--registry
-cp &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf&#123;,.bak&#125;
-grep &#39;^[a-Z\[]&#39; &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf.bak &gt; &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf database connection mysql+pymysql:&#x2F;&#x2F;glance:GLANCE_DBPASS@controller&#x2F;glance
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken auth_uri http:&#x2F;&#x2F;controller:5000
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken auth_url http:&#x2F;&#x2F;controller:35357
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken memcached_servers controller:11211
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken auth_type password
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken project_domain_name default
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken user_domain_name default
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken project_name service
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken username glance
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken password GLANCE_PASS
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf paste_deploy flavor keystone
-
-# md5值验证
-md5sum &#x2F;etc&#x2F;glance&#x2F;glance-api.conf
-3e1a4234c133eda11b413788e001cba3  &#x2F;etc&#x2F;glance&#x2F;glance-api.conf
-md5sum &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf
-46acabd81a65b924256f56fe34d90b8f  &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf
-
-# 写入镜像服务数据库
-su -s &#x2F;bin&#x2F;sh -c &quot;glance-manage db_sync&quot; glance # 会有Warning不用在意
-# 验证
-mysql glance -e &quot;show tables;&quot;
-
-# 启动服务
-systemctl enable openstack-glance-api.service   openstack-glance-registry.service
-systemctl start openstack-glance-api.service   openstack-glance-registry.service<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h4 id="2-4-2-上传镜像测试"><a href="#2-4-2-上传镜像测试" class="headerlink" title="2.4.2 上传镜像测试"></a>2.4.2 上传镜像测试</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 错误日志查看
-&#x2F;var&#x2F;log&#x2F;glance
-
-# 确保已获取token令牌
-openstack token issue
-
-# 下载测试镜像
-wget http:&#x2F;&#x2F;download.cirros-cloud.net&#x2F;0.3.4&#x2F;cirros-0.3.4-x86_64-disk.img
-
-# 上传测试镜像
-openstack image create &quot;cirros&quot; \
---file cirros-0.3.4-x86_64-disk.img \
---disk-format qcow2 --container-format bare \
---public
-
-# 上传文件确认
-ls &#x2F;var&#x2F;lib&#x2F;glance&#x2F;images&#x2F; (在&#x2F;etc&#x2F;glance&#x2F;glance-api.conf中设置)
-mysql glance -e &quot;show tables;&quot; | grep image<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="2-5-安装nova计算服务"><a href="#2-5-安装nova计算服务" class="headerlink" title="2.5 安装nova计算服务"></a>2.5 安装nova计算服务</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">nova-api -- 接受并相应所有的计算服务请求，管理云主机生命周期
-nova-compute（多个）-- 真正管理虚拟机(nova-compute调用libvirt)
-nova-scheduler -- nova 调度器（挑选最合适的nova-compute）
-nova-conductor -- 帮助nova-compute连接数据库
-nova-network --  早期版本管理虚拟机的网络（已弃用，改用neutron，留着为了方便兼容早期版本）
-nova-consoleauth和nova-novncproxy -- web版的vnc来直接操作云主机
-novnproxy -- web版vnc客户端
-nova-api-metadata -- 接受来自虚拟机发送的元数据请求（配合neutron-metadata-agent实现虚拟机定制化）<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h4 id="2-5-1-控制节点–安装步骤"><a href="#2-5-1-控制节点–安装步骤" class="headerlink" title="2.5.1 控制节点–安装步骤"></a>2.5.1 控制节点–安装步骤</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 创库授权
-mysql &gt;&gt;
-CREATE DATABASE nova_api;
-CREATE DATABASE nova;
-GRANT ALL PRIVILEGES ON nova_api.* TO &#39;nova&#39;@&#39;localhost&#39; \
-  IDENTIFIED BY &#39;NOVA_DBPASS&#39;;
-GRANT ALL PRIVILEGES ON nova_api.* TO &#39;nova&#39;@&#39;%&#39; \
-  IDENTIFIED BY &#39;NOVA_DBPASS&#39;;
-GRANT ALL PRIVILEGES ON nova.* TO &#39;nova&#39;@&#39;localhost&#39; \
-  IDENTIFIED BY &#39;NOVA_DBPASS&#39;;
-GRANT ALL PRIVILEGES ON nova.* TO &#39;nova&#39;@&#39;%&#39; \
-  IDENTIFIED BY &#39;NOVA_DBPASS&#39;;
-  
-# 在keystone创建用户nova
-openstack user create --domain default   --password NOVA_PASS nova
-# 给Nova用户添加admin角色
-openstack role add --project service --user nova admin
-
-# 在keystone上创建服务和注册api
-openstack service create --name nova   --description &quot;OpenStack Compute&quot; compute
-openstack endpoint create --region RegionOne   compute public http:&#x2F;&#x2F;controller:8774&#x2F;v2.1&#x2F;%\(tenant_id\)s
-openstack endpoint create --region RegionOne   compute internal http:&#x2F;&#x2F;controller:8774&#x2F;v2.1&#x2F;%\(tenant_id\)s
-openstack endpoint create --region RegionOne   compute admin http:&#x2F;&#x2F;controller:8774&#x2F;v2.1&#x2F;%\(tenant_id\)s
-
-# 安装相应软件包
-yum install -y openstack-nova-api openstack-nova-conductor \
-  openstack-nova-console openstack-nova-novncproxy \
-  openstack-nova-scheduler
-  
-# 修改配置文件
-cp &#x2F;etc&#x2F;nova&#x2F;nova.conf&#123;,.bak&#125;
-grep -Ev &#39;^$|#&#39; &#x2F;etc&#x2F;nova&#x2F;nova.conf.bak &gt; &#x2F;etc&#x2F;nova&#x2F;nova.conf
-
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT enabled_apis osapi_compute,metadata
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT rpc_backend rabbit
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT auth_strategy keystone
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT my_ip 10.0.0.11
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT use_neutron True
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT firewall_driver nova.virt.firewall.NoopFirewallDriver
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf api_database connection mysql+pymysql:&#x2F;&#x2F;nova:NOVA_DBPASS@controller&#x2F;nova_api
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf database connection mysql+pymysql:&#x2F;&#x2F;nova:NOVA_DBPASS@controller&#x2F;nova
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf glance api_servers http:&#x2F;&#x2F;controller:9292
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken auth_uri http:&#x2F;&#x2F;controller:5000
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken auth_url http:&#x2F;&#x2F;controller:35357
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken memcached_servers controller:11211
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken auth_type password
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken project_domain_name default
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken user_domain_name default
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken project_name service
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken username nova
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken password NOVA_PASS
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_concurrency lock_path &#x2F;var&#x2F;lib&#x2F;nova&#x2F;tmp
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_messaging_rabbit rabbit_host controller
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_messaging_rabbit rabbit_userid openstack
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_messaging_rabbit rabbit_password RABBIT_PASS
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf vnc vncserver_listen &#39;$my_ip&#39;
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf vnc vncserver_proxyclient_address &#39;$my_ip&#39;
-
-# 校验
-md5sum &#x2F;etc&#x2F;nova&#x2F;nova.conf
-47ded61fdd1a79ab91bdb37ce59ef192  &#x2F;etc&#x2F;nova&#x2F;nova.conf
-
-# 同步数据库
-su -s &#x2F;bin&#x2F;sh -c &quot;nova-manage api_db sync&quot; nova
-su -s &#x2F;bin&#x2F;sh -c &quot;nova-manage db sync&quot; nova
-
-# 验证
-mysql nova_api -e &quot;show tables;&quot;
-mysql nova -e &quot;show tables;&quot;
-
-# 启动服务
-systemctl enable openstack-nova-api.service \
-openstack-nova-consoleauth.service openstack-nova-scheduler.service \
-openstack-nova-conductor.service openstack-nova-novncproxy.service
-systemctl restart openstack-nova-api.service \
-openstack-nova-consoleauth.service openstack-nova-scheduler.service \
-openstack-nova-conductor.service openstack-nova-novncproxy.service
-
-# 验证
-[root@controller ~]# nova service-list
-+----+------------------+------------+----------+---------+-------+------------+-----------------+
-| Id | Binary           | Host       | Zone     | Status  | State | Updated_at | Disabled Reason |
-+----+------------------+------------+----------+---------+-------+------------+-----------------+
-| 1  | nova-conductor   | controller | internal | enabled | down  | -          | -               |
-| 4  | nova-scheduler   | controller | internal | enabled | down  | -          | -               |
-| 5  | nova-consoleauth | controller | internal | enabled | down  | -          | -               |
-+----+------------------+------------+----------+---------+-------+------------+-----------------+
-
-# novncproxy 怎么检测起来没有？
-[root@controller ~]# netstat -lntup | grep 6080
-tcp        0      0 0.0.0.0:6080            0.0.0.0:*               LISTEN      8719&#x2F;python2
-[root@controller ~]# ps -ef | grep 8719
-nova       8719      1  0 21:53 ?        00:00:01 &#x2F;usr&#x2F;bin&#x2F;python2 &#x2F;usr&#x2F;bin&#x2F;nova-novncproxy --web &#x2F;usr&#x2F;share&#x2F;novnc&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h4 id="2-5-1-计算节点–安装步骤"><a href="#2-5-1-计算节点–安装步骤" class="headerlink" title="2.5.1 计算节点–安装步骤"></a>2.5.1 计算节点–安装步骤</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 安装软件包
-yum install -y openstack-nova-compute openstack-utils
-
-# 修改配置文件
-cp &#x2F;etc&#x2F;nova&#x2F;nova.conf&#123;,.bak&#125;
-grep -Ev &#39;^$|#&#39; &#x2F;etc&#x2F;nova&#x2F;nova.conf.bak &gt; &#x2F;etc&#x2F;nova&#x2F;nova.conf
-
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT enabled_apis osapi_compute,metadata
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT rpc_backend rabbit
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT auth_strategy keystone
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT my_ip 10.0.0.31 # 注意ip
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT use_neutron True
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT firewall_driver nova.virt.firewall.NoopFirewallDriver
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf glance api_servers http:&#x2F;&#x2F;controller:9292
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken auth_uri http:&#x2F;&#x2F;controller:5000
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken auth_url http:&#x2F;&#x2F;controller:35357
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken memcached_servers controller:11211
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken auth_type password
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken project_domain_name default
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken user_domain_name default
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken project_name service
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken username nova
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken password NOVA_PASS
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_concurrency lock_path &#x2F;var&#x2F;lib&#x2F;nova&#x2F;tmp
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_messaging_rabbit rabbit_host controller
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_messaging_rabbit rabbit_userid openstack
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_messaging_rabbit rabbit_password RABBIT_PASS
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf vnc enabled  True
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf vnc vncserver_listen 0.0.0.0
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf vnc vncserver_proxyclient_address &#39;$my_ip&#39;
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf vnc novncproxy_base_url http:&#x2F;&#x2F;controller:6080&#x2F;vnc_auto.html
-
-# 校验
-md5sum &#x2F;etc&#x2F;nova&#x2F;nova.conf
-45cab6030a9ab82761e9f697d6d79e14  &#x2F;etc&#x2F;nova&#x2F;nova.conf
-
-# 启动服务
-systemctl enable libvirtd.service openstack-nova-compute.service
-systemctl restart libvirtd.service openstack-nova-compute.service
-
-# 服务启动错误排查
-参考博客：https:&#x2F;&#x2F;www.codeleading.com&#x2F;article&#x2F;89785382846&#x2F;
-cat &#x2F;etc&#x2F;nova&#x2F;nova.conf # compute1日志查看
-报错 nova AccessRefused: (0, 0): (403) ACCESS_REFUSED
-处理步骤：
-在controller
-cat &#x2F;var&#x2F;log&#x2F;rabbitmq&#x2F;rabbit@controller.log # 发现报错AMQPLAIN login refused: user &#39;openstack&#39; - invalid credentials 无效凭证
-rabbitmqctl list_users # 确认是否还有openstack用户
-rabbitmqctl add_user openstack RABBIT_PASS
-rabbitmqctl set_permissions openstack &quot;.*&quot; &quot;.*&quot; &quot;.*&quot;
-systemctl restart rabbitmq-server.service # 重新创用户，并重启服务<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="2-6-安装neutron网络服务"><a href="#2-6-安装neutron网络服务" class="headerlink" title="2.6 安装neutron网络服务"></a>2.6 安装neutron网络服务</h3><p>neutron-server – 端口9696，api接受和响应外部的网络管理请求</p>
-<p>neutron-linuxbridge-agent –  负责创建桥接网卡</p>
-<p>neutron-dhcp-agent – 负责分配ip</p>
-<p>neutron-metadata-agent –  配合nova-metadata-api实现虚拟机的定制化操作</p>
-<p>L3-agent – 实现三层网络vxlan（网络层）</p>
-<h4 id="2-6-1-控制节点–安装步骤"><a href="#2-6-1-控制节点–安装步骤" class="headerlink" title="2.6.1 控制节点–安装步骤"></a>2.6.1 控制节点–安装步骤</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 创库授权
-Mysql &gt;&gt;
-CREATE DATABASE neutron;
-GRANT ALL PRIVILEGES ON neutron.* TO &#39;neutron&#39;@&#39;localhost&#39; \
-  IDENTIFIED BY &#39;NEUTRON_DBPASS&#39;;
-GRANT ALL PRIVILEGES ON neutron.* TO &#39;neutron&#39;@&#39;%&#39; \
-  IDENTIFIED BY &#39;NEUTRON_DBPASS&#39;;
-  
-# 在keystone创建用户neutron
-openstack user create --domain default   --password NEUTRON_PASS neutron
-# 给neutron用户添加admin角色
-openstack role add --project service --user neutron admin
-
-# 在keystone上创建服务和注册api
-openstack service create --name neutron   --description &quot;OpenStack Networking&quot; network
-openstack endpoint create --region RegionOne   network public http:&#x2F;&#x2F;controller:9696
-openstack endpoint create --region RegionOne   network internal http:&#x2F;&#x2F;controller:9696
-openstack endpoint create --region RegionOne   network admin http:&#x2F;&#x2F;controller:9696
-
-# 网络配置--公共网络
-cp &#x2F;etc&#x2F;neutron&#x2F;neutron.conf&#123;,.bak&#125;
-grep -Ev &quot;^$|#&quot; &#x2F;etc&#x2F;neutron&#x2F;neutron.conf.bak  &gt; &#x2F;etc&#x2F;neutron&#x2F;neutron.conf
-&gt;&gt;&gt;&gt;&gt;
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf database connection mysql+pymysql:&#x2F;&#x2F;neutron:NEUTRON_DBPASS@controller&#x2F;neutron
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT core_plugin ml2
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT service_plugins
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT rpc_backend rabbit
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT auth_strategy keystone
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT notify_nova_on_port_status_changes True
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT notify_nova_on_port_data_changes True
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_messaging_rabbit rabbit_host controller
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_messaging_rabbit rabbit_userid openstack
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_messaging_rabbit rabbit_password RABBIT_PASS
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken auth_uri http:&#x2F;&#x2F;controller:5000
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken auth_url http:&#x2F;&#x2F;controller:35357
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken memcached_servers controller:11211
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken auth_type password
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken project_domain_name default
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken user_domain_name default
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken project_name service
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken username neutron
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken password NEUTRON_PASS
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova auth_url http:&#x2F;&#x2F;controller:35357
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova auth_type password
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova project_domain_name default
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova user_domain_name default
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova region_name RegionOne
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova project_name service
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova username nova
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova password NOVA_PASS
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_concurrency lock_path &#x2F;var&#x2F;lib&#x2F;neutron&#x2F;tmp
-&gt;&gt;&gt;&gt;&gt;
-
-cp &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini&#123;,.bak&#125;
-grep -Ev &quot;^$|#&quot; &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini.bak &gt; &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini
-&gt;&gt;&gt;&gt;&gt;
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini ml2 type_drivers flat,vlan
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini ml2 tenant_network_types
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini ml2 mechanism_drivers linuxbridge
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini ml2 extension_drivers port_security
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini ml2_type_flat flat_networks provider
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini securitygroup enable_ipset True
-&gt;&gt;&gt;&gt;&gt;
-
-cp &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini&#123;,.bak&#125;
-grep -Ev &quot;^$|#&quot; &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini.bak &gt; &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini
-&gt;&gt;&gt;&gt;&gt;
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini linux_bridge physical_interface_mappings provider:ens33  # 要修改网络接口名
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini vxlan enable_vxlan False
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini securitygroup enable_security_group True
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini securitygroup firewall_driver neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
-&gt;&gt;&gt;&gt;&gt;
-
-cp &#x2F;etc&#x2F;neutron&#x2F;dhcp_agent.ini&#123;,.bak&#125;
-grep -Ev &quot;^$|#&quot; &#x2F;etc&#x2F;neutron&#x2F;dhcp_agent.ini.bak &gt; &#x2F;etc&#x2F;neutron&#x2F;dhcp_agent.ini
-&gt;&gt;&gt;&gt;&gt;
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;dhcp_agent.ini DEFAULT interface_driver neutron.agent.linux.interface.BridgeInterfaceDriver
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;dhcp_agent.ini DEFAULT  dhcp_driver neutron.agent.linux.dhcp.Dnsmasq
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;dhcp_agent.ini DEFAULT  enable_isolated_metadata True
-&gt;&gt;&gt;&gt;&gt;
-
-cp &#x2F;etc&#x2F;neutron&#x2F;metadata_agent.ini&#123;,.bak&#125;
-grep -Ev &quot;^$|#&quot; &#x2F;etc&#x2F;neutron&#x2F;metadata_agent.ini.bak &gt; &#x2F;etc&#x2F;neutron&#x2F;metadata_agent.ini
-&gt;&gt;&gt;&gt;&gt;
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;metadata_agent.ini DEFAULT nova_metadata_ip controller
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;metadata_agent.ini DEFAULT metadata_proxy_shared_secret METADATA_SECRET
-&gt;&gt;&gt;&gt;&gt;
-
-# 再次修改nova配置文件，添加neutron服务
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron url http:&#x2F;&#x2F;controller:9696
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron auth_url http:&#x2F;&#x2F;controller:35357
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron auth_type password
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron project_domain_name default
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron user_domain_name default
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron region_name RegionOne
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron project_name service
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron username neutron
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron password NEUTRON_PASS
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron service_metadata_proxy True
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron metadata_proxy_shared_secret METADATA_SECRET
-# 校验文件
-[root@controller ~]# md5sum &#x2F;etc&#x2F;nova&#x2F;nova.conf
-6334f359655efdbcf083b812ab94efc1  &#x2F;etc&#x2F;nova&#x2F;nova.conf
-
-# 网络服务初始化脚本需要一个超链接
-ln -s &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini &#x2F;etc&#x2F;neutron&#x2F;plugin.ini
-
-# 同步数据库
-su -s &#x2F;bin&#x2F;sh -c &quot;neutron-db-manage --config-file &#x2F;etc&#x2F;neutron&#x2F;neutron.conf \
-  --config-file &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini upgrade head&quot; neutron
-  
-# 检查数据库
-mysql neutron -e &quot;show tables;&quot;
-
-# 重启Nova服务
-systemctl restart openstack-nova-api.service
-
-# 启动Neutron服务
-systemctl enable neutron-server.service   neutron-linuxbridge-agent.service neutron-dhcp-agent.service   neutron-metadata-agent.service
-systemctl start neutron-server.service   neutron-linuxbridge-agent.service neutron-dhcp-agent.service   neutron-metadata-agent.service
-
-# 查看服务有没有起来
-neutron agent-list
-+--------------------------------------+--------------------+------------+-------------------+-------+----------------+---------------------------+
-| id                                   | agent_type         | host       | availability_zone | alive | admin_state_up | binary                    |
-+--------------------------------------+--------------------+------------+-------------------+-------+----------------+---------------------------+
-| 0d68dc27-f2b8-4cae-9c30-cddd126076b4 | Linux bridge agent | controller |                   | :-)   | True           | neutron-linuxbridge-agent |
-| 688cc47d-424d-4243-ae2b-b1c4b298a2a8 | Metadata agent     | controller |                   | :-)   | True           | neutron-metadata-agent    |
-| c4c5e360-ee02-4b9b-a1a5-59a0d0d088b0 | DHCP agent         | controller | nova              | :-)   | True           | neutron-dhcp-agent        |
-+--------------------------------------+--------------------+------------+-------------------+-------+----------------+---------------------------+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h4 id="2-6-2-计算节点–安装步骤"><a href="#2-6-2-计算节点–安装步骤" class="headerlink" title="2.6.2 计算节点–安装步骤"></a>2.6.2 计算节点–安装步骤</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 安装组件
-yum install -y openstack-neutron-linuxbridge ebtables ipset
-
-# 网络配置--公共网络
-cp &#x2F;etc&#x2F;neutron&#x2F;neutron.conf&#123;,.bak&#125;
-grep -Ev &quot;^$|#&quot; &#x2F;etc&#x2F;neutron&#x2F;neutron.conf.bak  &gt; &#x2F;etc&#x2F;neutron&#x2F;neutron.conf
-&gt;&gt;&gt;&gt;&gt;&gt;
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT rpc_backend rabbit
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT auth_strategy keystone
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_messaging_rabbit rabbit_host controller
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_messaging_rabbit rabbit_userid openstack
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_messaging_rabbit rabbit_password RABBIT_PASS
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken auth_uri http:&#x2F;&#x2F;controller:5000
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken auth_url http:&#x2F;&#x2F;controller:35357
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken memcached_servers controller:11211
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken auth_type password
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken project_domain_name default
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken user_domain_name default
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken project_name service
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken username neutron
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken password NEUTRON_PASS
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_concurrency lock_path &#x2F;var&#x2F;lib&#x2F;neutron&#x2F;tmp
-&gt;&gt;&gt;&gt;&gt;&gt;
-# md5校验
-md5sum &#x2F;etc&#x2F;nova&#x2F;nova.conf
-328cd5f0745e26a420e828b0dfc2934e  &#x2F;etc&#x2F;nova&#x2F;nova.conf
-
-cp &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini&#123;,.bak&#125;
-grep -Ev &quot;^$|#&quot; &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini.bak &gt; &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini
-&gt;&gt;&gt;&gt;&gt;&gt;
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini linux_bridge physical_interface_mappings provider:ens33  # 要修改网络接口名
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini vxlan enable_vxlan False
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini securitygroup enable_security_group True
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini securitygroup firewall_driver neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
-&gt;&gt;&gt;&gt;&gt;&gt;
-
-# 再次修改nova配置文件，添加neutron配置
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron url http:&#x2F;&#x2F;controller:9696
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron auth_url http:&#x2F;&#x2F;controller:35357
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron auth_type password
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron project_domain_name default
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron user_domain_name default
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron region_name RegionOne
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron project_name service
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron username neutron
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron password NEUTRON_PASS
-
-# 重启nova服务
-systemctl restart openstack-nova-compute.service
-
-# 启动linuxbridge代理服务
-systemctl enable neutron-linuxbridge-agent.service
-systemctl restart neutron-linuxbridge-agent.service
-
-# 查看是否配置成功
-controller执行 &gt;&gt; neutron agent-list
-配置正确会多出来一个
-Linux bridge agent | compute1   |                   | :-)   | True 
-
-# 查看计算资源
-openstack compute service list<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="2-7-安装horizon-（Dashboard）web界面"><a href="#2-7-安装horizon-（Dashboard）web界面" class="headerlink" title="2.7 安装horizon （Dashboard）web界面"></a>2.7 安装horizon （Dashboard）web界面</h3><h4 id="2-7-1-安装步骤（控制节点"><a href="#2-7-1-安装步骤（控制节点" class="headerlink" title="2.7.1 安装步骤（控制节点)"></a>2.7.1 安装步骤（控制节点)</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 安装组件包
-yum install -y openstack-dashboard
-
-# 修改配置文件
-vim &#x2F;etc&#x2F;openstack-dashboard&#x2F;local_settings
-&gt;&gt;&gt;&gt;
-OPENSTACK_HOST &#x3D; &quot;controller&quot;
-ALLOWED_HOSTS &#x3D; [&#39;*&#39;, ]
-SESSION_ENGINE &#x3D; &#39;django.contrib.sessions.backends.cache&#39;
-CACHES &#x3D; &#123;
-    &#39;default&#39;: &#123;
-         &#39;BACKEND&#39;: &#39;django.core.cache.backends.memcached.MemcachedCache&#39;,
-         &#39;LOCATION&#39;: &#39;controller:11211&#39;,
-    &#125;
-&#125;
-OPENSTACK_KEYSTONE_URL &#x3D; &quot;http:&#x2F;&#x2F;%s:5000&#x2F;v3&quot; % OPENSTACK_HOST
-OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT &#x3D; True
-OPENSTACK_API_VERSIONS &#x3D; &#123;
-    &quot;identity&quot;: 3,
-    &quot;image&quot;: 2,
-    &quot;volume&quot;: 2,
-&#125;
-OPENSTACK_KEYSTONE_DEFAULT_DOMAIN &#x3D; &quot;default&quot;
-OPENSTACK_KEYSTONE_DEFAULT_ROLE &#x3D; &quot;user&quot;
-OPENSTACK_NEUTRON_NETWORK &#x3D; &#123;
-    ...
-    &#39;enable_router&#39;: False,
-    &#39;enable_quotas&#39;: False,
-    &#39;enable_distributed_router&#39;: False,
-    &#39;enable_ha_router&#39;: False,
-    &#39;enable_lb&#39;: False,
-    &#39;enable_firewall&#39;: False,
-    &#39;enable_vpn&#39;: False,
-    &#39;enable_fip_topology_check&#39;: False,
-&#125;
-TIME_ZONE &#x3D; &quot;Asia&#x2F;Shanghai&quot;
-&gt;&gt;&gt;&gt;
-
-# 解决不能进入页面的BUG
-vim &#x2F;etc&#x2F;httpd&#x2F;conf.d&#x2F;openstack-dashboard.conf
-添加一行 &gt;&gt; WSGIAppicationGroup %&#123;GLOBAL&#125;
-
-# 重启服务
-systemctl restart httpd.service memcached.service
-
-# 登录界面
-https:&#x2F;&#x2F;10.0.0.11&#x2F;dashboard
-域:default
-用户名:admin
-密码:ADMIN_PASS
-
-# 扩展：查看文件输入那个rpm包
-rpm -qf &#x2F;etc&#x2F;openstack-dashboard&#x2F;local_settings<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h4 id="2-7-2-Dashboard报错解决"><a href="#2-7-2-Dashboard报错解决" class="headerlink" title="2.7.2 Dashboard报错解决"></a>2.7.2 Dashboard报错解决</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 问题1--Invalid service catalog service: image
-发生原因：
-	openstack service list 存在两个 glance
-解决方法：
-    openstack service delete c12c125edc2041e3aaf2f250442162c6
-    openstack service delete 6a11431b95bc44d1bd1e9371c0faa16b # 两个glance都删掉
-    重复2.4.1在keystone上创建glance服务和注册api
-    再重启服务systemctl restart httpd.service memcached.service<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="2-8-启动一个云主机"><a href="#2-8-启动一个云主机" class="headerlink" title="2.8 启动一个云主机"></a>2.8 启动一个云主机</h3><h3 id="2-8-1-创建步骤"><a href="#2-8-1-创建步骤" class="headerlink" title="2.8.1 创建步骤"></a>2.8.1 创建步骤</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 创建网络
-neutron net-create --shared --provider:physical_network provider \
-  --provider:network_type flat gs
-  
-# 在网络中创建一个子网
-neutron subnet-create --name gs2 \
-  --allocation-pool start&#x3D;10.0.0.101,end&#x3D;10.0.0.250 \
-  --dns-nameserver 223.5.5.5 --gateway 10.0.0.2 \
-  gs 10.0.0.0&#x2F;24
-  
-# 创建云主机硬件配置方案（规格）
-openstack flavor create --id 0 --vcpus 1 --ram 64 --disk 1 m1.nano
-
-# 创建密钥键值对
-ssh-keygen -q -N &quot;&quot; -f ~&#x2F;.ssh&#x2F;id_rsa
-openstack keypair create --public-key ~&#x2F;.ssh&#x2F;id_rsa.pub mykey
-# 验证公钥的添加
-openstack keypair list
-
-# 添加安全组规则
-openstack security group rule create --proto icmp default
-openstack security group rule create --proto tcp --dst-port 22 default
-
-# 在公有网络启动一个实例
-openstack flavor list # 查看可用的配置规格
-openstack image list # 查看可用镜像
-openstack network list # 查看可用网络
-openstack security group list # 查看已设置的安全组
-
-openstack server create --flavor 规格名&#x2F;ID --image 镜像名&#x2F;ID \
-  --nic net-id&#x3D;网络ID --security-group default \
-  --key-name mykey 实例名称
-示例：
-openstack server create --flavor m1.tiny --image cirros \
---nic net-id&#x3D;cb032582-893b-414d-b78d-c89c6548612d --security-group default \
---key-name mykey my-instance<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="2-8-2-创建云主机问题解决"><a href="#2-8-2-创建云主机问题解决" class="headerlink" title="2.8.2 创建云主机问题解决"></a>2.8.2 创建云主机问题解决</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 1、启动云主机时，No valid host was found
-【计算节点中】
-查看云主机创建日志：&#x2F;var&#x2F;log&#x2F;nova&#x2F;nova-compute.log，里面有记录问题原因是CPU feature spec-ctrl not found
-修改&#x2F;usr&#x2F;share&#x2F;libvirt&#x2F;cpu_map.xml，将和spec-ctrl相关的特性删除
-然后重启服务
-systemctl restart libvirtd openstack-nova-compute
-参考博客：https:&#x2F;&#x2F;www.cnblogs.com&#x2F;laolieren&#x2F;p&#x2F;solve_openstack_create_instance_error.html
-
-# 2、云主机控制台seabios -- Booting from Hard Disk错误
-【计算节点中】
-vim &#x2F;etc&#x2F;nova&#x2F;nova.conf
-&gt;&gt;&gt;&gt;
-[libvirt]
-virt_type &#x3D; qemu
-cpu_mode &#x3D; none
-&gt;&gt;&gt;&gt;
-systemctl restart libvirtd openstack-nova-compute
-重启云主机<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-
-
-
-
-
-
-]]></content>
-      <categories>
-        <category>运维</category>
-        <category>（四）虚拟化之OpenStack</category>
-      </categories>
-  </entry>
-  <entry>
     <title></title>
     <url>/2022/07/06/01_%E8%BF%90%E7%BB%B4/05-%E5%B7%A5%E4%BD%9C%E4%B8%AD%E7%9A%84%E8%AE%B0%E5%BD%95/SVN%E6%90%AD%E5%BB%BA/</url>
     <content><![CDATA[<h1 id="KylinV10-桌面版SVN搭建"><a href="#KylinV10-桌面版SVN搭建" class="headerlink" title="KylinV10 桌面版SVN搭建"></a>KylinV10 桌面版SVN搭建</h1><h2 id="一、服务端配置"><a href="#一、服务端配置" class="headerlink" title="一、服务端配置"></a>一、服务端配置</h2><h3 id="1-1-安装SVN"><a href="#1-1-安装SVN" class="headerlink" title="1.1 安装SVN"></a>1.1 安装SVN</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">sudo apt-get install subversion<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
@@ -7808,6 +7808,41 @@ team1&#x3D;admin,gs	# 创建用户组
 <p><img src="/.%5Cassets%5Cimage-20210302124713502.png" alt="image-20210302124713502"></p>
 <p><img src="/.%5Cassets%5Cimage-20210302124741038.png" alt="image-20210302124741038"></p>
 <p><img src="/.%5Cassets%5Cimage-20210302125049653.png" alt="image-20210302125049653"></p>
+]]></content>
+      <categories>
+        <category>运维</category>
+        <category>（一）基础命令</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>运维之基础命令--用户组管理</title>
+    <url>/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day09-%E7%94%A8%E6%88%B7%E7%BB%84%E7%AE%A1%E7%90%86/%E7%AC%94%E8%AE%B0/</url>
+    <content><![CDATA[<h1 id="用户管理"><a href="#用户管理" class="headerlink" title="用户管理"></a>用户管理</h1><h2 id="linux中用户介绍"><a href="#linux中用户介绍" class="headerlink" title="linux中用户介绍"></a>linux中用户介绍</h2><p>什么是用户？</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">用户其实就是相当于权限的化身，
+处于安全考虑
+所以，我们在进入系统之前都需要登录，根据用户给相应权限<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>Linux系统中用户角色</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">uid <span class="token builtin class-name">:</span> Linux系统当中用户ID（相当于身份证号）
+gid <span class="token builtin class-name">:</span> ANTA20163307
+
+用户组其实是统一某一类用户权限
+
+需求：
+	大项目 ： 
+		开发者：a b c d
+		运维 ： e f
+		测试：g
+	共同的权限：<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>超级用户</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">linux当中的老大（皇帝）: root
+Windows当中的老大：administrator<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<h2 id="用户与组相关的文件"><a href="#用户与组相关的文件" class="headerlink" title="用户与组相关的文件"></a>用户与组相关的文件</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># cat /etc/passwd</span>
+root:x:0:0:root:/root:/bin/bash
+用户名称   是否存在密码   uid  gid  组名称/注释信息 家目录  默认解析器 <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
 ]]></content>
       <categories>
         <category>运维</category>
@@ -8295,41 +8330,6 @@ x		可执行		<span class="token number">1</span>
 <span class="token number">32</span>.给/test目录及目录下的所有文件或目录的权限统一改为744。
 
 <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-]]></content>
-      <categories>
-        <category>运维</category>
-        <category>（一）基础命令</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>运维之基础命令--用户组管理</title>
-    <url>/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day09-%E7%94%A8%E6%88%B7%E7%BB%84%E7%AE%A1%E7%90%86/%E7%AC%94%E8%AE%B0/</url>
-    <content><![CDATA[<h1 id="用户管理"><a href="#用户管理" class="headerlink" title="用户管理"></a>用户管理</h1><h2 id="linux中用户介绍"><a href="#linux中用户介绍" class="headerlink" title="linux中用户介绍"></a>linux中用户介绍</h2><p>什么是用户？</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">用户其实就是相当于权限的化身，
-处于安全考虑
-所以，我们在进入系统之前都需要登录，根据用户给相应权限<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<p>Linux系统中用户角色</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">uid <span class="token builtin class-name">:</span> Linux系统当中用户ID（相当于身份证号）
-gid <span class="token builtin class-name">:</span> ANTA20163307
-
-用户组其实是统一某一类用户权限
-
-需求：
-	大项目 ： 
-		开发者：a b c d
-		运维 ： e f
-		测试：g
-	共同的权限：<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>超级用户</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">linux当中的老大（皇帝）: root
-Windows当中的老大：administrator<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<h2 id="用户与组相关的文件"><a href="#用户与组相关的文件" class="headerlink" title="用户与组相关的文件"></a>用户与组相关的文件</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># cat /etc/passwd</span>
-root:x:0:0:root:/root:/bin/bash
-用户名称   是否存在密码   uid  gid  组名称/注释信息 家目录  默认解析器 <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
 
 ]]></content>
       <categories>
@@ -9411,6 +9411,77 @@ drwxr-xr-x <span class="token number">2</span> root root    <span class="token n
       </categories>
   </entry>
   <entry>
+    <title>运维之基础命令--linux信号</title>
+    <url>/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day17-Linux%E4%BF%A1%E5%8F%B7/%E7%AC%94%E8%AE%B0/</url>
+    <content><![CDATA[<h1 id="笔记"><a href="#笔记" class="headerlink" title="笔记"></a>笔记</h1><p>1、设置进程的nice值</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 设置进程的优先级</span>
+<span class="token function">nice</span> -n -11 <span class="token function">bash</span> test.sh
+
+-n ： 设置优先级
+	普通用户：（0~19）
+	超级用户：（-20~19）
+	
+<span class="token comment"># 给指定进程设置优先级</span>
+<span class="token function">renice</span> <span class="token punctuation">[</span>设置优先级<span class="token punctuation">]</span> pid
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>2、Linux系统信号</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">中断信号
+	ctrl + c
+	ctrl + z
+
+	INT<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span> <span class="token builtin class-name">:</span> 
+		<span class="token function">kill</span> -<span class="token punctuation">[</span>信号名称<span class="token operator">|</span>信号ID<span class="token punctuation">]</span>　pid
+		
+		<span class="token function">kill</span> -SIGINT  PID
+		<span class="token function">kill</span> -INT     PID
+		<span class="token function">kill</span> -2       PID 
+
+退出信号:
+	ctrl + d
+
+暂停信号：将进程暂停
+	SIGTSTP（20）
+		<span class="token function">kill</span> -20 PID 
+		<span class="token function">kill</span> -SIGTSTP PID 
+		<span class="token function">kill</span> -TSTP PID
+
+杀死进程信号
+	SIGKILL
+		<span class="token function">kill</span> -9 PID 
+		<span class="token function">kill</span> -SIGKILL PID
+		<span class="token function">kill</span> -KILL PID
+注：不能够被捕捉
+
+终止信号
+	SIGTREM
+		<span class="token function">kill</span> -15 PID 
+		<span class="token function">kill</span> -SIGTERM PID
+		<span class="token function">kill</span> -<span class="token environment constant">TERM</span> PID
+
+注：优雅终止进程
+
+暂停和恢复信号
+	SIGCONT <span class="token builtin class-name">:</span> 恢复
+	SIGSTOP ：暂停
+
+重载信号
+	SIGHUP（1）
+
+
+<span class="token number">1</span>、nohup <span class="token punctuation">[</span>执行的命令<span class="token punctuation">]</span> <span class="token operator">&amp;</span>
+后台启动，会在当前目录生成一个nohub.out文件，用于执行的命令的输出。
+<span class="token number">2</span>、setsid <span class="token builtin class-name">:</span> 实际上开了一个孤儿进程
+<span class="token number">3</span>、（执行的命令<span class="token operator">&amp;</span>）
+<span class="token number">4</span>、screen  开启一个子窗口<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+]]></content>
+      <categories>
+        <category>运维</category>
+        <category>（一）基础命令</category>
+      </categories>
+  </entry>
+  <entry>
     <title>运维之基础命令--进程管理</title>
     <url>/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day16-%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/%E7%AC%94%E8%AE%B0/</url>
     <content><![CDATA[<h1 id="进程"><a href="#进程" class="headerlink" title="进程"></a>进程</h1><p>程序：安装包</p>
@@ -9586,77 +9657,6 @@ SHR  ： 共享内存
 <span class="token assign-left variable">gpgcheck</span><span class="token operator">=</span><span class="token number">0</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 
-
-]]></content>
-      <categories>
-        <category>运维</category>
-        <category>（一）基础命令</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>运维之基础命令--linux信号</title>
-    <url>/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day17-Linux%E4%BF%A1%E5%8F%B7/%E7%AC%94%E8%AE%B0/</url>
-    <content><![CDATA[<h1 id="笔记"><a href="#笔记" class="headerlink" title="笔记"></a>笔记</h1><p>1、设置进程的nice值</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 设置进程的优先级</span>
-<span class="token function">nice</span> -n -11 <span class="token function">bash</span> test.sh
-
--n ： 设置优先级
-	普通用户：（0~19）
-	超级用户：（-20~19）
-	
-<span class="token comment"># 给指定进程设置优先级</span>
-<span class="token function">renice</span> <span class="token punctuation">[</span>设置优先级<span class="token punctuation">]</span> pid
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>2、Linux系统信号</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">中断信号
-	ctrl + c
-	ctrl + z
-
-	INT<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span> <span class="token builtin class-name">:</span> 
-		<span class="token function">kill</span> -<span class="token punctuation">[</span>信号名称<span class="token operator">|</span>信号ID<span class="token punctuation">]</span>　pid
-		
-		<span class="token function">kill</span> -SIGINT  PID
-		<span class="token function">kill</span> -INT     PID
-		<span class="token function">kill</span> -2       PID 
-
-退出信号:
-	ctrl + d
-
-暂停信号：将进程暂停
-	SIGTSTP（20）
-		<span class="token function">kill</span> -20 PID 
-		<span class="token function">kill</span> -SIGTSTP PID 
-		<span class="token function">kill</span> -TSTP PID
-
-杀死进程信号
-	SIGKILL
-		<span class="token function">kill</span> -9 PID 
-		<span class="token function">kill</span> -SIGKILL PID
-		<span class="token function">kill</span> -KILL PID
-注：不能够被捕捉
-
-终止信号
-	SIGTREM
-		<span class="token function">kill</span> -15 PID 
-		<span class="token function">kill</span> -SIGTERM PID
-		<span class="token function">kill</span> -<span class="token environment constant">TERM</span> PID
-
-注：优雅终止进程
-
-暂停和恢复信号
-	SIGCONT <span class="token builtin class-name">:</span> 恢复
-	SIGSTOP ：暂停
-
-重载信号
-	SIGHUP（1）
-
-
-<span class="token number">1</span>、nohup <span class="token punctuation">[</span>执行的命令<span class="token punctuation">]</span> <span class="token operator">&amp;</span>
-后台启动，会在当前目录生成一个nohub.out文件，用于执行的命令的输出。
-<span class="token number">2</span>、setsid <span class="token builtin class-name">:</span> 实际上开了一个孤儿进程
-<span class="token number">3</span>、（执行的命令<span class="token operator">&amp;</span>）
-<span class="token number">4</span>、screen  开启一个子窗口<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 ]]></content>
       <categories>
