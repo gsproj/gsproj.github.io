@@ -184,7 +184,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/11-Nginx(%E4%BA%94)Nginx%E4%BB%A3%E7%90%86/">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/10-Nginx(%E5%9B%9B)LNMP%E6%9E%B6%E6%9E%84%E6%8B%86%E5%88%86/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/myavatar.png">
@@ -198,7 +198,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/11-Nginx(%E4%BA%94)Nginx%E4%BB%A3%E7%90%86/" class="post-title-link" itemprop="url">运维之综合架构--07--Nginx(五)代理介绍</a>
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/10-Nginx(%E5%9B%9B)LNMP%E6%9E%B6%E6%9E%84%E6%8B%86%E5%88%86/" class="post-title-link" itemprop="url">运维之综合架构--07--Nginx(四)LNMP架构拆分</a>
         </h2>
 
         <div class="post-meta">
@@ -209,7 +209,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:16:37" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:16:31" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -236,9 +236,11 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="一、什么是代理"><a href="#一、什么是代理" class="headerlink" title="一、什么是代理"></a>一、什么是代理</h2><h3 id="1-1-正向代理和反向代理的区别"><a href="#1-1-正向代理和反向代理的区别" class="headerlink" title="1.1 正向代理和反向代理的区别"></a>1.1 正向代理和反向代理的区别</h3><p>区别在于形式上服务的”对象”不一样<br>    正向代理代理的对象是客户端，为客户端服务   PC电脑<br>    反向代理代理的对象是服务端，为服务端服务	服务器</p>
-<h3 id="1-2-Nginx反向代理模式配置模块"><a href="#1-2-Nginx反向代理模式配置模块" class="headerlink" title="1.2 Nginx反向代理模式配置模块"></a>1.2 Nginx反向代理模式配置模块</h3><p>反向代理模式				Nginx配置模块<br>http、websocket、https		ngx_http_proxy_module<br>fastcgi						ngx_http_fastcgi_module<br>uwsgi						ngx_http_uwsgi_module<br>grpc						ngx_http_v2_module</p>
-<h2 id="二、Nginx代理配置"><a href="#二、Nginx代理配置" class="headerlink" title="二、Nginx代理配置"></a>二、Nginx代理配置</h2><h3 id="2-1-测试环境准备"><a href="#2-1-测试环境准备" class="headerlink" title="2.1 测试环境准备"></a>2.1 测试环境准备</h3><table>
+          <h2 id="一、拆分数据库"><a href="#一、拆分数据库" class="headerlink" title="一、拆分数据库"></a>一、拆分数据库</h2><blockquote>
+<p>为什么要拆分数据库?</p>
+<p>mysql内存占用大，容易引起网页访问速度变慢，甚至oom(out of memory)被系统自动kill掉，不安全</p>
+</blockquote>
+<h3 id="1-2-环境准备"><a href="#1-2-环境准备" class="headerlink" title="1.2 环境准备"></a>1.2 环境准备</h3><table>
 <thead>
 <tr>
 <th>主机名称</th>
@@ -249,160 +251,166 @@
 </thead>
 <tbody><tr>
 <td>web01</td>
-<td>nginx + php（提供网页服务）</td>
+<td>nginx+php</td>
 <td>10.0.0.7</td>
 <td>172.16.1.7</td>
 </tr>
 <tr>
-<td>lb01</td>
-<td>nginx（提供代理服务）</td>
-<td>10.0.0.5</td>
-<td>172.16.1.5</td>
-</tr>
-<tr>
 <td>db01</td>
 <td>mysql</td>
-<td>10.0.0.51</td>
+<td></td>
 <td>172.16.1.51</td>
 </tr>
 </tbody></table>
-<h3 id="2-2-Nginx代理配置步骤"><a href="#2-2-Nginx代理配置步骤" class="headerlink" title="2.2 Nginx代理配置步骤"></a>2.2 Nginx代理配置步骤</h3><p>1、<code>web01</code>-配置后端的web</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cat web.oldboy.com.conf 
-server &#123;
-	listen 80;
-	server_name web.oldboy.com;
-	root &#x2F;web;
+<h3 id="1-2-拆分过程"><a href="#1-2-拆分过程" class="headerlink" title="1.2 拆分过程"></a>1.2 拆分过程</h3><p>1、备份172.16.1.7服务器上mysql的数据</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# mysqldump -uroot -p&#39;Bgx123.com&#39; --all-databases --single-transaction &gt; mysql-all.sql<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
-	location &#x2F; &#123;
-		index index.php index.html;
-	&#125;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>2、传输172.16.1.7的备份数据至172.16.1.51的服务器上</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# scp mysql-all.sql root@172.16.1.51:&#x2F;tmp<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
-<p>2、创建文件夹和网页文件</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# mkdir &#x2F;web
-[root@web01 conf.d]# echo &quot;Web01.....&quot; &gt; &#x2F;web&#x2F;index.html<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<p>3、需要先在172.16.1.51服务器上安装mysql服务，然后使用mysql命令进行还原。</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@db01 ~]# yum install mariadb-server mariadb -y
+[root@db01 ~]# systemctl enable mariadb
+[root@db01 ~]# systemctl start mariadb
+[root@db01 ~]# mysql &lt;&#x2F;tmp&#x2F;mysql-all.sql
+[root@db01 ~]# systemctl restart mariadb
+[root@db01 ~]# mysql -uroot -pBgx123.com
+MariaDB [(none)]&gt; show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| edusoho            |
+| mysql              |
+| performance_schema |
+| test               |
+| wordpress          |
+| zh                 |
++--------------------+
+7 rows in set (0.00 sec)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<p>3、重启nginx服务</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# nginx -t
-sysnginx: the configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf syntax is ok
-nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test is successful
-t[root@web01 conf.d]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+<p>4、将web程序连接的本地数据库修改到远程数据库上。</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1）先在本地172.16.1.7服务器上停止本地的数据库
+[root@web01 ~]# systemctl disable mariadb
+[root@web01 ~]# systemctl stop mariadb
 
-<p>4、<code>lb01</code>-nginx代理配置</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 conf.d]# cat proxy_web.conf
-server &#123;
-	listen 80;
-	server_name web.oldboy.com;
-	location &#x2F; &#123;
-		proxy_pass http:&#x2F;&#x2F;10.0.0.7:80;
-		# 设置header将域名传过去
-		proxy_set_header Host $http_host; 
-	&#125;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+2）在172.16.1.51的服务器上授权远程主机能够能连接mysql数据库
+[root@db01 ~]# mysql -uroot -pBgx123.com
+MariaDB [(none)]&gt; grant all privileges on *.* to oldboy@&#39;%&#39; identified by &#39;Bgx123.com&#39;;
+解释：
+*.*: 所有数据库下的所有表
+oldboy@&#39;%&#39;: 允许所有网段的oldboy用户访问
+identify: 设置密码
 
-<p>5、重启Nginx服务</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+3）在172.16.1.7服务器上测试远程账户能否连接172.16.1.51的数据库
+[root@web01 wordpress]# yum install mariadb -y
+[root@web01 wordpress]# mysql -h 172.16.1.51 -uoldboy -pBgx123.com
+MariaDB [(none)]&gt; 
 
-<p>6、客户机设置hosts，并测试访问网页，可以正常显示web01页面</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">10.0.0.5 web.oldboy.com<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+4）在172.16.1.7服务器上修改web程序连接数据库的配置文件
+[root@web01 wordpress]# vim &#x2F;code&#x2F;wordpress&#x2F;wp-config.php
+&#x2F;&#x2F; ** MySQL 设置 - 具体信息来自您正在使用的主机 ** &#x2F;&#x2F;
+&#x2F;** WordPress数据库的名称 *&#x2F;
+define(&#39;DB_NAME&#39;, &#39;wordpress&#39;);
 
-<p><img src="/09-Nginx(%E4%BA%94)Nginx%E4%BB%A3%E7%90%86.assets/image-20210820101740471.png" alt="image-20210820101740471"></p>
-<h2 id="三、代理流程分析"><a href="#三、代理流程分析" class="headerlink" title="三、代理流程分析"></a>三、代理流程分析</h2><p>1、走10网关，wireshark的抓包截图如下</p>
-<p><img src="/09-Nginx(%E4%BA%94)Nginx%E4%BB%A3%E7%90%86.assets/image-20210820102735419.png" alt="image-20210820102735419"></p>
-<p>2、流程图</p>
-<p><img src="/09-Nginx(%E4%BA%94)Nginx%E4%BB%A3%E7%90%86.assets/image-20210820103041679.png" alt="image-20210820103041679"></p>
-<p>3、测试，关掉web01的公网ip网口(10.0.0.7)，再尝试访问，也可以正常访问到web01的网页</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 conf.d]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_web.conf
-server &#123;
-        listen 80;
-        server_name  web.oldboy.com;
-        location &#x2F; &#123;
-                proxy_pass http:&#x2F;&#x2F;172.16.1.7:80;
-                include &#x2F;etc&#x2F;nginx&#x2F;proxy_params;
-        &#125;
+&#x2F;** MySQL数据库用户名 *&#x2F;
+define(&#39;DB_USER&#39;, &#39;oldboy&#39;);
 
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+&#x2F;** MySQL数据库密码 *&#x2F;
+define(&#39;DB_PASSWORD&#39;, &#39;Bgx123.com&#39;);
 
-<p>4、抓包分析</p>
-<p>因为172网段走的虚拟机内部网络，抓不到</p>
-<p><img src="/09-Nginx(%E4%BA%94)Nginx%E4%BB%A3%E7%90%86.assets/image-20210820111454152.png" alt="image-20210820111454152"></p>
-<h2 id="三、Nginx代理常用参数"><a href="#三、Nginx代理常用参数" class="headerlink" title="三、Nginx代理常用参数"></a>三、Nginx代理常用参数</h2><h3 id="3-1-常用参数解释"><a href="#3-1-常用参数解释" class="headerlink" title="3.1 常用参数解释"></a>3.1 常用参数解释</h3><table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>proxy_pass <a target="_blank" rel="noopener" href="http://10.0.0.7/">http://10.0.0.7:80</a>;</td>
-<td></td>
-</tr>
-<tr>
-<td>proxy_http_version 1.1;</td>
-<td>代理向后端请求使用的版本</td>
-</tr>
-<tr>
-<td>proxy_set_header Host $http_host;</td>
-<td>代理向后端请求携带的域名</td>
-</tr>
-<tr>
-<td>proxy_set_header X-Real-IP $remote_addr;</td>
-<td><font color="blue">用于获取客户端真实IP（不如x-forward）</font></td>
-</tr>
-<tr>
-<td>proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;</td>
-<td><font color="blue">获取客户端真实IP及全链路IP</font></td>
-</tr>
-<tr>
-<td>proxy_connect_timeout 30;</td>
-<td>代理接连后端超时时间</td>
-</tr>
-<tr>
-<td>proxy_send_timeout 60;</td>
-<td>后端传递数据至代理的超时时间</td>
-</tr>
-<tr>
-<td>proxy_read_timeout 60;</td>
-<td>后端相应代理的超时时间</td>
-</tr>
-<tr>
-<td>proxy_buffering on;</td>
-<td>是否开启proxy的buffer功能</td>
-</tr>
-<tr>
-<td>proxy_buffer_size 32k;</td>
-<td>设置buffer大小</td>
-</tr>
-<tr>
-<td>proxy_buffers 4 128k;</td>
-<td>设置存储被代理服务器上的数据所占用的buffer的个数和每个buffer的大小</td>
-</tr>
-</tbody></table>
-<p>X-Forwarded-For可以nginx的日志查看到</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">tail -f &#x2F;var&#x2F;log&#x2F;nginx&#x2F;access.log<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+&#x2F;** MySQL主机 *&#x2F;
+define(&#39;DB_HOST&#39;, &#39;172.16.1.51&#39;);<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<h3 id="3-2-参数多的时候如何配置"><a href="#3-2-参数多的时候如何配置" class="headerlink" title="3.2 参数多的时候如何配置"></a>3.2 参数多的时候如何配置</h3><blockquote>
-<p>可将参数写到一个文件中，然后在nginx配置文件里include包含进去</p>
-</blockquote>
-<p>1、创建包含参数的文件</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 conf.d]# cat &#x2F;etc&#x2F;nginx&#x2F;proxy_params
-proxy_set_header Host $http_host;
-proxy_set_header X-Real-IP $remote_addr;
-proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+<p>5、拆分172.16.1.7wecenter连接远程172.16.1.51数据库信息</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 zh]# grep -R &quot;Bgx123.com&quot; *
+	system&#x2F;config&#x2F;database.php:  &#39;password&#39; &#x3D;&gt; &#39;Bgx123.com&#39;,
+[root@web01 zh]# vim &#x2F;code&#x2F;zh&#x2F;system&#x2F;config&#x2F;database.php 
+	$config[&#39;driver&#39;] &#x3D; &#39;MySQLi&#39;;^M
+	$config[&#39;master&#39;] &#x3D; array (
+	  &#39;charset&#39; &#x3D;&gt; &#39;utf8&#39;,
+	  &#39;host&#39; &#x3D;&gt; &#39;172.16.1.51&#39;,
+	  &#39;username&#39; &#x3D;&gt; &#39;oldboy&#39;,
+	  &#39;password&#39; &#x3D;&gt; &#39;Bgx123.com&#39;,
+	  &#39;dbname&#39; &#x3D;&gt; &#39;zh&#39;,
+	);^M<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-proxy_connect_timeout 30;
-proxy_send_timeout 60;
-proxy_read_timeout 60;
+<p>6、拆分172.16.1.7 edusoho连接远程172.16.1.51数据库信息</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 edusoho]# vim &#x2F;code&#x2F;edusoho&#x2F;app&#x2F;config&#x2F;parameters.yml
+database_driver: pdo_mysql
+database_host: 172.16.1.51
+database_port: 3306
+database_name: edusoho
+database_user: oldboy
+database_password: &#39;Bgx123.com&#39;
 
-proxy_buffering on;
-proxy_buffer_size 32k;
-proxy_buffers 4 128k;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+必须清理缓存
+[root@web01 edusoho]# rm -rf &#x2F;code&#x2F;edusoho&#x2F;app&#x2F;cache&#x2F;*<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<p>2、在配置文件中导入，方便后续多个location使用</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">location &#x2F; &#123;
-    proxy_pass http:&#x2F;&#x2F;127.0.0.1:8080;
-    include proxy_params;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+<h2 id="二、扩展多台web服务器"><a href="#二、扩展多台web服务器" class="headerlink" title="二、扩展多台web服务器"></a>二、扩展多台web服务器</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.统一环境
+    0）准备对应的www用户
+    [root@web02 ~]# groupadd -g666 www
+    [root@web02 ~]# useradd -u666 -g666 www
+
+    1）拷贝web01上面的yum仓库
+    [root@web02 ~]# scp root@172.16.1.7:&#x2F;etc&#x2F;yum.repos.d&#x2F;*.repo &#x2F;etc&#x2F;yum.repos.d&#x2F;
+
+    2）安装nginx和php
+    [root@web02 ~]# yum -y install nginx php71w php71w-cli php71w-common php71w-devel php71w-embedded php71w-gd php71w-mcrypt php71w-mbstring php71w-pdo php71w-xml php71w-fpm php71w-mysqlnd php71w-opcache php71w-pecl-memcached php71w-pecl-redis php71w-pecl-mongodb
+
+2.统一配置（同步web01上面的配置到web02）
+    1）同步nginx
+    [root@web02 ~]# rsync  -avz --delete root@172.16.1.7:&#x2F;etc&#x2F;nginx&#x2F; &#x2F;etc&#x2F;nginx&#x2F;
+    [root@web02 ~]# nginx -t
+    [root@web02 ~]# systemctl enable nginx
+    [root@web02 ~]# systemctl start nginx
+
+    2）同步php（&#x2F;etc&#x2F;php-fpm.conf &#x2F;etc&#x2F;php-fpm.d  &#x2F;etc&#x2F;php.ini）
+    [root@web02 ~]# rsync  -avz --delete root@172.16.1.7:&#x2F;etc&#x2F;php* &#x2F;etc&#x2F;
+    [root@web02 ~]# systemctl enable php-fpm
+    [root@web02 ~]# systemctl start php-fpm
+
+3.统一代码
+    [root@web01 ~]# tar czf code.tar.gz &#x2F;code				#在web01上打包站点
+    [root@web01 ~]# scp code.tar.gz root@172.16.1.8:&#x2F;tmp	#在web01上将打包好的代码发送给web02
+    [root@web02 ~]# tar xf &#x2F;tmp&#x2F;code.tar.gz -C &#x2F;			#在web02上进行解压，并解压到&#x2F;目录下
+
+4.配置解析，进行访问<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="三、NFS共享多台web的静态资源"><a href="#三、NFS共享多台web的静态资源" class="headerlink" title="三、NFS共享多台web的静态资源"></a>三、NFS共享多台web的静态资源</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.准备172.16.1.31共享存储服务器，规划目录，配置好权限
+    0）创建用户
+    [root@nfs ~]# groupadd -g666 www
+    [root@nfs ~]# useradd -u666 -g666 www	
+
+    1）安装
+    [root@nfs ~]# yum install nfs-utils -y
+
+    2）配置
+    [root@nfs ~]# cat &#x2F;etc&#x2F;exports
+    &#x2F;data&#x2F;blog 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
+    &#x2F;data&#x2F;zh 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
+    &#x2F;data&#x2F;edu 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
+
+    3）根据配置，创建目录，准备用户，授权等等
+    [root@nfs ~]# rm -rf &#x2F;data&#x2F;
+    [root@nfs ~]# mkdir &#x2F;data&#x2F;&#123;blog,zh,edu&#125; -p
+    [root@nfs ~]# chown -R www.www &#x2F;data&#x2F;
+
+    4）启动
+    [root@nfs ~]# systemctl enable nfs-utils 
+    [root@nfs ~]# systemctl restart nfs-utils
+
+2.将图片较多的web02服务器，推送到nfs共享存储上
+    http:&#x2F;&#x2F;blog.oldboy.com&#x2F;wp-content&#x2F;uploads&#x2F;2019&#x2F;01&#x2F;timg.jpg
+
+    [root@web02 ~]# cd &#x2F;code&#x2F;wordpress&#x2F;wp-content
+    [root@web02 wp-content]# scp -r uploads&#x2F;* root@172.16.1.31:&#x2F;data&#x2F;blog&#x2F;
+
+    注意：需要上nfs服务器上进行重新的递归授权，否则会出现无法上传文件的错误
+    [root@nfs ~]# chown -R www.www &#x2F;data&#x2F;
+
+3.web01和web02分别都进行挂载，此时图片进行实现了共享
+    mount -t nfs 172.16.1.31:&#x2F;data&#x2F;blog  &#x2F;code&#x2F;wordpress&#x2F;wp-content&#x2F;uploads&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 
       
@@ -1611,6 +1619,649 @@ web02的Tomcat服务正常，关掉web01的nginx服务
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day01-%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AE%89%E8%A3%85/%E8%AF%BE%E5%A0%82%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day01-%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AE%89%E8%A3%85/%E8%AF%BE%E5%A0%82%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">运维之基础命令--虚拟机安装</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:08:58" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="day01-课堂笔记"><a href="#day01-课堂笔记" class="headerlink" title="day01 : 课堂笔记"></a>day01 : 课堂笔记</h1><h2 id="安装系统"><a href="#安装系统" class="headerlink" title="安装系统"></a>安装系统</h2><p><strong>1、安装虚拟机</strong></p>
+<p><img src="/.%5Cassets%5Cimage-20210302121236930.png" alt="image-20210302121236930"></p>
+<p>解压上述软件，创建vmware.exe快捷方式，然后用快捷方式打开。</p>
+<p><img src="/.%5Cassets%5Cimage-20210302121408360.png" alt="image-20210302121408360"></p>
+<p><strong>2、创建虚拟机</strong></p>
+<p><img src="/.%5Cassets%5Cimage-20210302121456338.png" alt="image-20210302121456338"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302121550128.png" alt="image-20210302121550128"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302121622000.png" alt="image-20210302121622000"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302121745568.png" alt="image-20210302121745568"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302122035359.png" alt="image-20210302122035359"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302122256831.png" alt="image-20210302122256831"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302122359568.png" alt="image-20210302122359568"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302122603313.png" alt="image-20210302122603313"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302122657199.png" alt="image-20210302122657199"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302123826623.png" alt="image-20210302123826623"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124229475.png" alt="image-20210302124229475"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124308081.png" alt="image-20210302124308081"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124327456.png" alt="image-20210302124327456"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124404318.png" alt="image-20210302124404318"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124713502.png" alt="image-20210302124713502"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124741038.png" alt="image-20210302124741038"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302125049653.png" alt="image-20210302125049653"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day08-%E6%89%93%E5%8C%85%E4%B8%8E%E5%8E%8B%E7%BC%A9/%E6%89%93%E5%8C%85%E4%B8%8E%E5%8E%8B%E7%BC%A9%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day08-%E6%89%93%E5%8C%85%E4%B8%8E%E5%8E%8B%E7%BC%A9/%E6%89%93%E5%8C%85%E4%B8%8E%E5%8E%8B%E7%BC%A9%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">运维之基础命令--打包与压缩</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:13:25" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="打包和压缩"><a href="#打包和压缩" class="headerlink" title="打包和压缩"></a>打包和压缩</h1><blockquote>
+<p>将文件或文件夹合并成一个包，然后通过压缩算法进行数据压缩，减小包的体积，方便网络传输。</p>
+</blockquote>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">windows：
+	<span class="token function">zip</span>
+	<span class="token function">rar</span>
+
+linux:
+	<span class="token function">zip</span>
+	<span class="token function">tar</span>
+	gz
+	bz2
+	tar.gz
+	tar.bz2
+
+压缩算法：
+	<span class="token function">gzip</span>
+	<span class="token function">bzip2</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="zip"><a href="#zip" class="headerlink" title="zip"></a>zip</h2><blockquote>
+<p>是一个Windows和Linux中常用打包压缩工具，支持的压缩算法是zip。</p>
+</blockquote>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">zip工具需要安装
+	yum <span class="token function">install</span> <span class="token function">zip</span> <span class="token function">unzip</span> -y<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<h3 id="zip压缩一个文件"><a href="#zip压缩一个文件" class="headerlink" title="zip压缩一个文件"></a>zip压缩一个文件</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 格式</span>
+	<span class="token function">zip</span> <span class="token punctuation">[</span>参数<span class="token punctuation">]</span> 压缩包名称  文件路径
+
+<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># zip 123.zip 123.log </span>
+  adding: <span class="token number">123</span>.log <span class="token punctuation">(</span>deflated <span class="token number">87</span>%<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
+total <span class="token number">4732</span>
+-rw-r--r--  <span class="token number">1</span> root root  <span class="token number">646165</span> Mar  <span class="token number">9</span> <span class="token number">10</span>:31 <span class="token number">123</span>.log
+-rw-r--r--  <span class="token number">1</span> root root   <span class="token number">85296</span> Mar <span class="token number">11</span> <span class="token number">11</span>:58 <span class="token number">123</span>.zip<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="zip压缩文件夹"><a href="#zip压缩文件夹" class="headerlink" title="zip压缩文件夹"></a>zip压缩文件夹</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 需要一个-r参数去递归压缩文件夹下的所有内容</span>
+<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># zip -r dir.zip dir/</span>
+  adding: dir/ <span class="token punctuation">(</span>stored <span class="token number">0</span>%<span class="token punctuation">)</span>
+  adding: dir/one/ <span class="token punctuation">(</span>stored <span class="token number">0</span>%<span class="token punctuation">)</span>
+  adding: dir/123.log <span class="token punctuation">(</span>deflated <span class="token number">87</span>%<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="zip的静默输出"><a href="#zip的静默输出" class="headerlink" title="zip的静默输出"></a>zip的静默输出</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># -q：参数就是不输出任何打包信息</span>
+<span class="token punctuation">[</span>root@abc opt<span class="token punctuation">]</span><span class="token comment"># zip -r -q etc.zip /etc/</span>
+<span class="token punctuation">[</span>root@abc opt<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
+total <span class="token number">14200</span>
+-rw-r--r-- <span class="token number">1</span> root root <span class="token number">13674457</span> Mar <span class="token number">11</span> <span class="token number">12</span>:15 etc.zip<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="zip解压命令（unzip）"><a href="#zip解压命令（unzip）" class="headerlink" title="zip解压命令（unzip）"></a>zip解压命令（unzip）</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 格式</span>
+	<span class="token function">unzip</span> <span class="token punctuation">[</span>参数<span class="token punctuation">]</span> 压缩包路径
+
+<span class="token comment"># unzip解压命令只能解压由zip打包的压缩文件</span>
+<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># unzip dir.zip </span>
+Archive:  dir.zip
+  inflating: dir/123.log             
+<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># </span>
+
+<span class="token comment"># 其他压缩包由unzip解压时随即报错。</span>
+<span class="token punctuation">[</span>root@abc opt<span class="token punctuation">]</span><span class="token comment"># unzip nginx-.tar.gz</span>
+Archive:  nginx-.tar.gz
+  End-of-central-directory signature not found.  Either this <span class="token function">file</span> is not
+  a zipfile, or it constitutes one disk of a multi-part archive.  In the
+  latter <span class="token keyword">case</span> the central directory and zipfile comment will be found on
+  the last disk<span class="token punctuation">(</span>s<span class="token punctuation">)</span> of this archive.
+unzip:  cannot <span class="token function">find</span> zipfile directory <span class="token keyword">in</span> one of nginx-.tar.gz or
+        nginx-.tar.gz.zip, and cannot <span class="token function">find</span> nginx-.tar.gz.ZIP, period.
+
+
+<span class="token comment"># 查看压缩包中压缩那些内容，不解压？</span>
+<span class="token comment"># 只查看压缩包内容不解压需要使用 -l 参数</span>
+<span class="token punctuation">[</span>root@abc opt<span class="token punctuation">]</span><span class="token comment"># unzip -l dir.zip </span>
+Archive:  dir.zip
+  Length      Date    Time    Name
+---------  ---------- -----   ----
+        <span class="token number">0</span>  03-11-2021 <span class="token number">12</span>:04   dir/
+---------                     -------
+        <span class="token number">0</span>                     <span class="token number">1</span> <span class="token function">file</span>
+
+<span class="token comment"># 解压到指定目录（-d）</span>
+<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># unzip -d /root/  etc.zip </span>
+<span class="token punctuation">[</span>root@abc opt<span class="token punctuation">]</span><span class="token comment"># cd /root/</span>
+<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls</span>
+<span class="token punctuation">]</span>        anaconda-ks.cfg  dir.zip  index.html           test.pdf.gz  xxxeth0xxx           系统优化.md
+<span class="token number">123</span>.log  demo.txt         etc      nginx-0.1.22.tar.gz  test.txt     上传与下载.md
+<span class="token number">123</span>.zip  <span class="token function">dir</span>              eth0xxx  <span class="token builtin class-name">test</span>                 xxxeth0      文件管理_<span class="token punctuation">(</span>高级<span class="token punctuation">)</span>.pdf
+
+<span class="token comment"># 静默输出(-q)</span>
+<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># rm -rf etc</span>
+<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># unzip -q -d /root/ /opt/etc.zip </span>
+<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
+total <span class="token number">4828</span>
+drwxr-xr-x  <span class="token number">91</span> root root    <span class="token number">8192</span> Mar <span class="token number">11</span> <span class="token number">11</span>:16 etc<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="tar"><a href="#tar" class="headerlink" title="tar"></a>tar</h2><blockquote>
+<p>tar压缩支持多种压缩算法</p>
+<p>tar.gz   gzip (用的最多)</p>
+<p>tar.bz2 bzip2</p>
+</blockquote>
+<h3 id="gzip"><a href="#gzip" class="headerlink" title="gzip"></a>gzip</h3><blockquote>
+<p>通过gzip压缩算法，将文件压缩一定体积，有利于传输, 不支持打包</p>
+</blockquote>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
+total <span class="token number">4828</span>
+-rw-r--r--   <span class="token number">1</span> root root  <span class="token number">244977</span> Mar <span class="token number">10</span> <span class="token number">12</span>:12 index.html
+<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># gzip index.html </span>
+<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
+total <span class="token number">4612</span>
+-rw-r--r--   <span class="token number">1</span> root root   <span class="token number">22652</span> Mar <span class="token number">10</span> <span class="token number">12</span>:12 index.html.gz<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="gzip压缩一个目录"><a href="#gzip压缩一个目录" class="headerlink" title="gzip压缩一个目录"></a>gzip压缩一个目录</h4><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc etc<span class="token punctuation">]</span><span class="token comment"># gzip -r /etc</span>
+<span class="token punctuation">[</span>root@abc etc<span class="token punctuation">]</span><span class="token comment"># ls </span>
+abrt                        GREP_COLORS.gz               my.cnf.d                 security
+adjtime.gz                  groff                        my.cnf.gz                selinux
+aliases.db.gz               group-.gz                    NetworkManager           services.gz
+aliases.gz                  group.gz                     networks.gz              sestatus.conf.gz
+alternatives                grub2.cfg                    nsswitch.conf.bak.gz     sgml
+anacrontab.gz               grub.d                       nsswitch.conf.gz         shadow<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="gzip解压-d"><a href="#gzip解压-d" class="headerlink" title="gzip解压(-d)"></a>gzip解压(-d)</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
+-rw-r--r--   <span class="token number">1</span> <span class="token number">0</span> <span class="token number">0</span>   <span class="token number">22652</span> Mar <span class="token number">10</span> <span class="token number">12</span>:12 index.html.gz
+<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># gzip -d index.html.gz </span>
+<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
+total <span class="token number">4828</span>
+-rw-r--r--   <span class="token number">1</span> <span class="token number">0</span> <span class="token number">0</span>  <span class="token number">244977</span> Mar <span class="token number">10</span> <span class="token number">12</span>:12 index.html<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="bzip2"><a href="#bzip2" class="headerlink" title="bzip2"></a>bzip2</h3><blockquote>
+<p>使用bzip2 压缩算法来压缩一定体积的文件。</p>
+</blockquote>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
+total <span class="token number">4828</span>
+-rw-r--r--   <span class="token number">1</span> root root  <span class="token number">646165</span> Mar  <span class="token number">9</span> <span class="token number">10</span>:31 <span class="token number">123</span>.log     
+<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># bzip2 123.log </span>
+<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
+total <span class="token number">4240</span>
+-rw-r--r--   <span class="token number">1</span> root root       <span class="token number">0</span> Mar <span class="token number">10</span> <span class="token number">12</span>:04 <span class="token punctuation">]</span>
+-rw-r--r--   <span class="token number">1</span> root root   <span class="token number">42210</span> Mar  <span class="token number">9</span> <span class="token number">10</span>:31 <span class="token number">123</span>.log.bz2<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="bzip2解压（-d）"><a href="#bzip2解压（-d）" class="headerlink" title="bzip2解压（-d）"></a>bzip2解压（-d）</h3><blockquote>
+<p>bzip2解压是针对于bzip2压缩的压缩包来进行解压。</p>
+</blockquote>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
+total <span class="token number">4240</span>
+-rw-r--r--   <span class="token number">1</span> root root   <span class="token number">42210</span> Mar  <span class="token number">9</span> <span class="token number">10</span>:31 <span class="token number">123</span>.log.bz2
+<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># bzip2 -d 123.log.bz2 </span>
+<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
+total <span class="token number">4828</span>
+-rw-r--r--   <span class="token number">1</span> root root  <span class="token number">646165</span> Mar  <span class="token number">9</span> <span class="token number">10</span>:31 <span class="token number">123</span>.log<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="tar-1"><a href="#tar-1" class="headerlink" title="tar"></a>tar</h3><blockquote>
+<p>tar其实是一个打包工具，不具备压缩功能，但是可以使用参数调用压缩工具来进行解压。</p>
+</blockquote>
+<h4 id="参数"><a href="#参数" class="headerlink" title="参数"></a>参数</h4><ul>
+<li><p>-c : 创建压缩包</p>
+</li>
+<li><p>-f : 指定压缩包名称</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># tar -c -f test.tar 123.log </span>
+<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
+total <span class="token number">5468</span>
+-rw-r--r--   <span class="token number">1</span> root root  <span class="token number">655360</span> Mar <span class="token number">11</span> <span class="token number">15</span>:49 test.tar<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>-z ： 指定使用gzip压缩工具进行压缩</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># tar  -c -z -f test-one.tar 123.log </span>
+<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l </span>
+total <span class="token number">5084</span>
+-rw-r--r--   <span class="token number">1</span> root root   <span class="token number">85279</span> Mar <span class="token number">11</span> <span class="token number">15</span>:56 test-one.tar
+
+<span class="token comment"># 注：使用-z参数，不会自动添加.gz后缀</span>
+
+<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># tar -c -z -f anaconda.tar.gz  anaconda-ks.cfg </span>
+<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
+total <span class="token number">5084</span>
+-rw-r--r--   <span class="token number">1</span> root root    <span class="token number">1010</span> Mar <span class="token number">11</span> <span class="token number">15</span>:58 anaconda.tar.gz<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>-j : 指定使用bzip2压缩工具进行压缩</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># tar -c -j -f 123-bask-one.tar 123.log </span>
+<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
+total <span class="token number">5172</span>
+-rw-r--r--   <span class="token number">1</span> root root   <span class="token number">42328</span> Mar <span class="token number">11</span> <span class="token number">16</span>:00 <span class="token number">123</span>-bak.tar.bz2
+-rw-r--r--   <span class="token number">1</span> root root   <span class="token number">42328</span> Mar <span class="token number">11</span> <span class="token number">16</span>:01 <span class="token number">123</span>-bask-one.tar<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>-J : 指定使用xz压缩工具进行压缩</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc test-tar<span class="token punctuation">]</span><span class="token comment"># tar -c -J  -f etc.tar.xz /etc/</span>
+<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
+-rw-r--r-- <span class="token number">1</span> root root <span class="token number">9493376</span> Mar <span class="token number">11</span> <span class="token number">17</span>:00 etc.tar.xz<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>-t : 查看压缩包内容</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># tar -t -f 123-bak.tar.bz2 </span>
+<span class="token number">123</span>.log
+<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>-v ： 显示压缩包压缩过程</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># tar -x -v -f etc.tar -C /opt/</span>
+/etc/centos-release
+/etc/DIR_COLORS.lightbgcolor
+/etc/libaudit.conf
+/etc/mail.rc<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>-P : 允许使用绝对路径进行打包</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># tar -c -P -f 123-three.tar /etc/passwd</span>
+<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># tar -c -f 123-three.tar /etc/passwd</span>
+tar: Removing leading `/' from member names
+<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>-x ： 解压</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># tar解压是按照原来的路径进行解压</span>
+<span class="token punctuation">[</span>root@abc test<span class="token punctuation">]</span><span class="token comment"># tar -x -f etc.tar </span>
+
+<span class="token comment"># tar会自动识别压缩功能</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>-C ： 指定解压路径</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># tar -x -f etc.tar -C /opt/</span>
+tar: Removing leading `/' from member names
+<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># cd /opt/</span>
+<span class="token punctuation">[</span>root@abc opt<span class="token punctuation">]</span><span class="token comment"># ls</span>
+abc23  <span class="token function">dir</span>  dir.zip  etc  nginx-0.1.22.tar.gz  nginx-.tar.gz  xxx
+<span class="token punctuation">[</span>root@abc opt<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>–exclude : 排除某些文件</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc test-tar<span class="token punctuation">]</span><span class="token comment"># tar -c -f abc.tar ./* --exclude=abc7 --exclude=abc5   --exclude=abc1 </span>
+<span class="token punctuation">[</span>root@abc test-tar<span class="token punctuation">]</span><span class="token comment"># tar -t -f abc.tar </span>
+./abc2
+./abc3
+./abc4
+./abc6
+./abc8
+./abc9
+<span class="token punctuation">[</span>root@abc test-tar<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>–exclude-from : 根据某个文件列表排除多个文件</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc test-tar<span class="token punctuation">]</span><span class="token comment"># cat list.txt </span>
+abc995
+abc996
+abc997
+abc998
+abc999
+<span class="token punctuation">[</span>root@abc test-tar<span class="token punctuation">]</span><span class="token comment"># tar -c -f abc.tar ./* --exclude-from=list.txt </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>-h : 打包软连接</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc test-tar<span class="token punctuation">]</span><span class="token comment"># tar -c -h -f bin-h.tar /bin</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></li>
+</ul>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">tar参数
+	-c <span class="token builtin class-name">:</span> 创建压缩
+	-f ； 指定压缩包名称
+	-z <span class="token builtin class-name">:</span> 使用gzip压缩工具进行压缩
+	-j <span class="token builtin class-name">:</span> 使用bzip2压缩工具进行压缩
+	-J <span class="token builtin class-name">:</span> 使用xz压缩工具进行压缩
+	-t <span class="token builtin class-name">:</span> 显示压缩包内容，不解压
+	-v <span class="token builtin class-name">:</span> 显示压缩过程
+	-P <span class="token builtin class-name">:</span> 允许使用绝对路径进行压缩
+	-x <span class="token builtin class-name">:</span> 解压
+	-C <span class="token builtin class-name">:</span> 指定解压路径
+	-h <span class="token builtin class-name">:</span> 打包软连接
+	--exclude <span class="token builtin class-name">:</span> 排除某些文件
+	--exclude-from <span class="token builtin class-name">:</span> 根据文件列表排除多个文件<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+
+
+
+<h2 id="习题"><a href="#习题" class="headerlink" title="习题"></a>习题</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>.linux下常见的压缩包类型有哪些
+<span class="token function">zip</span> 
+gz 
+bz2 
+tar.gz 
+tar.bz 
+<span class="token function">tar</span>
+
+<span class="token number">2</span>.将/etc/hosts文件用tar格式打包。
+<span class="token function">tar</span> -c -P -f hosts.tar /etc/hosts
+
+<span class="token number">3</span>.查看打包之后的/etc/hosts的文件内容，在不解压的情况下查看。
+<span class="token function">tar</span> -t -f hosts.tar
+
+<span class="token number">4</span>.使用tar打包/var/log/目录。
+<span class="token function">tar</span> -c -P -f hosts.tar /var/log/
+
+<span class="token number">5</span>.使用zip打包/etc目录。
+<span class="token function">zip</span> -r etc.zip /etc
+
+<span class="token number">6</span>.查看/var/log/abc.zip目录的压缩包中有哪些内容。
+<span class="token function">unzip</span> -l /var/log/abc.zip
+
+<span class="token number">7</span>.将/var/log/abc.zip目录解压到/opt目录中。
+<span class="token function">unzip</span> -d /opt /var/log/abc.zip
+
+<span class="token number">10</span>.解压/etc/abc.tar.gz目录到/opt目录中。
+<span class="token function">tar</span> -xf /etc/abc.tar.gz -C /opt
+
+<span class="token number">11</span>.用zip打包/opt目录，要求不显示打包过程。
+<span class="token function">zip</span> -q opt.zip /opt
+
+<span class="token function">zip</span> <span class="token punctuation">[</span>参数<span class="token punctuation">]</span> 压缩包名称  压缩文件路径
+ 
+<span class="token number">12</span>.打包/etc/目录，要求是.bz2格式
+<span class="token function">tar</span> -c -j -f etc.tar /etc
+
+<span class="token number">13</span>.打包/var/log目录，要求是.xz格式
+<span class="token function">tar</span> -c -J -f log.tar.xz /var/log
+
+<span class="token number">14</span>.使用tar命令打包/etc/时，会出现一个删根的操作，怎样打包不会进行删根的操作
+<span class="token function">tar</span> -c -P -f etc.tar /etc
+
+<span class="token number">15</span>.打包/etc/目录，要求不打包/etc/hosts这个文件。
+
+<span class="token number">16</span>.打包/etc/目录，要求不打包/etc/hosts和/etc/hostname这两个文件。
+
+<span class="token number">17</span>.打包/etc/目录，但要排除passwd,shadow,group,gshadow,hosts,hostname这些文件。<span class="token punctuation">(</span>你能用两种方法实现吗<span class="token punctuation">)</span>
+
+<span class="token number">18</span>.已知/etc/grub2.cfg文件是个软连接文件，在你不知道的情况下，请问怎么打包该文件的真实文件。
+
+<span class="token number">19</span>.把/var/log/目录中所有.log的文件进行打包成一个压缩包，名称定义为log.tar.gz的压缩包。
+
+<span class="token number">20</span>.已知文件oldboy.gz,请问在不解压的情况下，怎样查看该文件的内容。
+
+<span class="token number">21</span>.打包/etc/目录，当前时间方式的压缩包:比如: <span class="token number">2019</span>-12-24_etc.tar.gz
+
+<span class="token number">22</span>.创建/data/bak目录，然后复制如下文件到/data/bak目录下
+
+<span class="token number">23</span>.接22题，使用tar命令对/data/bak目录下的文件及目录以gzip的格式进行归档压缩到/data目录下（压缩包的名字以自己名字命名）
+
+<span class="token number">24</span>.使用tar命令查看上题/data目录下压缩包内的内容。
+
+<span class="token number">25</span>.把第23题/data目录下的压缩包，解压到/backup目录下
+
+<span class="token number">26</span>.再次使用tar命令把/data/bak目录下的文件及目录以gzip的格式进行归档压缩到/data目录下，但是在进行归档压缩时，排除文件“sudoers”，然后查看该压缩包内容是否存在文件“sudoers”（压缩包名自行拟定）
+
+<span class="token number">27</span>.打包/etc目录下所有普通文件到root用户家目录。
+
+<span class="token number">28</span>.打包/etc/目录到/opt/目录下，名称要求以当前主机名和ip地址命名，例：oldboy_10.0.0.100.tar.gz
+
+<span class="token number">29</span>.如何使用gzip命令对文件进行压缩、解压
+
+<span class="token number">30</span>.如何用zip命令对文件以及目录进行压缩、解压
+
+<span class="token number">32</span>.打包opt整个目录，并命名test_opt.tar.gz
+
+<span class="token number">33</span>.查看打包好的test_opt.tar.gz里的文件
+
+<span class="token number">34</span>.将打包好的test_opt.tar.gz内容指定解压至/tmp目录
+
+<span class="token number">35</span>.打包etc目录下的所有文件，不要目录只要文件
+
+<span class="token number">36</span>.打包etc目录下的所有文件，排除passwd，shadow
+
+<span class="token number">37</span>.打包etc目录下的所有以p开头的文件
+
+<span class="token number">38</span>.打包etc目录下所有大于1M的文件<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+
+
+
+
+
+<h2 id="习题-1"><a href="#习题-1" class="headerlink" title="习题"></a>习题</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">2</span>.权限中的rwx-，每个字符所代表什么意思？对应的数字是什么？
+
+r		可读		<span class="token number">4</span>
+
+w		可写		<span class="token number">2</span>
+
+x		可执行		<span class="token number">1</span>
+
+-		没有权限	<span class="token number">0</span>
+
+
+<span class="token number">3</span>.-rwxr-xr-x，写出对应数字权限
+
+
+
+<span class="token number">4</span>.-rwxr--r--，写出对应数字权限
+
+
+<span class="token number">5</span>.-r-xr-x--x，写出对应数字权限
+
+
+
+<span class="token number">6</span>.-rw-r-xr-x，写出对应数字权限
+
+
+<span class="token number">7</span>.-r--r--r--，写出对应数字权限
+
+
+
+<span class="token number">8</span>.-r-xr-----，写出对应数字权限
+
+
+<span class="token number">9</span>.---x-w-r--，写出对应数字权限
+
+
+<span class="token number">10</span>.-rwxr--rw-，写出对应数字权限
+
+
+
+<span class="token number">11</span>.-rw-r--r--，写出对应数字权限
+
+
+<span class="token number">12</span>.---xr--rwx，写出对应数字权限
+
+
+<span class="token number">13.777</span>，写出对应字母权限
+
+
+<span class="token number">14.545</span>，写出对应字母权限
+
+
+
+
+<span class="token number">15.744</span>，写出对应字母权限
+
+
+
+<span class="token number">16.600</span>，写出对应字母权限
+
+
+
+<span class="token number">17.641</span>，写出对应字母权限
+
+
+<span class="token number">18.711</span>，写出对应字母权限
+
+
+
+<span class="token number">19.700</span>，写出对应字母权限
+
+
+
+<span class="token number">20.555</span>，写出对应字母权限
+
+
+
+<span class="token number">21.733</span>，写出对应字母权限
+
+
+<span class="token number">22.713</span>，写出对应字母权限
+
+
+
+<span class="token number">23</span>.建一个目录/test,查看这个目录的默认权限是?
+
+
+
+
+<span class="token number">24</span>.进入/test目录中,建一个文件abc,查看其默认的权限为？
+
+
+
+
+<span class="token number">25</span>.创建一个文件test.txt,并其将权限改为600.
+
+
+
+<span class="token number">26</span>.将test.txt文件的权限改为755.
+
+
+
+<span class="token number">27</span>.将test.txt文件的权限改为000.
+
+
+
+<span class="token number">28</span>.修改test.txt文件的权限为644.
+
+
+
+<span class="token number">29</span>.给test.txt文件的属主加上x权限。
+
+
+
+
+<span class="token number">30</span>.给test.txt文件的其他用户加上x权限。
+
+
+
+<span class="token number">31</span>.去除test.txt文件的所有执行权限。
+
+
+
+<span class="token number">32</span>.给/test目录及目录下的所有文件或目录的权限统一改为744。
+
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day09-%E7%94%A8%E6%88%B7%E7%BB%84%E7%AE%A1%E7%90%86/%E7%AC%94%E8%AE%B0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2462,7 +3113,7 @@ yum <span class="token function">install</span> mariadb -y<span aria-hidden="tru
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day16-%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/%E7%AC%94%E8%AE%B0/">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day11-sudo%E4%B8%8Esu/sudo%20and%20su/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/myavatar.png">
@@ -2476,7 +3127,7 @@ yum <span class="token function">install</span> mariadb -y<span aria-hidden="tru
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day16-%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">运维之基础命令--进程管理</a>
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day11-sudo%E4%B8%8Esu/sudo%20and%20su/" class="post-title-link" itemprop="url">运维之基础命令--sudo和su</a>
         </h2>
 
         <div class="post-meta">
@@ -2487,7 +3138,7 @@ yum <span class="token function">install</span> mariadb -y<span aria-hidden="tru
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:14:15" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:13:48" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -2514,1137 +3165,288 @@ yum <span class="token function">install</span> mariadb -y<span aria-hidden="tru
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="进程"><a href="#进程" class="headerlink" title="进程"></a>进程</h1><p>程序：安装包</p>
-<p>进程：正在运行的实例</p>
-<p>CPU：计算</p>
-<p>内存：存储CPU计算使用的临时数据</p>
-<p>存储：</p>
-<p>进程和线程</p>
-<p>僵尸进程和孤儿进程</p>
-<p>僵尸进程：进程生命周期结束了，但是PID未被回收</p>
-<p>孤儿进程：父进程生命周期结束了，但是子进程未结束，子进程被系统进程接收</p>
-<p>1、查看进程</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 命令：ps, 默认查看当前进程</span>
-
-<span class="token comment"># 参数</span>
--a <span class="token builtin class-name">:</span> 查询所有进程
--x <span class="token builtin class-name">:</span> 查看后台所有的进程
--u <span class="token builtin class-name">:</span> 查看进程的用户
-
-<span class="token environment constant">USER</span> ： 开启当前进程的用户
-PID  ： 当前进程的ID号
-%CPU ： CPU的使用率
-%MEM ： 内存使用率
-VSZ  ： 进程启动时默认向计算机申请的内存
-RSS  ： 进程运行时实际使用的内存
-TTY  ： 进程运行的终端
-	？： 后台运行（没有终端）
-	tty：使用系统终端
-	pts：使用虚拟终端
-STAT ：进程运行状态
-	R ： 正在运行中的进程
-	+ ： 在前台运行
-	S ： 睡眠中状态
-	D ： 不可中断睡眠
-	T ： 停止状态
-	Z <span class="token builtin class-name">:</span>  僵尸状态
-	X ： 死掉的进程
-	<span class="token operator">&lt;</span> <span class="token builtin class-name">:</span> 优先级较高的进程
-	N ：优先级较低的进程
-	s <span class="token builtin class-name">:</span> 包含子进程       yum <span class="token function">install</span> psmisc -y 
-	l <span class="token builtin class-name">:</span> 已线程的方式运行
-	<span class="token operator">|</span> ： 代表管道
-START ： 进程的启动时间
-TIME  ： 占用CPU的时间
-COMMAND ： 进程执行的命令
-
-
--e <span class="token builtin class-name">:</span> 显示所有的进程
--f <span class="token builtin class-name">:</span> 格式化输出同时显示<span class="token environment constant">PPID</span>
-
-<span class="token environment constant">PPID</span> ： 父进程ID<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>2、top</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 根据一定频率的去监控系统</span>
-
-up前是系统时间
-up后是开启的时间
-
-load average: <span class="token number">0.01</span>, <span class="token number">0.42</span>, <span class="token number">0.73</span>
-<span class="token number">0.01</span>  ： 一分钟平均负载
-<span class="token number">0.42</span>  ： 五分钟平均负载
-<span class="token number">0.73</span>  ： 十五分钟平均负载
-
-平均负载：
-
-
-<span class="token comment"># CPU加压工具</span>
-stress --cpu <span class="token punctuation">[</span>需要加压的系统核心数<span class="token punctuation">]</span> --timeout <span class="token punctuation">[</span>加压的时间<span class="token punctuation">]</span>
-
-<span class="token comment"># CPU 性能加压工具</span>
-<span class="token comment">## 添加epel源（epel源主要用来安装红帽系列操作系统附加软件）</span>
-yum <span class="token function">install</span> stress -y
-
-<span class="token comment"># CPU 性能分析工具</span>
-yum <span class="token function">install</span> sysstat -y
-
-mpstat -P ALL <span class="token number">3</span>   
-
-<span class="token comment"># 进程性能分析⼯具</span>
-pidstat -u <span class="token number">1</span> <span class="token number">5</span>  
-
-
-
-Tasks
-Tasks: <span class="token number">125</span> total,   <span class="token number">1</span> running, <span class="token number">124</span> sleeping,   <span class="token number">0</span> stopped,   <span class="token number">0</span> zombie
-
-total <span class="token builtin class-name">:</span> 当前系统一共运行的是125个进程
-running <span class="token builtin class-name">:</span> 正在运行的是1个
-sleeping <span class="token builtin class-name">:</span> <span class="token number">124</span>个处于睡眠状态
-stopped <span class="token builtin class-name">:</span> 停止运行的进程数
-zombie  ：僵尸进程数
-
-
-%Cpu0  <span class="token builtin class-name">:</span>  <span class="token number">0.0</span> us,  <span class="token number">0.0</span> sy,  <span class="token number">0.0</span> ni,100.0 id,  <span class="token number">0.0</span> wa,  <span class="token number">0.0</span> hi,  <span class="token number">0.0</span> si,  <span class="token number">0.0</span> st
-
-us ：在单位时间进程使用CPU所占用的时间百分比
-sy <span class="token builtin class-name">:</span> 在单位时间内系统进程占用CPU时间百分比
-ni <span class="token builtin class-name">:</span> 在单位时间内优先使用CPU所占时间百分比
-<span class="token function">id</span> ：在单位时间内CPU空闲所占时间百分比
-wa <span class="token builtin class-name">:</span> 在单位时间内CPU阻塞态所占CPU时间的百分比
-hi <span class="token builtin class-name">:</span> 硬件中断
-si <span class="token builtin class-name">:</span> 软件中断
-st <span class="token builtin class-name">:</span> 其他占用CPU时间百分比
-
-KiB Mem <span class="token builtin class-name">:</span>  <span class="token number">2027892</span> total,  <span class="token number">1234180</span> free,   <span class="token number">176352</span> used,   <span class="token number">617360</span> buff/cache
-
-total ：系统总内存
-<span class="token function">free</span>  ：系统空闲内存
-used  <span class="token builtin class-name">:</span> 系统使用内存
-buff/cache ： 缓存使用内存
-avail Mem ：
-
-  PID <span class="token environment constant">USER</span>      PR  NI    VIRT    RES    SHR S  %CPU %MEM     TIME+ COMMAND  
-  
-PID ： 进程编号
-<span class="token environment constant">USER</span> ： 启动进程的用户
-PR <span class="token builtin class-name">:</span> 优先级
-NI ：nice值
-VIRT ： 虚拟内存
-RES  ： 使用内存
-SHR  ： 共享内存
-%CPU ： cpu使用率
-%MEM ：内存使用率
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>3、top快捷键</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">按1 <span class="token builtin class-name">:</span> 展示所有的CPU的详情
-按s <span class="token builtin class-name">:</span> 设置top监控频率（默认3秒）
-按m <span class="token builtin class-name">:</span> 按照内存排序 
-按z <span class="token builtin class-name">:</span> 添加颜色
-按p <span class="token builtin class-name">:</span> 按照CPU排序
-按l <span class="token builtin class-name">:</span> 展示CPU总负载（默认显示）<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>4、top的参数</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">-d ： 设置top的刷新频率
--p <span class="token builtin class-name">:</span>  设置查看的进程PID
-	<span class="token function">top</span> -d <span class="token number">1</span> -p <span class="token variable"><span class="token variable">`</span>pgrep nginx <span class="token operator">|</span> <span class="token function">head</span> -1<span class="token variable">`</span></span>
-
--u <span class="token builtin class-name">:</span>  查询指定用户的经常的进程
-	<span class="token function">top</span> -u oldboy
-
--n <span class="token builtin class-name">:</span> 表示查询n次
-	 <span class="token function">top</span> -d <span class="token number">0.1</span> -u oldboy -n <span class="token number">20</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-
-
-
-
-
-
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>epel<span class="token punctuation">]</span>
-<span class="token assign-left variable">name</span><span class="token operator">=</span>Extra Packages <span class="token keyword">for</span> Enterprise Linux <span class="token number">7</span> - <span class="token variable">$basearch</span>
-<span class="token assign-left variable">baseurl</span><span class="token operator">=</span>https://mirrors.tuna.tsinghua.edu.cn/epel/7/<span class="token variable">$basearch</span>
-<span class="token comment">#mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-7&amp;arch=$basearch</span>
-<span class="token assign-left variable">failovermethod</span><span class="token operator">=</span>priority
-<span class="token assign-left variable">enabled</span><span class="token operator">=</span><span class="token number">1</span>
-<span class="token assign-left variable">gpgcheck</span><span class="token operator">=</span><span class="token number">0</span>
-
-<span class="token punctuation">[</span>epel-debuginfo<span class="token punctuation">]</span>
-<span class="token assign-left variable">name</span><span class="token operator">=</span>Extra Packages <span class="token keyword">for</span> Enterprise Linux <span class="token number">7</span> - <span class="token variable">$basearch</span> - Debug
-<span class="token assign-left variable">baseurl</span><span class="token operator">=</span>https://mirrors.tuna.tsinghua.edu.cn/epel/7/<span class="token variable">$basearch</span>/debug
-<span class="token comment">#mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-debug-7&amp;arch=$basearch</span>
-<span class="token assign-left variable">failovermethod</span><span class="token operator">=</span>priority
-<span class="token assign-left variable">enabled</span><span class="token operator">=</span><span class="token number">0</span>
-<span class="token assign-left variable">gpgcheck</span><span class="token operator">=</span><span class="token number">0</span>
-
-<span class="token punctuation">[</span>epel-source<span class="token punctuation">]</span>
-<span class="token assign-left variable">name</span><span class="token operator">=</span>Extra Packages <span class="token keyword">for</span> Enterprise Linux <span class="token number">7</span> - <span class="token variable">$basearch</span> - Source
-<span class="token assign-left variable">baseurl</span><span class="token operator">=</span>https://mirrors.tuna.tsinghua.edu.cn/epel/7/SRPMS
-<span class="token comment">#mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-source-7&amp;arch=$basearch</span>
-<span class="token assign-left variable">failovermethod</span><span class="token operator">=</span>priority
-<span class="token assign-left variable">enabled</span><span class="token operator">=</span><span class="token number">0</span>
-<span class="token assign-left variable">gpgcheck</span><span class="token operator">=</span><span class="token number">0</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-
-
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day13-yum%E4%BB%93%E5%BA%93/yum%E4%BB%93%E5%BA%93/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day13-yum%E4%BB%93%E5%BA%93/yum%E4%BB%93%E5%BA%93/" class="post-title-link" itemprop="url">运维之基础命令--yum仓库</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:14:09" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="yum仓库"><a href="#yum仓库" class="headerlink" title="yum仓库"></a>yum仓库</h1><p>1、克隆两台主机</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">yum仓库主机
-	外网地址：192.168.15.30
-	内网地址：172.16.1.30
-
-yum测试主机
-	外网地址：192.168.15.31
-	内网地址：172.16.1.31
-
-修改的命令：
-	<span class="token function">vim</span> /etc/sysconfig/network-scripts/ifcfg-eth0
-	<span class="token function">vim</span> /etc/sysconfig/network-scripts/ifcfg-eth1
-	
-	重启网卡：systemctl restart network
-	
-	修改主机名：
-		yum仓库主机：hostnamectl set-hostname warehouse
-		yum测试主机：hostnamectl set-hostname yum-test
-	<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>2、配置yum仓库</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>、需要有一个软件包目录，存放软件包的
-<span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># mkdir /backup</span>
-	
-	<span class="token number">1.1</span>、缓存yum安装下载的软件包
-	<span class="token punctuation">[</span>root@warehouse <span class="token number">7</span><span class="token punctuation">]</span><span class="token comment"># vim /etc/yum.conf</span>
-	<span class="token punctuation">[</span>main<span class="token punctuation">]</span>
-    <span class="token assign-left variable">cachedir</span><span class="token operator">=</span>/var/cache/yum/<span class="token variable">$basearch</span>/<span class="token variable">$releasever</span>
-    <span class="token assign-left variable">keepcache</span><span class="token operator">=</span><span class="token number">1</span>
-    <span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># yum install mariadb -y</span>
-	
-	<span class="token number">1.2</span>、将缓存的软件包复制到yum仓库目录
-	<span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># cd /var/cache/yum/x86_64/7/base/packages/</span>
-	<span class="token punctuation">[</span>root@warehouse packages<span class="token punctuation">]</span><span class="token comment"># cp -rp ./* /backup/</span>
-    <span class="token punctuation">[</span>root@warehouse packages<span class="token punctuation">]</span><span class="token comment"># cd /backup/</span>
-    <span class="token punctuation">[</span>root@warehouse backup<span class="token punctuation">]</span><span class="token comment"># ll</span>
-    total <span class="token number">8964</span>
-    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">9175948</span> Oct <span class="token number">15</span> 02:55 mariadb-5.5.68-1.el7.x86_64.rpm
-	
-<span class="token number">2</span>、建立软件包依赖关系
-	<span class="token punctuation">[</span>root@warehouse backup<span class="token punctuation">]</span><span class="token comment"># yum install createrepo -y</span>
-	<span class="token punctuation">[</span>root@warehouse backup<span class="token punctuation">]</span><span class="token comment"># createrepo /backup/</span>
-    Spawning worker <span class="token number">0</span> with <span class="token number">1</span> pkgs
-    Spawning worker <span class="token number">1</span> with <span class="token number">0</span> pkgs
-    Workers Finished
-    Saving Primary metadata
-    Saving <span class="token function">file</span> lists metadata
-    Saving other metadata
-    Generating sqlite DBs
-    Sqlite DBs complete
-    <span class="token punctuation">[</span>root@warehouse backup<span class="token punctuation">]</span><span class="token comment"># ll</span>
-    total <span class="token number">8968</span>
-    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">9175948</span> Oct <span class="token number">15</span> 02:55 mariadb-5.5.68-1.el7.x86_64.rpm
-    drwxr-xr-x <span class="token number">2</span> root root    <span class="token number">4096</span> Mar <span class="token number">18</span> 08:54 repodata
-    <span class="token punctuation">[</span>root@warehouse backup<span class="token punctuation">]</span><span class="token comment"># ll repodata/</span>
-    total <span class="token number">28</span>
-    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">1970</span> Mar <span class="token number">18</span> 08:54 5d54624b2aa7a1fe974ff5553a9a78289683189c6a7b60c8c1421ecf011d270f-other.sqlite.bz2
-    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">3449</span> Mar <span class="token number">18</span> 08:54 5e68ee34f7e8f1a11a039f55c990bcc044f16bceb6af7f4486b55d518ad91346-primary.sqlite.bz2
-    -rw-r--r-- <span class="token number">1</span> root root  <span class="token number">539</span> Mar <span class="token number">18</span> 08:54 6e94b0fa1d98955542fb8238348ea171be7a130ba97573eb3ac756e1aadcec50-filelists.xml.gz
-    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">1291</span> Mar <span class="token number">18</span> 08:54 a9afb0b2457f41f5c2d64744a07d5d12599e6c2588c870ae73568cf345a0abca-other.xml.gz
-    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">1333</span> Mar <span class="token number">18</span> 08:54 cf41627875b17ef4bea5f0ea566ac63a5c83adc606d3ca730a74944ceb969028-primary.xml.gz
-    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">1158</span> Mar <span class="token number">18</span> 08:54 f34cbfd9e5608e8402041e98100f853e913f3df04d6946874c73ba31a78969ba-filelists.sqlite.bz2
-    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">2969</span> Mar <span class="token number">18</span> 08:54 repomd.xml
-    <span class="token punctuation">[</span>root@warehouse backup<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>3、测试连接（本地版本）</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>、备份系统所有的yum源
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># cd /etc/yum.repos.d/</span>
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mkdir backup1</span>
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mv *.repo backup1</span>
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># vim local.repo</span>
-<span class="token punctuation">[</span>local<span class="token punctuation">]</span>
-<span class="token assign-left variable">name</span><span class="token operator">=</span><span class="token string">"This is xxx"</span>
-<span class="token assign-left variable">baseurl</span><span class="token operator">=</span>file:///backup
-<span class="token assign-left variable">gpgcheck</span><span class="token operator">=</span><span class="token number">0</span>
-<span class="token assign-left variable">enabled</span><span class="token operator">=</span><span class="token number">1</span>
-
-<span class="token comment"># 清理yum缓存</span>
-<span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># yum clean all</span>
-<span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># rm -rf /var/cache/yum/x86_64/7/*</span>
-
-<span class="token comment"># 生成新的yum缓存</span>
-<span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># yum makecache</span>
-
-<span class="token comment"># 测试连接</span>
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># rpm -e mariadb</span>
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># rpm -ql mariadb</span>
-package mariadb is not installed
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum install mariadb</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-
-
-<p>4、测试连接（远程版本）</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#########################  yum仓库机器上执行  ###################################</span>
-<span class="token number">1</span>、备份系统所有的yum源
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># cd /etc/yum.repos.d/</span>
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mkdir local</span>
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mv *.repo local</span>
-
-<span class="token number">2</span>、安装远程访问软件
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># cd /etc/yum.repos.d/</span>
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mv backup1/*  .</span>
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum install vsftpd -y</span>
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># systemctl enable --now vsftpd </span>
-Created symlink from /etc/systemd/system/multi-user.target.wants/vsftpd.service to /usr/lib/systemd/system/vsftpd.service.
-
-<span class="token number">3</span>、配置系统yum仓库
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># cd /var/ftp</span>
-<span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># mkdir yum_warehouse</span>
-
-<span class="token number">4</span>、将软件包复制到yum仓库目录
-<span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># cp -rp /backup/* /var/ftp/yum_warehouse/</span>
-<span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># ll yum_warehouse/</span>
-total <span class="token number">8968</span>
--rw-r--r-- <span class="token number">1</span> root root <span class="token number">9175948</span> Oct <span class="token number">15</span> 02:55 mariadb-5.5.68-1.el7.x86_64.rpm
-drwxr-xr-x <span class="token number">2</span> root root    <span class="token number">4096</span> Mar <span class="token number">18</span> 08:54 repodata
-
-<span class="token number">5</span>、建立yum软件包依赖关系
-<span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># createrepo /var/ftp/yum_warehouse/</span>
-
-
-<span class="token comment">#########################  yum测试机器上执行  ###################################</span>
-<span class="token number">1</span>、本机测试网络连接
-    <span class="token number">1</span>、备份系统所有的yum源
-    <span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># cd /etc/yum.repos.d/</span>
-    <span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mv *.repo backup1</span>
-    <span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># vim local.repo</span>
-    <span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># cat local.repo </span>
-    <span class="token punctuation">[</span>local-ftp<span class="token punctuation">]</span>
-    <span class="token assign-left variable">name</span><span class="token operator">=</span><span class="token string">"This is ftp server"</span>
-    <span class="token assign-left variable">baseurl</span><span class="token operator">=</span>ftp://172.16.1.30/yum_warehouse
-    <span class="token assign-left variable">gpgcheck</span><span class="token operator">=</span><span class="token number">0</span>
-    <span class="token assign-left variable">enabled</span><span class="token operator">=</span><span class="token number">1</span>
-
-    <span class="token comment"># 清理yum缓存</span>
-    <span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># yum clean all</span>
-    <span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># rm -rf /var/cache/yum/x86_64/7/*</span>
-
-    <span class="token comment"># 生成新的yum缓存</span>
-    <span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># yum makecache</span>
-
-    <span class="token comment"># 测试连接</span>
-    <span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># rpm -e mariadb</span>
-    <span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># rpm -ql mariadb</span>
-    package mariadb is not installed
-    <span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum install mariadb</span>
-
-<span class="token number">2</span>、yum测试机器执行
-	<span class="token number">1</span>、备份yum仓库内容
-	<span class="token punctuation">[</span>root@yum-test ~<span class="token punctuation">]</span><span class="token comment"># cd /etc/yum.repos.d/</span>
-    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mkdir backup1</span>
-    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mv *.repo backup1</span>
-    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># ll</span>
-    total <span class="token number">0</span>
-    drwxr-xr-x. <span class="token number">2</span> root root <span class="token number">187</span> Mar  <span class="token number">4</span> 09:55 backup
-    drwxr-xr-x  <span class="token number">2</span> root root <span class="token number">220</span> Mar <span class="token number">18</span> 09:20 backup1
-    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># </span>
-    
-    <span class="token number">2</span>、编写本地yum源配置文件
-    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># vim local.repo</span>
-    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># cat local.repo </span>
-    <span class="token punctuation">[</span>loacl-ftp-30<span class="token punctuation">]</span>
-    <span class="token assign-left variable">name</span><span class="token operator">=</span><span class="token string">"This is 30 ftp server"</span>
-    <span class="token assign-left variable">baseurl</span><span class="token operator">=</span>ftp://172.16.1.30/yum_warehouse
-    <span class="token assign-left variable">gpgcheck</span><span class="token operator">=</span><span class="token number">0</span>
-    <span class="token assign-left variable">enabled</span><span class="token operator">=</span><span class="token number">1</span>
-    
-    <span class="token number">3</span>、清理yum缓存
-    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum clean all</span>
-    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># rm -rf /var/cache/yum/x86_64/7/*</span>
-    
-    <span class="token number">4</span>、生成yum缓存
-    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum makecache</span>
-    
-    <span class="token number">5</span>、测试安装
-    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum install mariadb</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-
-
-<p>4、同步远程yum仓库内容到本机</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>、安装华为云镜像仓库
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># rm -rf /etc/yum.repos.d/*</span>
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># wget -O /etc/yum.repos.d/CentOS-Base.repo https://repo.huaweicloud.com/repository/conf/CentOS-7-reg.repo</span>
-
-<span class="token number">2</span>、生成yum缓存
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum clean all</span>
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># rm -rf /var/cache/yum/x86_64/7/*</span>
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum makecache</span>
-
-<span class="token number">3</span>、同步华为云镜像站软件包到本地yum仓库
-<span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># yum install yum-utils -y</span>
-<span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># reposync -r (仓库名称：yum repolist)</span>
-
-<span class="token number">4</span>、建立依赖关系
-<span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># createrepo base</span>
-
-<span class="token number">5</span>、测试
-    <span class="token punctuation">[</span>loacl-ftp-30<span class="token punctuation">]</span>
-    <span class="token assign-left variable">name</span><span class="token operator">=</span><span class="token string">"This is 30 ftp server"</span>
-    <span class="token assign-left variable">baseurl</span><span class="token operator">=</span>ftp://172.16.1.30/base
-    <span class="token assign-left variable">gpgcheck</span><span class="token operator">=</span><span class="token number">0</span>
-    <span class="token assign-left variable">enabled</span><span class="token operator">=</span><span class="token number">1</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p><img src="/.%5Cassets%5Cimage-20210318112338781.png" alt="image-20210318112338781"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day17-Linux%E4%BF%A1%E5%8F%B7/%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day17-Linux%E4%BF%A1%E5%8F%B7/%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">运维之基础命令--linux信号</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:14:23" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="笔记"><a href="#笔记" class="headerlink" title="笔记"></a>笔记</h1><p>1、设置进程的nice值</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 设置进程的优先级</span>
-<span class="token function">nice</span> -n -11 <span class="token function">bash</span> test.sh
-
--n ： 设置优先级
-	普通用户：（0~19）
-	超级用户：（-20~19）
-	
-<span class="token comment"># 给指定进程设置优先级</span>
-<span class="token function">renice</span> <span class="token punctuation">[</span>设置优先级<span class="token punctuation">]</span> pid
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>2、Linux系统信号</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">中断信号
-	ctrl + c
-	ctrl + z
-
-	INT<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span> <span class="token builtin class-name">:</span> 
-		<span class="token function">kill</span> -<span class="token punctuation">[</span>信号名称<span class="token operator">|</span>信号ID<span class="token punctuation">]</span>　pid
-		
-		<span class="token function">kill</span> -SIGINT  PID
-		<span class="token function">kill</span> -INT     PID
-		<span class="token function">kill</span> -2       PID 
-
-退出信号:
-	ctrl + d
-
-暂停信号：将进程暂停
-	SIGTSTP（20）
-		<span class="token function">kill</span> -20 PID 
-		<span class="token function">kill</span> -SIGTSTP PID 
-		<span class="token function">kill</span> -TSTP PID
-
-杀死进程信号
-	SIGKILL
-		<span class="token function">kill</span> -9 PID 
-		<span class="token function">kill</span> -SIGKILL PID
-		<span class="token function">kill</span> -KILL PID
-注：不能够被捕捉
-
-终止信号
-	SIGTREM
-		<span class="token function">kill</span> -15 PID 
-		<span class="token function">kill</span> -SIGTERM PID
-		<span class="token function">kill</span> -<span class="token environment constant">TERM</span> PID
-
-注：优雅终止进程
-
-暂停和恢复信号
-	SIGCONT <span class="token builtin class-name">:</span> 恢复
-	SIGSTOP ：暂停
-
-重载信号
-	SIGHUP（1）
-
-
-<span class="token number">1</span>、nohup <span class="token punctuation">[</span>执行的命令<span class="token punctuation">]</span> <span class="token operator">&amp;</span>
-后台启动，会在当前目录生成一个nohub.out文件，用于执行的命令的输出。
-<span class="token number">2</span>、setsid <span class="token builtin class-name">:</span> 实际上开了一个孤儿进程
-<span class="token number">3</span>、（执行的命令<span class="token operator">&amp;</span>）
-<span class="token number">4</span>、screen  开启一个子窗口<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day08-%E6%89%93%E5%8C%85%E4%B8%8E%E5%8E%8B%E7%BC%A9/%E6%89%93%E5%8C%85%E4%B8%8E%E5%8E%8B%E7%BC%A9%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day08-%E6%89%93%E5%8C%85%E4%B8%8E%E5%8E%8B%E7%BC%A9/%E6%89%93%E5%8C%85%E4%B8%8E%E5%8E%8B%E7%BC%A9%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">运维之基础命令--打包与压缩</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:13:25" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="打包和压缩"><a href="#打包和压缩" class="headerlink" title="打包和压缩"></a>打包和压缩</h1><blockquote>
-<p>将文件或文件夹合并成一个包，然后通过压缩算法进行数据压缩，减小包的体积，方便网络传输。</p>
+          <h1 id="sudo"><a href="#sudo" class="headerlink" title="sudo"></a>sudo</h1><blockquote>
+<p>用于普通用提升权限的。</p>
 </blockquote>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">windows：
-	<span class="token function">zip</span>
-	<span class="token function">rar</span>
-
-linux:
-	<span class="token function">zip</span>
-	<span class="token function">tar</span>
-	gz
-	bz2
-	tar.gz
-	tar.bz2
-
-压缩算法：
-	<span class="token function">gzip</span>
-	<span class="token function">bzip2</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="zip"><a href="#zip" class="headerlink" title="zip"></a>zip</h2><blockquote>
-<p>是一个Windows和Linux中常用打包压缩工具，支持的压缩算法是zip。</p>
-</blockquote>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">zip工具需要安装
-	yum <span class="token function">install</span> <span class="token function">zip</span> <span class="token function">unzip</span> -y<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<h3 id="zip压缩一个文件"><a href="#zip压缩一个文件" class="headerlink" title="zip压缩一个文件"></a>zip压缩一个文件</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 格式</span>
-	<span class="token function">zip</span> <span class="token punctuation">[</span>参数<span class="token punctuation">]</span> 压缩包名称  文件路径
-
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># zip 123.zip 123.log </span>
-  adding: <span class="token number">123</span>.log <span class="token punctuation">(</span>deflated <span class="token number">87</span>%<span class="token punctuation">)</span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
-total <span class="token number">4732</span>
--rw-r--r--  <span class="token number">1</span> root root  <span class="token number">646165</span> Mar  <span class="token number">9</span> <span class="token number">10</span>:31 <span class="token number">123</span>.log
--rw-r--r--  <span class="token number">1</span> root root   <span class="token number">85296</span> Mar <span class="token number">11</span> <span class="token number">11</span>:58 <span class="token number">123</span>.zip<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="zip压缩文件夹"><a href="#zip压缩文件夹" class="headerlink" title="zip压缩文件夹"></a>zip压缩文件夹</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 需要一个-r参数去递归压缩文件夹下的所有内容</span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># zip -r dir.zip dir/</span>
-  adding: dir/ <span class="token punctuation">(</span>stored <span class="token number">0</span>%<span class="token punctuation">)</span>
-  adding: dir/one/ <span class="token punctuation">(</span>stored <span class="token number">0</span>%<span class="token punctuation">)</span>
-  adding: dir/123.log <span class="token punctuation">(</span>deflated <span class="token number">87</span>%<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="zip的静默输出"><a href="#zip的静默输出" class="headerlink" title="zip的静默输出"></a>zip的静默输出</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># -q：参数就是不输出任何打包信息</span>
-<span class="token punctuation">[</span>root@abc opt<span class="token punctuation">]</span><span class="token comment"># zip -r -q etc.zip /etc/</span>
-<span class="token punctuation">[</span>root@abc opt<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
-total <span class="token number">14200</span>
--rw-r--r-- <span class="token number">1</span> root root <span class="token number">13674457</span> Mar <span class="token number">11</span> <span class="token number">12</span>:15 etc.zip<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="zip解压命令（unzip）"><a href="#zip解压命令（unzip）" class="headerlink" title="zip解压命令（unzip）"></a>zip解压命令（unzip）</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 格式</span>
-	<span class="token function">unzip</span> <span class="token punctuation">[</span>参数<span class="token punctuation">]</span> 压缩包路径
-
-<span class="token comment"># unzip解压命令只能解压由zip打包的压缩文件</span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># unzip dir.zip </span>
-Archive:  dir.zip
-  inflating: dir/123.log             
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># </span>
-
-<span class="token comment"># 其他压缩包由unzip解压时随即报错。</span>
-<span class="token punctuation">[</span>root@abc opt<span class="token punctuation">]</span><span class="token comment"># unzip nginx-.tar.gz</span>
-Archive:  nginx-.tar.gz
-  End-of-central-directory signature not found.  Either this <span class="token function">file</span> is not
-  a zipfile, or it constitutes one disk of a multi-part archive.  In the
-  latter <span class="token keyword">case</span> the central directory and zipfile comment will be found on
-  the last disk<span class="token punctuation">(</span>s<span class="token punctuation">)</span> of this archive.
-unzip:  cannot <span class="token function">find</span> zipfile directory <span class="token keyword">in</span> one of nginx-.tar.gz or
-        nginx-.tar.gz.zip, and cannot <span class="token function">find</span> nginx-.tar.gz.ZIP, period.
-
-
-<span class="token comment"># 查看压缩包中压缩那些内容，不解压？</span>
-<span class="token comment"># 只查看压缩包内容不解压需要使用 -l 参数</span>
-<span class="token punctuation">[</span>root@abc opt<span class="token punctuation">]</span><span class="token comment"># unzip -l dir.zip </span>
-Archive:  dir.zip
-  Length      Date    Time    Name
----------  ---------- -----   ----
-        <span class="token number">0</span>  03-11-2021 <span class="token number">12</span>:04   dir/
----------                     -------
-        <span class="token number">0</span>                     <span class="token number">1</span> <span class="token function">file</span>
-
-<span class="token comment"># 解压到指定目录（-d）</span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># unzip -d /root/  etc.zip </span>
-<span class="token punctuation">[</span>root@abc opt<span class="token punctuation">]</span><span class="token comment"># cd /root/</span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls</span>
-<span class="token punctuation">]</span>        anaconda-ks.cfg  dir.zip  index.html           test.pdf.gz  xxxeth0xxx           系统优化.md
-<span class="token number">123</span>.log  demo.txt         etc      nginx-0.1.22.tar.gz  test.txt     上传与下载.md
-<span class="token number">123</span>.zip  <span class="token function">dir</span>              eth0xxx  <span class="token builtin class-name">test</span>                 xxxeth0      文件管理_<span class="token punctuation">(</span>高级<span class="token punctuation">)</span>.pdf
-
-<span class="token comment"># 静默输出(-q)</span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># rm -rf etc</span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># unzip -q -d /root/ /opt/etc.zip </span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
-total <span class="token number">4828</span>
-drwxr-xr-x  <span class="token number">91</span> root root    <span class="token number">8192</span> Mar <span class="token number">11</span> <span class="token number">11</span>:16 etc<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="tar"><a href="#tar" class="headerlink" title="tar"></a>tar</h2><blockquote>
-<p>tar压缩支持多种压缩算法</p>
-<p>tar.gz   gzip (用的最多)</p>
-<p>tar.bz2 bzip2</p>
-</blockquote>
-<h3 id="gzip"><a href="#gzip" class="headerlink" title="gzip"></a>gzip</h3><blockquote>
-<p>通过gzip压缩算法，将文件压缩一定体积，有利于传输, 不支持打包</p>
-</blockquote>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
-total <span class="token number">4828</span>
--rw-r--r--   <span class="token number">1</span> root root  <span class="token number">244977</span> Mar <span class="token number">10</span> <span class="token number">12</span>:12 index.html
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># gzip index.html </span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
-total <span class="token number">4612</span>
--rw-r--r--   <span class="token number">1</span> root root   <span class="token number">22652</span> Mar <span class="token number">10</span> <span class="token number">12</span>:12 index.html.gz<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h4 id="gzip压缩一个目录"><a href="#gzip压缩一个目录" class="headerlink" title="gzip压缩一个目录"></a>gzip压缩一个目录</h4><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc etc<span class="token punctuation">]</span><span class="token comment"># gzip -r /etc</span>
-<span class="token punctuation">[</span>root@abc etc<span class="token punctuation">]</span><span class="token comment"># ls </span>
-abrt                        GREP_COLORS.gz               my.cnf.d                 security
-adjtime.gz                  groff                        my.cnf.gz                selinux
-aliases.db.gz               group-.gz                    NetworkManager           services.gz
-aliases.gz                  group.gz                     networks.gz              sestatus.conf.gz
-alternatives                grub2.cfg                    nsswitch.conf.bak.gz     sgml
-anacrontab.gz               grub.d                       nsswitch.conf.gz         shadow<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="gzip解压-d"><a href="#gzip解压-d" class="headerlink" title="gzip解压(-d)"></a>gzip解压(-d)</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
--rw-r--r--   <span class="token number">1</span> <span class="token number">0</span> <span class="token number">0</span>   <span class="token number">22652</span> Mar <span class="token number">10</span> <span class="token number">12</span>:12 index.html.gz
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># gzip -d index.html.gz </span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
-total <span class="token number">4828</span>
--rw-r--r--   <span class="token number">1</span> <span class="token number">0</span> <span class="token number">0</span>  <span class="token number">244977</span> Mar <span class="token number">10</span> <span class="token number">12</span>:12 index.html<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="bzip2"><a href="#bzip2" class="headerlink" title="bzip2"></a>bzip2</h3><blockquote>
-<p>使用bzip2 压缩算法来压缩一定体积的文件。</p>
-</blockquote>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
-total <span class="token number">4828</span>
--rw-r--r--   <span class="token number">1</span> root root  <span class="token number">646165</span> Mar  <span class="token number">9</span> <span class="token number">10</span>:31 <span class="token number">123</span>.log     
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># bzip2 123.log </span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
-total <span class="token number">4240</span>
--rw-r--r--   <span class="token number">1</span> root root       <span class="token number">0</span> Mar <span class="token number">10</span> <span class="token number">12</span>:04 <span class="token punctuation">]</span>
--rw-r--r--   <span class="token number">1</span> root root   <span class="token number">42210</span> Mar  <span class="token number">9</span> <span class="token number">10</span>:31 <span class="token number">123</span>.log.bz2<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="bzip2解压（-d）"><a href="#bzip2解压（-d）" class="headerlink" title="bzip2解压（-d）"></a>bzip2解压（-d）</h3><blockquote>
-<p>bzip2解压是针对于bzip2压缩的压缩包来进行解压。</p>
-</blockquote>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
-total <span class="token number">4240</span>
--rw-r--r--   <span class="token number">1</span> root root   <span class="token number">42210</span> Mar  <span class="token number">9</span> <span class="token number">10</span>:31 <span class="token number">123</span>.log.bz2
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># bzip2 -d 123.log.bz2 </span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
-total <span class="token number">4828</span>
--rw-r--r--   <span class="token number">1</span> root root  <span class="token number">646165</span> Mar  <span class="token number">9</span> <span class="token number">10</span>:31 <span class="token number">123</span>.log<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="tar-1"><a href="#tar-1" class="headerlink" title="tar"></a>tar</h3><blockquote>
-<p>tar其实是一个打包工具，不具备压缩功能，但是可以使用参数调用压缩工具来进行解压。</p>
-</blockquote>
-<h4 id="参数"><a href="#参数" class="headerlink" title="参数"></a>参数</h4><ul>
-<li><p>-c : 创建压缩包</p>
+<ul>
+<li><p>相关的文件：<code>/etc/sudoers</code></p>
 </li>
-<li><p>-f : 指定压缩包名称</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># tar -c -f test.tar 123.log </span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
-total <span class="token number">5468</span>
--rw-r--r--   <span class="token number">1</span> root root  <span class="token number">655360</span> Mar <span class="token number">11</span> <span class="token number">15</span>:49 test.tar<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+<li><p>检查<code>/etc/sudoers</code>是否修改正确：visudo -c</p>
 </li>
-<li><p>-z ： 指定使用gzip压缩工具进行压缩</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># tar  -c -z -f test-one.tar 123.log </span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l </span>
-total <span class="token number">5084</span>
--rw-r--r--   <span class="token number">1</span> root root   <span class="token number">85279</span> Mar <span class="token number">11</span> <span class="token number">15</span>:56 test-one.tar
+<li><p>sudoers文件格式</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">tom       <span class="token assign-left variable">ALL</span><span class="token operator">=</span>           <span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>          ALL
+用户名称   所有机器可登陆    所有IP或主机名   所有的指令<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+</li>
+<li><p>指令编写格式</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 必须写全路径：which查看命令全路径</span>
 
-<span class="token comment"># 注：使用-z参数，不会自动添加.gz后缀</span>
+<span class="token comment">## 只支持vim命令提权</span>
+xianchen <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>  /usr/bin/vim
 
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># tar -c -z -f anaconda.tar.gz  anaconda-ks.cfg </span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
-total <span class="token number">5084</span>
--rw-r--r--   <span class="token number">1</span> root root    <span class="token number">1010</span> Mar <span class="token number">11</span> <span class="token number">15</span>:58 anaconda.tar.gz<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>-j : 指定使用bzip2压缩工具进行压缩</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># tar -c -j -f 123-bask-one.tar 123.log </span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
-total <span class="token number">5172</span>
--rw-r--r--   <span class="token number">1</span> root root   <span class="token number">42328</span> Mar <span class="token number">11</span> <span class="token number">16</span>:00 <span class="token number">123</span>-bak.tar.bz2
--rw-r--r--   <span class="token number">1</span> root root   <span class="token number">42328</span> Mar <span class="token number">11</span> <span class="token number">16</span>:01 <span class="token number">123</span>-bask-one.tar<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>-J : 指定使用xz压缩工具进行压缩</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc test-tar<span class="token punctuation">]</span><span class="token comment"># tar -c -J  -f etc.tar.xz /etc/</span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
--rw-r--r-- <span class="token number">1</span> root root <span class="token number">9493376</span> Mar <span class="token number">11</span> <span class="token number">17</span>:00 etc.tar.xz<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>-t : 查看压缩包内容</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># tar -t -f 123-bak.tar.bz2 </span>
-<span class="token number">123</span>.log
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>-v ： 显示压缩包压缩过程</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># tar -x -v -f etc.tar -C /opt/</span>
-/etc/centos-release
-/etc/DIR_COLORS.lightbgcolor
-/etc/libaudit.conf
-/etc/mail.rc<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>-P : 允许使用绝对路径进行打包</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># tar -c -P -f 123-three.tar /etc/passwd</span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># tar -c -f 123-three.tar /etc/passwd</span>
-tar: Removing leading `/' from member names
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>-x ： 解压</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># tar解压是按照原来的路径进行解压</span>
-<span class="token punctuation">[</span>root@abc test<span class="token punctuation">]</span><span class="token comment"># tar -x -f etc.tar </span>
+<span class="token comment">## 支持所有的命令提权</span>
+tom <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>  ALL
 
-<span class="token comment"># tar会自动识别压缩功能</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>-C ： 指定解压路径</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># tar -x -f etc.tar -C /opt/</span>
-tar: Removing leading `/' from member names
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># cd /opt/</span>
-<span class="token punctuation">[</span>root@abc opt<span class="token punctuation">]</span><span class="token comment"># ls</span>
-abc23  <span class="token function">dir</span>  dir.zip  etc  nginx-0.1.22.tar.gz  nginx-.tar.gz  xxx
-<span class="token punctuation">[</span>root@abc opt<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>–exclude : 排除某些文件</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc test-tar<span class="token punctuation">]</span><span class="token comment"># tar -c -f abc.tar ./* --exclude=abc7 --exclude=abc5   --exclude=abc1 </span>
-<span class="token punctuation">[</span>root@abc test-tar<span class="token punctuation">]</span><span class="token comment"># tar -t -f abc.tar </span>
-./abc2
-./abc3
-./abc4
-./abc6
-./abc8
-./abc9
-<span class="token punctuation">[</span>root@abc test-tar<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>–exclude-from : 根据某个文件列表排除多个文件</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc test-tar<span class="token punctuation">]</span><span class="token comment"># cat list.txt </span>
-abc995
-abc996
-abc997
-abc998
-abc999
-<span class="token punctuation">[</span>root@abc test-tar<span class="token punctuation">]</span><span class="token comment"># tar -c -f abc.tar ./* --exclude-from=list.txt </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>-h : 打包软连接</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc test-tar<span class="token punctuation">]</span><span class="token comment"># tar -c -h -f bin-h.tar /bin</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></li>
+<span class="token comment">## 不支持某个命令提权</span>
+tom <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span> ALL, <span class="token operator">!</span>/usr/bin/vim
+
+<span class="token comment">## 不支持某个命令的部分功能</span>
+xiaochen <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>   ALL, <span class="token operator">!</span>/usr/bin/vim /root/123.txt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
 </ul>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">tar参数
-	-c <span class="token builtin class-name">:</span> 创建压缩
-	-f ； 指定压缩包名称
-	-z <span class="token builtin class-name">:</span> 使用gzip压缩工具进行压缩
-	-j <span class="token builtin class-name">:</span> 使用bzip2压缩工具进行压缩
-	-J <span class="token builtin class-name">:</span> 使用xz压缩工具进行压缩
-	-t <span class="token builtin class-name">:</span> 显示压缩包内容，不解压
-	-v <span class="token builtin class-name">:</span> 显示压缩过程
-	-P <span class="token builtin class-name">:</span> 允许使用绝对路径进行压缩
-	-x <span class="token builtin class-name">:</span> 解压
-	-C <span class="token builtin class-name">:</span> 指定解压路径
-	-h <span class="token builtin class-name">:</span> 打包软连接
-	--exclude <span class="token builtin class-name">:</span> 排除某些文件
-	--exclude-from <span class="token builtin class-name">:</span> 根据文件列表排除多个文件<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h1 id="su"><a href="#su" class="headerlink" title="su"></a>su</h1><ul>
+<li><p>su - xxx  和 su xxx之间区别</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>、su - xxx ：相当于切换一个窗口，su xxx 仅仅切换了用户
+
+<span class="token number">2</span>、su - xxx ： 切换用户执行的系统文件要多于 <span class="token function">su</span> xxx
+
+<span class="token number">3</span>、su - xxx 是登录
+   <span class="token function">su</span>  xxx  切换用户<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day11-sudo%E4%B8%8Esu/facl/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day11-sudo%E4%B8%8Esu/facl/" class="post-title-link" itemprop="url">运维之基础命令--文件ACL</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:13:53" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="笔记"><a href="#笔记" class="headerlink" title="笔记"></a>笔记</h1><blockquote>
+<p>补充：</p>
+<p>​	权限的归属</p>
+<p>​		a : 属组、属主以及其他人的权限一起设置。</p>
+<p>​		o : 其他人</p>
+<p>​		g : 属组</p>
+<p>​		u : 属主</p>
+</blockquote>
+<h2 id="umask"><a href="#umask" class="headerlink" title="umask"></a>umask</h2><blockquote>
+<p>就是解决目录及文件的默认权限。</p>
+</blockquote>
+<ul>
+<li>文件的最高权限是多少     777</li>
+<li>文件夹的最高权限是多少  777</li>
+</ul>
+<h2 id="ACL"><a href="#ACL" class="headerlink" title="ACL"></a>ACL</h2><blockquote>
+<p>ACL是为了解决某种特殊环境下的，用户权限需求。</p>
+</blockquote>
+<ul>
+<li>setfacl ： 设置acl权限</li>
+<li>getfacl ：查看ACL权限</li>
+</ul>
+<h3 id="acl权限归属"><a href="#acl权限归属" class="headerlink" title="acl权限归属"></a>acl权限归属</h3><ul>
+<li>u : 指定用户</li>
+<li>g : 指定组</li>
+<li>o : 修改其他用户权限</li>
+<li>m : 指定mask权限</li>
+</ul>
+<p>注：默认情况下，ACL权限跟普通权限保持一致。</p>
+<h2 id="ACL-的流程"><a href="#ACL-的流程" class="headerlink" title="ACL 的流程"></a>ACL 的流程</h2><ul>
+<li><p>1、创建文件</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">chmod</span> o+x /root
+<span class="token function">chmod</span> o+x /root/xiaochen
+<span class="token builtin class-name">cd</span> xiaochen
+
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># touch abc.txt</span>
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># chmod 000 abc.txt </span>
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># ll</span>
+total <span class="token number">0</span>
+---------- <span class="token number">1</span> root root <span class="token number">0</span> Mar <span class="token number">16</span> <span class="token number">11</span>:39 abc.txt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>编写文件</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># echo 111 > abc.txt </span>
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># cat abc.txt </span>
+<span class="token number">111</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>设置ACL权限</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># useradd xiaozhang</span>
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># setfacl -m u:xiaozhang:r abc.txt </span>
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
+<span class="token comment"># file: abc.txt</span>
+<span class="token comment"># owner: root</span>
+<span class="token comment"># group: root</span>
+user::---
+user:xiaozhang:r--
+group::---
+mask::r--
+other::---
+
+<span class="token comment"># 注：</span>
+setfacl -m u:用户名称:权限<span class="token punctuation">(</span>rwx<span class="token punctuation">)</span> 文件名称<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>查看文件</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># su - xiaozhang</span>
+<span class="token punctuation">[</span>xiaozhang@localhost ~<span class="token punctuation">]</span>$ <span class="token function">cat</span> /root/xiaochen/abc.txt
+<span class="token number">111</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+<p>mask :  rw-</p>
+<p>xxxx :   -w-</p>
+<p>-w-</p>
+<h2 id="ACL权限的删除"><a href="#ACL权限的删除" class="headerlink" title="ACL权限的删除"></a>ACL权限的删除</h2><ul>
+<li><p>删除某个权限</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
+<span class="token comment"># file: abc.txt</span>
+<span class="token comment"># owner: root</span>
+<span class="token comment"># group: root</span>
+user::---
+user:xiaozhang:r--
+group::---
+group:xiaochen:r-x		<span class="token comment">#effective:r--</span>
+mask::rw-
+other::r--
+
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># setfacl -x u:xiaozhang abc.txt</span>
+
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
+<span class="token comment"># file: abc.txt</span>
+<span class="token comment"># owner: root</span>
+<span class="token comment"># group: root</span>
+user::---
+group::---
+group:xiaochen:r-x
+mask::r-x
+other::r--
+
+
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
+<span class="token comment"># file: abc.txt</span>
+<span class="token comment"># owner: root</span>
+<span class="token comment"># group: root</span>
+user::---
+group::---
+group:xiaochen:r-x
+mask::r-x
+other::r--
+
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># setfacl -x g:xiaochen abc.txt </span>
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
+<span class="token comment"># file: abc.txt</span>
+<span class="token comment"># owner: root</span>
+<span class="token comment"># group: root</span>
+user::---
+group::---
+mask::---
+other::r--
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+</li>
+<li><p>清空acl权限</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
+<span class="token comment"># file: abc.txt</span>
+<span class="token comment"># owner: root</span>
+<span class="token comment"># group: root</span>
+user::---
+user:xiaochen:rw-
+user:xiaocao:rw-
+group::---
+group:xiaochen:rw-
+group:xiaocao:rw-
+mask::rw-
+other::r--
+
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># setfacl -b abc.txt </span>
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
+<span class="token comment"># file: abc.txt</span>
+<span class="token comment"># owner: root</span>
+<span class="token comment"># group: root</span>
+user::---
+group::---
+other::r--
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+<h2 id="ACL继承"><a href="#ACL继承" class="headerlink" title="ACL继承"></a>ACL继承</h2><blockquote>
+<p>默认情况下，ACL是不会继承上层目录的权限的。只有目录设置可继承子集文件才可以继承ACL权限。</p>
+</blockquote>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost linux12<span class="token punctuation">]</span><span class="token comment"># setfacl -m d:u:xiaochen:w ../linux12</span>
+<span class="token punctuation">[</span>root@localhost linux12<span class="token punctuation">]</span><span class="token comment"># touch bcd.txt</span>
+<span class="token punctuation">[</span>root@localhost linux12<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
+total <span class="token number">0</span>
+-rw-r--r--  <span class="token number">1</span> root root <span class="token number">0</span> Mar <span class="token number">16</span> <span class="token number">15</span>:40 abc.txt
+-rw-rw-r--+ <span class="token number">1</span> root root <span class="token number">0</span> Mar <span class="token number">16</span> <span class="token number">15</span>:43 bcd.txt
+<span class="token punctuation">[</span>root@localhost linux12<span class="token punctuation">]</span><span class="token comment"># getfacl bcd.txt </span>
+<span class="token comment"># file: bcd.txt</span>
+<span class="token comment"># owner: root</span>
+<span class="token comment"># group: root</span>
+user::rw-
+user:xiaochen:-w-
+group::r-x			<span class="token comment">#effective:r--</span>
+mask::rw-
+other::r--
+
+<span class="token punctuation">[</span>root@localhost linux12<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 
 
 
 
-<h2 id="习题"><a href="#习题" class="headerlink" title="习题"></a>习题</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>.linux下常见的压缩包类型有哪些
-<span class="token function">zip</span> 
-gz 
-bz2 
-tar.gz 
-tar.bz 
-<span class="token function">tar</span>
 
-<span class="token number">2</span>.将/etc/hosts文件用tar格式打包。
-<span class="token function">tar</span> -c -P -f hosts.tar /etc/hosts
 
-<span class="token number">3</span>.查看打包之后的/etc/hosts的文件内容，在不解压的情况下查看。
-<span class="token function">tar</span> -t -f hosts.tar
 
-<span class="token number">4</span>.使用tar打包/var/log/目录。
-<span class="token function">tar</span> -c -P -f hosts.tar /var/log/
 
-<span class="token number">5</span>.使用zip打包/etc目录。
-<span class="token function">zip</span> -r etc.zip /etc
 
-<span class="token number">6</span>.查看/var/log/abc.zip目录的压缩包中有哪些内容。
-<span class="token function">unzip</span> -l /var/log/abc.zip
 
-<span class="token number">7</span>.将/var/log/abc.zip目录解压到/opt目录中。
-<span class="token function">unzip</span> -d /opt /var/log/abc.zip
 
-<span class="token number">10</span>.解压/etc/abc.tar.gz目录到/opt目录中。
-<span class="token function">tar</span> -xf /etc/abc.tar.gz -C /opt
-
-<span class="token number">11</span>.用zip打包/opt目录，要求不显示打包过程。
-<span class="token function">zip</span> -q opt.zip /opt
-
-<span class="token function">zip</span> <span class="token punctuation">[</span>参数<span class="token punctuation">]</span> 压缩包名称  压缩文件路径
- 
-<span class="token number">12</span>.打包/etc/目录，要求是.bz2格式
-<span class="token function">tar</span> -c -j -f etc.tar /etc
-
-<span class="token number">13</span>.打包/var/log目录，要求是.xz格式
-<span class="token function">tar</span> -c -J -f log.tar.xz /var/log
-
-<span class="token number">14</span>.使用tar命令打包/etc/时，会出现一个删根的操作，怎样打包不会进行删根的操作
-<span class="token function">tar</span> -c -P -f etc.tar /etc
-
-<span class="token number">15</span>.打包/etc/目录，要求不打包/etc/hosts这个文件。
-
-<span class="token number">16</span>.打包/etc/目录，要求不打包/etc/hosts和/etc/hostname这两个文件。
-
-<span class="token number">17</span>.打包/etc/目录，但要排除passwd,shadow,group,gshadow,hosts,hostname这些文件。<span class="token punctuation">(</span>你能用两种方法实现吗<span class="token punctuation">)</span>
-
-<span class="token number">18</span>.已知/etc/grub2.cfg文件是个软连接文件，在你不知道的情况下，请问怎么打包该文件的真实文件。
-
-<span class="token number">19</span>.把/var/log/目录中所有.log的文件进行打包成一个压缩包，名称定义为log.tar.gz的压缩包。
-
-<span class="token number">20</span>.已知文件oldboy.gz,请问在不解压的情况下，怎样查看该文件的内容。
-
-<span class="token number">21</span>.打包/etc/目录，当前时间方式的压缩包:比如: <span class="token number">2019</span>-12-24_etc.tar.gz
-
-<span class="token number">22</span>.创建/data/bak目录，然后复制如下文件到/data/bak目录下
-
-<span class="token number">23</span>.接22题，使用tar命令对/data/bak目录下的文件及目录以gzip的格式进行归档压缩到/data目录下（压缩包的名字以自己名字命名）
-
-<span class="token number">24</span>.使用tar命令查看上题/data目录下压缩包内的内容。
-
-<span class="token number">25</span>.把第23题/data目录下的压缩包，解压到/backup目录下
-
-<span class="token number">26</span>.再次使用tar命令把/data/bak目录下的文件及目录以gzip的格式进行归档压缩到/data目录下，但是在进行归档压缩时，排除文件“sudoers”，然后查看该压缩包内容是否存在文件“sudoers”（压缩包名自行拟定）
-
-<span class="token number">27</span>.打包/etc目录下所有普通文件到root用户家目录。
-
-<span class="token number">28</span>.打包/etc/目录到/opt/目录下，名称要求以当前主机名和ip地址命名，例：oldboy_10.0.0.100.tar.gz
-
-<span class="token number">29</span>.如何使用gzip命令对文件进行压缩、解压
-
-<span class="token number">30</span>.如何用zip命令对文件以及目录进行压缩、解压
-
-<span class="token number">32</span>.打包opt整个目录，并命名test_opt.tar.gz
-
-<span class="token number">33</span>.查看打包好的test_opt.tar.gz里的文件
-
-<span class="token number">34</span>.将打包好的test_opt.tar.gz内容指定解压至/tmp目录
-
-<span class="token number">35</span>.打包etc目录下的所有文件，不要目录只要文件
-
-<span class="token number">36</span>.打包etc目录下的所有文件，排除passwd，shadow
-
-<span class="token number">37</span>.打包etc目录下的所有以p开头的文件
-
-<span class="token number">38</span>.打包etc目录下所有大于1M的文件<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-
-
-
-
-
-
-<h2 id="习题-1"><a href="#习题-1" class="headerlink" title="习题"></a>习题</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">2</span>.权限中的rwx-，每个字符所代表什么意思？对应的数字是什么？
-
-r		可读		<span class="token number">4</span>
-
-w		可写		<span class="token number">2</span>
-
-x		可执行		<span class="token number">1</span>
-
--		没有权限	<span class="token number">0</span>
-
-
-<span class="token number">3</span>.-rwxr-xr-x，写出对应数字权限
-
-
-
-<span class="token number">4</span>.-rwxr--r--，写出对应数字权限
-
-
-<span class="token number">5</span>.-r-xr-x--x，写出对应数字权限
-
-
-
-<span class="token number">6</span>.-rw-r-xr-x，写出对应数字权限
-
-
-<span class="token number">7</span>.-r--r--r--，写出对应数字权限
-
-
-
-<span class="token number">8</span>.-r-xr-----，写出对应数字权限
-
-
-<span class="token number">9</span>.---x-w-r--，写出对应数字权限
-
-
-<span class="token number">10</span>.-rwxr--rw-，写出对应数字权限
-
-
-
-<span class="token number">11</span>.-rw-r--r--，写出对应数字权限
-
-
-<span class="token number">12</span>.---xr--rwx，写出对应数字权限
-
-
-<span class="token number">13.777</span>，写出对应字母权限
-
-
-<span class="token number">14.545</span>，写出对应字母权限
-
-
-
-
-<span class="token number">15.744</span>，写出对应字母权限
-
-
-
-<span class="token number">16.600</span>，写出对应字母权限
-
-
-
-<span class="token number">17.641</span>，写出对应字母权限
-
-
-<span class="token number">18.711</span>，写出对应字母权限
-
-
-
-<span class="token number">19.700</span>，写出对应字母权限
-
-
-
-<span class="token number">20.555</span>，写出对应字母权限
-
-
-
-<span class="token number">21.733</span>，写出对应字母权限
-
-
-<span class="token number">22.713</span>，写出对应字母权限
-
-
-
-<span class="token number">23</span>.建一个目录/test,查看这个目录的默认权限是?
-
-
-
-
-<span class="token number">24</span>.进入/test目录中,建一个文件abc,查看其默认的权限为？
-
-
-
-
-<span class="token number">25</span>.创建一个文件test.txt,并其将权限改为600.
-
-
-
-<span class="token number">26</span>.将test.txt文件的权限改为755.
-
-
-
-<span class="token number">27</span>.将test.txt文件的权限改为000.
-
-
-
-<span class="token number">28</span>.修改test.txt文件的权限为644.
-
-
-
-<span class="token number">29</span>.给test.txt文件的属主加上x权限。
-
-
-
-
-<span class="token number">30</span>.给test.txt文件的其他用户加上x权限。
-
-
-
-<span class="token number">31</span>.去除test.txt文件的所有执行权限。
-
-
-
-<span class="token number">32</span>.给/test目录及目录下的所有文件或目录的权限统一改为744。
-
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 
       
@@ -3778,8 +3580,6 @@ x		可执行		<span class="token number">1</span>
   </span>
   <span class="author" itemprop="copyrightHolder">GongSheng</span>
 </div>
-  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
-  </div>
 
         
 
