@@ -184,6 +184,1157 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/08/01_%E8%BF%90%E7%BB%B4/05-%E5%B7%A5%E4%BD%9C%E4%B8%AD%E7%9A%84%E8%AE%B0%E5%BD%95/SVN%E6%90%AD%E5%BB%BA/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/08/01_%E8%BF%90%E7%BB%B4/05-%E5%B7%A5%E4%BD%9C%E4%B8%AD%E7%9A%84%E8%AE%B0%E5%BD%95/SVN%E6%90%AD%E5%BB%BA/" class="post-title-link" itemprop="url">未命名</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-07-08 14:19:14" itemprop="dateCreated datePublished" datetime="2022-07-08T14:19:14+08:00">2022-07-08</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="KylinV10-桌面版SVN搭建"><a href="#KylinV10-桌面版SVN搭建" class="headerlink" title="KylinV10 桌面版SVN搭建"></a>KylinV10 桌面版SVN搭建</h1><h2 id="一、服务端配置"><a href="#一、服务端配置" class="headerlink" title="一、服务端配置"></a>一、服务端配置</h2><h3 id="1-1-安装SVN"><a href="#1-1-安装SVN" class="headerlink" title="1.1 安装SVN"></a>1.1 安装SVN</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">sudo apt-get install subversion<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h3 id="1-2-新建仓库文件夹"><a href="#1-2-新建仓库文件夹" class="headerlink" title="1.2 新建仓库文件夹"></a>1.2 新建仓库文件夹</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 创建项目仓库文件夹
+mkdir &#x2F;data&#x2F;svn&#x2F;project
+
+# 修改文件夹权限
+chmod -R 777 &#x2F;data&#x2F;svn&#x2F;project<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="1-3-创建版本库"><a href="#1-3-创建版本库" class="headerlink" title="1.3 创建版本库"></a>1.3 创建版本库</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">svnadmin create &#x2F;data&#x2F;svn&#x2F;project<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>完成后会在文件夹中生成一系列文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">greatwall@greatwall-GW-001M1A-FTF:&#x2F;data&#x2F;svn&#x2F;project$ ls
+conf  db  format  hooks  locks  README.txt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>修改db权限</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">chmod -R 777 db<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h3 id="1-4-设置访问权限"><a href="#1-4-设置访问权限" class="headerlink" title="1.4 设置访问权限"></a>1.4 设置访问权限</h3><pre class="line-numbers language-she" data-language="she"><code class="language-she">vim &#x2F;data&#x2F;svn&#x2F;project&#x2F;conf&#x2F;svnserve.conf<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>做如下修改</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">greatwall@greatwall-GW-001M1A-FTF:&#x2F;data&#x2F;svn&#x2F;project&#x2F;conf$ cat svnserve.conf
+### This file controls the configuration of the svnserve daemon, if you
+### use it to allow access to this repository.  (If you only allow
+### access through http: and&#x2F;or file: URLs, then this file is
+### irrelevant.)
+
+### Visit http:&#x2F;&#x2F;subversion.apache.org&#x2F; for more information.
+
+[general]
+### The anon-access and auth-access options control access to the
+### repository for unauthenticated (a.k.a. anonymous) users and
+### authenticated users, respectively.
+### Valid values are &quot;write&quot;, &quot;read&quot;, and &quot;none&quot;.
+### Setting the value to &quot;none&quot; prohibits both reading and writing;
+### &quot;read&quot; allows read-only access, and &quot;write&quot; allows complete
+### read&#x2F;write access to the repository.
+### The sample settings below are the defaults and specify that anonymous
+### users have read-only access to the repository, while authenticated
+### users have read and write access to the repository.
+anon-access &#x3D; none	# 非认证用户不让写
+auth-access &#x3D; write
+### The password-db option controls the location of the password
+### database file.  Unless you specify a path starting with a &#x2F;,
+### the file&#39;s location is relative to the directory containing
+### this configuration file.
+### If SASL is enabled (see below), this file will NOT be used.
+### Uncomment the line below to use the default password file.
+password-db &#x3D; passwd
+### The authz-db option controls the location of the authorization
+### rules for path-based access control.  Unless you specify a path
+### starting with a &#x2F;, the file&#39;s location is relative to the
+### directory containing this file.  The specified path may be a
+### repository relative URL (^&#x2F;) or an absolute file:&#x2F;&#x2F; URL to a text
+### file in a Subversion repository.  If you don&#39;t specify an authz-db,
+### no path-based access control is done.
+### Uncomment the line below to use the default authorization file.
+authz-db &#x3D; authz
+### The groups-db option controls the location of the groups file.
+### Unless you specify a path starting with a &#x2F;, the file&#39;s location is
+### relative to the directory containing this file.  The specified path
+### may be a repository relative URL (^&#x2F;) or an absolute file:&#x2F;&#x2F; URL to a
+### text file in a Subversion repository.
+# groups-db &#x3D; groups
+### This option specifies the authentication realm of the repository.
+### If two repositories have the same authentication realm, they should
+### have the same password database, and vice versa.  The default realm
+### is repository&#39;s uuid.
+realm &#x3D; My First Repository
+### The force-username-case option causes svnserve to case-normalize
+### usernames before comparing them against the authorization rules in the
+### authz-db file configured above.  Valid values are &quot;upper&quot; (to upper-
+### case the usernames), &quot;lower&quot; (to lowercase the usernames), and
+### &quot;none&quot; (to compare usernames as-is without case conversion, which
+### is the default behavior).
+# force-username-case &#x3D; none
+### The hooks-env options specifies a path to the hook script environment
+### configuration file. This option overrides the per-repository default
+### and can be used to configure the hook script environment for multiple
+### repositories in a single file, if an absolute path is specified.
+### Unless you specify an absolute path, the file&#39;s location is relative
+### to the directory containing this file.
+# hooks-env &#x3D; hooks-env
+
+[sasl]
+### This option specifies whether you want to use the Cyrus SASL
+### library for authentication. Default is false.
+### This section will be ignored if svnserve is not built with Cyrus
+### SASL support; to check, run &#39;svnserve --version&#39; and look for a line
+### reading &#39;Cyrus SASL authentication is available.&#39;
+# use-sasl &#x3D; true
+### These options specify the desired strength of the security layer
+### that you want SASL to provide. 0 means no encryption, 1 means
+### integrity-checking only, values larger than 1 are correlated
+### to the effective key length for encryption (e.g. 128 means 128-bit
+### encryption). The values below are the defaults.
+# min-encryption &#x3D; 0
+# max-encryption &#x3D; 256<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="1-5-添加访问用户"><a href="#1-5-添加访问用户" class="headerlink" title="1.5 添加访问用户"></a>1.5 添加访问用户</h3><p>修改passwd文件，添加访问用户</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">greatwall@greatwall-GW-001M1A-FTF:&#x2F;data&#x2F;svn&#x2F;project&#x2F;conf$ cat passwd
+### This file is an example password file for svnserve.
+### Its format is similar to that of svnserve.conf. As shown in the
+### example below it contains one section labelled [users].
+### The name and password for each user follow, one account per line.
+
+[users]
+# harry &#x3D; harryssecret
+# sally &#x3D; sallyssecret
+admin&#x3D;mysecret
+gs&#x3D;mysecret<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="1-6-设置用户权限"><a href="#1-6-设置用户权限" class="headerlink" title="1.6 设置用户权限"></a>1.6 设置用户权限</h3><p>修改authz文件，设置用户权限</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">greatwall@greatwall-GW-001M1A-FTF:&#x2F;data&#x2F;svn&#x2F;project&#x2F;conf$ cat authz
+### This file is an example authorization file for svnserve.
+### Its format is identical to that of mod_authz_svn authorization
+### files.
+### As shown below each section defines authorizations for the path and
+### (optional) repository specified by the section name.
+### The authorizations follow. An authorization line can refer to:
+###  - a single user,
+###  - a group of users defined in a special [groups] section,
+###  - an alias defined in a special [aliases] section,
+###  - all authenticated users, using the &#39;$authenticated&#39; token,
+###  - only anonymous users, using the &#39;$anonymous&#39; token,
+###  - anyone, using the &#39;*&#39; wildcard.
+###
+### A match can be inverted by prefixing the rule with &#39;~&#39;. Rules can
+### grant read (&#39;r&#39;) access, read-write (&#39;rw&#39;) access, or no access
+### (&#39;&#39;).
+
+[aliases]
+# joe &#x3D; &#x2F;C&#x3D;XZ&#x2F;ST&#x3D;Dessert&#x2F;L&#x3D;Snake City&#x2F;O&#x3D;Snake Oil, Ltd.&#x2F;OU&#x3D;Research Institute&#x2F;CN&#x3D;Joe Average
+
+[groups]
+# harry_and_sally &#x3D; harry,sally
+# harry_sally_and_joe &#x3D; harry,sally,&amp;joe
+
+# [&#x2F;foo&#x2F;bar]
+# harry &#x3D; rw
+# &amp;joe &#x3D; r
+# * &#x3D;
+
+# [repository:&#x2F;baz&#x2F;fuz]
+# @harry_and_sally &#x3D; rw
+# * &#x3D; r
+
+team1&#x3D;admin,gs	# 创建用户组
+
+[&#x2F;]
+@team1 &#x3D; rw # 用户组权限设置为读写
+* &#x3D; r<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="1-7-启动服务"><a href="#1-7-启动服务" class="headerlink" title="1.7 启动服务"></a>1.7 启动服务</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">svnserve -d -r &#x2F;data&#x2F;svn<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>查看服务是否在运行</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">ps aux | grep svnserve<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>干掉服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">killall svnserve<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h2 id="二、客户端连接"><a href="#二、客户端连接" class="headerlink" title="二、客户端连接"></a>二、客户端连接</h2><p>svn:&#x2F;&#x2F;10.47.76.90&#x2F;project</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/08/01_%E8%BF%90%E7%BB%B4/04-%E8%99%9A%E6%8B%9F%E5%8C%96/OpenStack%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/08/01_%E8%BF%90%E7%BB%B4/04-%E8%99%9A%E6%8B%9F%E5%8C%96/OpenStack%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">OpenStack学习笔记</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-07-08 14:19:14" itemprop="dateCreated datePublished" datetime="2022-07-08T14:19:14+08:00">2022-07-08</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E5%9B%9B%EF%BC%89%E8%99%9A%E6%8B%9F%E5%8C%96%E4%B9%8BOpenStack/" itemprop="url" rel="index"><span itemprop="name">（四）虚拟化之OpenStack</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="OpenStack笔记"><a href="#OpenStack笔记" class="headerlink" title="OpenStack笔记"></a><strong><font color=green>OpenStack笔记</font></strong></h1><p>​	OpenStack实现的是云计算IAAS</p>
+<h2 id="一、服务架构发展"><a href="#一、服务架构发展" class="headerlink" title="一、服务架构发展"></a><font color=blue>一、服务架构发展</font></h2><h3 id="1-1-MVC架构"><a href="#1-1-MVC架构" class="headerlink" title="1.1 MVC架构"></a>1.1 MVC架构</h3><p>​	业务不拆分，一个服务挂，则所有的全挂</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">首页 www.jd.com&#x2F;index.html
+秒杀 www.jd.com&#x2F;miaosha&#x2F;index.html
+优惠券 www.jd.com&#x2F;juan&#x2F;index.html<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="1-2-SOA架构（千万级）"><a href="#1-2-SOA架构（千万级）" class="headerlink" title="1.2 SOA架构（千万级）"></a>1.2 SOA架构（千万级）</h3><p>​	业务拆分，每一个功能都拆分成一个独立的web服务，每个独立的web服务，都至少拥有一个集群</p>
+<pre class="line-numbers language-she" data-language="she"><code class="language-she">首页 www.jd.com&#x2F;index.html
+秒杀 miaosha.jd.com&#x2F;index.html
+优惠券 juan.jd.com&#x2F;index.html<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="1-3-微服务架构（亿级）"><a href="#1-3-微服务架构（亿级）" class="headerlink" title="1.3 微服务架构（亿级）"></a>1.3 微服务架构（亿级）</h3><p>阿里开源dubbo</p>
+<p>Spring Boot</p>
+<p>自动化代码上线：Jekins + gilab ci</p>
+<p>自动化代码质量检查：sonarqube</p>
+<h2 id="二、搭建OpenStack"><a href="#二、搭建OpenStack" class="headerlink" title="二、搭建OpenStack"></a><font color=blue>二、搭建OpenStack</font></h2><p>​	本流程为手动安装M版，脚本安装可以参考</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">https:&#x2F;&#x2F;my.oschina.net&#x2F;u&#x2F;4367225&#x2F;blog&#x2F;4255750<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>OpenStack的结构介绍：</p>
+<blockquote>
+<p>Nova – 提供VM虚拟化支持 8774</p>
+<p>Glance – 提供镜像 9292</p>
+<p>Clinder – 存储支持 8776</p>
+<p>Neutron – 网络支持 9696</p>
+<p>Cellometer –  监控计费 </p>
+<p>KeyStone – 登录认证</p>
+<p>Horizon – 网页UI，dashboard</p>
+<p>Heat – 部署编排，批量建虚拟机</p>
+<p>Switft – 对象存储（不是传统的文件夹存放，而是用数据库记录已上传的文件信息，当有文件上传，先查询数据库中是否有该文件的md5值，如果有，则不用重新上传，给个链接就是 — 百度云盘）</p>
+</blockquote>
+<p><img src="C:\Users\fr724\AppData\Roaming\Typora\typora-user-images\image-20210615135957367.png" alt="image-20210615135957367"></p>
+<h3 id="2-1-虚拟机准备"><a href="#2-1-虚拟机准备" class="headerlink" title="2.1 虚拟机准备"></a>2.1 虚拟机准备</h3><p>虚拟机规划</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 系统：CentOS7.4
+controller: 内存3G, CPU开启虚拟化	10.0.0.11
+compute1: 内存1G，CPU开启虚拟化	    10.0.0.31
+# 修改主机名，IP地址，host解析，测试ping百度<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>配置本地M版yum源</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 1、资源准备
+mount &#x2F;dev&#x2F;cdrom &#x2F;mnt # 追加到&#x2F;etc&#x2F;rc.local,自动挂载
+解压openstack_rpm.tar.gz到&#x2F;opt&#x2F;repo
+
+# 2、编辑repo文件
+vim &#x2F;etc&#x2F;yum.repo.d&#x2F;local&#x2F;repo
+
+#### 内容
+[local]
+name&#x3D;local
+baseurl&#x3D;file:&#x2F;&#x2F;&#x2F;mnt
+gpgcheck&#x3D;0
+
+[openstack]
+name&#x3D;openstack
+baseurl&#x3D;file:&#x2F;&#x2F;&#x2F;opt&#x2F;repo
+gpgcheck&#x3D;0
+####
+
+# 3、更新yum源
+yum makecache
+yum repolist<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+
+<h3 id="2-2-基础服务安装"><a href="#2-2-基础服务安装" class="headerlink" title="2.2 基础服务安装"></a>2.2 基础服务安装</h3><h4 id="2-2-1-NTP时间同步"><a href="#2-2-1-NTP时间同步" class="headerlink" title="2.2.1 NTP时间同步"></a>2.2.1 NTP时间同步</h4><p>controller与阿里NTP服务器同步</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;chrony.conf
+server ntp6.aliyun.com # 3行
+allow 10.0.0.0&#x2F;24 # 24行
+systemctl restart chronyd<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>computer与controller同步</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;chrony.conf
+server 10.0.0.11 iburst # 3行
+systemctl restart chronyd<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-2-2-扩展-公网安装O版OpenStack的方法介绍（跳过该步骤）"><a href="#2-2-2-扩展-公网安装O版OpenStack的方法介绍（跳过该步骤）" class="headerlink" title="2.2.2 扩展-公网安装O版OpenStack的方法介绍（跳过该步骤）"></a>2.2.2 扩展-公网安装O版OpenStack的方法介绍（跳过该步骤）</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">curl -o &#x2F;etc&#x2F;yum.repos.d&#x2F;CentOS-Base.repo http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;repo&#x2F;Centos-7.repo
+yum makecache
+yum list | grep openstack
+yum install centos-release-openstack-ocata.noarch -y # 安装O版<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-2-3-安装OpenStack客户端openstack-selinux-（所有节点执行）"><a href="#2-2-3-安装OpenStack客户端openstack-selinux-（所有节点执行）" class="headerlink" title="2.2.3 安装OpenStack客户端openstack-selinux （所有节点执行）"></a>2.2.3 安装OpenStack客户端openstack-selinux （所有节点执行）</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum install python-openstackclient openstack-selinux -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h4 id="2-2-4-安装和配置mariadb-仅控制节点执行"><a href="#2-2-4-安装和配置mariadb-仅控制节点执行" class="headerlink" title="2.2.4 安装和配置mariadb (仅控制节点执行)"></a>2.2.4 安装和配置mariadb (仅控制节点执行)</h4><p>安装</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum install mariadb mariadb-server python2-PyMySQL -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>配置</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;my.cnf.d&#x2F;openstack.cnf
+
+#----------------
+[mysqld]	
+bind-address &#x3D; 10.0.0.11	# 监听地址
+default-storage-engine &#x3D; innodb # 默认存储引擎
+innodb_file_per_table  # 独立表空间文件
+max_connections &#x3D; 4096	# 最大连接数
+collation-server &#x3D; utf8_general_ci	# 默认字符集utf8
+character-set-server &#x3D; utf8
+#-----------------
+
+# 启动服务
+systemctl start mariadb
+systemctl enable mariadb
+
+# 数据库安全初始化,保障数据库安全性，如果不执行，同步数据库表会报错
+mysql_secure_installation
+回车 n y y y y<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-2-5-消息队列配置-仅控制节点执行"><a href="#2-2-5-消息队列配置-仅控制节点执行" class="headerlink" title="2.2.5 消息队列配置(仅控制节点执行)"></a>2.2.5 消息队列配置(仅控制节点执行)</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 安装rabbitmq
+yum install rabbitmq-server -y
+# 启动服务
+systemctl start rabbitmq-server
+systemctl enable rabbitmq-server
+# 添加用户
+rabbitmqctl add_user openstack RABBIT_PASS
+# 设置用户权限（读、写、执行）
+rabbitmqctl set_permissions openstack &quot;.*&quot; &quot;.*&quot; &quot;.*&quot;
+rabbitmq-plugins enable rabbitmq_management
+# 查看是否开启15672端口
+netstat -lntup
+# 浏览器登录rabbitmq
+http:&#x2F;&#x2F;10.0.0.11:15672
+默认用户名和密码：guest<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-2-6-缓存系统配置memcache（仅控制节点执行）"><a href="#2-2-6-缓存系统配置memcache（仅控制节点执行）" class="headerlink" title="2.2.6 缓存系统配置memcache（仅控制节点执行）"></a>2.2.6 缓存系统配置memcache（仅控制节点执行）</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 安装
+yum install memcached python-memched -y
+# 配置
+sed -i &#39;s#127.0.0.1#10.0.0.11#g&#39; &#x2F;etc&#x2F;sysconfig&#x2F;memcached
+# 启动服务
+systemctl restart memcached
+systemctl enable memcached
+# 查询端口11211是否已监听，默认使用该端口<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-3-安装keystone认证服务-仅控制节点执行"><a href="#2-3-安装keystone认证服务-仅控制节点执行" class="headerlink" title="2.3 安装keystone认证服务(仅控制节点执行)"></a>2.3 安装keystone认证服务(仅控制节点执行)</h3><h4 id="2-3-1-Keystone功能介绍"><a href="#2-3-1-Keystone功能介绍" class="headerlink" title="2.3.1 Keystone功能介绍"></a>2.3.1 Keystone功能介绍</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1、认证管理：
+	账户密码
+2、授权管理
+3、服务目录：
+	跟电话本一样，keystone上可以查询到glance、nova等服务的地址端口等信息，每一个新加的服务都需要在keystone上注册<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-3-2-OpenStack服务器安装的通用步骤"><a href="#2-3-2-OpenStack服务器安装的通用步骤" class="headerlink" title="2.3.2 OpenStack服务器安装的通用步骤"></a>2.3.2 OpenStack服务器安装的通用步骤</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1、创库授权
+2、在Keystone创建用户，关联角色
+3、在keystone创建服务，注册api
+4、安装服务相关的软件包
+5、修改配置
+	数据库的连接
+	keystone认证授权信息
+	rabbitmq连接信息
+	其他配置
+6、同步数据库，创建表
+7、启动服务<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-3-3-安装步骤"><a href="#2-3-3-安装步骤" class="headerlink" title="2.3.3 安装步骤"></a>2.3.3 安装步骤</h4><p>1、创库授权</p>
+<pre class="line-numbers language-mysql" data-language="mysql"><code class="language-mysql"># 登录mysql
+$ mysql -u root -p
+# 创建keystone数据库
+CREATE DATABASE keystone;
+# 对&#96;&#96;keystone&#96;&#96;数据库授予恰当的权限
+GRANT ALL PRIVILEGES ON keystone.* TO &#39;keystone&#39;@&#39;localhost&#39; \
+  IDENTIFIED BY &#39;KEYSTONE_DBPASS&#39;;
+GRANT ALL PRIVILEGES ON keystone.* TO &#39;keystone&#39;@&#39;%&#39; \
+  IDENTIFIED BY &#39;KEYSTONE_DBPASS&#39;;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>2、安装keystone相关软件包</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum install openstack-keystone httpd mod_wsgi -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>3、修改配置文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 备份原配置文件
+\cp &#x2F;etc&#x2F;keystone&#x2F;keystone.conf&#123;,.bak&#125;
+# 去除配置文件中的空格行和注释行
+grep -Ev &#39;^$|#&#39; &#x2F;etc&#x2F;keystone&#x2F;keystone.conf.bak &gt; &#x2F;etc&#x2F;keystone&#x2F;keystone.conf
+
+# 安装自动配置工具
+yum install openstack-utils -y
+# 使用工具设置（也可以直接修改文件）修改项 参数 &#x3D; 值
+openstack-config --set &#x2F;etc&#x2F;keystone&#x2F;keystone.conf DEFAULT admin_token ADMIN_TOKEN
+openstack-config --set &#x2F;etc&#x2F;keystone&#x2F;keystone.conf database connection  mysql+pymysql:&#x2F;&#x2F;keystone:KEYSTONE_DBPASS@controller&#x2F;keystone # 注意hostname--controller
+openstack-config --set &#x2F;etc&#x2F;keystone&#x2F;keystone.conf token provider fernet
+# 校验
+md5sum &#x2F;etc&#x2F;keystone&#x2F;keystone.conf
+d5acb3db852fe3f247f4f872b051b7a9 
+
+# 同步数据库
+su -s &#x2F;bin&#x2F;sh -c &quot;keystone-manage db_sync&quot; keystone
+# 查询是否生成表
+mysql keystone -e &quot;show tables;&quot;
+
+# 初始化fernet
+keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
+# 验证
+&#x2F;etc&#x2F;keystone&#x2F;fernet-keys已创建
+
+# 配置httpd
+echo &quot;ServerName controller&quot; &gt;&gt; &#x2F;etc&#x2F;httpd&#x2F;conf&#x2F;httpd.conf
+
+# 创建wsgi配置文件
+vim &#x2F;etc&#x2F;httpd&#x2F;conf.d&#x2F;wsgi-keystone.conf
+###内容
+Listen 5000
+Listen 35357
+
+&lt;VirtualHost *:5000&gt;
+    WSGIDaemonProcess keystone-public processes&#x3D;5 threads&#x3D;1 user&#x3D;keystone group&#x3D;keystone display-name&#x3D;%&#123;GROUP&#125;
+    WSGIProcessGroup keystone-public
+    WSGIScriptAlias &#x2F; &#x2F;usr&#x2F;bin&#x2F;keystone-wsgi-public
+    WSGIApplicationGroup %&#123;GLOBAL&#125;
+    WSGIPassAuthorization On
+    ErrorLogFormat &quot;%&#123;cu&#125;t %M&quot;
+    ErrorLog &#x2F;var&#x2F;log&#x2F;httpd&#x2F;keystone-error.log
+    CustomLog &#x2F;var&#x2F;log&#x2F;httpd&#x2F;keystone-access.log combined
+
+    &lt;Directory &#x2F;usr&#x2F;bin&gt;
+        Require all granted
+    &lt;&#x2F;Directory&gt;
+&lt;&#x2F;VirtualHost&gt;
+
+&lt;VirtualHost *:35357&gt;
+    WSGIDaemonProcess keystone-admin processes&#x3D;5 threads&#x3D;1 user&#x3D;keystone group&#x3D;keystone display-name&#x3D;%&#123;GROUP&#125;
+    WSGIProcessGroup keystone-admin
+    WSGIScriptAlias &#x2F; &#x2F;usr&#x2F;bin&#x2F;keystone-wsgi-admin
+    WSGIApplicationGroup %&#123;GLOBAL&#125;
+    WSGIPassAuthorization On
+    ErrorLogFormat &quot;%&#123;cu&#125;t %M&quot;
+    ErrorLog &#x2F;var&#x2F;log&#x2F;httpd&#x2F;keystone-error.log
+    CustomLog &#x2F;var&#x2F;log&#x2F;httpd&#x2F;keystone-access.log combined
+
+    &lt;Directory &#x2F;usr&#x2F;bin&gt;
+        Require all granted
+    &lt;&#x2F;Directory&gt;
+&lt;&#x2F;VirtualHost&gt;
+# 校验
+md5sum &#x2F;etc&#x2F;httpd&#x2F;conf.d&#x2F;wsgi-keystone.conf
+8f051eb53577f67356ed03e4550315c2 
+
+# 启动httpd
+systemctl enable httpd
+systemctl start httpd
+
+# 创建服务和注册api
+export OS_TOKEN&#x3D;ADMIN_TOKEN
+export OS_URL&#x3D;http:&#x2F;&#x2F;controller:35357&#x2F;v3
+export OS_IDENTITY_API_VERSION&#x3D;3
+openstack service create --name keystone --description &quot;OpenStack Identity&quot; identity
+openstack endpoint create --region RegionOne identity public http:&#x2F;&#x2F;controller:5000&#x2F;v3
+openstack endpoint create --region RegionOne identity internal http:&#x2F;&#x2F;controller:5000&#x2F;v3
+openstack endpoint create --region RegionOne identity admin http:&#x2F;&#x2F;controller:35357&#x2F;v3
+
+# 创建域、项目（租户）、用户和角色
+openstack domain create --description &quot;Default Domain&quot; default
+openstack project create --domain default --description &quot;Admin Project&quot; admin
+openstack user create --domain default --password ADMIN_PASS admin
+openstack role create admin
+
+# 关联项目，用户，角色
+openstack role add --project admin --user admin admin
+# 在admin项目上，给admin用户赋予admin角色
+openstack project create --domain default --description &quot;Service Project&quot; service
+
+# 创建环境变量脚本
+export OS_PROJECT_DOMAIN_NAME&#x3D;default
+export OS_USER_DOMAIN_NAME&#x3D;default
+export OS_PROJECT_NAME&#x3D;admin
+export OS_USERNAME&#x3D;admin
+export OS_PASSWORD&#x3D;ADMIN_PASS
+export OS_IMAGE_API_VERSION&#x3D;2
+export OS_IDENTITY_API_VERSION&#x3D;3
+export OS_AUTH_URL&#x3D;http:&#x2F;&#x2F;controller:35357&#x2F;v3
+
+# 作为admin用户请求认证令牌
+openstack token issue  
+
+# 如果不设置环境变量可以通过传入参数的方式申请
+openstack --os-auth-url http:&#x2F;&#x2F;controller:35357&#x2F;v3   --os-project-domain-name default --os-user-domain-name default   --os-project-name admin --os-username admin --os-password ADMIN_PASS token issue
+
+# 查看用户列表
+openstack user list
+
+# 查看endpoint列表
+openstack endpoint list<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-4-安装glance镜像服务"><a href="#2-4-安装glance镜像服务" class="headerlink" title="2.4 安装glance镜像服务"></a>2.4 安装glance镜像服务</h3><p>​	镜像服务 (glance) 允许用户发现、注册和获取虚拟机镜像。</p>
+<h4 id="2-4-1-安装步骤"><a href="#2-4-1-安装步骤" class="headerlink" title="2.4.1 安装步骤"></a>2.4.1 安装步骤</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 数据库创库授权
+mysql &gt;&gt;
+CREATE DATABASE glance
+GRANT ALL PRIVILEGES ON glance.* TO &#39;glance&#39;@&#39;localhost&#39; \
+  IDENTIFIED BY &#39;GLANCE_DBPASS&#39;;
+GRANT ALL PRIVILEGES ON glance.* TO &#39;glance&#39;@&#39;%&#39; \
+  IDENTIFIED BY &#39;GLANCE_DBPASS&#39;;
+  
+ # 在keystone创建glance用户关联角色
+ openstack user create --domain default --password GLANCE_PASS glance
+ openstack role add --project service --user glance admin
+ 
+ # 在keystone上创建服务和注册api
+openstack service create --name glance   --description &quot;OpenStack Image&quot; image
+openstack endpoint create --region RegionOne \
+  image public http:&#x2F;&#x2F;controller:9292
+openstack endpoint create --region RegionOne \
+  image internal http:&#x2F;&#x2F;controller:9292
+openstack endpoint create --region RegionOne \
+  image admin http:&#x2F;&#x2F;controller:9292
+  
+# 查看已创建的信息
+openstack role assignment list
+openstack role list
+openstack project list
+openstack user list （要有glance用户）
+
+# mysql中验证表是否已创建
+[root@controller ~]# mysql keystone -e &quot;show tables;&quot; | grep user
+federated_user
+local_user
+user
+user_group_membership
+[root@controller ~]# mysql keystone -e &quot;show tables;&quot; | grep project
+project
+project_endpoint
+project_endpoint_group
+
+# 安装服务相应软件包
+yum install openstack-glance -y
+
+# 修改相应的配置文件--api
+cp &#x2F;etc&#x2F;glance&#x2F;glance-api.conf&#123;,.bak&#125;
+grep &#39;^[a-Z\[]&#39; &#x2F;etc&#x2F;glance&#x2F;glance-api.conf.bak &gt; &#x2F;etc&#x2F;glance&#x2F;glance-api.conf
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf database connection mysql+pymysql:&#x2F;&#x2F;glance:GLANCE_DBPASS@controller&#x2F;glance
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken auth_uri http:&#x2F;&#x2F;controller:5000
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken auth_url http:&#x2F;&#x2F;controller:35357
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken memcached_servers controller:11211
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken auth_type password
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken project_domain_name default
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken user_domain_name default
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken project_name service
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken username glance
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken password GLANCE_PASS
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf paste_deploy flavor keystone
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf glance_store stores file,http
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf glance_store default_store file
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf glance_store filesystem_store_datadir &#x2F;var&#x2F;lib&#x2F;glance&#x2F;images&#x2F;
+
+# 修改相应的配置文件--registry
+cp &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf&#123;,.bak&#125;
+grep &#39;^[a-Z\[]&#39; &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf.bak &gt; &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf database connection mysql+pymysql:&#x2F;&#x2F;glance:GLANCE_DBPASS@controller&#x2F;glance
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken auth_uri http:&#x2F;&#x2F;controller:5000
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken auth_url http:&#x2F;&#x2F;controller:35357
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken memcached_servers controller:11211
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken auth_type password
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken project_domain_name default
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken user_domain_name default
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken project_name service
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken username glance
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken password GLANCE_PASS
+openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf paste_deploy flavor keystone
+
+# md5值验证
+md5sum &#x2F;etc&#x2F;glance&#x2F;glance-api.conf
+3e1a4234c133eda11b413788e001cba3  &#x2F;etc&#x2F;glance&#x2F;glance-api.conf
+md5sum &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf
+46acabd81a65b924256f56fe34d90b8f  &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf
+
+# 写入镜像服务数据库
+su -s &#x2F;bin&#x2F;sh -c &quot;glance-manage db_sync&quot; glance # 会有Warning不用在意
+# 验证
+mysql glance -e &quot;show tables;&quot;
+
+# 启动服务
+systemctl enable openstack-glance-api.service   openstack-glance-registry.service
+systemctl start openstack-glance-api.service   openstack-glance-registry.service<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-4-2-上传镜像测试"><a href="#2-4-2-上传镜像测试" class="headerlink" title="2.4.2 上传镜像测试"></a>2.4.2 上传镜像测试</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 错误日志查看
+&#x2F;var&#x2F;log&#x2F;glance
+
+# 确保已获取token令牌
+openstack token issue
+
+# 下载测试镜像
+wget http:&#x2F;&#x2F;download.cirros-cloud.net&#x2F;0.3.4&#x2F;cirros-0.3.4-x86_64-disk.img
+
+# 上传测试镜像
+openstack image create &quot;cirros&quot; \
+--file cirros-0.3.4-x86_64-disk.img \
+--disk-format qcow2 --container-format bare \
+--public
+
+# 上传文件确认
+ls &#x2F;var&#x2F;lib&#x2F;glance&#x2F;images&#x2F; (在&#x2F;etc&#x2F;glance&#x2F;glance-api.conf中设置)
+mysql glance -e &quot;show tables;&quot; | grep image<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-5-安装nova计算服务"><a href="#2-5-安装nova计算服务" class="headerlink" title="2.5 安装nova计算服务"></a>2.5 安装nova计算服务</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">nova-api -- 接受并相应所有的计算服务请求，管理云主机生命周期
+nova-compute（多个）-- 真正管理虚拟机(nova-compute调用libvirt)
+nova-scheduler -- nova 调度器（挑选最合适的nova-compute）
+nova-conductor -- 帮助nova-compute连接数据库
+nova-network --  早期版本管理虚拟机的网络（已弃用，改用neutron，留着为了方便兼容早期版本）
+nova-consoleauth和nova-novncproxy -- web版的vnc来直接操作云主机
+novnproxy -- web版vnc客户端
+nova-api-metadata -- 接受来自虚拟机发送的元数据请求（配合neutron-metadata-agent实现虚拟机定制化）<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-5-1-控制节点–安装步骤"><a href="#2-5-1-控制节点–安装步骤" class="headerlink" title="2.5.1 控制节点–安装步骤"></a>2.5.1 控制节点–安装步骤</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 创库授权
+mysql &gt;&gt;
+CREATE DATABASE nova_api;
+CREATE DATABASE nova;
+GRANT ALL PRIVILEGES ON nova_api.* TO &#39;nova&#39;@&#39;localhost&#39; \
+  IDENTIFIED BY &#39;NOVA_DBPASS&#39;;
+GRANT ALL PRIVILEGES ON nova_api.* TO &#39;nova&#39;@&#39;%&#39; \
+  IDENTIFIED BY &#39;NOVA_DBPASS&#39;;
+GRANT ALL PRIVILEGES ON nova.* TO &#39;nova&#39;@&#39;localhost&#39; \
+  IDENTIFIED BY &#39;NOVA_DBPASS&#39;;
+GRANT ALL PRIVILEGES ON nova.* TO &#39;nova&#39;@&#39;%&#39; \
+  IDENTIFIED BY &#39;NOVA_DBPASS&#39;;
+  
+# 在keystone创建用户nova
+openstack user create --domain default   --password NOVA_PASS nova
+# 给Nova用户添加admin角色
+openstack role add --project service --user nova admin
+
+# 在keystone上创建服务和注册api
+openstack service create --name nova   --description &quot;OpenStack Compute&quot; compute
+openstack endpoint create --region RegionOne   compute public http:&#x2F;&#x2F;controller:8774&#x2F;v2.1&#x2F;%\(tenant_id\)s
+openstack endpoint create --region RegionOne   compute internal http:&#x2F;&#x2F;controller:8774&#x2F;v2.1&#x2F;%\(tenant_id\)s
+openstack endpoint create --region RegionOne   compute admin http:&#x2F;&#x2F;controller:8774&#x2F;v2.1&#x2F;%\(tenant_id\)s
+
+# 安装相应软件包
+yum install -y openstack-nova-api openstack-nova-conductor \
+  openstack-nova-console openstack-nova-novncproxy \
+  openstack-nova-scheduler
+  
+# 修改配置文件
+cp &#x2F;etc&#x2F;nova&#x2F;nova.conf&#123;,.bak&#125;
+grep -Ev &#39;^$|#&#39; &#x2F;etc&#x2F;nova&#x2F;nova.conf.bak &gt; &#x2F;etc&#x2F;nova&#x2F;nova.conf
+
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT enabled_apis osapi_compute,metadata
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT rpc_backend rabbit
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT auth_strategy keystone
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT my_ip 10.0.0.11
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT use_neutron True
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT firewall_driver nova.virt.firewall.NoopFirewallDriver
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf api_database connection mysql+pymysql:&#x2F;&#x2F;nova:NOVA_DBPASS@controller&#x2F;nova_api
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf database connection mysql+pymysql:&#x2F;&#x2F;nova:NOVA_DBPASS@controller&#x2F;nova
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf glance api_servers http:&#x2F;&#x2F;controller:9292
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken auth_uri http:&#x2F;&#x2F;controller:5000
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken auth_url http:&#x2F;&#x2F;controller:35357
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken memcached_servers controller:11211
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken auth_type password
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken project_domain_name default
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken user_domain_name default
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken project_name service
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken username nova
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken password NOVA_PASS
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_concurrency lock_path &#x2F;var&#x2F;lib&#x2F;nova&#x2F;tmp
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_messaging_rabbit rabbit_host controller
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_messaging_rabbit rabbit_userid openstack
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_messaging_rabbit rabbit_password RABBIT_PASS
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf vnc vncserver_listen &#39;$my_ip&#39;
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf vnc vncserver_proxyclient_address &#39;$my_ip&#39;
+
+# 校验
+md5sum &#x2F;etc&#x2F;nova&#x2F;nova.conf
+47ded61fdd1a79ab91bdb37ce59ef192  &#x2F;etc&#x2F;nova&#x2F;nova.conf
+
+# 同步数据库
+su -s &#x2F;bin&#x2F;sh -c &quot;nova-manage api_db sync&quot; nova
+su -s &#x2F;bin&#x2F;sh -c &quot;nova-manage db sync&quot; nova
+
+# 验证
+mysql nova_api -e &quot;show tables;&quot;
+mysql nova -e &quot;show tables;&quot;
+
+# 启动服务
+systemctl enable openstack-nova-api.service \
+openstack-nova-consoleauth.service openstack-nova-scheduler.service \
+openstack-nova-conductor.service openstack-nova-novncproxy.service
+systemctl restart openstack-nova-api.service \
+openstack-nova-consoleauth.service openstack-nova-scheduler.service \
+openstack-nova-conductor.service openstack-nova-novncproxy.service
+
+# 验证
+[root@controller ~]# nova service-list
++----+------------------+------------+----------+---------+-------+------------+-----------------+
+| Id | Binary           | Host       | Zone     | Status  | State | Updated_at | Disabled Reason |
++----+------------------+------------+----------+---------+-------+------------+-----------------+
+| 1  | nova-conductor   | controller | internal | enabled | down  | -          | -               |
+| 4  | nova-scheduler   | controller | internal | enabled | down  | -          | -               |
+| 5  | nova-consoleauth | controller | internal | enabled | down  | -          | -               |
++----+------------------+------------+----------+---------+-------+------------+-----------------+
+
+# novncproxy 怎么检测起来没有？
+[root@controller ~]# netstat -lntup | grep 6080
+tcp        0      0 0.0.0.0:6080            0.0.0.0:*               LISTEN      8719&#x2F;python2
+[root@controller ~]# ps -ef | grep 8719
+nova       8719      1  0 21:53 ?        00:00:01 &#x2F;usr&#x2F;bin&#x2F;python2 &#x2F;usr&#x2F;bin&#x2F;nova-novncproxy --web &#x2F;usr&#x2F;share&#x2F;novnc&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-5-1-计算节点–安装步骤"><a href="#2-5-1-计算节点–安装步骤" class="headerlink" title="2.5.1 计算节点–安装步骤"></a>2.5.1 计算节点–安装步骤</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 安装软件包
+yum install -y openstack-nova-compute openstack-utils
+
+# 修改配置文件
+cp &#x2F;etc&#x2F;nova&#x2F;nova.conf&#123;,.bak&#125;
+grep -Ev &#39;^$|#&#39; &#x2F;etc&#x2F;nova&#x2F;nova.conf.bak &gt; &#x2F;etc&#x2F;nova&#x2F;nova.conf
+
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT enabled_apis osapi_compute,metadata
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT rpc_backend rabbit
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT auth_strategy keystone
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT my_ip 10.0.0.31 # 注意ip
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT use_neutron True
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT firewall_driver nova.virt.firewall.NoopFirewallDriver
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf glance api_servers http:&#x2F;&#x2F;controller:9292
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken auth_uri http:&#x2F;&#x2F;controller:5000
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken auth_url http:&#x2F;&#x2F;controller:35357
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken memcached_servers controller:11211
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken auth_type password
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken project_domain_name default
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken user_domain_name default
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken project_name service
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken username nova
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken password NOVA_PASS
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_concurrency lock_path &#x2F;var&#x2F;lib&#x2F;nova&#x2F;tmp
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_messaging_rabbit rabbit_host controller
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_messaging_rabbit rabbit_userid openstack
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_messaging_rabbit rabbit_password RABBIT_PASS
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf vnc enabled  True
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf vnc vncserver_listen 0.0.0.0
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf vnc vncserver_proxyclient_address &#39;$my_ip&#39;
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf vnc novncproxy_base_url http:&#x2F;&#x2F;controller:6080&#x2F;vnc_auto.html
+
+# 校验
+md5sum &#x2F;etc&#x2F;nova&#x2F;nova.conf
+45cab6030a9ab82761e9f697d6d79e14  &#x2F;etc&#x2F;nova&#x2F;nova.conf
+
+# 启动服务
+systemctl enable libvirtd.service openstack-nova-compute.service
+systemctl restart libvirtd.service openstack-nova-compute.service
+
+# 服务启动错误排查
+参考博客：https:&#x2F;&#x2F;www.codeleading.com&#x2F;article&#x2F;89785382846&#x2F;
+cat &#x2F;etc&#x2F;nova&#x2F;nova.conf # compute1日志查看
+报错 nova AccessRefused: (0, 0): (403) ACCESS_REFUSED
+处理步骤：
+在controller
+cat &#x2F;var&#x2F;log&#x2F;rabbitmq&#x2F;rabbit@controller.log # 发现报错AMQPLAIN login refused: user &#39;openstack&#39; - invalid credentials 无效凭证
+rabbitmqctl list_users # 确认是否还有openstack用户
+rabbitmqctl add_user openstack RABBIT_PASS
+rabbitmqctl set_permissions openstack &quot;.*&quot; &quot;.*&quot; &quot;.*&quot;
+systemctl restart rabbitmq-server.service # 重新创用户，并重启服务<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-6-安装neutron网络服务"><a href="#2-6-安装neutron网络服务" class="headerlink" title="2.6 安装neutron网络服务"></a>2.6 安装neutron网络服务</h3><p>neutron-server – 端口9696，api接受和响应外部的网络管理请求</p>
+<p>neutron-linuxbridge-agent –  负责创建桥接网卡</p>
+<p>neutron-dhcp-agent – 负责分配ip</p>
+<p>neutron-metadata-agent –  配合nova-metadata-api实现虚拟机的定制化操作</p>
+<p>L3-agent – 实现三层网络vxlan（网络层）</p>
+<h4 id="2-6-1-控制节点–安装步骤"><a href="#2-6-1-控制节点–安装步骤" class="headerlink" title="2.6.1 控制节点–安装步骤"></a>2.6.1 控制节点–安装步骤</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 创库授权
+Mysql &gt;&gt;
+CREATE DATABASE neutron;
+GRANT ALL PRIVILEGES ON neutron.* TO &#39;neutron&#39;@&#39;localhost&#39; \
+  IDENTIFIED BY &#39;NEUTRON_DBPASS&#39;;
+GRANT ALL PRIVILEGES ON neutron.* TO &#39;neutron&#39;@&#39;%&#39; \
+  IDENTIFIED BY &#39;NEUTRON_DBPASS&#39;;
+  
+# 在keystone创建用户neutron
+openstack user create --domain default   --password NEUTRON_PASS neutron
+# 给neutron用户添加admin角色
+openstack role add --project service --user neutron admin
+
+# 在keystone上创建服务和注册api
+openstack service create --name neutron   --description &quot;OpenStack Networking&quot; network
+openstack endpoint create --region RegionOne   network public http:&#x2F;&#x2F;controller:9696
+openstack endpoint create --region RegionOne   network internal http:&#x2F;&#x2F;controller:9696
+openstack endpoint create --region RegionOne   network admin http:&#x2F;&#x2F;controller:9696
+
+# 网络配置--公共网络
+cp &#x2F;etc&#x2F;neutron&#x2F;neutron.conf&#123;,.bak&#125;
+grep -Ev &quot;^$|#&quot; &#x2F;etc&#x2F;neutron&#x2F;neutron.conf.bak  &gt; &#x2F;etc&#x2F;neutron&#x2F;neutron.conf
+&gt;&gt;&gt;&gt;&gt;
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf database connection mysql+pymysql:&#x2F;&#x2F;neutron:NEUTRON_DBPASS@controller&#x2F;neutron
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT core_plugin ml2
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT service_plugins
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT rpc_backend rabbit
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT auth_strategy keystone
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT notify_nova_on_port_status_changes True
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT notify_nova_on_port_data_changes True
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_messaging_rabbit rabbit_host controller
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_messaging_rabbit rabbit_userid openstack
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_messaging_rabbit rabbit_password RABBIT_PASS
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken auth_uri http:&#x2F;&#x2F;controller:5000
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken auth_url http:&#x2F;&#x2F;controller:35357
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken memcached_servers controller:11211
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken auth_type password
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken project_domain_name default
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken user_domain_name default
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken project_name service
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken username neutron
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken password NEUTRON_PASS
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova auth_url http:&#x2F;&#x2F;controller:35357
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova auth_type password
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova project_domain_name default
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova user_domain_name default
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova region_name RegionOne
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova project_name service
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova username nova
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova password NOVA_PASS
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_concurrency lock_path &#x2F;var&#x2F;lib&#x2F;neutron&#x2F;tmp
+&gt;&gt;&gt;&gt;&gt;
+
+cp &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini&#123;,.bak&#125;
+grep -Ev &quot;^$|#&quot; &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini.bak &gt; &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini
+&gt;&gt;&gt;&gt;&gt;
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini ml2 type_drivers flat,vlan
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini ml2 tenant_network_types
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini ml2 mechanism_drivers linuxbridge
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini ml2 extension_drivers port_security
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini ml2_type_flat flat_networks provider
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini securitygroup enable_ipset True
+&gt;&gt;&gt;&gt;&gt;
+
+cp &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini&#123;,.bak&#125;
+grep -Ev &quot;^$|#&quot; &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini.bak &gt; &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini
+&gt;&gt;&gt;&gt;&gt;
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini linux_bridge physical_interface_mappings provider:ens33  # 要修改网络接口名
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini vxlan enable_vxlan False
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini securitygroup enable_security_group True
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini securitygroup firewall_driver neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
+&gt;&gt;&gt;&gt;&gt;
+
+cp &#x2F;etc&#x2F;neutron&#x2F;dhcp_agent.ini&#123;,.bak&#125;
+grep -Ev &quot;^$|#&quot; &#x2F;etc&#x2F;neutron&#x2F;dhcp_agent.ini.bak &gt; &#x2F;etc&#x2F;neutron&#x2F;dhcp_agent.ini
+&gt;&gt;&gt;&gt;&gt;
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;dhcp_agent.ini DEFAULT interface_driver neutron.agent.linux.interface.BridgeInterfaceDriver
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;dhcp_agent.ini DEFAULT  dhcp_driver neutron.agent.linux.dhcp.Dnsmasq
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;dhcp_agent.ini DEFAULT  enable_isolated_metadata True
+&gt;&gt;&gt;&gt;&gt;
+
+cp &#x2F;etc&#x2F;neutron&#x2F;metadata_agent.ini&#123;,.bak&#125;
+grep -Ev &quot;^$|#&quot; &#x2F;etc&#x2F;neutron&#x2F;metadata_agent.ini.bak &gt; &#x2F;etc&#x2F;neutron&#x2F;metadata_agent.ini
+&gt;&gt;&gt;&gt;&gt;
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;metadata_agent.ini DEFAULT nova_metadata_ip controller
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;metadata_agent.ini DEFAULT metadata_proxy_shared_secret METADATA_SECRET
+&gt;&gt;&gt;&gt;&gt;
+
+# 再次修改nova配置文件，添加neutron服务
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron url http:&#x2F;&#x2F;controller:9696
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron auth_url http:&#x2F;&#x2F;controller:35357
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron auth_type password
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron project_domain_name default
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron user_domain_name default
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron region_name RegionOne
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron project_name service
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron username neutron
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron password NEUTRON_PASS
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron service_metadata_proxy True
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron metadata_proxy_shared_secret METADATA_SECRET
+# 校验文件
+[root@controller ~]# md5sum &#x2F;etc&#x2F;nova&#x2F;nova.conf
+6334f359655efdbcf083b812ab94efc1  &#x2F;etc&#x2F;nova&#x2F;nova.conf
+
+# 网络服务初始化脚本需要一个超链接
+ln -s &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini &#x2F;etc&#x2F;neutron&#x2F;plugin.ini
+
+# 同步数据库
+su -s &#x2F;bin&#x2F;sh -c &quot;neutron-db-manage --config-file &#x2F;etc&#x2F;neutron&#x2F;neutron.conf \
+  --config-file &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini upgrade head&quot; neutron
+  
+# 检查数据库
+mysql neutron -e &quot;show tables;&quot;
+
+# 重启Nova服务
+systemctl restart openstack-nova-api.service
+
+# 启动Neutron服务
+systemctl enable neutron-server.service   neutron-linuxbridge-agent.service neutron-dhcp-agent.service   neutron-metadata-agent.service
+systemctl start neutron-server.service   neutron-linuxbridge-agent.service neutron-dhcp-agent.service   neutron-metadata-agent.service
+
+# 查看服务有没有起来
+neutron agent-list
++--------------------------------------+--------------------+------------+-------------------+-------+----------------+---------------------------+
+| id                                   | agent_type         | host       | availability_zone | alive | admin_state_up | binary                    |
++--------------------------------------+--------------------+------------+-------------------+-------+----------------+---------------------------+
+| 0d68dc27-f2b8-4cae-9c30-cddd126076b4 | Linux bridge agent | controller |                   | :-)   | True           | neutron-linuxbridge-agent |
+| 688cc47d-424d-4243-ae2b-b1c4b298a2a8 | Metadata agent     | controller |                   | :-)   | True           | neutron-metadata-agent    |
+| c4c5e360-ee02-4b9b-a1a5-59a0d0d088b0 | DHCP agent         | controller | nova              | :-)   | True           | neutron-dhcp-agent        |
++--------------------------------------+--------------------+------------+-------------------+-------+----------------+---------------------------+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-6-2-计算节点–安装步骤"><a href="#2-6-2-计算节点–安装步骤" class="headerlink" title="2.6.2 计算节点–安装步骤"></a>2.6.2 计算节点–安装步骤</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 安装组件
+yum install -y openstack-neutron-linuxbridge ebtables ipset
+
+# 网络配置--公共网络
+cp &#x2F;etc&#x2F;neutron&#x2F;neutron.conf&#123;,.bak&#125;
+grep -Ev &quot;^$|#&quot; &#x2F;etc&#x2F;neutron&#x2F;neutron.conf.bak  &gt; &#x2F;etc&#x2F;neutron&#x2F;neutron.conf
+&gt;&gt;&gt;&gt;&gt;&gt;
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT rpc_backend rabbit
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT auth_strategy keystone
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_messaging_rabbit rabbit_host controller
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_messaging_rabbit rabbit_userid openstack
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_messaging_rabbit rabbit_password RABBIT_PASS
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken auth_uri http:&#x2F;&#x2F;controller:5000
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken auth_url http:&#x2F;&#x2F;controller:35357
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken memcached_servers controller:11211
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken auth_type password
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken project_domain_name default
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken user_domain_name default
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken project_name service
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken username neutron
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken password NEUTRON_PASS
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_concurrency lock_path &#x2F;var&#x2F;lib&#x2F;neutron&#x2F;tmp
+&gt;&gt;&gt;&gt;&gt;&gt;
+# md5校验
+md5sum &#x2F;etc&#x2F;nova&#x2F;nova.conf
+328cd5f0745e26a420e828b0dfc2934e  &#x2F;etc&#x2F;nova&#x2F;nova.conf
+
+cp &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini&#123;,.bak&#125;
+grep -Ev &quot;^$|#&quot; &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini.bak &gt; &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini
+&gt;&gt;&gt;&gt;&gt;&gt;
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini linux_bridge physical_interface_mappings provider:ens33  # 要修改网络接口名
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini vxlan enable_vxlan False
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini securitygroup enable_security_group True
+openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini securitygroup firewall_driver neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
+&gt;&gt;&gt;&gt;&gt;&gt;
+
+# 再次修改nova配置文件，添加neutron配置
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron url http:&#x2F;&#x2F;controller:9696
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron auth_url http:&#x2F;&#x2F;controller:35357
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron auth_type password
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron project_domain_name default
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron user_domain_name default
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron region_name RegionOne
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron project_name service
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron username neutron
+openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron password NEUTRON_PASS
+
+# 重启nova服务
+systemctl restart openstack-nova-compute.service
+
+# 启动linuxbridge代理服务
+systemctl enable neutron-linuxbridge-agent.service
+systemctl restart neutron-linuxbridge-agent.service
+
+# 查看是否配置成功
+controller执行 &gt;&gt; neutron agent-list
+配置正确会多出来一个
+Linux bridge agent | compute1   |                   | :-)   | True 
+
+# 查看计算资源
+openstack compute service list<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-7-安装horizon-（Dashboard）web界面"><a href="#2-7-安装horizon-（Dashboard）web界面" class="headerlink" title="2.7 安装horizon （Dashboard）web界面"></a>2.7 安装horizon （Dashboard）web界面</h3><h4 id="2-7-1-安装步骤（控制节点"><a href="#2-7-1-安装步骤（控制节点" class="headerlink" title="2.7.1 安装步骤（控制节点)"></a>2.7.1 安装步骤（控制节点)</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 安装组件包
+yum install -y openstack-dashboard
+
+# 修改配置文件
+vim &#x2F;etc&#x2F;openstack-dashboard&#x2F;local_settings
+&gt;&gt;&gt;&gt;
+OPENSTACK_HOST &#x3D; &quot;controller&quot;
+ALLOWED_HOSTS &#x3D; [&#39;*&#39;, ]
+SESSION_ENGINE &#x3D; &#39;django.contrib.sessions.backends.cache&#39;
+CACHES &#x3D; &#123;
+    &#39;default&#39;: &#123;
+         &#39;BACKEND&#39;: &#39;django.core.cache.backends.memcached.MemcachedCache&#39;,
+         &#39;LOCATION&#39;: &#39;controller:11211&#39;,
+    &#125;
+&#125;
+OPENSTACK_KEYSTONE_URL &#x3D; &quot;http:&#x2F;&#x2F;%s:5000&#x2F;v3&quot; % OPENSTACK_HOST
+OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT &#x3D; True
+OPENSTACK_API_VERSIONS &#x3D; &#123;
+    &quot;identity&quot;: 3,
+    &quot;image&quot;: 2,
+    &quot;volume&quot;: 2,
+&#125;
+OPENSTACK_KEYSTONE_DEFAULT_DOMAIN &#x3D; &quot;default&quot;
+OPENSTACK_KEYSTONE_DEFAULT_ROLE &#x3D; &quot;user&quot;
+OPENSTACK_NEUTRON_NETWORK &#x3D; &#123;
+    ...
+    &#39;enable_router&#39;: False,
+    &#39;enable_quotas&#39;: False,
+    &#39;enable_distributed_router&#39;: False,
+    &#39;enable_ha_router&#39;: False,
+    &#39;enable_lb&#39;: False,
+    &#39;enable_firewall&#39;: False,
+    &#39;enable_vpn&#39;: False,
+    &#39;enable_fip_topology_check&#39;: False,
+&#125;
+TIME_ZONE &#x3D; &quot;Asia&#x2F;Shanghai&quot;
+&gt;&gt;&gt;&gt;
+
+# 解决不能进入页面的BUG
+vim &#x2F;etc&#x2F;httpd&#x2F;conf.d&#x2F;openstack-dashboard.conf
+添加一行 &gt;&gt; WSGIAppicationGroup %&#123;GLOBAL&#125;
+
+# 重启服务
+systemctl restart httpd.service memcached.service
+
+# 登录界面
+https:&#x2F;&#x2F;10.0.0.11&#x2F;dashboard
+域:default
+用户名:admin
+密码:ADMIN_PASS
+
+# 扩展：查看文件输入那个rpm包
+rpm -qf &#x2F;etc&#x2F;openstack-dashboard&#x2F;local_settings<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-7-2-Dashboard报错解决"><a href="#2-7-2-Dashboard报错解决" class="headerlink" title="2.7.2 Dashboard报错解决"></a>2.7.2 Dashboard报错解决</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 问题1--Invalid service catalog service: image
+发生原因：
+	openstack service list 存在两个 glance
+解决方法：
+    openstack service delete c12c125edc2041e3aaf2f250442162c6
+    openstack service delete 6a11431b95bc44d1bd1e9371c0faa16b # 两个glance都删掉
+    重复2.4.1在keystone上创建glance服务和注册api
+    再重启服务systemctl restart httpd.service memcached.service<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-8-启动一个云主机"><a href="#2-8-启动一个云主机" class="headerlink" title="2.8 启动一个云主机"></a>2.8 启动一个云主机</h3><h3 id="2-8-1-创建步骤"><a href="#2-8-1-创建步骤" class="headerlink" title="2.8.1 创建步骤"></a>2.8.1 创建步骤</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 创建网络
+neutron net-create --shared --provider:physical_network provider \
+  --provider:network_type flat gs
+  
+# 在网络中创建一个子网
+neutron subnet-create --name gs2 \
+  --allocation-pool start&#x3D;10.0.0.101,end&#x3D;10.0.0.250 \
+  --dns-nameserver 223.5.5.5 --gateway 10.0.0.2 \
+  gs 10.0.0.0&#x2F;24
+  
+# 创建云主机硬件配置方案（规格）
+openstack flavor create --id 0 --vcpus 1 --ram 64 --disk 1 m1.nano
+
+# 创建密钥键值对
+ssh-keygen -q -N &quot;&quot; -f ~&#x2F;.ssh&#x2F;id_rsa
+openstack keypair create --public-key ~&#x2F;.ssh&#x2F;id_rsa.pub mykey
+# 验证公钥的添加
+openstack keypair list
+
+# 添加安全组规则
+openstack security group rule create --proto icmp default
+openstack security group rule create --proto tcp --dst-port 22 default
+
+# 在公有网络启动一个实例
+openstack flavor list # 查看可用的配置规格
+openstack image list # 查看可用镜像
+openstack network list # 查看可用网络
+openstack security group list # 查看已设置的安全组
+
+openstack server create --flavor 规格名&#x2F;ID --image 镜像名&#x2F;ID \
+  --nic net-id&#x3D;网络ID --security-group default \
+  --key-name mykey 实例名称
+示例：
+openstack server create --flavor m1.tiny --image cirros \
+--nic net-id&#x3D;cb032582-893b-414d-b78d-c89c6548612d --security-group default \
+--key-name mykey my-instance<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-8-2-创建云主机问题解决"><a href="#2-8-2-创建云主机问题解决" class="headerlink" title="2.8.2 创建云主机问题解决"></a>2.8.2 创建云主机问题解决</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 1、启动云主机时，No valid host was found
+【计算节点中】
+查看云主机创建日志：&#x2F;var&#x2F;log&#x2F;nova&#x2F;nova-compute.log，里面有记录问题原因是CPU feature spec-ctrl not found
+修改&#x2F;usr&#x2F;share&#x2F;libvirt&#x2F;cpu_map.xml，将和spec-ctrl相关的特性删除
+然后重启服务
+systemctl restart libvirtd openstack-nova-compute
+参考博客：https:&#x2F;&#x2F;www.cnblogs.com&#x2F;laolieren&#x2F;p&#x2F;solve_openstack_create_instance_error.html
+
+# 2、云主机控制台seabios -- Booting from Hard Disk错误
+【计算节点中】
+vim &#x2F;etc&#x2F;nova&#x2F;nova.conf
+&gt;&gt;&gt;&gt;
+[libvirt]
+virt_type &#x3D; qemu
+cpu_mode &#x3D; none
+&gt;&gt;&gt;&gt;
+systemctl restart libvirtd openstack-nova-compute
+重启云主机<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+
+
+
+
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/07/00_%E5%8D%9A%E5%AE%A2%E7%BB%B4%E6%8A%A4/hexo%E7%BB%B4%E6%8A%A4/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -207,10 +1358,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-07-07 14:10:52 / 修改时间：14:10:34" itemprop="dateCreated datePublished" datetime="2022-07-07T14:10:52+08:00">2022-07-07</time>
+              <time title="创建时间：2022-07-07 14:10:52" itemprop="dateCreated datePublished" datetime="2022-07-07T14:10:52+08:00">2022-07-07</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-08 14:25:13" itemprop="dateModified" datetime="2022-07-08T14:25:13+08:00">2022-07-08</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -232,7 +1389,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="Hexo博客维护"><a href="#Hexo博客维护" class="headerlink" title="Hexo博客维护"></a>Hexo博客维护</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 1、下载安装nodejs
+          <h2 id="Hexo博客维护-0708"><a href="#Hexo博客维护-0708" class="headerlink" title="Hexo博客维护-0708"></a>Hexo博客维护-0708</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 1、下载安装nodejs
 
 # 2、使用npm安装hexo
 npm install -g hexo-cli
@@ -297,7 +1454,7 @@ hexo d<span aria-hidden="true" class="line-numbers-rows"><span></span><span></sp
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-07-07 10:27:10" itemprop="dateModified" datetime="2022-07-07T10:27:10+08:00">2022-07-07</time>
+                <time title="修改时间：2022-07-08 14:19:14" itemprop="dateModified" datetime="2022-07-08T14:19:14+08:00">2022-07-08</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -680,7 +1837,7 @@ glxgears<span aria-hidden="true" class="line-numbers-rows"><span></span><span></
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-07-07 10:30:03" itemprop="dateModified" datetime="2022-07-07T10:30:03+08:00">2022-07-07</time>
+                <time title="修改时间：2022-07-08 14:19:14" itemprop="dateModified" datetime="2022-07-08T14:19:14+08:00">2022-07-08</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -2319,10 +3476,16 @@ vim org.eclipse.ptp.rm.slurm.proxy_4.0.7.201104291906&#x2F;src&#x2F;ptp_slurm_pr
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:08:47" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-08 14:19:14" itemprop="dateModified" datetime="2022-07-08T14:19:14+08:00">2022-07-08</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -2459,10 +3622,16 @@ sed -i &#39;s#200#41#g&#39; &#x2F;etc&#x2F;sysconfig&#x2F;network-scripts&#x2F;i
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:15:40" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-08 14:19:14" itemprop="dateModified" datetime="2022-07-08T14:19:14+08:00">2022-07-08</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -2796,10 +3965,16 @@ find $SRC&#x2F; -type d -mtime +7|xargs rm -rf <span aria-hidden="true" class="l
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:15:48" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-08 14:19:14" itemprop="dateModified" datetime="2022-07-08T14:19:14+08:00">2022-07-08</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -2981,10 +4156,16 @@ total 4
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:15:53" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-08 14:19:14" itemprop="dateModified" datetime="2022-07-08T14:19:14+08:00">2022-07-08</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -3297,10 +4478,16 @@ _______________________________________________________
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:15:58" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-08 14:19:14" itemprop="dateModified" datetime="2022-07-08T14:19:14+08:00">2022-07-08</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -3463,6 +4650,122 @@ logpath &#x3D; &#x2F;var&#x2F;log&#x2F;secure
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/06-HTTP%E5%8D%8F%E8%AE%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/06-HTTP%E5%8D%8F%E8%AE%AE/" class="post-title-link" itemprop="url">运维之综合架构--06--HTTP协议介绍</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-08 14:19:14" itemprop="dateModified" datetime="2022-07-08T14:19:14+08:00">2022-07-08</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="一、HTTP的发展历程"><a href="#一、HTTP的发展历程" class="headerlink" title="一、HTTP的发展历程"></a>一、HTTP的发展历程</h2><p>HTTP协议始于三十年前蒂姆·伯纳斯 - 李的一篇论文</p>
+<p>HTTP&#x2F;0.9 (是个简单的文本协议，只能获取文本资源；)</p>
+<p>HTTP&#x2F;1.0 - 1996年 （确立了大部分现在使用的技术，参考文档，不具备实际约束力）</p>
+<p>HTTP&#x2F;1.1 - 1999年 （正式标准严格遵守，功能也非常完善，互联网爆发式增长，目前互联网上使用最广泛的协议） </p>
+<p>HTTP&#x2F;2 - 2015年 （基于 Google 的 SPDY 协议，注重性能改善，但还未普及）</p>
+<p>HTTP&#x2F;3 - 2018年 （基于 Google 的 QUIC 协议，是将来的发展方向）</p>
+<hr>
+<p>课下作业</p>
+<ol>
+<li>你认为推动 HTTP 发展的原动力是什么？</li>
+<li>你是怎么理解 HTTP（超文本传输协议）的？</li>
+</ol>
+<h2 id="二、HTTP简介"><a href="#二、HTTP简介" class="headerlink" title="二、HTTP简介"></a>二、HTTP简介</h2><p>HyperText transfer protocol （超文本传输协议）</p>
+<ul>
+<li>HTTP 是一个用在计算机世界里的协议，它确立了一种计算机之间交流通信的规范，以及相关的各种控制和错误处理方式。</li>
+<li>HTTP 专门用来在两点之间传输数据，不能用于广播、寻址或路由。</li>
+<li>HTTP 传输的是文字、图片、音频、视频等超文本数据。</li>
+<li>HTTP 是构建互联网的重要基础技术，它没有实体，依赖许多其他的技术来实现，但同时许多技术也都依赖于它。</li>
+</ul>
+<hr>
+<p>课下作业：</p>
+<ol>
+<li>有一种流行的说法：“HTTP 是用于从互联网服务器传输超文本到本地浏览器的协议”，你认为这种说法对吗？对在哪里，又错在哪里？</li>
+<li>你能再说出几个“HTTP 不是什么”吗？</li>
+</ol>
+<p><img src="/05-HTTP%E5%8D%8F%E8%AE%AE.assets/http%E6%80%9D%E7%BB%B4%E5%AF%BC%E5%9B%BE.png" alt="http思维导图"></p>
+<h3 id="三、HTTP的应用领域"><a href="#三、HTTP的应用领域" class="headerlink" title="三、HTTP的应用领域"></a>三、HTTP的应用领域</h3><ol>
+<li>互联网上绝大部分资源都使用 HTTP 协议传输；</li>
+<li>浏览器是 HTTP 协议里的请求方，即 User Agent；</li>
+<li>服务器是 HTTP 协议里的应答方，常用的有 Apache 和 Nginx；</li>
+<li>CDN 位于浏览器和服务器之间，主要起到缓存加速的作用；</li>
+<li>爬虫是另一类 User Agent，是自动访问网络资源的程序。</li>
+</ol>
+<hr>
+<p>课后作业：</p>
+<ol>
+<li>你觉得 CDN 在对待浏览器和爬虫时会有差异吗？为什么？</li>
+<li>你怎么理解 WebService 与 Web Server 这两个非常相似的词？</li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/07-Nginx(%E4%B8%80)%E5%AE%89%E8%A3%85%E4%B8%8E%E9%85%8D%E7%BD%AE/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -3486,10 +4789,16 @@ logpath &#x3D; &#x2F;var&#x2F;log&#x2F;secure
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:16:03" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-08 14:19:14" itemprop="dateModified" datetime="2022-07-08T14:19:14+08:00">2022-07-08</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -3976,842 +5285,6 @@ server &#123;
 
 
 
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/06-HTTP%E5%8D%8F%E8%AE%AE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/06-HTTP%E5%8D%8F%E8%AE%AE/" class="post-title-link" itemprop="url">运维之综合架构--06--HTTP协议介绍</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:16:08" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="一、HTTP的发展历程"><a href="#一、HTTP的发展历程" class="headerlink" title="一、HTTP的发展历程"></a>一、HTTP的发展历程</h2><p>HTTP协议始于三十年前蒂姆·伯纳斯 - 李的一篇论文</p>
-<p>HTTP&#x2F;0.9 (是个简单的文本协议，只能获取文本资源；)</p>
-<p>HTTP&#x2F;1.0 - 1996年 （确立了大部分现在使用的技术，参考文档，不具备实际约束力）</p>
-<p>HTTP&#x2F;1.1 - 1999年 （正式标准严格遵守，功能也非常完善，互联网爆发式增长，目前互联网上使用最广泛的协议） </p>
-<p>HTTP&#x2F;2 - 2015年 （基于 Google 的 SPDY 协议，注重性能改善，但还未普及）</p>
-<p>HTTP&#x2F;3 - 2018年 （基于 Google 的 QUIC 协议，是将来的发展方向）</p>
-<hr>
-<p>课下作业</p>
-<ol>
-<li>你认为推动 HTTP 发展的原动力是什么？</li>
-<li>你是怎么理解 HTTP（超文本传输协议）的？</li>
-</ol>
-<h2 id="二、HTTP简介"><a href="#二、HTTP简介" class="headerlink" title="二、HTTP简介"></a>二、HTTP简介</h2><p>HyperText transfer protocol （超文本传输协议）</p>
-<ul>
-<li>HTTP 是一个用在计算机世界里的协议，它确立了一种计算机之间交流通信的规范，以及相关的各种控制和错误处理方式。</li>
-<li>HTTP 专门用来在两点之间传输数据，不能用于广播、寻址或路由。</li>
-<li>HTTP 传输的是文字、图片、音频、视频等超文本数据。</li>
-<li>HTTP 是构建互联网的重要基础技术，它没有实体，依赖许多其他的技术来实现，但同时许多技术也都依赖于它。</li>
-</ul>
-<hr>
-<p>课下作业：</p>
-<ol>
-<li>有一种流行的说法：“HTTP 是用于从互联网服务器传输超文本到本地浏览器的协议”，你认为这种说法对吗？对在哪里，又错在哪里？</li>
-<li>你能再说出几个“HTTP 不是什么”吗？</li>
-</ol>
-<p><img src="/05-HTTP%E5%8D%8F%E8%AE%AE.assets/http%E6%80%9D%E7%BB%B4%E5%AF%BC%E5%9B%BE.png" alt="http思维导图"></p>
-<h3 id="三、HTTP的应用领域"><a href="#三、HTTP的应用领域" class="headerlink" title="三、HTTP的应用领域"></a>三、HTTP的应用领域</h3><ol>
-<li>互联网上绝大部分资源都使用 HTTP 协议传输；</li>
-<li>浏览器是 HTTP 协议里的请求方，即 User Agent；</li>
-<li>服务器是 HTTP 协议里的应答方，常用的有 Apache 和 Nginx；</li>
-<li>CDN 位于浏览器和服务器之间，主要起到缓存加速的作用；</li>
-<li>爬虫是另一类 User Agent，是自动访问网络资源的程序。</li>
-</ol>
-<hr>
-<p>课后作业：</p>
-<ol>
-<li>你觉得 CDN 在对待浏览器和爬虫时会有差异吗？为什么？</li>
-<li>你怎么理解 WebService 与 Web Server 这两个非常相似的词？</li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/08-Nginx(%E4%BA%8C)%E5%B8%B8%E7%94%A8%E5%AE%98%E6%96%B9%E6%A8%A1%E5%9D%97/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/08-Nginx(%E4%BA%8C)%E5%B8%B8%E7%94%A8%E5%AE%98%E6%96%B9%E6%A8%A1%E5%9D%97/" class="post-title-link" itemprop="url">运维之综合架构--07--Nginx(二)常用官方模块</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:16:20" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <blockquote>
-<blockquote>
-<blockquote>
-<blockquote>
-<p>本篇主要介绍Nginx的常用官方模块</p>
-</blockquote>
-</blockquote>
-</blockquote>
-</blockquote>
-<h2 id="一、目录索引-autoindex"><a href="#一、目录索引-autoindex" class="headerlink" title="一、目录索引-autoindex"></a>一、目录索引-autoindex</h2><h3 id="1-1-使用方法1"><a href="#1-1-使用方法1" class="headerlink" title="1.1 使用方法1"></a>1.1 使用方法1</h3><p>按此方法设置后，访问网页<a target="_blank" rel="noopener" href="http://module.test.com将显示文件目录/">http://module.test.com将显示文件目录</a></p>
-<p>实际目录位于: &#x2F;module</p>
-<p>a.准备配置文件</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 module]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;autoindex.conf
-server &#123;
-	listen 80;
-	server_name module.test.com;
-	charset utf-8,gbk; # 解决中文乱码
-
-	location &#x2F; &#123;
-		root &#x2F;module;
-		autoindex on;	# 开启目录索引
-		autoindex_exact_size off;	# 显示文件大小，默认为on显示字节，off显示大概单位
-		autoindex_localtime on;	# 默认off显示UTC时间，on显示本地时间
-	&#125;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>b.准备对应的目录，并往目录中添加文件</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">mkdir &#x2F;module&#x2F;&#123;centos,ubuntu,redhat&#125;&#x2F; -p<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>c.检查语法并重新加载nginx</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">nginx -t 
-systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<h3 id="1-2-使用方法2（推荐）"><a href="#1-2-使用方法2（推荐）" class="headerlink" title="1.2 使用方法2（推荐）"></a>1.2 使用方法2（推荐）</h3><p>按此方法设置后，访问网页<a target="_blank" rel="noopener" href="http://www.module.test.com/download%E5%B0%86%E6%98%BE%E7%A4%BA%E6%96%87%E4%BB%B6%E7%9B%AE%E5%BD%95,%E4%B8%BB%E9%A1%B5%E5%8F%AF%E6%AD%A3%E5%B8%B8%E8%AE%BF%E9%97%AE">http://www.module.test.com/download将显示文件目录,主页可正常访问</a></p>
-<p>实际目录位于：&#x2F;module&#x2F;download</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 module]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;autoindex.conf 
-server &#123;
-	listen 80;
-	server_name module.oldboy.com;
-	charset utf-8,gbk;
-
-	location &#x2F; &#123;	# 主页可以正常访问
-		root &#x2F;code;
-		index index.html index.htm;
-	&#125;
-
-	location &#x2F;download &#123;	# 当访问http:&#x2F;&#x2F;xxxx&#x2F;download则访问&#x2F;module&#x2F;download文件夹，显示目录索引
-		root &#x2F;module; # 此时，访问的文件夹是&#x2F;module&#x2F;download
-		autoindex on;
-		autoindex_exact_size off;
-		autoindex_localtime on;
-	&#125;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="二、-状态监控页面-stub-status"><a href="#二、-状态监控页面-stub-status" class="headerlink" title="二、 状态监控页面-stub_status"></a>二、 状态监控页面-stub_status</h2><blockquote>
-<p>需要nginx附带–with-http_stub_status_module模块才能使用</p>
-</blockquote>
-<h3 id="2-1-使用方法"><a href="#2-1-使用方法" class="headerlink" title="2.1 使用方法"></a>2.1 使用方法</h3><p>a.设置配置文件</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">在&#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;autoindex.conf里面附加内容
-location &#x2F;nginx_status &#123;
-	stub_status;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>b.重启Nginx服务</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">重启nginx服务
-systemctl reload nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>c.网页访问测试</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">访问:
-http:&#x2F;&#x2F;module.test.com&#x2F;nginx_status
-网页显示：
-Active connections: 2 
-server accepts handled requests
-		3 			3 	33 
-Reading: 0 Writing: 1 Waiting: 1 <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>d.通过选项关闭长连接</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 注意, 一次TCP的连接，可以发起多次http的请求, 如下参数可配置进行验证
-keepalive_timeout  0;   # 类似于关闭长连接
-keepalive_timeout  65;  # 65s没有活动则断开连接<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">在&#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;autoindex.conf里面的附加内容修改为
-location &#x2F;nginx_status &#123;
-	stub_status;
-	keepalive_timeout  0; 
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>e.再次测试网页访问</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">关闭长连接后的显示：
-Active connections: 2 
-server accepts handled requests
- 21 21 20 
-Reading: 0 Writing: 1 Waiting: 1 
-# 可见每次HTTP请求都要重新发起TCP连接<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="2-2-监控页面内容解释"><a href="#2-2-监控页面内容解释" class="headerlink" title="2.2 监控页面内容解释"></a>2.2 监控页面内容解释</h3><table>
-<thead>
-<tr>
-<th>参数项</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>Active connections</td>
-<td>当前活动客户端连接数，包括Waiting等待连接数</td>
-</tr>
-<tr>
-<td>accepts</td>
-<td>已接受总的TCP连接数</td>
-</tr>
-<tr>
-<td>handled</td>
-<td>已处理总的TCP连接数</td>
-</tr>
-<tr>
-<td>requests</td>
-<td>客户端总的http请求数</td>
-</tr>
-<tr>
-<td>Reading</td>
-<td>当前nginx读取请求头的连接数</td>
-</tr>
-<tr>
-<td>Writing</td>
-<td>当前nginx将响应写回客户端的连接数</td>
-</tr>
-<tr>
-<td>Waiting</td>
-<td>当前等待请求的空闲客户端连接数</td>
-</tr>
-</tbody></table>
-<h2 id="三、基于IP的访问控制"><a href="#三、基于IP的访问控制" class="headerlink" title="三、基于IP的访问控制"></a>三、基于IP的访问控制</h2><blockquote>
-<p>某网页内的数据比较重要，怎么控制那些人可以访问，那些人不能访问呢？</p>
-</blockquote>
-<p>可以来源的IP地址做限制，常用的三种控制方法：</p>
-<ul>
-<li><p>拒绝10.0.0.1来源IP访问，其他人允许</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">location &#x2F;nginx_status &#123;
-    stub_status;
-    deny 10.0.0.1&#x2F;32;
-    allow all;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>允许10.0.0.1来源IP访问，其他人全部拒绝</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">location &#x2F;nginx_status &#123;
-    stub_status;
-    allow 10.0.0.1&#x2F;32;
-    deny all;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>实际配置监控Nginx状态时，仅允许该服务器的回环地址访问127.0.0.1</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 最安全
-location &#x2F;nginx_status &#123;
-    stub_status;
-    allow 127.0.0.1;
-    deny all;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
-</ul>
-<h2 id="四、基于密码的身份验证"><a href="#四、基于密码的身份验证" class="headerlink" title="四、基于密码的身份验证"></a>四、基于密码的身份验证</h2><blockquote>
-<p>重要数据网站，要实现需要用户名密码认证，怎么做呢？</p>
-</blockquote>
-<ol>
-<li><p>生成一个密码文件，密码文件的格式  name:password(加密)  （建议使用htpasswd）  openssl password</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# yum install httpd-tools -y
-[root@web01 conf.d]# htpasswd -c -b &#x2F;etc&#x2F;nginx&#x2F;auth_conf oldboy oldboy
-[root@web01 conf.d]# cat &#x2F;etc&#x2F;nginx&#x2F;auth_conf
-oldboy:$apr1$Kp87VSae$658Nt5bm4iiblQkUvP7u61<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>配置Nginx，限制对应的资源</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">location &#x2F;download &#123;
-	root &#x2F;module;
-	autoindex on;
-	autoindex_exact_size off;
-	autoindex_localtime on;
-	
-	auth_basic &quot;Please Password!!!&quot;;
-	auth_basic_user_file &#x2F;etc&#x2F;nginx&#x2F;auth_conf; 
-	# 注意认证文件路径，否则网页认证后会403，可是为什么放其他目录就不行？
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
-</ol>
-<h2 id="五、Nginx连接限制"><a href="#五、Nginx连接限制" class="headerlink" title="五、Nginx连接限制"></a>五、Nginx连接限制</h2><blockquote>
-<p>网站请求数太多，不堪重负了，怎么保障部分用户能够正常访问</p>
-</blockquote>
-<h3 id="5-1-限制连接数"><a href="#5-1-限制连接数" class="headerlink" title="5.1 限制连接数"></a>5.1 限制连接数</h3><p><code>设置共享内存区域和给定键值的最大允许连接数。超过此限制时，服务器将返回错误以回复请求</code></p>
-<ul>
-<li><p>编辑配置文件</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># http标签段定义连接限制
-http&#123;
-    limit_conn_zone $binary_remote_addr zone&#x3D;conn_zone:10m;
-&#125;
-server &#123;
-    # 同一时刻只允许一个客户端连接
-    limit_conn conn_zone 1; 
-
-    location &#x2F; &#123;
-        root &#x2F;code;
-        index index.html;
-    &#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>使用ab工具进行压力测试</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 使用ab工具进行压力测试
-[root@xuliangwei ~]# yum install -y httpd-tools
-[root@xuliangwei ~]# ab -n 500 -c 2  http:&#x2F;&#x2F;127.0.0.1&#x2F;index.html
-# 可见500次中有失败的请求<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>查看拦截日志</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">tail -f &#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log
-类似于
-2019&#x2F;01&#x2F;14 11:11:22 [error] 29962#29962: *19 limiting connections by zone &quot;conn_zone&quot;, client: 47.110.176.164, server: www.xuliangwei.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;www.xuliangwei.com&quot;
-2019&#x2F;01&#x2F;14 11:11:23 [error] 29962#29962: *19 limiting connections by zone &quot;conn_zone&quot;, client: 47.110.176.164, server: www.xuliangwei.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;www.xuliangwei.com&quot;
-2019&#x2F;01&#x2F;14 11:11:25 [error] 29962#29962: *19 limiting connections by zone &quot;conn_zone&quot;, client: 47.110.176.164, server: www.xuliangwei.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;www.xuliangwei.com&quot;
-2019&#x2F;01&#x2F;14 11:11:25 [error] 29962#29962: *19 limiting connections by zone &quot;conn_zone&quot;, client: 47.110.176.164, server: www.xuliangwei.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;www.xuliangwei.com&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
-</ul>
-<h3 id="5-2-限制请求数（更精准）"><a href="#5-2-限制请求数（更精准）" class="headerlink" title="5.2 限制请求数（更精准）"></a>5.2 限制请求数（更精准）</h3><p><code>设置共享内存区域和请求的最大突发大小。过多的请求被延迟，直到它们的数量超过最大突发大小，在这种情况下请求以错误终止。默认情况下，最大突发大小等于零。</code></p>
-<ul>
-<li><p>定义限制的Key</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cat test1.oldboy.com.conf 
-limit_req_zone $binary_remote_addr zone&#x3D;req_zone:10m rate&#x3D;1r&#x2F;s;
-server &#123;
-	listen 80;
-	server_name test1.oldboy.com;
-	
-	limit_req zone&#x3D;req_zone burst&#x3D;5 nodelay;
-	limit_req_status 412;
-	error_page 412 &#x2F;err.html;    #这个文件必须存在&#x2F;code&#x2F;test1&#x2F;err.html
-
-	location &#x2F; &#123;
-		root &#x2F;code&#x2F;test1;
-		index index.html;
-	&#125;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>填写hosts域名解析 （测试：域名访问才有效果，直接访问没效果）</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">echo &quot;10.0.0.7 test1.oldboy.com&quot; &gt;&gt; &#x2F;etc&#x2F;hosts<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-</li>
-<li><p>压力测试</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">ab -n 50 -c 20 http:&#x2F;&#x2F;test1.oldboy.com&#x2F;index.html<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-</li>
-<li><p>查看错误日志</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">2019&#x2F;01&#x2F;14 11:28:22 [error] 2073#2073: *3 limiting requests, excess: 5.737 by zone &quot;req_zone&quot;, client: 10.0.0.1, server: test1.oldboy.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;test1.oldboy.com&quot;
-2019&#x2F;01&#x2F;14 11:28:22 [error] 2073#2073: *3 limiting requests, excess: 5.611 by zone &quot;req_zone&quot;, client: 10.0.0.1, server: test1.oldboy.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;test1.oldboy.com&quot;
-2019&#x2F;01&#x2F;14 11:28:22 [error] 2073#2073: *3 limiting requests, excess: 5.450 by zone &quot;req_zone&quot;, client: 10.0.0.1, server: test1.oldboy.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;test1.oldboy.com&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></li>
-</ul>
-<h2 id="六、Nginx匹配符和优先级"><a href="#六、Nginx匹配符和优先级" class="headerlink" title="六、Nginx匹配符和优先级"></a>六、Nginx匹配符和优先级</h2><p>Location语法示例</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">location [&#x3D;|^~|~|~*|!~|!~*|&#x2F;] &#x2F;uri&#x2F; &#123; ...
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>匹配优先级</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">匹配符	匹配规则						优先级
-&#x3D;		精确匹配						1 	用到
-^~		以某个字符串开头				2
-~		区分大小写的正则匹配			3	常用
-~*		不区分大小写的正则匹配			4
-!~		区分大小写不匹配的正则			5
-!~*		不区分大小写不匹配的正则		6
-&#x2F;		通用匹配，任何请求都会匹配到	7	常用<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="6-1-匹配案例"><a href="#6-1-匹配案例" class="headerlink" title="6.1 匹配案例"></a>6.1 匹配案例</h3><blockquote>
-<p>参考网站：<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_41980405/article/details/111402208">https://blog.csdn.net/qq_41980405/article/details/111402208</a></p>
-</blockquote>
-<ul>
-<li><p>通用匹配，任何请求都会匹配到</p>
-<pre class="line-numbers language-nginx" data-language="nginx"><code class="language-nginx"><span class="token directive"><span class="token keyword">location</span> /</span> <span class="token punctuation">&#123;</span>
-    ...
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>严格区分大小写，匹配以.php结尾的都走这个location    </p>
-<pre class="line-numbers language-nginx" data-language="nginx"><code class="language-nginx"><span class="token directive"><span class="token keyword">location</span> ~ \.php$</span> <span class="token punctuation">&#123;</span>
-    ...
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>严格区分大小写，匹配以.jsp结尾的都走这个location </p>
-<pre class="line-numbers language-nginx" data-language="nginx"><code class="language-nginx"><span class="token directive"><span class="token keyword">location</span> ~ \.jsp$</span> <span class="token punctuation">&#123;</span>
-    ...
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>不区分大小写匹配，只要用户访问.jpg,gif,png,js,css 都走这条location</p>
-<pre class="line-numbers language-nginx" data-language="nginx"><code class="language-nginx"><span class="token directive"><span class="token keyword">location</span> ~* .*\.(jpg|gif|png|js|css|mp4)$</span> <span class="token punctuation">&#123;</span>
-    ...
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>不区分大小写匹配</p>
-<pre class="line-numbers language-nginx" data-language="nginx"><code class="language-nginx"><span class="token directive"><span class="token keyword">location</span> ~* <span class="token string">"\.(sql|bak|tgz|tar.gz|.git)$"</span></span> <span class="token punctuation">&#123;</span>
-    ...
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/09-Nginx(%E4%B8%89)LNMP%E6%9E%B6%E6%9E%84%E5%AE%89%E8%A3%85/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/09-Nginx(%E4%B8%89)LNMP%E6%9E%B6%E6%9E%84%E5%AE%89%E8%A3%85/" class="post-title-link" itemprop="url">运维之综合架构--07--Nginx(三)LNMP介绍</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:16:26" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="一、LNMP简介-需补充"><a href="#一、LNMP简介-需补充" class="headerlink" title="一、LNMP简介(需补充)"></a>一、LNMP简介(需补充)</h2><h3 id="1-1-什么是LNMP"><a href="#1-1-什么是LNMP" class="headerlink" title="1.1 什么是LNMP"></a>1.1 什么是LNMP</h3><h3 id="1-2-LNMP架构是如何工作的"><a href="#1-2-LNMP架构是如何工作的" class="headerlink" title="1.2 LNMP架构是如何工作的"></a>1.2 LNMP架构是如何工作的</h3><p>浏览器 –http–&gt; Nginx(fastcgi_pass) –fastcgi–&gt;php(fastcgi_fpm调动wrapper再调动php解析再调用mysql)</p>
-<p>大致流程：</p>
-<p>用户在浏览器发起请求，如果请求的是静态资源，Nginx则直接返回，如果请求的是动态资源，Nginx会通过fastcgi协议，将请求交给PHP服务器，再返回动态资源。</p>
-<h3 id="1-3-LNMP和LAMP的区别是什么"><a href="#1-3-LNMP和LAMP的区别是什么" class="headerlink" title="1.3 LNMP和LAMP的区别是什么"></a>1.3 LNMP和LAMP的区别是什么</h3><p>nginx 是以fastcgi协议调用的php<br>apache是以模块的方式加载的php</p>
-<h2 id="二、LNMP架构简单搭建"><a href="#二、LNMP架构简单搭建" class="headerlink" title="二、LNMP架构简单搭建"></a>二、LNMP架构简单搭建</h2><p>1、准备一台名为nginx的服务器</p>
-<p>2、使用官方仓库安装nginx</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 添加安装源
-[root@nginx ~]# cat &#x2F;etc&#x2F;yum.repos.d&#x2F;nginx.repo 
-[nginx]
-name&#x3D;nginx repo
-baseurl&#x3D;http:&#x2F;&#x2F;nginx.org&#x2F;packages&#x2F;centos&#x2F;7&#x2F;$basearch&#x2F;
-gpgcheck&#x3D;0
-enabled&#x3D;1
-
-#安装Nginx
-[root@nginx ~]# yum install nginx -y<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>3、安装php7.1</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nginx ~]# yum remove php-mysql-5.4 php php-fpm php-common # 卸载默认5.4版本的php
-[root@nginx ~]# cat &#x2F;etc&#x2F;yum.repos.d&#x2F;php.repo
-[php]
-name &#x3D; php Repository
-baseurl &#x3D; http:&#x2F;&#x2F;us-east.repo.webtatic.com&#x2F;yum&#x2F;el7&#x2F;x86_64&#x2F;
-gpgcheck &#x3D; 0
-
-[root@nginx ~]# yum -y install php71w php71w-cli php71w-common php71w-devel php71w-embedded php71w-gd php71w-mcrypt php71w-mbstring php71w-pdo php71w-xml php71w-fpm php71w-mysqlnd php71w-opcache php71w-pecl-memcached php71w-pecl-redis php71w-pecl-mongodb<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>4、安装maria数据库</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nginx ~]# yum install mariadb-server mariadb -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>5、配置nginx和php集成</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cd &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;
-[root@web01 conf.d]# cat php.conf 
-server &#123;
-	listen 80;
-	server_name php.oldboy.com;
-	root &#x2F;code;
-
-	location &#x2F; &#123;
-		index index.php index.html;
-	&#125;
-
-	location ~ \.php$ &#123;
-		fastcgi_pass 127.0.0.1:9000;
-		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-		include fastcgi_params;
-	&#125;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>6、重载nginx</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# nginx -t
-nginx: the configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf syntax is ok
-nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test is successful
-[root@web01 conf.d]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>7、启动php-fpm，并加入开机自启</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# systemctl start php-fpm
-[root@web01 conf.d]# systemctl enable  php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>8、准备一个php文件，测试nginx和php是否继承成功</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cat &#x2F;code&#x2F;page.php
-&lt;?php
-	phpinfo();
-?&gt;
-# 测试：网页访问:http:&#x2F;&#x2F;php.oldboy.com&#x2F;page.php<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>9、启动数据库</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# systemctl start mariadb
-[root@web01 conf.d]# systemctl enable mariadb
-[root@web01 conf.d]# mysqladmin password &#39;Bgx123.com&#39;		#配置密码（默认mysql是空密码）
-[root@web01 conf.d]# mysql -uroot -pBgx123.com				#使用账号和密码登录mysql<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>10、准备一个php文件，测试是否可以正常连接数据库</p>
-<pre class="line-numbers language-she" data-language="she"><code class="language-she">&lt;?php
-  $servername &#x3D; &quot;localhost&quot;;
-  $username &#x3D; &quot;root&quot;;
-  $password &#x3D; &quot;Bgx123.com&quot;;
-
-  &#x2F;&#x2F; 创建连接
-  $conn &#x3D; mysqli_connect($servername, $username, $password);
-
-  &#x2F;&#x2F; 检测连接
-  if (!$conn) &#123;
-      die(&quot;Connection failed: &quot; . mysqli_connect_error()); &#x2F;&#x2F; 注意格式
-  &#125;
-  echo &quot;php连接MySQL数据库成功&quot;;
-  ?&gt;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="三、案例-搭建wordpress博客"><a href="#三、案例-搭建wordpress博客" class="headerlink" title="三、案例-搭建wordpress博客"></a>三、案例-搭建wordpress博客</h2><h3 id="3-1-环境准备"><a href="#3-1-环境准备" class="headerlink" title="3.1 环境准备"></a>3.1 环境准备</h3><table>
-<thead>
-<tr>
-<th>用途</th>
-<th>公网IP地址</th>
-<th>内网IP地址</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>web服务器01</td>
-<td>10.0.0.7</td>
-<td>172.16.1.7</td>
-</tr>
-</tbody></table>
-<h3 id="3-2-部署安装"><a href="#3-2-部署安装" class="headerlink" title="3.2 部署安装"></a>3.2 部署安装</h3><p>1、添加nginx配置文件</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cat blog.oldboy.com.conf 
-server &#123;
-	listen 80;
-	server_name blog.oldboy.com;
-	root &#x2F;code&#x2F;wordpress;
-
-	location &#x2F; &#123;
-		index index.php index.html;
-	&#125;
-
-	location ~ \.php$ &#123;
-		fastcgi_pass 127.0.0.1:9000;
-		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-		include fastcgi_params;
-	&#125;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>2、根据nginx中定义的内容，创建站点目录并进行授权</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# mkdir &#x2F;code
-[root@web01 conf.d]# cd &#x2F;code
-[root@web01 code]# wget https:&#x2F;&#x2F;cn.wordpress.org&#x2F;wordpress-5.0.3-zh_CN.tar.gz
-[root@web01 code]# tar xf wordpress-5.0.3-zh_CN.tar.gz<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>3、修改nginx与php-fpm的运行用户为www，并授权代码属主和属组都为www</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">#注意：如果没有该用户，启动一定会报错
-[root@web01 code]# groupadd -g 666 www
-[root@web01 code]# useradd -u666 -g666 www
-
-修改nginx与php-fpm管理进程，的运行身份为www
-[root@web01 code]# sed -i &#39;&#x2F;^user &#x2F;c user  www;&#39; &#x2F;etc&#x2F;nginx&#x2F;nginx.conf
-[root@web01 code]# sed -i &#39;&#x2F;^user&#x2F;c user &#x3D; www&#39; &#x2F;etc&#x2F;php-fpm.d&#x2F;www.conf 
-[root@web01 code]# sed -i &#39;&#x2F;^group&#x2F;c group &#x3D; www&#39; &#x2F;etc&#x2F;php-fpm.d&#x2F;www.conf 
-
-一定要重启才生效
-[root@web01 code]# systemctl restart nginx
-[root@web01 code]# systemctl restart php-fpm
-
-最后授权代码为www
-[root@web01 code]# chown -R www.www &#x2F;code&#x2F;wordpress	<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>4、创建数据库</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">MariaDB [(none)]&gt; create database wordpress;			#创建一个库，名称叫wordpress
-Query OK, 1 row affected (0.00 sec)
-
-MariaDB [(none)]&gt; show databases;						#查询该台数据库服务有多少个库
-+--------------------+
-| Database           |
-+--------------------+
-| information_schema |
-| mysql              |
-| performance_schema |
-| test               |
-| wordpress          |
-+--------------------+
-5 rows in set (0.00 sec)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>5、解决nginx上传文件大小限制（默认1M，超过大小会报413）</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">在wordpress的nginx配置文件中添加：client_max_body_size 100m;
-[root@web01 code]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;blog.oldboy.com.conf 
-server &#123;
-        listen 80;
-        server_name blog.oldboy.com;
-        root &#x2F;code&#x2F;wordpress;
-        client_max_body_size 100m;  # 默认1M，超过大小会报413
-
-        location &#x2F; &#123;
-                index index.php index.html;
-        &#125;
-
-        location ~ \.php$ &#123;
-                fastcgi_pass 127.0.0.1:9000;
-                fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-                include fastcgi_params;
-        &#125;
-&#125;
-重启nginx：systemctl restart nginx	<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<blockquote>
-<p>测试在wordpress页面上传主题或者写文章上传图片，均出现500报错<br>查看日志文件&#x2F;var&#x2F;log&#x2F;nginx&#x2F;err.log<br>2021&#x2F;08&#x2F;16 18:59:31 [crit] 1228#1228: *2 open() “&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;client_body&#x2F;0000000001” failed (13: Permission denied), client: 10.0.0.1, server: php.gs.com, request: “POST &#x2F;wp-admin&#x2F;update.php?action&#x3D;upload-theme HTTP&#x2F;1.1”, host: “php.gs.com”, referrer: “<a target="_blank" rel="noopener" href="http://php.gs.com/wp-admin/theme-install.php?browse=popular&quot;">http://php.gs.com/wp-admin/theme-install.php?browse=popular&quot;</a><br>解决方法，参考<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_15941409/article/details/114640122">https://blog.csdn.net/qq_15941409/article/details/114640122</a><br>chown www:www -R &#x2F;var&#x2F;lib&#x2F;nginx&#x2F;</p>
-</blockquote>
-<h2 id="四、案例-搭建wecenter知乎"><a href="#四、案例-搭建wecenter知乎" class="headerlink" title="四、案例-搭建wecenter知乎"></a>四、案例-搭建wecenter知乎</h2><h3 id="4-1-部署安装"><a href="#4-1-部署安装" class="headerlink" title="4.1 部署安装"></a>4.1 部署安装</h3><p>1、添加nginx配置文件</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">server &#123;
-	listen 80;
-	server_name zh.oldboy.com;
-	root &#x2F;code&#x2F;zh;
-	client_max_body_size 100m;
-
-	location &#x2F; &#123;
-		index index.php index.html;
-	&#125;
-
-	location ~ \.php$ &#123;
-		fastcgi_pass 127.0.0.1:9000;
-		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-		include fastcgi_params;
-	&#125;
-&#125;
-[root@web01 code]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>2、wencenter部署</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# rz -E WeCenter_3-2-1.zip
-[root@web01 code]# unzip WeCenter_3-2-1.zip
-[root@web01 code]# mv WeCenter_3-2-1 zh
-[root@web01 code]# chown -R www.www zh&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>3、配置数据库</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# mysql -uroot -pBgx123.com
-MariaDB [(none)]&gt; create database zh;
-MariaDB [(none)]&gt; show databases;
-+--------------------+
-| Database           |
-+--------------------+
-| information_schema |
-| mysql              |
-| performance_schema |
-| test               |
-| wordpress          |
-| zh                 |
-+--------------------+
-6 rows in set (0.00 sec)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="五、案例-搭建edusoho在线视频教育"><a href="#五、案例-搭建edusoho在线视频教育" class="headerlink" title="五、案例-搭建edusoho在线视频教育"></a>五、案例-搭建edusoho在线视频教育</h2><h3 id="5-1-部署安装"><a href="#5-1-部署安装" class="headerlink" title="5.1 部署安装"></a>5.1 部署安装</h3><p>1、添加nginx配置文件</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;edu.oldboy.com.conf 
-server &#123;
-    listen 80;
-    server_name edu.oldboy.com;
-    root &#x2F;code&#x2F;edusoho&#x2F;web;
-    client_max_body_size 200m;
-
-    location &#x2F; &#123;
-        index app.php;
-        try_files $uri @rewriteapp;
-    &#125;
-    location @rewriteapp &#123;
-        rewrite ^(.*)$ &#x2F;app.php&#x2F;$1 last;
-    &#125;
-
-    location ~ ^&#x2F;udisk &#123;
-        internal;
-        root &#x2F;code&#x2F;edusoho&#x2F;app&#x2F;data&#x2F;;
-    &#125;
-
-    location ~ ^&#x2F;(app|app_dev)\.php(&#x2F;|$) &#123;
-        fastcgi_pass   127.0.0.1:9000;
-        fastcgi_split_path_info ^(.+\.php)(&#x2F;.*)$;
-        include fastcgi_params;
-        fastcgi_param  SCRIPT_FILENAME    $document_root$fastcgi_script_name;
-        fastcgi_param  HTTPS              off;
-        fastcgi_param HTTP_X-Sendfile-Type X-Accel-Redirect;
-        fastcgi_param HTTP_X-Accel-Mapping &#x2F;udisk&#x3D;&#x2F;code&#x2F;edusoho&#x2F;app&#x2F;data&#x2F;udisk;
-        fastcgi_buffer_size 128k;
-        fastcgi_buffers 8 128k;
-    &#125;
-
-    # 配置设置图片格式文件
-    location ~* \.(jpg|jpeg|gif|png|ico|swf)$ &#123;
-        # 过期时间为3年
-        expires 3y;
-        # 关闭日志记录
-        access_log off;
-        # 关闭gzip压缩，减少CPU消耗，因为图片的压缩率不高。
-        gzip off;
-    &#125;
-    # 配置css&#x2F;js文件
-    location ~* \.(css|js)$ &#123;
-        access_log off;
-        expires 3y;
-    &#125;
-    # 禁止用户上传目录下所有.php文件的访问，提高安全性
-    location ~ ^&#x2F;files&#x2F;.*\.(php|php5)$ &#123;
-        deny all;
-    &#125;
-
-    # 以下配置允许运行.php的程序，方便于其他第三方系统的集成。
-    location ~ \.php$ &#123;
-        fastcgi_pass   127.0.0.1:9000;
-        fastcgi_split_path_info ^(.+\.php)(&#x2F;.*)$;
-        include fastcgi_params;
-        fastcgi_param  SCRIPT_FILENAME    $document_root$fastcgi_script_name;
-        fastcgi_param  HTTPS              off;
-    &#125;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>2、下载edusoho,并授权文件夹</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">wget http:&#x2F;&#x2F;download.edusoho.com&#x2F;edusoho-8.2.17.tar.gz
-tar xf edusoho-8.2.17.tar.gz
-chown -R www.www edusoho<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<p>3、调整php的上传大小(上传文件默认有限制大小)</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# vim &#x2F;etc&#x2F;php.ini
-post_max_size &#x3D; 200M
-upload_max_filesize &#x3D; 200M
-[root@web01 code]# systemctl restart php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="六、各开源项目网站"><a href="#六、各开源项目网站" class="headerlink" title="六、各开源项目网站"></a>六、各开源项目网站</h2><p>phpmyadmin	<a target="_blank" rel="noopener" href="https://www.phpmyadmin.net/">https://www.phpmyadmin.net/</a><br>zblog	<a target="_blank" rel="noopener" href="https://www.zblogcn.com/">https://www.zblogcn.com/</a><br>wordpress	<a target="_blank" rel="noopener" href="https://cn.wordpress.org/">https://cn.wordpress.org/</a><br>wecenter	<a target="_blank" rel="noopener" href="http://www.wecenter.com/downloads/">http://www.wecenter.com/downloads/</a><br>edusohu	<a target="_blank" rel="noopener" href="http://www.edusoho.com/open/show">http://www.edusoho.com/open/show</a></p>
 
       
     </div>

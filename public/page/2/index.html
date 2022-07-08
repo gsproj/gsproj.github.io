@@ -184,6 +184,744 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/08-Nginx(%E4%BA%8C)%E5%B8%B8%E7%94%A8%E5%AE%98%E6%96%B9%E6%A8%A1%E5%9D%97/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/08-Nginx(%E4%BA%8C)%E5%B8%B8%E7%94%A8%E5%AE%98%E6%96%B9%E6%A8%A1%E5%9D%97/" class="post-title-link" itemprop="url">运维之综合架构--07--Nginx(二)常用官方模块</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-08 14:19:14" itemprop="dateModified" datetime="2022-07-08T14:19:14+08:00">2022-07-08</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <blockquote>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>本篇主要介绍Nginx的常用官方模块</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+<h2 id="一、目录索引-autoindex"><a href="#一、目录索引-autoindex" class="headerlink" title="一、目录索引-autoindex"></a>一、目录索引-autoindex</h2><h3 id="1-1-使用方法1"><a href="#1-1-使用方法1" class="headerlink" title="1.1 使用方法1"></a>1.1 使用方法1</h3><p>按此方法设置后，访问网页<a target="_blank" rel="noopener" href="http://module.test.com将显示文件目录/">http://module.test.com将显示文件目录</a></p>
+<p>实际目录位于: &#x2F;module</p>
+<p>a.准备配置文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 module]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;autoindex.conf
+server &#123;
+	listen 80;
+	server_name module.test.com;
+	charset utf-8,gbk; # 解决中文乱码
+
+	location &#x2F; &#123;
+		root &#x2F;module;
+		autoindex on;	# 开启目录索引
+		autoindex_exact_size off;	# 显示文件大小，默认为on显示字节，off显示大概单位
+		autoindex_localtime on;	# 默认off显示UTC时间，on显示本地时间
+	&#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>b.准备对应的目录，并往目录中添加文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">mkdir &#x2F;module&#x2F;&#123;centos,ubuntu,redhat&#125;&#x2F; -p<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>c.检查语法并重新加载nginx</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">nginx -t 
+systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<h3 id="1-2-使用方法2（推荐）"><a href="#1-2-使用方法2（推荐）" class="headerlink" title="1.2 使用方法2（推荐）"></a>1.2 使用方法2（推荐）</h3><p>按此方法设置后，访问网页<a target="_blank" rel="noopener" href="http://www.module.test.com/download%E5%B0%86%E6%98%BE%E7%A4%BA%E6%96%87%E4%BB%B6%E7%9B%AE%E5%BD%95,%E4%B8%BB%E9%A1%B5%E5%8F%AF%E6%AD%A3%E5%B8%B8%E8%AE%BF%E9%97%AE">http://www.module.test.com/download将显示文件目录,主页可正常访问</a></p>
+<p>实际目录位于：&#x2F;module&#x2F;download</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 module]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;autoindex.conf 
+server &#123;
+	listen 80;
+	server_name module.oldboy.com;
+	charset utf-8,gbk;
+
+	location &#x2F; &#123;	# 主页可以正常访问
+		root &#x2F;code;
+		index index.html index.htm;
+	&#125;
+
+	location &#x2F;download &#123;	# 当访问http:&#x2F;&#x2F;xxxx&#x2F;download则访问&#x2F;module&#x2F;download文件夹，显示目录索引
+		root &#x2F;module; # 此时，访问的文件夹是&#x2F;module&#x2F;download
+		autoindex on;
+		autoindex_exact_size off;
+		autoindex_localtime on;
+	&#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="二、-状态监控页面-stub-status"><a href="#二、-状态监控页面-stub-status" class="headerlink" title="二、 状态监控页面-stub_status"></a>二、 状态监控页面-stub_status</h2><blockquote>
+<p>需要nginx附带–with-http_stub_status_module模块才能使用</p>
+</blockquote>
+<h3 id="2-1-使用方法"><a href="#2-1-使用方法" class="headerlink" title="2.1 使用方法"></a>2.1 使用方法</h3><p>a.设置配置文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">在&#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;autoindex.conf里面附加内容
+location &#x2F;nginx_status &#123;
+	stub_status;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>b.重启Nginx服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">重启nginx服务
+systemctl reload nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>c.网页访问测试</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">访问:
+http:&#x2F;&#x2F;module.test.com&#x2F;nginx_status
+网页显示：
+Active connections: 2 
+server accepts handled requests
+		3 			3 	33 
+Reading: 0 Writing: 1 Waiting: 1 <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>d.通过选项关闭长连接</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 注意, 一次TCP的连接，可以发起多次http的请求, 如下参数可配置进行验证
+keepalive_timeout  0;   # 类似于关闭长连接
+keepalive_timeout  65;  # 65s没有活动则断开连接<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">在&#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;autoindex.conf里面的附加内容修改为
+location &#x2F;nginx_status &#123;
+	stub_status;
+	keepalive_timeout  0; 
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>e.再次测试网页访问</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">关闭长连接后的显示：
+Active connections: 2 
+server accepts handled requests
+ 21 21 20 
+Reading: 0 Writing: 1 Waiting: 1 
+# 可见每次HTTP请求都要重新发起TCP连接<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-2-监控页面内容解释"><a href="#2-2-监控页面内容解释" class="headerlink" title="2.2 监控页面内容解释"></a>2.2 监控页面内容解释</h3><table>
+<thead>
+<tr>
+<th>参数项</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Active connections</td>
+<td>当前活动客户端连接数，包括Waiting等待连接数</td>
+</tr>
+<tr>
+<td>accepts</td>
+<td>已接受总的TCP连接数</td>
+</tr>
+<tr>
+<td>handled</td>
+<td>已处理总的TCP连接数</td>
+</tr>
+<tr>
+<td>requests</td>
+<td>客户端总的http请求数</td>
+</tr>
+<tr>
+<td>Reading</td>
+<td>当前nginx读取请求头的连接数</td>
+</tr>
+<tr>
+<td>Writing</td>
+<td>当前nginx将响应写回客户端的连接数</td>
+</tr>
+<tr>
+<td>Waiting</td>
+<td>当前等待请求的空闲客户端连接数</td>
+</tr>
+</tbody></table>
+<h2 id="三、基于IP的访问控制"><a href="#三、基于IP的访问控制" class="headerlink" title="三、基于IP的访问控制"></a>三、基于IP的访问控制</h2><blockquote>
+<p>某网页内的数据比较重要，怎么控制那些人可以访问，那些人不能访问呢？</p>
+</blockquote>
+<p>可以来源的IP地址做限制，常用的三种控制方法：</p>
+<ul>
+<li><p>拒绝10.0.0.1来源IP访问，其他人允许</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">location &#x2F;nginx_status &#123;
+    stub_status;
+    deny 10.0.0.1&#x2F;32;
+    allow all;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>允许10.0.0.1来源IP访问，其他人全部拒绝</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">location &#x2F;nginx_status &#123;
+    stub_status;
+    allow 10.0.0.1&#x2F;32;
+    deny all;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>实际配置监控Nginx状态时，仅允许该服务器的回环地址访问127.0.0.1</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 最安全
+location &#x2F;nginx_status &#123;
+    stub_status;
+    allow 127.0.0.1;
+    deny all;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+<h2 id="四、基于密码的身份验证"><a href="#四、基于密码的身份验证" class="headerlink" title="四、基于密码的身份验证"></a>四、基于密码的身份验证</h2><blockquote>
+<p>重要数据网站，要实现需要用户名密码认证，怎么做呢？</p>
+</blockquote>
+<ol>
+<li><p>生成一个密码文件，密码文件的格式  name:password(加密)  （建议使用htpasswd）  openssl password</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# yum install httpd-tools -y
+[root@web01 conf.d]# htpasswd -c -b &#x2F;etc&#x2F;nginx&#x2F;auth_conf oldboy oldboy
+[root@web01 conf.d]# cat &#x2F;etc&#x2F;nginx&#x2F;auth_conf
+oldboy:$apr1$Kp87VSae$658Nt5bm4iiblQkUvP7u61<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>配置Nginx，限制对应的资源</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">location &#x2F;download &#123;
+	root &#x2F;module;
+	autoindex on;
+	autoindex_exact_size off;
+	autoindex_localtime on;
+	
+	auth_basic &quot;Please Password!!!&quot;;
+	auth_basic_user_file &#x2F;etc&#x2F;nginx&#x2F;auth_conf; 
+	# 注意认证文件路径，否则网页认证后会403，可是为什么放其他目录就不行？
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+</ol>
+<h2 id="五、Nginx连接限制"><a href="#五、Nginx连接限制" class="headerlink" title="五、Nginx连接限制"></a>五、Nginx连接限制</h2><blockquote>
+<p>网站请求数太多，不堪重负了，怎么保障部分用户能够正常访问</p>
+</blockquote>
+<h3 id="5-1-限制连接数"><a href="#5-1-限制连接数" class="headerlink" title="5.1 限制连接数"></a>5.1 限制连接数</h3><p><code>设置共享内存区域和给定键值的最大允许连接数。超过此限制时，服务器将返回错误以回复请求</code></p>
+<ul>
+<li><p>编辑配置文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># http标签段定义连接限制
+http&#123;
+    limit_conn_zone $binary_remote_addr zone&#x3D;conn_zone:10m;
+&#125;
+server &#123;
+    # 同一时刻只允许一个客户端连接
+    limit_conn conn_zone 1; 
+
+    location &#x2F; &#123;
+        root &#x2F;code;
+        index index.html;
+    &#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>使用ab工具进行压力测试</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 使用ab工具进行压力测试
+[root@xuliangwei ~]# yum install -y httpd-tools
+[root@xuliangwei ~]# ab -n 500 -c 2  http:&#x2F;&#x2F;127.0.0.1&#x2F;index.html
+# 可见500次中有失败的请求<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>查看拦截日志</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">tail -f &#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log
+类似于
+2019&#x2F;01&#x2F;14 11:11:22 [error] 29962#29962: *19 limiting connections by zone &quot;conn_zone&quot;, client: 47.110.176.164, server: www.xuliangwei.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;www.xuliangwei.com&quot;
+2019&#x2F;01&#x2F;14 11:11:23 [error] 29962#29962: *19 limiting connections by zone &quot;conn_zone&quot;, client: 47.110.176.164, server: www.xuliangwei.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;www.xuliangwei.com&quot;
+2019&#x2F;01&#x2F;14 11:11:25 [error] 29962#29962: *19 limiting connections by zone &quot;conn_zone&quot;, client: 47.110.176.164, server: www.xuliangwei.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;www.xuliangwei.com&quot;
+2019&#x2F;01&#x2F;14 11:11:25 [error] 29962#29962: *19 limiting connections by zone &quot;conn_zone&quot;, client: 47.110.176.164, server: www.xuliangwei.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;www.xuliangwei.com&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+<h3 id="5-2-限制请求数（更精准）"><a href="#5-2-限制请求数（更精准）" class="headerlink" title="5.2 限制请求数（更精准）"></a>5.2 限制请求数（更精准）</h3><p><code>设置共享内存区域和请求的最大突发大小。过多的请求被延迟，直到它们的数量超过最大突发大小，在这种情况下请求以错误终止。默认情况下，最大突发大小等于零。</code></p>
+<ul>
+<li><p>定义限制的Key</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cat test1.oldboy.com.conf 
+limit_req_zone $binary_remote_addr zone&#x3D;req_zone:10m rate&#x3D;1r&#x2F;s;
+server &#123;
+	listen 80;
+	server_name test1.oldboy.com;
+	
+	limit_req zone&#x3D;req_zone burst&#x3D;5 nodelay;
+	limit_req_status 412;
+	error_page 412 &#x2F;err.html;    #这个文件必须存在&#x2F;code&#x2F;test1&#x2F;err.html
+
+	location &#x2F; &#123;
+		root &#x2F;code&#x2F;test1;
+		index index.html;
+	&#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>填写hosts域名解析 （测试：域名访问才有效果，直接访问没效果）</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">echo &quot;10.0.0.7 test1.oldboy.com&quot; &gt;&gt; &#x2F;etc&#x2F;hosts<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+</li>
+<li><p>压力测试</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">ab -n 50 -c 20 http:&#x2F;&#x2F;test1.oldboy.com&#x2F;index.html<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+</li>
+<li><p>查看错误日志</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">2019&#x2F;01&#x2F;14 11:28:22 [error] 2073#2073: *3 limiting requests, excess: 5.737 by zone &quot;req_zone&quot;, client: 10.0.0.1, server: test1.oldboy.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;test1.oldboy.com&quot;
+2019&#x2F;01&#x2F;14 11:28:22 [error] 2073#2073: *3 limiting requests, excess: 5.611 by zone &quot;req_zone&quot;, client: 10.0.0.1, server: test1.oldboy.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;test1.oldboy.com&quot;
+2019&#x2F;01&#x2F;14 11:28:22 [error] 2073#2073: *3 limiting requests, excess: 5.450 by zone &quot;req_zone&quot;, client: 10.0.0.1, server: test1.oldboy.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;test1.oldboy.com&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+<h2 id="六、Nginx匹配符和优先级"><a href="#六、Nginx匹配符和优先级" class="headerlink" title="六、Nginx匹配符和优先级"></a>六、Nginx匹配符和优先级</h2><p>Location语法示例</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">location [&#x3D;|^~|~|~*|!~|!~*|&#x2F;] &#x2F;uri&#x2F; &#123; ...
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>匹配优先级</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">匹配符	匹配规则						优先级
+&#x3D;		精确匹配						1 	用到
+^~		以某个字符串开头				2
+~		区分大小写的正则匹配			3	常用
+~*		不区分大小写的正则匹配			4
+!~		区分大小写不匹配的正则			5
+!~*		不区分大小写不匹配的正则		6
+&#x2F;		通用匹配，任何请求都会匹配到	7	常用<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="6-1-匹配案例"><a href="#6-1-匹配案例" class="headerlink" title="6.1 匹配案例"></a>6.1 匹配案例</h3><blockquote>
+<p>参考网站：<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_41980405/article/details/111402208">https://blog.csdn.net/qq_41980405/article/details/111402208</a></p>
+</blockquote>
+<ul>
+<li><p>通用匹配，任何请求都会匹配到</p>
+<pre class="line-numbers language-nginx" data-language="nginx"><code class="language-nginx"><span class="token directive"><span class="token keyword">location</span> /</span> <span class="token punctuation">&#123;</span>
+    ...
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>严格区分大小写，匹配以.php结尾的都走这个location    </p>
+<pre class="line-numbers language-nginx" data-language="nginx"><code class="language-nginx"><span class="token directive"><span class="token keyword">location</span> ~ \.php$</span> <span class="token punctuation">&#123;</span>
+    ...
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>严格区分大小写，匹配以.jsp结尾的都走这个location </p>
+<pre class="line-numbers language-nginx" data-language="nginx"><code class="language-nginx"><span class="token directive"><span class="token keyword">location</span> ~ \.jsp$</span> <span class="token punctuation">&#123;</span>
+    ...
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>不区分大小写匹配，只要用户访问.jpg,gif,png,js,css 都走这条location</p>
+<pre class="line-numbers language-nginx" data-language="nginx"><code class="language-nginx"><span class="token directive"><span class="token keyword">location</span> ~* .*\.(jpg|gif|png|js|css|mp4)$</span> <span class="token punctuation">&#123;</span>
+    ...
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>不区分大小写匹配</p>
+<pre class="line-numbers language-nginx" data-language="nginx"><code class="language-nginx"><span class="token directive"><span class="token keyword">location</span> ~* <span class="token string">"\.(sql|bak|tgz|tar.gz|.git)$"</span></span> <span class="token punctuation">&#123;</span>
+    ...
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/09-Nginx(%E4%B8%89)LNMP%E6%9E%B6%E6%9E%84%E5%AE%89%E8%A3%85/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/09-Nginx(%E4%B8%89)LNMP%E6%9E%B6%E6%9E%84%E5%AE%89%E8%A3%85/" class="post-title-link" itemprop="url">运维之综合架构--07--Nginx(三)LNMP介绍</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-08 14:19:14" itemprop="dateModified" datetime="2022-07-08T14:19:14+08:00">2022-07-08</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="一、LNMP简介-需补充"><a href="#一、LNMP简介-需补充" class="headerlink" title="一、LNMP简介(需补充)"></a>一、LNMP简介(需补充)</h2><h3 id="1-1-什么是LNMP"><a href="#1-1-什么是LNMP" class="headerlink" title="1.1 什么是LNMP"></a>1.1 什么是LNMP</h3><h3 id="1-2-LNMP架构是如何工作的"><a href="#1-2-LNMP架构是如何工作的" class="headerlink" title="1.2 LNMP架构是如何工作的"></a>1.2 LNMP架构是如何工作的</h3><p>浏览器 –http–&gt; Nginx(fastcgi_pass) –fastcgi–&gt;php(fastcgi_fpm调动wrapper再调动php解析再调用mysql)</p>
+<p>大致流程：</p>
+<p>用户在浏览器发起请求，如果请求的是静态资源，Nginx则直接返回，如果请求的是动态资源，Nginx会通过fastcgi协议，将请求交给PHP服务器，再返回动态资源。</p>
+<h3 id="1-3-LNMP和LAMP的区别是什么"><a href="#1-3-LNMP和LAMP的区别是什么" class="headerlink" title="1.3 LNMP和LAMP的区别是什么"></a>1.3 LNMP和LAMP的区别是什么</h3><p>nginx 是以fastcgi协议调用的php<br>apache是以模块的方式加载的php</p>
+<h2 id="二、LNMP架构简单搭建"><a href="#二、LNMP架构简单搭建" class="headerlink" title="二、LNMP架构简单搭建"></a>二、LNMP架构简单搭建</h2><p>1、准备一台名为nginx的服务器</p>
+<p>2、使用官方仓库安装nginx</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 添加安装源
+[root@nginx ~]# cat &#x2F;etc&#x2F;yum.repos.d&#x2F;nginx.repo 
+[nginx]
+name&#x3D;nginx repo
+baseurl&#x3D;http:&#x2F;&#x2F;nginx.org&#x2F;packages&#x2F;centos&#x2F;7&#x2F;$basearch&#x2F;
+gpgcheck&#x3D;0
+enabled&#x3D;1
+
+#安装Nginx
+[root@nginx ~]# yum install nginx -y<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>3、安装php7.1</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nginx ~]# yum remove php-mysql-5.4 php php-fpm php-common # 卸载默认5.4版本的php
+[root@nginx ~]# cat &#x2F;etc&#x2F;yum.repos.d&#x2F;php.repo
+[php]
+name &#x3D; php Repository
+baseurl &#x3D; http:&#x2F;&#x2F;us-east.repo.webtatic.com&#x2F;yum&#x2F;el7&#x2F;x86_64&#x2F;
+gpgcheck &#x3D; 0
+
+[root@nginx ~]# yum -y install php71w php71w-cli php71w-common php71w-devel php71w-embedded php71w-gd php71w-mcrypt php71w-mbstring php71w-pdo php71w-xml php71w-fpm php71w-mysqlnd php71w-opcache php71w-pecl-memcached php71w-pecl-redis php71w-pecl-mongodb<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>4、安装maria数据库</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nginx ~]# yum install mariadb-server mariadb -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>5、配置nginx和php集成</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cd &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;
+[root@web01 conf.d]# cat php.conf 
+server &#123;
+	listen 80;
+	server_name php.oldboy.com;
+	root &#x2F;code;
+
+	location &#x2F; &#123;
+		index index.php index.html;
+	&#125;
+
+	location ~ \.php$ &#123;
+		fastcgi_pass 127.0.0.1:9000;
+		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+		include fastcgi_params;
+	&#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>6、重载nginx</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# nginx -t
+nginx: the configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf syntax is ok
+nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test is successful
+[root@web01 conf.d]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>7、启动php-fpm，并加入开机自启</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# systemctl start php-fpm
+[root@web01 conf.d]# systemctl enable  php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>8、准备一个php文件，测试nginx和php是否继承成功</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cat &#x2F;code&#x2F;page.php
+&lt;?php
+	phpinfo();
+?&gt;
+# 测试：网页访问:http:&#x2F;&#x2F;php.oldboy.com&#x2F;page.php<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>9、启动数据库</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# systemctl start mariadb
+[root@web01 conf.d]# systemctl enable mariadb
+[root@web01 conf.d]# mysqladmin password &#39;Bgx123.com&#39;		#配置密码（默认mysql是空密码）
+[root@web01 conf.d]# mysql -uroot -pBgx123.com				#使用账号和密码登录mysql<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>10、准备一个php文件，测试是否可以正常连接数据库</p>
+<pre class="line-numbers language-she" data-language="she"><code class="language-she">&lt;?php
+  $servername &#x3D; &quot;localhost&quot;;
+  $username &#x3D; &quot;root&quot;;
+  $password &#x3D; &quot;Bgx123.com&quot;;
+
+  &#x2F;&#x2F; 创建连接
+  $conn &#x3D; mysqli_connect($servername, $username, $password);
+
+  &#x2F;&#x2F; 检测连接
+  if (!$conn) &#123;
+      die(&quot;Connection failed: &quot; . mysqli_connect_error()); &#x2F;&#x2F; 注意格式
+  &#125;
+  echo &quot;php连接MySQL数据库成功&quot;;
+  ?&gt;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="三、案例-搭建wordpress博客"><a href="#三、案例-搭建wordpress博客" class="headerlink" title="三、案例-搭建wordpress博客"></a>三、案例-搭建wordpress博客</h2><h3 id="3-1-环境准备"><a href="#3-1-环境准备" class="headerlink" title="3.1 环境准备"></a>3.1 环境准备</h3><table>
+<thead>
+<tr>
+<th>用途</th>
+<th>公网IP地址</th>
+<th>内网IP地址</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>web服务器01</td>
+<td>10.0.0.7</td>
+<td>172.16.1.7</td>
+</tr>
+</tbody></table>
+<h3 id="3-2-部署安装"><a href="#3-2-部署安装" class="headerlink" title="3.2 部署安装"></a>3.2 部署安装</h3><p>1、添加nginx配置文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cat blog.oldboy.com.conf 
+server &#123;
+	listen 80;
+	server_name blog.oldboy.com;
+	root &#x2F;code&#x2F;wordpress;
+
+	location &#x2F; &#123;
+		index index.php index.html;
+	&#125;
+
+	location ~ \.php$ &#123;
+		fastcgi_pass 127.0.0.1:9000;
+		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+		include fastcgi_params;
+	&#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>2、根据nginx中定义的内容，创建站点目录并进行授权</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# mkdir &#x2F;code
+[root@web01 conf.d]# cd &#x2F;code
+[root@web01 code]# wget https:&#x2F;&#x2F;cn.wordpress.org&#x2F;wordpress-5.0.3-zh_CN.tar.gz
+[root@web01 code]# tar xf wordpress-5.0.3-zh_CN.tar.gz<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>3、修改nginx与php-fpm的运行用户为www，并授权代码属主和属组都为www</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">#注意：如果没有该用户，启动一定会报错
+[root@web01 code]# groupadd -g 666 www
+[root@web01 code]# useradd -u666 -g666 www
+
+修改nginx与php-fpm管理进程，的运行身份为www
+[root@web01 code]# sed -i &#39;&#x2F;^user &#x2F;c user  www;&#39; &#x2F;etc&#x2F;nginx&#x2F;nginx.conf
+[root@web01 code]# sed -i &#39;&#x2F;^user&#x2F;c user &#x3D; www&#39; &#x2F;etc&#x2F;php-fpm.d&#x2F;www.conf 
+[root@web01 code]# sed -i &#39;&#x2F;^group&#x2F;c group &#x3D; www&#39; &#x2F;etc&#x2F;php-fpm.d&#x2F;www.conf 
+
+一定要重启才生效
+[root@web01 code]# systemctl restart nginx
+[root@web01 code]# systemctl restart php-fpm
+
+最后授权代码为www
+[root@web01 code]# chown -R www.www &#x2F;code&#x2F;wordpress	<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>4、创建数据库</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">MariaDB [(none)]&gt; create database wordpress;			#创建一个库，名称叫wordpress
+Query OK, 1 row affected (0.00 sec)
+
+MariaDB [(none)]&gt; show databases;						#查询该台数据库服务有多少个库
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| test               |
+| wordpress          |
++--------------------+
+5 rows in set (0.00 sec)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>5、解决nginx上传文件大小限制（默认1M，超过大小会报413）</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">在wordpress的nginx配置文件中添加：client_max_body_size 100m;
+[root@web01 code]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;blog.oldboy.com.conf 
+server &#123;
+        listen 80;
+        server_name blog.oldboy.com;
+        root &#x2F;code&#x2F;wordpress;
+        client_max_body_size 100m;  # 默认1M，超过大小会报413
+
+        location &#x2F; &#123;
+                index index.php index.html;
+        &#125;
+
+        location ~ \.php$ &#123;
+                fastcgi_pass 127.0.0.1:9000;
+                fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                include fastcgi_params;
+        &#125;
+&#125;
+重启nginx：systemctl restart nginx	<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>测试在wordpress页面上传主题或者写文章上传图片，均出现500报错<br>查看日志文件&#x2F;var&#x2F;log&#x2F;nginx&#x2F;err.log<br>2021&#x2F;08&#x2F;16 18:59:31 [crit] 1228#1228: *2 open() “&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;client_body&#x2F;0000000001” failed (13: Permission denied), client: 10.0.0.1, server: php.gs.com, request: “POST &#x2F;wp-admin&#x2F;update.php?action&#x3D;upload-theme HTTP&#x2F;1.1”, host: “php.gs.com”, referrer: “<a target="_blank" rel="noopener" href="http://php.gs.com/wp-admin/theme-install.php?browse=popular&quot;">http://php.gs.com/wp-admin/theme-install.php?browse=popular&quot;</a><br>解决方法，参考<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_15941409/article/details/114640122">https://blog.csdn.net/qq_15941409/article/details/114640122</a><br>chown www:www -R &#x2F;var&#x2F;lib&#x2F;nginx&#x2F;</p>
+</blockquote>
+<h2 id="四、案例-搭建wecenter知乎"><a href="#四、案例-搭建wecenter知乎" class="headerlink" title="四、案例-搭建wecenter知乎"></a>四、案例-搭建wecenter知乎</h2><h3 id="4-1-部署安装"><a href="#4-1-部署安装" class="headerlink" title="4.1 部署安装"></a>4.1 部署安装</h3><p>1、添加nginx配置文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">server &#123;
+	listen 80;
+	server_name zh.oldboy.com;
+	root &#x2F;code&#x2F;zh;
+	client_max_body_size 100m;
+
+	location &#x2F; &#123;
+		index index.php index.html;
+	&#125;
+
+	location ~ \.php$ &#123;
+		fastcgi_pass 127.0.0.1:9000;
+		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+		include fastcgi_params;
+	&#125;
+&#125;
+[root@web01 code]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>2、wencenter部署</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# rz -E WeCenter_3-2-1.zip
+[root@web01 code]# unzip WeCenter_3-2-1.zip
+[root@web01 code]# mv WeCenter_3-2-1 zh
+[root@web01 code]# chown -R www.www zh&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>3、配置数据库</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# mysql -uroot -pBgx123.com
+MariaDB [(none)]&gt; create database zh;
+MariaDB [(none)]&gt; show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| test               |
+| wordpress          |
+| zh                 |
++--------------------+
+6 rows in set (0.00 sec)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="五、案例-搭建edusoho在线视频教育"><a href="#五、案例-搭建edusoho在线视频教育" class="headerlink" title="五、案例-搭建edusoho在线视频教育"></a>五、案例-搭建edusoho在线视频教育</h2><h3 id="5-1-部署安装"><a href="#5-1-部署安装" class="headerlink" title="5.1 部署安装"></a>5.1 部署安装</h3><p>1、添加nginx配置文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;edu.oldboy.com.conf 
+server &#123;
+    listen 80;
+    server_name edu.oldboy.com;
+    root &#x2F;code&#x2F;edusoho&#x2F;web;
+    client_max_body_size 200m;
+
+    location &#x2F; &#123;
+        index app.php;
+        try_files $uri @rewriteapp;
+    &#125;
+    location @rewriteapp &#123;
+        rewrite ^(.*)$ &#x2F;app.php&#x2F;$1 last;
+    &#125;
+
+    location ~ ^&#x2F;udisk &#123;
+        internal;
+        root &#x2F;code&#x2F;edusoho&#x2F;app&#x2F;data&#x2F;;
+    &#125;
+
+    location ~ ^&#x2F;(app|app_dev)\.php(&#x2F;|$) &#123;
+        fastcgi_pass   127.0.0.1:9000;
+        fastcgi_split_path_info ^(.+\.php)(&#x2F;.*)$;
+        include fastcgi_params;
+        fastcgi_param  SCRIPT_FILENAME    $document_root$fastcgi_script_name;
+        fastcgi_param  HTTPS              off;
+        fastcgi_param HTTP_X-Sendfile-Type X-Accel-Redirect;
+        fastcgi_param HTTP_X-Accel-Mapping &#x2F;udisk&#x3D;&#x2F;code&#x2F;edusoho&#x2F;app&#x2F;data&#x2F;udisk;
+        fastcgi_buffer_size 128k;
+        fastcgi_buffers 8 128k;
+    &#125;
+
+    # 配置设置图片格式文件
+    location ~* \.(jpg|jpeg|gif|png|ico|swf)$ &#123;
+        # 过期时间为3年
+        expires 3y;
+        # 关闭日志记录
+        access_log off;
+        # 关闭gzip压缩，减少CPU消耗，因为图片的压缩率不高。
+        gzip off;
+    &#125;
+    # 配置css&#x2F;js文件
+    location ~* \.(css|js)$ &#123;
+        access_log off;
+        expires 3y;
+    &#125;
+    # 禁止用户上传目录下所有.php文件的访问，提高安全性
+    location ~ ^&#x2F;files&#x2F;.*\.(php|php5)$ &#123;
+        deny all;
+    &#125;
+
+    # 以下配置允许运行.php的程序，方便于其他第三方系统的集成。
+    location ~ \.php$ &#123;
+        fastcgi_pass   127.0.0.1:9000;
+        fastcgi_split_path_info ^(.+\.php)(&#x2F;.*)$;
+        include fastcgi_params;
+        fastcgi_param  SCRIPT_FILENAME    $document_root$fastcgi_script_name;
+        fastcgi_param  HTTPS              off;
+    &#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>2、下载edusoho,并授权文件夹</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">wget http:&#x2F;&#x2F;download.edusoho.com&#x2F;edusoho-8.2.17.tar.gz
+tar xf edusoho-8.2.17.tar.gz
+chown -R www.www edusoho<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>3、调整php的上传大小(上传文件默认有限制大小)</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# vim &#x2F;etc&#x2F;php.ini
+post_max_size &#x3D; 200M
+upload_max_filesize &#x3D; 200M
+[root@web01 code]# systemctl restart php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="六、各开源项目网站"><a href="#六、各开源项目网站" class="headerlink" title="六、各开源项目网站"></a>六、各开源项目网站</h2><p>phpmyadmin	<a target="_blank" rel="noopener" href="https://www.phpmyadmin.net/">https://www.phpmyadmin.net/</a><br>zblog	<a target="_blank" rel="noopener" href="https://www.zblogcn.com/">https://www.zblogcn.com/</a><br>wordpress	<a target="_blank" rel="noopener" href="https://cn.wordpress.org/">https://cn.wordpress.org/</a><br>wecenter	<a target="_blank" rel="noopener" href="http://www.wecenter.com/downloads/">http://www.wecenter.com/downloads/</a><br>edusohu	<a target="_blank" rel="noopener" href="http://www.edusoho.com/open/show">http://www.edusoho.com/open/show</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/10-Nginx(%E5%9B%9B)LNMP%E6%9E%B6%E6%9E%84%E6%8B%86%E5%88%86/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -207,10 +945,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:16:31" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-08 14:19:14" itemprop="dateModified" datetime="2022-07-08T14:19:14+08:00">2022-07-08</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -454,10 +1198,16 @@ database_password: &#39;Bgx123.com&#39;
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:16:37" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-08 14:19:14" itemprop="dateModified" datetime="2022-07-08T14:19:14+08:00">2022-07-08</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -693,10 +1443,16 @@ proxy_buffers 4 128k;<span aria-hidden="true" class="line-numbers-rows"><span></
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:16:45" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-08 14:19:14" itemprop="dateModified" datetime="2022-07-08T14:19:14+08:00">2022-07-08</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -908,10 +1664,16 @@ proxy_buffers 4 128k;<span aria-hidden="true" class="line-numbers-rows"><span></
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:16:49" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-08 14:19:14" itemprop="dateModified" datetime="2022-07-08T14:19:14+08:00">2022-07-08</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -1284,10 +2046,16 @@ session.auto_start &#x3D; 1<span aria-hidden="true" class="line-numbers-rows"><s
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:16:54" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-08 14:19:14" itemprop="dateModified" datetime="2022-07-08T14:19:14+08:00">2022-07-08</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -1553,10 +2321,16 @@ ssh root@10.0.0.3 -p 6666<span aria-hidden="true" class="line-numbers-rows"><spa
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:17:00" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-08 14:19:14" itemprop="dateModified" datetime="2022-07-08T14:19:14+08:00">2022-07-08</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -1858,99 +2632,6 @@ web02的Tomcat服务正常，关掉web01的nginx服务
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day01-%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AE%89%E8%A3%85/%E8%AF%BE%E5%A0%82%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day01-%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AE%89%E8%A3%85/%E8%AF%BE%E5%A0%82%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">运维之基础命令--虚拟机安装</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:08:58" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="day01-课堂笔记"><a href="#day01-课堂笔记" class="headerlink" title="day01 : 课堂笔记"></a>day01 : 课堂笔记</h1><h2 id="安装系统"><a href="#安装系统" class="headerlink" title="安装系统"></a>安装系统</h2><p><strong>1、安装虚拟机</strong></p>
-<p><img src="/.%5Cassets%5Cimage-20210302121236930.png" alt="image-20210302121236930"></p>
-<p>解压上述软件，创建vmware.exe快捷方式，然后用快捷方式打开。</p>
-<p><img src="/.%5Cassets%5Cimage-20210302121408360.png" alt="image-20210302121408360"></p>
-<p><strong>2、创建虚拟机</strong></p>
-<p><img src="/.%5Cassets%5Cimage-20210302121456338.png" alt="image-20210302121456338"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302121550128.png" alt="image-20210302121550128"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302121622000.png" alt="image-20210302121622000"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302121745568.png" alt="image-20210302121745568"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302122035359.png" alt="image-20210302122035359"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302122256831.png" alt="image-20210302122256831"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302122359568.png" alt="image-20210302122359568"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302122603313.png" alt="image-20210302122603313"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302122657199.png" alt="image-20210302122657199"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302123826623.png" alt="image-20210302123826623"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302124229475.png" alt="image-20210302124229475"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302124308081.png" alt="image-20210302124308081"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302124327456.png" alt="image-20210302124327456"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302124404318.png" alt="image-20210302124404318"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302124713502.png" alt="image-20210302124713502"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302124741038.png" alt="image-20210302124741038"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302125049653.png" alt="image-20210302125049653"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day08-%E6%89%93%E5%8C%85%E4%B8%8E%E5%8E%8B%E7%BC%A9/%E6%89%93%E5%8C%85%E4%B8%8E%E5%8E%8B%E7%BC%A9%E7%AC%94%E8%AE%B0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1974,10 +2655,16 @@ web02的Tomcat服务正常，关掉web01的nginx服务
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:13:25" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-08 14:19:14" itemprop="dateModified" datetime="2022-07-08T14:19:14+08:00">2022-07-08</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -2524,10 +3211,16 @@ x		可执行		<span class="token number">1</span>
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:13:11" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-08 14:19:14" itemprop="dateModified" datetime="2022-07-08T14:19:14+08:00">2022-07-08</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -2598,7 +3291,7 @@ root:x:0:0:root:/root:/bin/bash
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day10-Linux%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/%E7%AC%94%E8%AE%B0/">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day01-%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AE%89%E8%A3%85/%E8%AF%BE%E5%A0%82%E7%AC%94%E8%AE%B0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/myavatar.png">
@@ -2612,7 +3305,7 @@ root:x:0:0:root:/root:/bin/bash
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day10-Linux%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">运维之基础命令--用户权限</a>
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day01-%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AE%89%E8%A3%85/%E8%AF%BE%E5%A0%82%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">运维之基础命令--虚拟机安装</a>
         </h2>
 
         <div class="post-meta">
@@ -2621,10 +3314,16 @@ root:x:0:0:root:/root:/bin/bash
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:13:19" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-08 14:19:14" itemprop="dateModified" datetime="2022-07-08T14:19:14+08:00">2022-07-08</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -2650,213 +3349,28 @@ root:x:0:0:root:/root:/bin/bash
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="修改用户信息-usermod"><a href="#修改用户信息-usermod" class="headerlink" title="修改用户信息(usermod)"></a>修改用户信息(usermod)</h1><blockquote>
-<p>修改用户信息最主要的命令是usermod命令，其参数跟useradd基本一致。</p>
-</blockquote>
-<ul>
-<li><p>修改UID</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
-xiaoyu:x:2002:2002::/home/xiaoyu:/bin/bash
-<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># usermod -u 2302 xiaoyu</span>
-<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
-xiaoyu:x:2302:2002::/home/xiaoyu:/bin/bash<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>修改基本组及附加组</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 基本组 : 一个用户必须拥有的哪个组</span>
-<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
-xiaoyu:x:2302:2002::/home/xiaoyu:/bin/bash
-<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># id xiaoyu</span>
-<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>xiaoyu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2002</span><span class="token punctuation">(</span>xiaoyu<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2002</span><span class="token punctuation">(</span>xiaoyu<span class="token punctuation">)</span>
-<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># usermod -g group1 xiaoyu</span>
-<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># id xiaoyu</span>
-<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>xiaoyu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span>
-<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
-xiaoyu:x:2302:2003::/home/xiaoyu:/bin/bash
-<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># </span>
-
-<span class="token comment"># 附加组 ： 用户加入的其他用户组</span>
-<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># groupadd group1</span>
-<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># id</span>
-<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">(</span>root<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">(</span>root<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">(</span>root<span class="token punctuation">)</span>,1000<span class="token punctuation">(</span>oldboy<span class="token punctuation">)</span>,1001<span class="token punctuation">(</span>sssssssssssssssssssssss<span class="token punctuation">)</span>,1002<span class="token punctuation">(</span>test<span class="token punctuation">)</span>
-<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># usermod -G group1 root</span>
-<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># vim /etc/group</span>
-<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/group</span>
-group1:x:2003:root<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>修改家目录</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># usermod  -d /home/xiaoyu123 xiaoyu</span>
-
-<span class="token comment"># 注：修改家目录仅仅修改了配置，而原来的家目录文件没有迁移</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>修改用户描述信息</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
-xiaoyu:x:2302:2003::/home/xiaoyu123:/bin/bash
-<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># usermod -c "这是一个甩锅" xiaoyu</span>
-<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
-xiaoyu:x:2302:2003:这是一个甩锅:/home/xiaoyu123:/bin/bash<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>修改用户默认解析器</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># usermod -s /bin/sh xiaoyu</span>
-<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
-xiaoyu:x:2302:2003:这是一个甩锅:/home/xiaoyu123:/bin/sh<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>锁定与解锁</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># usermod -L xiaoyu</span>
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># usermod -U xiaoyu</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-</li>
-<li><p>修改登录名称</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># usermod -l dayu xiaoyu</span>
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
-dayu:x:2302:2003:这是一个甩锅:/home/xiaoyu123:/bin/bash<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>追加</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id dayu</span>
-<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>dayu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span>,1000<span class="token punctuation">(</span>oldboy<span class="token punctuation">)</span>
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># usermod -G root dayu</span>
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id dayu</span>
-<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>dayu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span>,0<span class="token punctuation">(</span>root<span class="token punctuation">)</span>
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># usermod -G oldboy dayu</span>
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id dayu</span>
-<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>dayu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span>,1000<span class="token punctuation">(</span>oldboy<span class="token punctuation">)</span>
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># usermod -a -G root dayu</span>
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id dayu</span>
-<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>dayu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span>,0<span class="token punctuation">(</span>root<span class="token punctuation">)</span>,1000<span class="token punctuation">(</span>oldboy<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
-</ul>
-<h1 id="密码（passwd）"><a href="#密码（passwd）" class="headerlink" title="密码（passwd）"></a>密码（passwd）</h1><blockquote>
-<p>修改或添加Linux普通用户的密码。直接影响的文件是&#x2F;etc&#x2F;shadow</p>
-</blockquote>
-<ul>
-<li><p>增加或修改密码</p>
-<p>当用户密码不存在的时候即为增加密码，当用户密码存在时即为修改密码。</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># useradd password</span>
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
-password:x:2303:2303::/home/password:/bin/bash
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/shadow</span>
-password:<span class="token operator">!</span><span class="token operator">!</span>:18701:0:99999:7:::
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># passwd password</span>
-Changing password <span class="token keyword">for</span> user password.
-New password: 
-BAD PASSWORD: The password is a palindrome
-Retype new password: 
-passwd: all authentication tokens updated successfully.
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
-password:x:2303:2303::/home/password:/bin/bash
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/shadow</span>
-password:<span class="token variable">$6</span>$.EmM.4Bl<span class="token variable">$f</span>.LimfvMsxxFZq6yFklfyk08JKQORdQovlk2a2dtrpkP31lAMLQpezFqLheBYOTm4Sur9aAqZlC/6MN6wHFBM1:18701:0:99999:7:::
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>免交互修改密码</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># echo "123" | passwd --stdin dayu</span>
-Changing password <span class="token keyword">for</span> user dayu.
-passwd: all authentication tokens updated successfully.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></li>
-</ul>
-<h1 id="用户组"><a href="#用户组" class="headerlink" title="用户组"></a>用户组</h1><blockquote>
-<p>就类似于班级，是某个同权限用户的集合。</p>
-</blockquote>
-<h2 id="创建组"><a href="#创建组" class="headerlink" title="创建组"></a>创建组</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># groupadd group2</span>
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/group</span>
-group2:x:2304:
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<ul>
-<li>指定gid</li>
-</ul>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># groupadd -g 2204 group3</span>
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/group</span>
-group3:x:2204:<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<ul>
-<li>创建系统组</li>
-</ul>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># groupadd -r group4</span>
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/group</span>
-group4:x:996:<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="修改组"><a href="#修改组" class="headerlink" title="修改组"></a>修改组</h2><ul>
-<li><p>修改名称</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -8 /etc/group</span>
-girl:x:2001:
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># groupmod -n boy girl</span>
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -8 /etc/group</span>
-boy:x:2001:<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>修改gid</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># groupmod -g 2021 boy</span>
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -8 /etc/group</span>
-boy:x:2021:<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></li>
-</ul>
-<h2 id="删除组"><a href="#删除组" class="headerlink" title="删除组"></a>删除组</h2><blockquote>
-<p>用户组在系统中删除，如果一个组被用户占用则不能删除。</p>
-</blockquote>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># groupdel group4</span>
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -8 /etc/group</span>
-dajige:x:1003:
-abc:x:2000:
-xiaoyu:x:2002:
-group1:x:2003:root
-password:x:2303:
-group2:x:2304:
-group3:x:2204:
-boy:x:2021:
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># </span>
-
-<span class="token comment"># 注：用户被删除，用户基本组也会被删除</span>
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># useradd test-group-del</span>
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
-test-group-del:x:2304:2305::/home/test-group-del:/bin/bash
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/group</span>
-test-group-del:x:2305:
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># userdel -r test-group-del</span>
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
-password:x:2303:2303::/home/password:/bin/bash
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/group</span>
-boy:x:2021:
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="组成员管理"><a href="#组成员管理" class="headerlink" title="组成员管理"></a>组成员管理</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 添加一个组到用户</span>
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># useradd gtest</span>
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># vim /etc/group</span>
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id gtest</span>
-<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2304</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2305</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2305</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span>,2204<span class="token punctuation">(</span>group3<span class="token punctuation">)</span>
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># gpasswd -a gtest group2</span>
-Adding user gtest to group group2
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id gtest</span>
-<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2304</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2305</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2305</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span>,2304<span class="token punctuation">(</span>group2<span class="token punctuation">)</span>,2204<span class="token punctuation">(</span>group3<span class="token punctuation">)</span>
-
-<span class="token comment"># 添加多个组到用户</span>
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># gpasswd -M gtest,root,dayu group</span>
-gpasswd: group <span class="token string">'group'</span> does not exist <span class="token keyword">in</span> /etc/group
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># gpasswd -M gtest,root,dayu group3</span>
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id root</span>
-<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">(</span>root<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">(</span>root<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">(</span>root<span class="token punctuation">)</span>,2000<span class="token punctuation">(</span>abc<span class="token punctuation">)</span>,2003<span class="token punctuation">(</span>group1<span class="token punctuation">)</span>,2204<span class="token punctuation">(</span>group3<span class="token punctuation">)</span>
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id dayu</span>
-<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>dayu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span>,0<span class="token punctuation">(</span>root<span class="token punctuation">)</span>,1000<span class="token punctuation">(</span>oldboy<span class="token punctuation">)</span>,2204<span class="token punctuation">(</span>group3<span class="token punctuation">)</span>
-<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id gtest</span>
-<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2304</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2305</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2305</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span>,2304<span class="token punctuation">(</span>group2<span class="token punctuation">)</span>,2204<span class="token punctuation">(</span>group3<span class="token punctuation">)</span>
-
-<span class="token comment"># 为一个组添加组长(组长有权限向组内添加用户，其他用户[除root外]没有权限添加用户到该组)</span>
-<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># gpasswd -A dayu group3</span>
-<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># cat /etc/gshadow</span>
-group3:<span class="token operator">!</span>:dayu:gtest,dayu,oldboy
-
-<span class="token comment"># 组权限</span>
-<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># id dayu</span>
-<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>dayu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span>,1000<span class="token punctuation">(</span>oldboy<span class="token punctuation">)</span>,2204<span class="token punctuation">(</span>group3<span class="token punctuation">)</span>
-<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># chown .group3 /tmp/12.txt </span>
-<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># ls -l /tmp/12.txt</span>
--rw-r--r-- <span class="token number">1</span> root group3 <span class="token number">4</span> Mar <span class="token number">15</span> <span class="token number">11</span>:35 /tmp/12.txt
-<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># chmod g+w /tmp/12.txt</span>
-<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># ls -l /tmp/12.txt</span>
--rw-rw-r-- <span class="token number">1</span> root group3 <span class="token number">4</span> Mar <span class="token number">15</span> <span class="token number">11</span>:35 /tmp/12.txt
-<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># su - dayu</span>
-Last login: Mon Mar <span class="token number">15</span> <span class="token number">11</span>:37:05 CST <span class="token number">2021</span> on pts/3
-<span class="token punctuation">[</span>dayu@localhost ~<span class="token punctuation">]</span>$ <span class="token builtin class-name">echo</span> <span class="token string">"456"</span> <span class="token operator">></span> /tmp/12.txt 
-<span class="token punctuation">[</span>dayu@localhost ~<span class="token punctuation">]</span>$ <span class="token function">cat</span> /tmp/12.txt
-<span class="token number">456</span>
-<span class="token punctuation">[</span>dayu@localhost ~<span class="token punctuation">]</span>$ <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-
-
+          <h1 id="day01-课堂笔记"><a href="#day01-课堂笔记" class="headerlink" title="day01 : 课堂笔记"></a>day01 : 课堂笔记</h1><h2 id="安装系统"><a href="#安装系统" class="headerlink" title="安装系统"></a>安装系统</h2><p><strong>1、安装虚拟机</strong></p>
+<p><img src="/.%5Cassets%5Cimage-20210302121236930.png" alt="image-20210302121236930"></p>
+<p>解压上述软件，创建vmware.exe快捷方式，然后用快捷方式打开。</p>
+<p><img src="/.%5Cassets%5Cimage-20210302121408360.png" alt="image-20210302121408360"></p>
+<p><strong>2、创建虚拟机</strong></p>
+<p><img src="/.%5Cassets%5Cimage-20210302121456338.png" alt="image-20210302121456338"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302121550128.png" alt="image-20210302121550128"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302121622000.png" alt="image-20210302121622000"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302121745568.png" alt="image-20210302121745568"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302122035359.png" alt="image-20210302122035359"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302122256831.png" alt="image-20210302122256831"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302122359568.png" alt="image-20210302122359568"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302122603313.png" alt="image-20210302122603313"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302122657199.png" alt="image-20210302122657199"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302123826623.png" alt="image-20210302123826623"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124229475.png" alt="image-20210302124229475"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124308081.png" alt="image-20210302124308081"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124327456.png" alt="image-20210302124327456"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124404318.png" alt="image-20210302124404318"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124713502.png" alt="image-20210302124713502"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124741038.png" alt="image-20210302124741038"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302125049653.png" alt="image-20210302125049653"></p>
 
       
     </div>
@@ -2899,10 +3413,16 @@ Last login: Mon Mar <span class="token number">15</span> <span class="token numb
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:13:53" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-08 14:19:14" itemprop="dateModified" datetime="2022-07-08T14:19:14+08:00">2022-07-08</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -3104,113 +3624,6 @@ other::r--
 
 
 
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day11-sudo%E4%B8%8Esu/sudo%20and%20su/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day11-sudo%E4%B8%8Esu/sudo%20and%20su/" class="post-title-link" itemprop="url">运维之基础命令--sudo和su</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:13:48" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="sudo"><a href="#sudo" class="headerlink" title="sudo"></a>sudo</h1><blockquote>
-<p>用于普通用提升权限的。</p>
-</blockquote>
-<ul>
-<li><p>相关的文件：<code>/etc/sudoers</code></p>
-</li>
-<li><p>检查<code>/etc/sudoers</code>是否修改正确：visudo -c</p>
-</li>
-<li><p>sudoers文件格式</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">tom       <span class="token assign-left variable">ALL</span><span class="token operator">=</span>           <span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>          ALL
-用户名称   所有机器可登陆    所有IP或主机名   所有的指令<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-</li>
-<li><p>指令编写格式</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 必须写全路径：which查看命令全路径</span>
-
-<span class="token comment">## 只支持vim命令提权</span>
-xianchen <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>  /usr/bin/vim
-
-<span class="token comment">## 支持所有的命令提权</span>
-tom <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>  ALL
-
-<span class="token comment">## 不支持某个命令提权</span>
-tom <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span> ALL, <span class="token operator">!</span>/usr/bin/vim
-
-<span class="token comment">## 不支持某个命令的部分功能</span>
-xiaochen <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>   ALL, <span class="token operator">!</span>/usr/bin/vim /root/123.txt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
-</ul>
-<h1 id="su"><a href="#su" class="headerlink" title="su"></a>su</h1><ul>
-<li><p>su - xxx  和 su xxx之间区别</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>、su - xxx ：相当于切换一个窗口，su xxx 仅仅切换了用户
-
-<span class="token number">2</span>、su - xxx ： 切换用户执行的系统文件要多于 <span class="token function">su</span> xxx
-
-<span class="token number">3</span>、su - xxx 是登录
-   <span class="token function">su</span>  xxx  切换用户<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
-</ul>
 
       
     </div>
