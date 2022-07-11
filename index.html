@@ -2664,152 +2664,6 @@ vim org.eclipse.ptp.rm.slurm.proxy_4.0.7.201104291906&#x2F;src&#x2F;ptp_slurm_pr
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/01-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E8%A7%84%E5%88%92/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/01-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E8%A7%84%E5%88%92/" class="post-title-link" itemprop="url">运维之综合架构--01-整体架构规划</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-07-11 13:42:39" itemprop="dateModified" datetime="2022-07-11T13:42:39+08:00">2022-07-11</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="一-、综合架构规划"><a href="#一-、综合架构规划" class="headerlink" title="一 、综合架构规划"></a>一 、综合架构规划</h2><blockquote>
-<p>项目中涵盖了架构，架构中又涵盖了不同的角色（高可用、负载均衡、web集群）<br>五层架构模型–&gt; 负载均衡 web服务 存储服务 缓存服务 数据库服务（通过tcp连接）</p>
-</blockquote>
-<p><img src="/img/%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84%E5%9B%BE.png" alt="综合架构图"></p>
-<h3 id="1-架构访问流程"><a href="#1-架构访问流程" class="headerlink" title="1 架构访问流程"></a>1 架构访问流程</h3><h4 id="1-1-用户视角"><a href="#1-1-用户视角" class="headerlink" title="1.1 用户视角"></a>1.1 用户视角</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.用户通过浏览器输入oldboyedu.com-&gt;回车
-2.浏览器会发生一次跳转，分析URL-&gt;然后进行DNS解析-&gt;获取真实的公网IP地址
-3.用户通过tcp的三次握手发起连接-&gt;真实的公网IP
-4.连接会通过公网-&gt;路由器-&gt;交换机-&gt;抵达前端的硬件防火墙
-5.防火墙根据自身访问规则，进行匹配-&gt;如果恶意的连接则拒绝-&gt;如果是正常的连接则放行
-6.防火墙会将连接转发给负载均衡器-&gt;查看用户请求的内容-&gt;根据内容进行任务下发-&gt;下发给web服务器
-7.web服务接收请求后会根据请求进行判断
-如果是请求图片或者附件-&gt;查找存储服务器存储的静态资源
-如果请求的网站上的内容-&gt;缓存服务器-&gt;如果缓存服务器没有-&gt;数据库
-数据库查询完数据之后会返回数据给web服务器-&gt;同时也会返回一份给缓存服务器
-8.数据库返回内容-&gt;web服务器-&gt;负载均衡-&gt;用户<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h4 id="1-2-运维视角"><a href="#1-2-运维视角" class="headerlink" title="1.2 运维视角"></a>1.2 运维视角</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.用户通过公网连接（隧道）VPN服务器，这样方便管理内部主机，
-2.自动化配置管理，节省人力成本，便于后期维护。统一环境，标准化
-3.自动化监控服务，监控系统的运行状态，事前预警，事后追溯。<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="2-架构环境规划"><a href="#2-架构环境规划" class="headerlink" title="2 架构环境规划"></a>2 架构环境规划</h3><h4 id="2-1-IP分配"><a href="#2-1-IP分配" class="headerlink" title="2.1 IP分配"></a>2.1 IP分配</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"> wanip         lanip       hostname
-10.0.0.5     172.16.1.5     lb01
-10.0.0.6     172.16.1.6     lb02
-10.0.0.7     172.16.1.7     web01
-10.0.0.8     172.16.1.8     web02
-10.0.0.9     172.16.1.9     web03
-10.0.0.31    172.16.1.31    nfs
-10.0.0.41    172.16.1.41    backup
-10.0.0.51    172.16.1.51    db01
-10.0.0.61    172.16.1.61    m01
-10.0.0.71    172.16.1.71    zabbix<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h4 id="2-2-基础环境准备"><a href="#2-2-基础环境准备" class="headerlink" title="2.2 基础环境准备"></a>2.2 基础环境准备</h4><h5 id="2-2-1-虚拟机系统和网卡准备"><a href="#2-2-1-虚拟机系统和网卡准备" class="headerlink" title="2.2.1 虚拟机系统和网卡准备"></a>2.2.1 虚拟机系统和网卡准备</h5><blockquote>
-<p>安装全新Centos7系统，配置网卡为eth0及eth1命名模式<br>1.第一块网卡为NAT模式[公网环境]，配置的网段为10.0.0.0网段<br>2.第二块网卡为LAN模式[私网环境]，配置的网段为172.16.1.0网段<br>3.优化安装好的Centos7虚拟机，安装常用软件、关闭防火墙等等</p>
-</blockquote>
-<p>优化步骤</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 1.配置yum仓库
-rm -f &#x2F;etc&#x2F;yum.repos.d&#x2F;*
-curl -o &#x2F;etc&#x2F;yum.repos.d&#x2F;CentOS-Base.repo http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;repo&#x2F;Centos-7.repo
-curl -o &#x2F;etc&#x2F;yum.repos.d&#x2F;epel.repo http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;repo&#x2F;epel-7.repo
-
-# 2.安装基础软件包
-yum install net-tools vim tree htop iftop \
-iotop lrzsz sl wget unzip telnet nmap nc psmisc \
-dos2unix bash-completion bash-completion-extra sysstat \
-rsync nfs-utils httpd-tools -y
-
-# 3.关闭防火墙firewalld
-systemctl disable firewalld
-systemctl stop firewalld
-
-# 4.关闭selinux
-sed -i &#39;&#x2F;^SELINUX&#x3D;&#x2F;c SELINUX&#x3D;disabled&#39; &#x2F;etc&#x2F;selinux&#x2F;config
-
-# 5.调整单个进程最大能打开文件的数量
-echo &#39;* - nofile 65535&#39; &gt;&gt; &#x2F;etc&#x2F;security&#x2F;limits.conf<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>基于优化后的虚拟机进行克隆</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.连接克隆（需要依赖于母体）
-2.完整克隆（完完全全的复制一份，占用磁盘空间）<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>对新克隆的主机进行如下操作：</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 1.修改主机名  
-hostnamectl set-hostname backup
-
-# 2.修改IP地址  
-sed -i &#39;s#200#41#g&#39; &#x2F;etc&#x2F;sysconfig&#x2F;network-scripts&#x2F;ifcfg-eth[01]
-
-# 3.重启服务器<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/02-Rsync%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -3147,6 +3001,152 @@ find $SRC&#x2F; -type d -mtime +7|xargs rm -rf <span aria-hidden="true" class="l
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/01-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E8%A7%84%E5%88%92/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/01-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E8%A7%84%E5%88%92/" class="post-title-link" itemprop="url">运维之综合架构--01-整体架构规划</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-11 13:42:39" itemprop="dateModified" datetime="2022-07-11T13:42:39+08:00">2022-07-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="一-、综合架构规划"><a href="#一-、综合架构规划" class="headerlink" title="一 、综合架构规划"></a>一 、综合架构规划</h2><blockquote>
+<p>项目中涵盖了架构，架构中又涵盖了不同的角色（高可用、负载均衡、web集群）<br>五层架构模型–&gt; 负载均衡 web服务 存储服务 缓存服务 数据库服务（通过tcp连接）</p>
+</blockquote>
+<p><img src="/img/%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84%E5%9B%BE.png" alt="综合架构图"></p>
+<h3 id="1-架构访问流程"><a href="#1-架构访问流程" class="headerlink" title="1 架构访问流程"></a>1 架构访问流程</h3><h4 id="1-1-用户视角"><a href="#1-1-用户视角" class="headerlink" title="1.1 用户视角"></a>1.1 用户视角</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.用户通过浏览器输入oldboyedu.com-&gt;回车
+2.浏览器会发生一次跳转，分析URL-&gt;然后进行DNS解析-&gt;获取真实的公网IP地址
+3.用户通过tcp的三次握手发起连接-&gt;真实的公网IP
+4.连接会通过公网-&gt;路由器-&gt;交换机-&gt;抵达前端的硬件防火墙
+5.防火墙根据自身访问规则，进行匹配-&gt;如果恶意的连接则拒绝-&gt;如果是正常的连接则放行
+6.防火墙会将连接转发给负载均衡器-&gt;查看用户请求的内容-&gt;根据内容进行任务下发-&gt;下发给web服务器
+7.web服务接收请求后会根据请求进行判断
+如果是请求图片或者附件-&gt;查找存储服务器存储的静态资源
+如果请求的网站上的内容-&gt;缓存服务器-&gt;如果缓存服务器没有-&gt;数据库
+数据库查询完数据之后会返回数据给web服务器-&gt;同时也会返回一份给缓存服务器
+8.数据库返回内容-&gt;web服务器-&gt;负载均衡-&gt;用户<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="1-2-运维视角"><a href="#1-2-运维视角" class="headerlink" title="1.2 运维视角"></a>1.2 运维视角</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.用户通过公网连接（隧道）VPN服务器，这样方便管理内部主机，
+2.自动化配置管理，节省人力成本，便于后期维护。统一环境，标准化
+3.自动化监控服务，监控系统的运行状态，事前预警，事后追溯。<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-架构环境规划"><a href="#2-架构环境规划" class="headerlink" title="2 架构环境规划"></a>2 架构环境规划</h3><h4 id="2-1-IP分配"><a href="#2-1-IP分配" class="headerlink" title="2.1 IP分配"></a>2.1 IP分配</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"> wanip         lanip       hostname
+10.0.0.5     172.16.1.5     lb01
+10.0.0.6     172.16.1.6     lb02
+10.0.0.7     172.16.1.7     web01
+10.0.0.8     172.16.1.8     web02
+10.0.0.9     172.16.1.9     web03
+10.0.0.31    172.16.1.31    nfs
+10.0.0.41    172.16.1.41    backup
+10.0.0.51    172.16.1.51    db01
+10.0.0.61    172.16.1.61    m01
+10.0.0.71    172.16.1.71    zabbix<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-2-基础环境准备"><a href="#2-2-基础环境准备" class="headerlink" title="2.2 基础环境准备"></a>2.2 基础环境准备</h4><h5 id="2-2-1-虚拟机系统和网卡准备"><a href="#2-2-1-虚拟机系统和网卡准备" class="headerlink" title="2.2.1 虚拟机系统和网卡准备"></a>2.2.1 虚拟机系统和网卡准备</h5><blockquote>
+<p>安装全新Centos7系统，配置网卡为eth0及eth1命名模式<br>1.第一块网卡为NAT模式[公网环境]，配置的网段为10.0.0.0网段<br>2.第二块网卡为LAN模式[私网环境]，配置的网段为172.16.1.0网段<br>3.优化安装好的Centos7虚拟机，安装常用软件、关闭防火墙等等</p>
+</blockquote>
+<p>优化步骤</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 1.配置yum仓库
+rm -f &#x2F;etc&#x2F;yum.repos.d&#x2F;*
+curl -o &#x2F;etc&#x2F;yum.repos.d&#x2F;CentOS-Base.repo http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;repo&#x2F;Centos-7.repo
+curl -o &#x2F;etc&#x2F;yum.repos.d&#x2F;epel.repo http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;repo&#x2F;epel-7.repo
+
+# 2.安装基础软件包
+yum install net-tools vim tree htop iftop \
+iotop lrzsz sl wget unzip telnet nmap nc psmisc \
+dos2unix bash-completion bash-completion-extra sysstat \
+rsync nfs-utils httpd-tools -y
+
+# 3.关闭防火墙firewalld
+systemctl disable firewalld
+systemctl stop firewalld
+
+# 4.关闭selinux
+sed -i &#39;&#x2F;^SELINUX&#x3D;&#x2F;c SELINUX&#x3D;disabled&#39; &#x2F;etc&#x2F;selinux&#x2F;config
+
+# 5.调整单个进程最大能打开文件的数量
+echo &#39;* - nofile 65535&#39; &gt;&gt; &#x2F;etc&#x2F;security&#x2F;limits.conf<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>基于优化后的虚拟机进行克隆</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.连接克隆（需要依赖于母体）
+2.完整克隆（完完全全的复制一份，占用磁盘空间）<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>对新克隆的主机进行如下操作：</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 1.修改主机名  
+hostnamectl set-hostname backup
+
+# 2.修改IP地址  
+sed -i &#39;s#200#41#g&#39; &#x2F;etc&#x2F;sysconfig&#x2F;network-scripts&#x2F;ifcfg-eth[01]
+
+# 3.重启服务器<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/03-NFS%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -3355,10 +3355,16 @@ total 4
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:15:53" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-11 13:52:13" itemprop="dateModified" datetime="2022-07-11T13:52:13+08:00">2022-07-11</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -3445,7 +3451,7 @@ total 4
 <td>rsync-server</td>
 </tr>
 </tbody></table>
-<p><img src="/03-sersync%E5%AE%9E%E6%97%B6%E5%90%8C%E6%AD%A5%E5%A4%87%E4%BB%BD.assets/sersync%E6%B5%81%E7%A8%8B-1628145534424.png" alt="sersync流程"></p>
+<p><img src="/img/sersync%E6%B5%81%E7%A8%8B-1628145534424.png" alt="sersync流程"></p>
 <h3 id="1-web上传视频至nfs存储"><a href="#1-web上传视频至nfs存储" class="headerlink" title="1 web上传视频至nfs存储"></a>1 web上传视频至nfs存储</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">nfs存储服务  172.16.1.31
 	1.安装
 		[root@nfs ~]# yum install nfs-utils -y
@@ -3671,10 +3677,16 @@ _______________________________________________________
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:15:58" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-11 13:52:30" itemprop="dateModified" datetime="2022-07-11T13:52:30+08:00">2022-07-11</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -3703,7 +3715,7 @@ _______________________________________________________
           <h2 id="一、SSH服务器介绍"><a href="#一、SSH服务器介绍" class="headerlink" title="一、SSH服务器介绍"></a>一、SSH服务器介绍</h2><blockquote>
 <p>SSH是一个安全协议，在进行数据传输时，会对数据包进行加密处理，加密后在进行数据传输。确保了数据传输安全。</p>
 </blockquote>
-<p><img src="/04-ssh%E6%9C%8D%E5%8A%A1%E8%B7%B3%E6%9D%BF%E6%9C%BA%E6%90%AD%E5%BB%BA.assets/ssh%E5%85%8D%E5%AF%86%E7%99%BB%E5%BD%95.png" alt="ssh免密登录"></p>
+<p><img src="/img/ssh%E5%85%8D%E5%AF%86%E7%99%BB%E5%BD%95.png" alt="ssh免密登录"></p>
 <h3 id="1-ssh的功能"><a href="#1-ssh的功能" class="headerlink" title="1 ssh的功能"></a>1 ssh的功能</h3><ol>
 <li>提供远程连接服务器的服务</li>
 <li>对传输的数据进行加密</li>
@@ -3860,10 +3872,16 @@ logpath &#x3D; &#x2F;var&#x2F;log&#x2F;secure
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:16:08" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-11 13:52:47" itemprop="dateModified" datetime="2022-07-11T13:52:47+08:00">2022-07-11</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -3914,7 +3932,7 @@ logpath &#x3D; &#x2F;var&#x2F;log&#x2F;secure
 <li>有一种流行的说法：“HTTP 是用于从互联网服务器传输超文本到本地浏览器的协议”，你认为这种说法对吗？对在哪里，又错在哪里？</li>
 <li>你能再说出几个“HTTP 不是什么”吗？</li>
 </ol>
-<p><img src="/05-HTTP%E5%8D%8F%E8%AE%AE.assets/http%E6%80%9D%E7%BB%B4%E5%AF%BC%E5%9B%BE.png" alt="http思维导图"></p>
+<p><img src="/img/http%E6%80%9D%E7%BB%B4%E5%AF%BC%E5%9B%BE.png" alt="http思维导图"></p>
 <h3 id="三、HTTP的应用领域"><a href="#三、HTTP的应用领域" class="headerlink" title="三、HTTP的应用领域"></a>三、HTTP的应用领域</h3><ol>
 <li>互联网上绝大部分资源都使用 HTTP 协议传输；</li>
 <li>浏览器是 HTTP 协议里的请求方，即 User Agent；</li>
