@@ -1,3 +1,11 @@
+---
+title: KylinV10 桌面版SVN搭建
+date: 2022-07-11 9:29:52
+categories:
+- 杂记
+tags:
+---
+
 # KylinV10 桌面版SVN搭建
 
 ## 一、服务端配置
