@@ -1,5 +1,5 @@
 ---
-title: 长城TD140A2安装OpenEuler
+title: 长城TD120A2安装OpenEuler
 date: 2022-07-11 9:29:52
 categories:
 - 杂记
