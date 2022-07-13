@@ -185,375 +185,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/09-Nginx(%E4%B8%89)LNMP%E6%9E%B6%E6%9E%84%E5%AE%89%E8%A3%85/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/09-Nginx(%E4%B8%89)LNMP%E6%9E%B6%E6%9E%84%E5%AE%89%E8%A3%85/" class="post-title-link" itemprop="url">运维之综合架构--07--Nginx(三)LNMP介绍</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:16:26" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="一、LNMP简介-需补充"><a href="#一、LNMP简介-需补充" class="headerlink" title="一、LNMP简介(需补充)"></a>一、LNMP简介(需补充)</h2><h3 id="1-1-什么是LNMP"><a href="#1-1-什么是LNMP" class="headerlink" title="1.1 什么是LNMP"></a>1.1 什么是LNMP</h3><h3 id="1-2-LNMP架构是如何工作的"><a href="#1-2-LNMP架构是如何工作的" class="headerlink" title="1.2 LNMP架构是如何工作的"></a>1.2 LNMP架构是如何工作的</h3><p>浏览器 –http–&gt; Nginx(fastcgi_pass) –fastcgi–&gt;php(fastcgi_fpm调动wrapper再调动php解析再调用mysql)</p>
-<p>大致流程：</p>
-<p>用户在浏览器发起请求，如果请求的是静态资源，Nginx则直接返回，如果请求的是动态资源，Nginx会通过fastcgi协议，将请求交给PHP服务器，再返回动态资源。</p>
-<h3 id="1-3-LNMP和LAMP的区别是什么"><a href="#1-3-LNMP和LAMP的区别是什么" class="headerlink" title="1.3 LNMP和LAMP的区别是什么"></a>1.3 LNMP和LAMP的区别是什么</h3><p>nginx 是以fastcgi协议调用的php<br>apache是以模块的方式加载的php</p>
-<h2 id="二、LNMP架构简单搭建"><a href="#二、LNMP架构简单搭建" class="headerlink" title="二、LNMP架构简单搭建"></a>二、LNMP架构简单搭建</h2><p>1、准备一台名为nginx的服务器</p>
-<p>2、使用官方仓库安装nginx</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 添加安装源
-[root@nginx ~]# cat &#x2F;etc&#x2F;yum.repos.d&#x2F;nginx.repo 
-[nginx]
-name&#x3D;nginx repo
-baseurl&#x3D;http:&#x2F;&#x2F;nginx.org&#x2F;packages&#x2F;centos&#x2F;7&#x2F;$basearch&#x2F;
-gpgcheck&#x3D;0
-enabled&#x3D;1
-
-#安装Nginx
-[root@nginx ~]# yum install nginx -y<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>3、安装php7.1</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nginx ~]# yum remove php-mysql-5.4 php php-fpm php-common # 卸载默认5.4版本的php
-[root@nginx ~]# cat &#x2F;etc&#x2F;yum.repos.d&#x2F;php.repo
-[php]
-name &#x3D; php Repository
-baseurl &#x3D; http:&#x2F;&#x2F;us-east.repo.webtatic.com&#x2F;yum&#x2F;el7&#x2F;x86_64&#x2F;
-gpgcheck &#x3D; 0
-
-[root@nginx ~]# yum -y install php71w php71w-cli php71w-common php71w-devel php71w-embedded php71w-gd php71w-mcrypt php71w-mbstring php71w-pdo php71w-xml php71w-fpm php71w-mysqlnd php71w-opcache php71w-pecl-memcached php71w-pecl-redis php71w-pecl-mongodb<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>4、安装maria数据库</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nginx ~]# yum install mariadb-server mariadb -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>5、配置nginx和php集成</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cd &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;
-[root@web01 conf.d]# cat php.conf 
-server &#123;
-	listen 80;
-	server_name php.oldboy.com;
-	root &#x2F;code;
-
-	location &#x2F; &#123;
-		index index.php index.html;
-	&#125;
-
-	location ~ \.php$ &#123;
-		fastcgi_pass 127.0.0.1:9000;
-		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-		include fastcgi_params;
-	&#125;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>6、重载nginx</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# nginx -t
-nginx: the configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf syntax is ok
-nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test is successful
-[root@web01 conf.d]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>7、启动php-fpm，并加入开机自启</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# systemctl start php-fpm
-[root@web01 conf.d]# systemctl enable  php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>8、准备一个php文件，测试nginx和php是否继承成功</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cat &#x2F;code&#x2F;page.php
-&lt;?php
-	phpinfo();
-?&gt;
-# 测试：网页访问:http:&#x2F;&#x2F;php.oldboy.com&#x2F;page.php<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>9、启动数据库</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# systemctl start mariadb
-[root@web01 conf.d]# systemctl enable mariadb
-[root@web01 conf.d]# mysqladmin password &#39;Bgx123.com&#39;		#配置密码（默认mysql是空密码）
-[root@web01 conf.d]# mysql -uroot -pBgx123.com				#使用账号和密码登录mysql<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>10、准备一个php文件，测试是否可以正常连接数据库</p>
-<pre class="line-numbers language-she" data-language="she"><code class="language-she">&lt;?php
-  $servername &#x3D; &quot;localhost&quot;;
-  $username &#x3D; &quot;root&quot;;
-  $password &#x3D; &quot;Bgx123.com&quot;;
-
-  &#x2F;&#x2F; 创建连接
-  $conn &#x3D; mysqli_connect($servername, $username, $password);
-
-  &#x2F;&#x2F; 检测连接
-  if (!$conn) &#123;
-      die(&quot;Connection failed: &quot; . mysqli_connect_error()); &#x2F;&#x2F; 注意格式
-  &#125;
-  echo &quot;php连接MySQL数据库成功&quot;;
-  ?&gt;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="三、案例-搭建wordpress博客"><a href="#三、案例-搭建wordpress博客" class="headerlink" title="三、案例-搭建wordpress博客"></a>三、案例-搭建wordpress博客</h2><h3 id="3-1-环境准备"><a href="#3-1-环境准备" class="headerlink" title="3.1 环境准备"></a>3.1 环境准备</h3><table>
-<thead>
-<tr>
-<th>用途</th>
-<th>公网IP地址</th>
-<th>内网IP地址</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>web服务器01</td>
-<td>10.0.0.7</td>
-<td>172.16.1.7</td>
-</tr>
-</tbody></table>
-<h3 id="3-2-部署安装"><a href="#3-2-部署安装" class="headerlink" title="3.2 部署安装"></a>3.2 部署安装</h3><p>1、添加nginx配置文件</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cat blog.oldboy.com.conf 
-server &#123;
-	listen 80;
-	server_name blog.oldboy.com;
-	root &#x2F;code&#x2F;wordpress;
-
-	location &#x2F; &#123;
-		index index.php index.html;
-	&#125;
-
-	location ~ \.php$ &#123;
-		fastcgi_pass 127.0.0.1:9000;
-		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-		include fastcgi_params;
-	&#125;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>2、根据nginx中定义的内容，创建站点目录并进行授权</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# mkdir &#x2F;code
-[root@web01 conf.d]# cd &#x2F;code
-[root@web01 code]# wget https:&#x2F;&#x2F;cn.wordpress.org&#x2F;wordpress-5.0.3-zh_CN.tar.gz
-[root@web01 code]# tar xf wordpress-5.0.3-zh_CN.tar.gz<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>3、修改nginx与php-fpm的运行用户为www，并授权代码属主和属组都为www</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">#注意：如果没有该用户，启动一定会报错
-[root@web01 code]# groupadd -g 666 www
-[root@web01 code]# useradd -u666 -g666 www
-
-修改nginx与php-fpm管理进程，的运行身份为www
-[root@web01 code]# sed -i &#39;&#x2F;^user &#x2F;c user  www;&#39; &#x2F;etc&#x2F;nginx&#x2F;nginx.conf
-[root@web01 code]# sed -i &#39;&#x2F;^user&#x2F;c user &#x3D; www&#39; &#x2F;etc&#x2F;php-fpm.d&#x2F;www.conf 
-[root@web01 code]# sed -i &#39;&#x2F;^group&#x2F;c group &#x3D; www&#39; &#x2F;etc&#x2F;php-fpm.d&#x2F;www.conf 
-
-一定要重启才生效
-[root@web01 code]# systemctl restart nginx
-[root@web01 code]# systemctl restart php-fpm
-
-最后授权代码为www
-[root@web01 code]# chown -R www.www &#x2F;code&#x2F;wordpress	<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>4、创建数据库</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">MariaDB [(none)]&gt; create database wordpress;			#创建一个库，名称叫wordpress
-Query OK, 1 row affected (0.00 sec)
-
-MariaDB [(none)]&gt; show databases;						#查询该台数据库服务有多少个库
-+--------------------+
-| Database           |
-+--------------------+
-| information_schema |
-| mysql              |
-| performance_schema |
-| test               |
-| wordpress          |
-+--------------------+
-5 rows in set (0.00 sec)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>5、解决nginx上传文件大小限制（默认1M，超过大小会报413）</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">在wordpress的nginx配置文件中添加：client_max_body_size 100m;
-[root@web01 code]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;blog.oldboy.com.conf 
-server &#123;
-        listen 80;
-        server_name blog.oldboy.com;
-        root &#x2F;code&#x2F;wordpress;
-        client_max_body_size 100m;  # 默认1M，超过大小会报413
-
-        location &#x2F; &#123;
-                index index.php index.html;
-        &#125;
-
-        location ~ \.php$ &#123;
-                fastcgi_pass 127.0.0.1:9000;
-                fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-                include fastcgi_params;
-        &#125;
-&#125;
-重启nginx：systemctl restart nginx	<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<blockquote>
-<p>测试在wordpress页面上传主题或者写文章上传图片，均出现500报错<br>查看日志文件&#x2F;var&#x2F;log&#x2F;nginx&#x2F;err.log<br>2021&#x2F;08&#x2F;16 18:59:31 [crit] 1228#1228: *2 open() “&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;client_body&#x2F;0000000001” failed (13: Permission denied), client: 10.0.0.1, server: php.gs.com, request: “POST &#x2F;wp-admin&#x2F;update.php?action&#x3D;upload-theme HTTP&#x2F;1.1”, host: “php.gs.com”, referrer: “<a target="_blank" rel="noopener" href="http://php.gs.com/wp-admin/theme-install.php?browse=popular&quot;">http://php.gs.com/wp-admin/theme-install.php?browse=popular&quot;</a><br>解决方法，参考<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_15941409/article/details/114640122">https://blog.csdn.net/qq_15941409/article/details/114640122</a><br>chown www:www -R &#x2F;var&#x2F;lib&#x2F;nginx&#x2F;</p>
-</blockquote>
-<h2 id="四、案例-搭建wecenter知乎"><a href="#四、案例-搭建wecenter知乎" class="headerlink" title="四、案例-搭建wecenter知乎"></a>四、案例-搭建wecenter知乎</h2><h3 id="4-1-部署安装"><a href="#4-1-部署安装" class="headerlink" title="4.1 部署安装"></a>4.1 部署安装</h3><p>1、添加nginx配置文件</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">server &#123;
-	listen 80;
-	server_name zh.oldboy.com;
-	root &#x2F;code&#x2F;zh;
-	client_max_body_size 100m;
-
-	location &#x2F; &#123;
-		index index.php index.html;
-	&#125;
-
-	location ~ \.php$ &#123;
-		fastcgi_pass 127.0.0.1:9000;
-		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-		include fastcgi_params;
-	&#125;
-&#125;
-[root@web01 code]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>2、wencenter部署</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# rz -E WeCenter_3-2-1.zip
-[root@web01 code]# unzip WeCenter_3-2-1.zip
-[root@web01 code]# mv WeCenter_3-2-1 zh
-[root@web01 code]# chown -R www.www zh&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>3、配置数据库</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# mysql -uroot -pBgx123.com
-MariaDB [(none)]&gt; create database zh;
-MariaDB [(none)]&gt; show databases;
-+--------------------+
-| Database           |
-+--------------------+
-| information_schema |
-| mysql              |
-| performance_schema |
-| test               |
-| wordpress          |
-| zh                 |
-+--------------------+
-6 rows in set (0.00 sec)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="五、案例-搭建edusoho在线视频教育"><a href="#五、案例-搭建edusoho在线视频教育" class="headerlink" title="五、案例-搭建edusoho在线视频教育"></a>五、案例-搭建edusoho在线视频教育</h2><h3 id="5-1-部署安装"><a href="#5-1-部署安装" class="headerlink" title="5.1 部署安装"></a>5.1 部署安装</h3><p>1、添加nginx配置文件</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;edu.oldboy.com.conf 
-server &#123;
-    listen 80;
-    server_name edu.oldboy.com;
-    root &#x2F;code&#x2F;edusoho&#x2F;web;
-    client_max_body_size 200m;
-
-    location &#x2F; &#123;
-        index app.php;
-        try_files $uri @rewriteapp;
-    &#125;
-    location @rewriteapp &#123;
-        rewrite ^(.*)$ &#x2F;app.php&#x2F;$1 last;
-    &#125;
-
-    location ~ ^&#x2F;udisk &#123;
-        internal;
-        root &#x2F;code&#x2F;edusoho&#x2F;app&#x2F;data&#x2F;;
-    &#125;
-
-    location ~ ^&#x2F;(app|app_dev)\.php(&#x2F;|$) &#123;
-        fastcgi_pass   127.0.0.1:9000;
-        fastcgi_split_path_info ^(.+\.php)(&#x2F;.*)$;
-        include fastcgi_params;
-        fastcgi_param  SCRIPT_FILENAME    $document_root$fastcgi_script_name;
-        fastcgi_param  HTTPS              off;
-        fastcgi_param HTTP_X-Sendfile-Type X-Accel-Redirect;
-        fastcgi_param HTTP_X-Accel-Mapping &#x2F;udisk&#x3D;&#x2F;code&#x2F;edusoho&#x2F;app&#x2F;data&#x2F;udisk;
-        fastcgi_buffer_size 128k;
-        fastcgi_buffers 8 128k;
-    &#125;
-
-    # 配置设置图片格式文件
-    location ~* \.(jpg|jpeg|gif|png|ico|swf)$ &#123;
-        # 过期时间为3年
-        expires 3y;
-        # 关闭日志记录
-        access_log off;
-        # 关闭gzip压缩，减少CPU消耗，因为图片的压缩率不高。
-        gzip off;
-    &#125;
-    # 配置css&#x2F;js文件
-    location ~* \.(css|js)$ &#123;
-        access_log off;
-        expires 3y;
-    &#125;
-    # 禁止用户上传目录下所有.php文件的访问，提高安全性
-    location ~ ^&#x2F;files&#x2F;.*\.(php|php5)$ &#123;
-        deny all;
-    &#125;
-
-    # 以下配置允许运行.php的程序，方便于其他第三方系统的集成。
-    location ~ \.php$ &#123;
-        fastcgi_pass   127.0.0.1:9000;
-        fastcgi_split_path_info ^(.+\.php)(&#x2F;.*)$;
-        include fastcgi_params;
-        fastcgi_param  SCRIPT_FILENAME    $document_root$fastcgi_script_name;
-        fastcgi_param  HTTPS              off;
-    &#125;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>2、下载edusoho,并授权文件夹</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">wget http:&#x2F;&#x2F;download.edusoho.com&#x2F;edusoho-8.2.17.tar.gz
-tar xf edusoho-8.2.17.tar.gz
-chown -R www.www edusoho<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<p>3、调整php的上传大小(上传文件默认有限制大小)</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# vim &#x2F;etc&#x2F;php.ini
-post_max_size &#x3D; 200M
-upload_max_filesize &#x3D; 200M
-[root@web01 code]# systemctl restart php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="六、各开源项目网站"><a href="#六、各开源项目网站" class="headerlink" title="六、各开源项目网站"></a>六、各开源项目网站</h2><p>phpmyadmin	<a target="_blank" rel="noopener" href="https://www.phpmyadmin.net/">https://www.phpmyadmin.net/</a><br>zblog	<a target="_blank" rel="noopener" href="https://www.zblogcn.com/">https://www.zblogcn.com/</a><br>wordpress	<a target="_blank" rel="noopener" href="https://cn.wordpress.org/">https://cn.wordpress.org/</a><br>wecenter	<a target="_blank" rel="noopener" href="http://www.wecenter.com/downloads/">http://www.wecenter.com/downloads/</a><br>edusohu	<a target="_blank" rel="noopener" href="http://www.edusoho.com/open/show">http://www.edusoho.com/open/show</a></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/07-Nginx(%E4%B8%80)%E5%AE%89%E8%A3%85%E4%B8%8E%E9%85%8D%E7%BD%AE/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1443,6 +1074,375 @@ server &#123;
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/09-Nginx(%E4%B8%89)LNMP%E6%9E%B6%E6%9E%84%E5%AE%89%E8%A3%85/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/09-Nginx(%E4%B8%89)LNMP%E6%9E%B6%E6%9E%84%E5%AE%89%E8%A3%85/" class="post-title-link" itemprop="url">运维之综合架构--07--Nginx(三)LNMP介绍</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:16:26" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="一、LNMP简介-需补充"><a href="#一、LNMP简介-需补充" class="headerlink" title="一、LNMP简介(需补充)"></a>一、LNMP简介(需补充)</h2><h3 id="1-1-什么是LNMP"><a href="#1-1-什么是LNMP" class="headerlink" title="1.1 什么是LNMP"></a>1.1 什么是LNMP</h3><h3 id="1-2-LNMP架构是如何工作的"><a href="#1-2-LNMP架构是如何工作的" class="headerlink" title="1.2 LNMP架构是如何工作的"></a>1.2 LNMP架构是如何工作的</h3><p>浏览器 –http–&gt; Nginx(fastcgi_pass) –fastcgi–&gt;php(fastcgi_fpm调动wrapper再调动php解析再调用mysql)</p>
+<p>大致流程：</p>
+<p>用户在浏览器发起请求，如果请求的是静态资源，Nginx则直接返回，如果请求的是动态资源，Nginx会通过fastcgi协议，将请求交给PHP服务器，再返回动态资源。</p>
+<h3 id="1-3-LNMP和LAMP的区别是什么"><a href="#1-3-LNMP和LAMP的区别是什么" class="headerlink" title="1.3 LNMP和LAMP的区别是什么"></a>1.3 LNMP和LAMP的区别是什么</h3><p>nginx 是以fastcgi协议调用的php<br>apache是以模块的方式加载的php</p>
+<h2 id="二、LNMP架构简单搭建"><a href="#二、LNMP架构简单搭建" class="headerlink" title="二、LNMP架构简单搭建"></a>二、LNMP架构简单搭建</h2><p>1、准备一台名为nginx的服务器</p>
+<p>2、使用官方仓库安装nginx</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 添加安装源
+[root@nginx ~]# cat &#x2F;etc&#x2F;yum.repos.d&#x2F;nginx.repo 
+[nginx]
+name&#x3D;nginx repo
+baseurl&#x3D;http:&#x2F;&#x2F;nginx.org&#x2F;packages&#x2F;centos&#x2F;7&#x2F;$basearch&#x2F;
+gpgcheck&#x3D;0
+enabled&#x3D;1
+
+#安装Nginx
+[root@nginx ~]# yum install nginx -y<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>3、安装php7.1</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nginx ~]# yum remove php-mysql-5.4 php php-fpm php-common # 卸载默认5.4版本的php
+[root@nginx ~]# cat &#x2F;etc&#x2F;yum.repos.d&#x2F;php.repo
+[php]
+name &#x3D; php Repository
+baseurl &#x3D; http:&#x2F;&#x2F;us-east.repo.webtatic.com&#x2F;yum&#x2F;el7&#x2F;x86_64&#x2F;
+gpgcheck &#x3D; 0
+
+[root@nginx ~]# yum -y install php71w php71w-cli php71w-common php71w-devel php71w-embedded php71w-gd php71w-mcrypt php71w-mbstring php71w-pdo php71w-xml php71w-fpm php71w-mysqlnd php71w-opcache php71w-pecl-memcached php71w-pecl-redis php71w-pecl-mongodb<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>4、安装maria数据库</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nginx ~]# yum install mariadb-server mariadb -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>5、配置nginx和php集成</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cd &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;
+[root@web01 conf.d]# cat php.conf 
+server &#123;
+	listen 80;
+	server_name php.oldboy.com;
+	root &#x2F;code;
+
+	location &#x2F; &#123;
+		index index.php index.html;
+	&#125;
+
+	location ~ \.php$ &#123;
+		fastcgi_pass 127.0.0.1:9000;
+		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+		include fastcgi_params;
+	&#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>6、重载nginx</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# nginx -t
+nginx: the configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf syntax is ok
+nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test is successful
+[root@web01 conf.d]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>7、启动php-fpm，并加入开机自启</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# systemctl start php-fpm
+[root@web01 conf.d]# systemctl enable  php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>8、准备一个php文件，测试nginx和php是否继承成功</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cat &#x2F;code&#x2F;page.php
+&lt;?php
+	phpinfo();
+?&gt;
+# 测试：网页访问:http:&#x2F;&#x2F;php.oldboy.com&#x2F;page.php<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>9、启动数据库</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# systemctl start mariadb
+[root@web01 conf.d]# systemctl enable mariadb
+[root@web01 conf.d]# mysqladmin password &#39;Bgx123.com&#39;		#配置密码（默认mysql是空密码）
+[root@web01 conf.d]# mysql -uroot -pBgx123.com				#使用账号和密码登录mysql<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>10、准备一个php文件，测试是否可以正常连接数据库</p>
+<pre class="line-numbers language-she" data-language="she"><code class="language-she">&lt;?php
+  $servername &#x3D; &quot;localhost&quot;;
+  $username &#x3D; &quot;root&quot;;
+  $password &#x3D; &quot;Bgx123.com&quot;;
+
+  &#x2F;&#x2F; 创建连接
+  $conn &#x3D; mysqli_connect($servername, $username, $password);
+
+  &#x2F;&#x2F; 检测连接
+  if (!$conn) &#123;
+      die(&quot;Connection failed: &quot; . mysqli_connect_error()); &#x2F;&#x2F; 注意格式
+  &#125;
+  echo &quot;php连接MySQL数据库成功&quot;;
+  ?&gt;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="三、案例-搭建wordpress博客"><a href="#三、案例-搭建wordpress博客" class="headerlink" title="三、案例-搭建wordpress博客"></a>三、案例-搭建wordpress博客</h2><h3 id="3-1-环境准备"><a href="#3-1-环境准备" class="headerlink" title="3.1 环境准备"></a>3.1 环境准备</h3><table>
+<thead>
+<tr>
+<th>用途</th>
+<th>公网IP地址</th>
+<th>内网IP地址</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>web服务器01</td>
+<td>10.0.0.7</td>
+<td>172.16.1.7</td>
+</tr>
+</tbody></table>
+<h3 id="3-2-部署安装"><a href="#3-2-部署安装" class="headerlink" title="3.2 部署安装"></a>3.2 部署安装</h3><p>1、添加nginx配置文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cat blog.oldboy.com.conf 
+server &#123;
+	listen 80;
+	server_name blog.oldboy.com;
+	root &#x2F;code&#x2F;wordpress;
+
+	location &#x2F; &#123;
+		index index.php index.html;
+	&#125;
+
+	location ~ \.php$ &#123;
+		fastcgi_pass 127.0.0.1:9000;
+		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+		include fastcgi_params;
+	&#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>2、根据nginx中定义的内容，创建站点目录并进行授权</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# mkdir &#x2F;code
+[root@web01 conf.d]# cd &#x2F;code
+[root@web01 code]# wget https:&#x2F;&#x2F;cn.wordpress.org&#x2F;wordpress-5.0.3-zh_CN.tar.gz
+[root@web01 code]# tar xf wordpress-5.0.3-zh_CN.tar.gz<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>3、修改nginx与php-fpm的运行用户为www，并授权代码属主和属组都为www</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">#注意：如果没有该用户，启动一定会报错
+[root@web01 code]# groupadd -g 666 www
+[root@web01 code]# useradd -u666 -g666 www
+
+修改nginx与php-fpm管理进程，的运行身份为www
+[root@web01 code]# sed -i &#39;&#x2F;^user &#x2F;c user  www;&#39; &#x2F;etc&#x2F;nginx&#x2F;nginx.conf
+[root@web01 code]# sed -i &#39;&#x2F;^user&#x2F;c user &#x3D; www&#39; &#x2F;etc&#x2F;php-fpm.d&#x2F;www.conf 
+[root@web01 code]# sed -i &#39;&#x2F;^group&#x2F;c group &#x3D; www&#39; &#x2F;etc&#x2F;php-fpm.d&#x2F;www.conf 
+
+一定要重启才生效
+[root@web01 code]# systemctl restart nginx
+[root@web01 code]# systemctl restart php-fpm
+
+最后授权代码为www
+[root@web01 code]# chown -R www.www &#x2F;code&#x2F;wordpress	<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>4、创建数据库</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">MariaDB [(none)]&gt; create database wordpress;			#创建一个库，名称叫wordpress
+Query OK, 1 row affected (0.00 sec)
+
+MariaDB [(none)]&gt; show databases;						#查询该台数据库服务有多少个库
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| test               |
+| wordpress          |
++--------------------+
+5 rows in set (0.00 sec)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>5、解决nginx上传文件大小限制（默认1M，超过大小会报413）</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">在wordpress的nginx配置文件中添加：client_max_body_size 100m;
+[root@web01 code]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;blog.oldboy.com.conf 
+server &#123;
+        listen 80;
+        server_name blog.oldboy.com;
+        root &#x2F;code&#x2F;wordpress;
+        client_max_body_size 100m;  # 默认1M，超过大小会报413
+
+        location &#x2F; &#123;
+                index index.php index.html;
+        &#125;
+
+        location ~ \.php$ &#123;
+                fastcgi_pass 127.0.0.1:9000;
+                fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                include fastcgi_params;
+        &#125;
+&#125;
+重启nginx：systemctl restart nginx	<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>测试在wordpress页面上传主题或者写文章上传图片，均出现500报错<br>查看日志文件&#x2F;var&#x2F;log&#x2F;nginx&#x2F;err.log<br>2021&#x2F;08&#x2F;16 18:59:31 [crit] 1228#1228: *2 open() “&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;client_body&#x2F;0000000001” failed (13: Permission denied), client: 10.0.0.1, server: php.gs.com, request: “POST &#x2F;wp-admin&#x2F;update.php?action&#x3D;upload-theme HTTP&#x2F;1.1”, host: “php.gs.com”, referrer: “<a target="_blank" rel="noopener" href="http://php.gs.com/wp-admin/theme-install.php?browse=popular&quot;">http://php.gs.com/wp-admin/theme-install.php?browse=popular&quot;</a><br>解决方法，参考<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_15941409/article/details/114640122">https://blog.csdn.net/qq_15941409/article/details/114640122</a><br>chown www:www -R &#x2F;var&#x2F;lib&#x2F;nginx&#x2F;</p>
+</blockquote>
+<h2 id="四、案例-搭建wecenter知乎"><a href="#四、案例-搭建wecenter知乎" class="headerlink" title="四、案例-搭建wecenter知乎"></a>四、案例-搭建wecenter知乎</h2><h3 id="4-1-部署安装"><a href="#4-1-部署安装" class="headerlink" title="4.1 部署安装"></a>4.1 部署安装</h3><p>1、添加nginx配置文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">server &#123;
+	listen 80;
+	server_name zh.oldboy.com;
+	root &#x2F;code&#x2F;zh;
+	client_max_body_size 100m;
+
+	location &#x2F; &#123;
+		index index.php index.html;
+	&#125;
+
+	location ~ \.php$ &#123;
+		fastcgi_pass 127.0.0.1:9000;
+		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+		include fastcgi_params;
+	&#125;
+&#125;
+[root@web01 code]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>2、wencenter部署</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# rz -E WeCenter_3-2-1.zip
+[root@web01 code]# unzip WeCenter_3-2-1.zip
+[root@web01 code]# mv WeCenter_3-2-1 zh
+[root@web01 code]# chown -R www.www zh&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>3、配置数据库</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# mysql -uroot -pBgx123.com
+MariaDB [(none)]&gt; create database zh;
+MariaDB [(none)]&gt; show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| test               |
+| wordpress          |
+| zh                 |
++--------------------+
+6 rows in set (0.00 sec)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="五、案例-搭建edusoho在线视频教育"><a href="#五、案例-搭建edusoho在线视频教育" class="headerlink" title="五、案例-搭建edusoho在线视频教育"></a>五、案例-搭建edusoho在线视频教育</h2><h3 id="5-1-部署安装"><a href="#5-1-部署安装" class="headerlink" title="5.1 部署安装"></a>5.1 部署安装</h3><p>1、添加nginx配置文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;edu.oldboy.com.conf 
+server &#123;
+    listen 80;
+    server_name edu.oldboy.com;
+    root &#x2F;code&#x2F;edusoho&#x2F;web;
+    client_max_body_size 200m;
+
+    location &#x2F; &#123;
+        index app.php;
+        try_files $uri @rewriteapp;
+    &#125;
+    location @rewriteapp &#123;
+        rewrite ^(.*)$ &#x2F;app.php&#x2F;$1 last;
+    &#125;
+
+    location ~ ^&#x2F;udisk &#123;
+        internal;
+        root &#x2F;code&#x2F;edusoho&#x2F;app&#x2F;data&#x2F;;
+    &#125;
+
+    location ~ ^&#x2F;(app|app_dev)\.php(&#x2F;|$) &#123;
+        fastcgi_pass   127.0.0.1:9000;
+        fastcgi_split_path_info ^(.+\.php)(&#x2F;.*)$;
+        include fastcgi_params;
+        fastcgi_param  SCRIPT_FILENAME    $document_root$fastcgi_script_name;
+        fastcgi_param  HTTPS              off;
+        fastcgi_param HTTP_X-Sendfile-Type X-Accel-Redirect;
+        fastcgi_param HTTP_X-Accel-Mapping &#x2F;udisk&#x3D;&#x2F;code&#x2F;edusoho&#x2F;app&#x2F;data&#x2F;udisk;
+        fastcgi_buffer_size 128k;
+        fastcgi_buffers 8 128k;
+    &#125;
+
+    # 配置设置图片格式文件
+    location ~* \.(jpg|jpeg|gif|png|ico|swf)$ &#123;
+        # 过期时间为3年
+        expires 3y;
+        # 关闭日志记录
+        access_log off;
+        # 关闭gzip压缩，减少CPU消耗，因为图片的压缩率不高。
+        gzip off;
+    &#125;
+    # 配置css&#x2F;js文件
+    location ~* \.(css|js)$ &#123;
+        access_log off;
+        expires 3y;
+    &#125;
+    # 禁止用户上传目录下所有.php文件的访问，提高安全性
+    location ~ ^&#x2F;files&#x2F;.*\.(php|php5)$ &#123;
+        deny all;
+    &#125;
+
+    # 以下配置允许运行.php的程序，方便于其他第三方系统的集成。
+    location ~ \.php$ &#123;
+        fastcgi_pass   127.0.0.1:9000;
+        fastcgi_split_path_info ^(.+\.php)(&#x2F;.*)$;
+        include fastcgi_params;
+        fastcgi_param  SCRIPT_FILENAME    $document_root$fastcgi_script_name;
+        fastcgi_param  HTTPS              off;
+    &#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>2、下载edusoho,并授权文件夹</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">wget http:&#x2F;&#x2F;download.edusoho.com&#x2F;edusoho-8.2.17.tar.gz
+tar xf edusoho-8.2.17.tar.gz
+chown -R www.www edusoho<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>3、调整php的上传大小(上传文件默认有限制大小)</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# vim &#x2F;etc&#x2F;php.ini
+post_max_size &#x3D; 200M
+upload_max_filesize &#x3D; 200M
+[root@web01 code]# systemctl restart php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="六、各开源项目网站"><a href="#六、各开源项目网站" class="headerlink" title="六、各开源项目网站"></a>六、各开源项目网站</h2><p>phpmyadmin	<a target="_blank" rel="noopener" href="https://www.phpmyadmin.net/">https://www.phpmyadmin.net/</a><br>zblog	<a target="_blank" rel="noopener" href="https://www.zblogcn.com/">https://www.zblogcn.com/</a><br>wordpress	<a target="_blank" rel="noopener" href="https://cn.wordpress.org/">https://cn.wordpress.org/</a><br>wecenter	<a target="_blank" rel="noopener" href="http://www.wecenter.com/downloads/">http://www.wecenter.com/downloads/</a><br>edusohu	<a target="_blank" rel="noopener" href="http://www.edusoho.com/open/show">http://www.edusoho.com/open/show</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/10-Nginx(%E5%9B%9B)LNMP%E6%9E%B6%E6%9E%84%E6%8B%86%E5%88%86/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2156,281 +2156,6 @@ proxy_buffers 4 128k;<span aria-hidden="true" class="line-numbers-rows"><span></
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/14-Nginx(%E5%85%AB)Nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/14-Nginx(%E5%85%AB)Nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/" class="post-title-link" itemprop="url">运维之综合架构--07--Nginx(八)四层负载均衡</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-07-11 13:55:26" itemprop="dateModified" datetime="2022-07-11T13:55:26+08:00">2022-07-11</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="一、Nginx四层负载均衡介绍"><a href="#一、Nginx四层负载均衡介绍" class="headerlink" title="一、Nginx四层负载均衡介绍"></a>一、Nginx四层负载均衡介绍</h2><p>四层负载均衡：（OSI传输层   ip:port）<br>    nginx1.9 版本加入<br>硬件：F5<br>软件：LVS、Haproxy、Nginx</p>
-<p>1.四层+七层来作负载均衡，4层可以保证7层的负载均衡的高可用性。如:nginx就无法保证自己的服务高可用，需要依赖lvs或者keepalive来作。</p>
-<p>2.如:tcp协议的负载均衡，有些请求是TCP协议的(mysql、ssh)，或者说这些请求只需要使用4层进行端口的转发就可以了，所以使用4层负载均衡。<br>    比如做：mysql读的负载均衡（轮询）<br>    比如做：端口映射、端口转发         tcp&#x2F;udp</p>
-<p>四层负载均衡总结<br>1.四层负载均衡仅能转发TCP&#x2F;IP协议、UDP协议，通常用来转发端口，如: tcp&#x2F;3306，tcp&#x2F;22，udp&#x2F;53。<br>2.四层负载均衡可以用来解决七层负载均衡的端口限制问题。（七层负载均衡最大使用65535个端口号）<br>3.可以用来解决七层负载均衡的高可用问题。（多台后端七层负载均衡能同时的使用）<br>4.四层的转发效率比七层的高的多，但仅支持tcp&#x2F;ip协议，不支持http或者https协议</p>
-<p><img src="/img/image-20210823230415237.png" alt="image-20210823230415237"></p>
-<h2 id="二、四层负载均衡配置"><a href="#二、四层负载均衡配置" class="headerlink" title="二、四层负载均衡配置"></a>二、四层负载均衡配置</h2><h3 id="2-1-环境准备"><a href="#2-1-环境准备" class="headerlink" title="2.1 环境准备"></a>2.1 环境准备</h3><table>
-<thead>
-<tr>
-<th>服务器名</th>
-<th>公网IP</th>
-<th>内网IP</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>lb4-01</td>
-<td>10.0.0.3</td>
-<td></td>
-</tr>
-<tr>
-<td>lb01</td>
-<td>10.0.0.5</td>
-<td>172.16.1.5</td>
-</tr>
-<tr>
-<td>lb02</td>
-<td>10.0.0.6</td>
-<td>172.16.1.6</td>
-</tr>
-<tr>
-<td>web、nfs、mysql服务器若干</td>
-<td></td>
-<td></td>
-</tr>
-</tbody></table>
-<h3 id="2-2-新增lb02负载均衡服务器"><a href="#2-2-新增lb02负载均衡服务器" class="headerlink" title="2.2 新增lb02负载均衡服务器"></a>2.2 新增lb02负载均衡服务器</h3><p>1、准备<code>lb02</code>，安装Nginx服务</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb02 ~]# cat &#x2F;etc&#x2F;yum.repos.d&#x2F;nginx.repo 
-[nginx]
-name&#x3D;nginx repo
-baseurl&#x3D;http:&#x2F;&#x2F;nginx.org&#x2F;packages&#x2F;centos&#x2F;7&#x2F;$basearch&#x2F;
-gpgcheck&#x3D;0
-enabled&#x3D;1
-[root@lb02 ~]#  yum install nginx -y<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>2、拷贝<code>lb01</code>的 Nginx配置到<code>lb02</code></p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb02 ~]# scp -rp root@172.16.1.5:&#x2F;etc&#x2F;nginx &#x2F;etc&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>3、启动Nginx</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb02 conf.d]# nginx -t
-[root@lb02 conf.d]# systemctl start nginx
-[root@lb02 conf.d]# systemctl enable nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<blockquote>
-<p>报错：</p>
-<p>[root@lb02 ~]# nginx -t<br>nginx: [emerg] unknown directive “check” in &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf:4<br>nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test failed<br>[root@lb02 ~]# vim &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf<br>[root@lb02 ~]# nginx -t<br>nginx: [emerg] unknown directive “check_status” in &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf:17<br>nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test failed</p>
-<p>解决方法：</p>
-<p>因为lb01安装过第三方健康检查工具，而lb02上没有，先将这些报错点注释掉</p>
-</blockquote>
-<p>4、测试lb02是否正常</p>
-<p>将hosts中的10.0.0.5换成10.0.0.6，phpadmin、wordpress网页可以正常访问,<br>但是wecenter异常502 Bad Gateway<br>解决方法: 将web01、02上的的php.ini中的session.auto_start改为0,不然会502</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 php]# vim &#x2F;etc&#x2F;php.ini
-session.auto_start &#x3D; 0
-[root@web01 php]# systemctl restart php-fpm.service<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<blockquote>
-<p>网上搜索的解释：<br>日常开发中，php.ini配置session.auto_start&#x3D;0默认关闭会话时如果想开启会话需要调用session_start：<br>session.auto_start 开启就自动完成了session_start()<br>区别就在于在用SESSION前是否需要session_start();<br>当session.auto_start &#x3D; on时，执行 session_start() 将产生新的 session_id<br>session.auto_start &#x3D; on 的优点在于，任何时候都不会因忘记执行 session_start() 或 session_start() 在程序里的位置不对，而导致错误<br>缺点在于，如果你使用的是第三方代码，则必须删去其中的全部 session_start() 。否则将不能得到正确的结果</p>
-</blockquote>
-<h3 id="2-3-配置四层负载均衡"><a href="#2-3-配置四层负载均衡" class="headerlink" title="2.3 配置四层负载均衡"></a>2.3 配置四层负载均衡</h3><p>1、新增<code>lb4-01</code>服务器，安装nginx</p>
-<blockquote>
-<p>nginx需要带–with-stream模块</p>
-</blockquote>
-<pre class="line-numbers language-she" data-language="she"><code class="language-she">[root@lb4-01 ~]# cat &#x2F;etc&#x2F;yum.repos.d&#x2F;nginx.repo 
-[nginx]
-name&#x3D;nginx repo
-baseurl&#x3D;http:&#x2F;&#x2F;nginx.org&#x2F;packages&#x2F;centos&#x2F;7&#x2F;$basearch&#x2F;
-gpgcheck&#x3D;0
-enabled&#x3D;1
-[root@lb4-01 ~]#  yum install nginx -y	
-[root@lb4-01 ~]# vim &#x2F;etc&#x2F;nginx&#x2F;nginx.conf
-events &#123;
-    ....
-&#125;
-
-include &#x2F;etc&#x2F;nginx&#x2F;conf.c&#x2F;*.conf;
-
-http &#123;
-	.....
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>2、创建四层负载均衡配置的目录</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb4-01 conf.c]# rm -f &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;default.conf   #删除http的80端口
-[root@lb4-01 ~]# mkdir &#x2F;etc&#x2F;nginx&#x2F;conf.c
-[root@lb4-01 ~]# cd &#x2F;etc&#x2F;nginx&#x2F;conf.c
-[root@lb4-01 conf.c]# cat lb_domain.conf 
-stream &#123;
-    upstream lb &#123;
-        server 172.16.1.5:80 weight&#x3D;5 max_fails&#x3D;3 fail_timeout&#x3D;30s;
-        server 172.16.1.6:80 weight&#x3D;5 max_fails&#x3D;3 fail_timeout&#x3D;30s;
-    &#125;
-
-    server &#123;
-        listen 80;
-        proxy_connect_timeout 3s;
-        proxy_timeout 3s;
-        proxy_pass lb;
-    &#125;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>3、重载服务</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb4-01 conf.c]# nginx -t
-nginx: the configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf syntax is ok
-nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test is successful
-[root@lb4-01 conf.c]# systemctl restart nginx
-[root@lb4-01 conf.c]# systemctl enable nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<blockquote>
-<p>报错：<br>[root@lb4-01 nginx]# nginx  -t<br>nginx: [emerg] unknown directive “stream” in &#x2F;etc&#x2F;nginx&#x2F;conf.c&#x2F;lb_domain.conf:1<br>nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test failed<br>解决方法：<br>yum install nginx-mod-stream.x86_64 -y</p>
-</blockquote>
-<blockquote>
-<p>报错：<br>[root@lb4-01 nginx]# systemctl status nginx<br>nginx.service - The nginx HTTP and reverse proxy server<br>Loaded: loaded (&#x2F;usr&#x2F;lib&#x2F;systemd&#x2F;system&#x2F;nginx.service; enabled; vendor preset: disabled)<br>Active: failed (Result: exit-code) since Tue 2021-08-24 07:48:42 CST; 13s ago<br>Process: 2969 ExecStart&#x3D;&#x2F;usr&#x2F;sbin&#x2F;nginx (code&#x3D;exited, status&#x3D;1&#x2F;FAILURE)<br>Process: 2967 ExecStartPre&#x3D;&#x2F;usr&#x2F;sbin&#x2F;nginx -t (code&#x3D;exited, status&#x3D;0&#x2F;SUCCESS)<br>Process: 2965 ExecStartPre&#x3D;&#x2F;usr&#x2F;bin&#x2F;rm -f &#x2F;run&#x2F;nginx.pid (code&#x3D;exited, status&#x3D;0&#x2F;SUCCESS)<br>Main PID: 1959 (code&#x3D;exited, status&#x3D;0&#x2F;SUCCESS)</p>
-<p>Aug 24 07:48:40 lb4-01 nginx[2969]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)<br>Aug 24 07:48:40 lb4-01 nginx[2969]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)<br>Aug 24 07:48:41 lb4-01 nginx[2969]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)<br>Aug 24 07:48:41 lb4-01 nginx[2969]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)<br>Aug 24 07:48:42 lb4-01 nginx[2969]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)<br>Aug 24 07:48:42 lb4-01 nginx[2969]: nginx: [emerg] still could not bind()<br>解决方法：<br>需要将[root@lb4-01 nginx]# vim &#x2F;etc&#x2F;nginx&#x2F;nginx.conf<br>中默认的80端口改掉，比如改成81,这样才不冲突（奇怪。。）</p>
-</blockquote>
-<p>4、访问测试</p>
-<p>将Hosts中的对应网站地址的IP改成10.0.0.3，尝试访问，可以正常通过四层负载均衡来调度10.0.0.5和10.0.0.6七层负载均衡</p>
-<p><img src="/img/image-20210824001613717.png" alt="image-20210824001613717"></p>
-<p><img src="/img/image-20210824001638506.png" alt="image-20210824001638506"></p>
-<h2 id="三、四层负载均衡日志"><a href="#三、四层负载均衡日志" class="headerlink" title="三、四层负载均衡日志"></a>三、四层负载均衡日志</h2><h3 id="3-1-配置过程"><a href="#3-1-配置过程" class="headerlink" title="3.1 配置过程"></a>3.1 配置过程</h3><p>在四层负载均衡中配置Nginx</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb4-01 ~]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.c&#x2F;lb_domain.conf
-stream &#123;
-    log_format  proxy &#39;$remote_addr $remote_port - [$time_local] $status $protocol &#39;
-                  &#39;&quot;$upstream_addr&quot; &quot;$upstream_bytes_sent&quot; &quot;$upstream_connect_time&quot;&#39; ;
-    access_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;proxy.log proxy;
-
-    upstream lb &#123;
-....<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="3-2-查看日志"><a href="#3-2-查看日志" class="headerlink" title="3.2 查看日志"></a>3.2 查看日志</h3><p>网页访问后，可见产生的日志</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb4-01 ~]# tail -f &#x2F;var&#x2F;log&#x2F;nginx&#x2F;proxy.log
-10.0.0.1 56396 - [25&#x2F;Aug&#x2F;2021:19:25:33 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;15150&quot; &quot;0.000&quot;
-10.0.0.1 59800 - [25&#x2F;Aug&#x2F;2021:19:25:34 +0800] 200 TCP &quot;172.16.1.6:80&quot; &quot;8327&quot; &quot;0.000&quot;
-10.0.0.1 63468 - [25&#x2F;Aug&#x2F;2021:19:25:34 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;17882&quot; &quot;0.000&quot;
-10.0.0.1 50394 - [25&#x2F;Aug&#x2F;2021:19:25:35 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;24490&quot; &quot;0.000&quot;
-10.0.0.1 55549 - [25&#x2F;Aug&#x2F;2021:19:25:35 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;13201&quot; &quot;0.000&quot;
-10.0.0.1 64324 - [25&#x2F;Aug&#x2F;2021:19:25:42 +0800] 200 TCP &quot;172.16.1.6:80&quot; &quot;70995&quot; &quot;0.000&quot;
-10.0.0.1 64566 - [25&#x2F;Aug&#x2F;2021:19:25:42 +0800] 200 TCP &quot;172.16.1.6:80&quot; &quot;72650&quot; &quot;0.000&quot;
-10.0.0.1 65216 - [25&#x2F;Aug&#x2F;2021:19:25:42 +0800] 200 TCP &quot;172.16.1.6:80&quot; &quot;68171&quot; &quot;0.000&quot;
-10.0.0.1 49668 - [25&#x2F;Aug&#x2F;2021:19:25:42 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;82071&quot; &quot;0.004&quot;
-10.0.0.1 49745 - [25&#x2F;Aug&#x2F;2021:19:25:42 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;63941&quot; &quot;0.001&quot;
-10.0.0.1 50574 - [25&#x2F;Aug&#x2F;2021:19:25:42 +0800] 200 TCP &quot;172.16.1.6:80&quot; &quot;103581&quot; &quot;0.000&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="三、使用nginx四层负载均衡实现tcp的转发（跳板）"><a href="#三、使用nginx四层负载均衡实现tcp的转发（跳板）" class="headerlink" title="三、使用nginx四层负载均衡实现tcp的转发（跳板）"></a>三、使用nginx四层负载均衡实现tcp的转发（跳板）</h2><p>实现跳板机的功能，比如：</p>
-<pre><code>请求负载均衡 5555    ---&gt;     172.16.1.7:22;
-请求负载均衡 6666    ---&gt;     172.16.1.51:3306;
-</code></pre>
-<h3 id="3-1-配置过程-1"><a href="#3-1-配置过程-1" class="headerlink" title="3.1 配置过程"></a>3.1 配置过程</h3><p>配置Nginx</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb4-01 ~]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.c&#x2F;lb_domain.conf 
-stream &#123;
-log_format  proxy &#39;$remote_addr $remote_port - [$time_local] $status $protocol &#39;
-                  &#39;&quot;$upstream_addr&quot; &quot;$upstream_bytes_sent&quot; &quot;$upstream_connect_time&quot;&#39; ;
-    access_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;proxy.log proxy;
-
-#定义转发ssh的22端口
-	upstream ssh_7 &#123;
-		server 10.0.0.7:22;
-	&#125;
-#定义转发mysql的3306端口
-	upstream mysql_51 &#123;
-		server 10.0.0.51:3306;
-	&#125;
-    server &#123;
-        listen 5555;
-        proxy_connect_timeout 3s;
-        proxy_timeout 300s;
-        proxy_pass ssh_7;
-    &#125;
-
-    server &#123;
-        listen 6666;
-        proxy_connect_timeout 3s;
-        proxy_timeout 3s;
-        proxy_pass mysql_51;
-    &#125;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>测试访问</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 连接web01
-ssh root@10.0.0.3 -p 5555
-
-# 连接db01
-ssh root@10.0.0.3 -p 6666<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-
-
-
-
-
-
-
-
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/13-Nginx(%E4%B8%83)Nginx%E4%B8%83%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2813,99 +2538,6 @@ session.auto_start &#x3D; 1<span aria-hidden="true" class="line-numbers-rows"><s
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day01-%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AE%89%E8%A3%85/%E8%AF%BE%E5%A0%82%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day01-%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AE%89%E8%A3%85/%E8%AF%BE%E5%A0%82%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">运维之基础命令--虚拟机安装</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:08:58" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="day01-课堂笔记"><a href="#day01-课堂笔记" class="headerlink" title="day01 : 课堂笔记"></a>day01 : 课堂笔记</h1><h2 id="安装系统"><a href="#安装系统" class="headerlink" title="安装系统"></a>安装系统</h2><p><strong>1、安装虚拟机</strong></p>
-<p><img src="/.%5Cassets%5Cimage-20210302121236930.png" alt="image-20210302121236930"></p>
-<p>解压上述软件，创建vmware.exe快捷方式，然后用快捷方式打开。</p>
-<p><img src="/.%5Cassets%5Cimage-20210302121408360.png" alt="image-20210302121408360"></p>
-<p><strong>2、创建虚拟机</strong></p>
-<p><img src="/.%5Cassets%5Cimage-20210302121456338.png" alt="image-20210302121456338"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302121550128.png" alt="image-20210302121550128"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302121622000.png" alt="image-20210302121622000"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302121745568.png" alt="image-20210302121745568"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302122035359.png" alt="image-20210302122035359"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302122256831.png" alt="image-20210302122256831"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302122359568.png" alt="image-20210302122359568"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302122603313.png" alt="image-20210302122603313"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302122657199.png" alt="image-20210302122657199"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302123826623.png" alt="image-20210302123826623"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302124229475.png" alt="image-20210302124229475"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302124308081.png" alt="image-20210302124308081"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302124327456.png" alt="image-20210302124327456"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302124404318.png" alt="image-20210302124404318"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302124713502.png" alt="image-20210302124713502"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302124741038.png" alt="image-20210302124741038"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302125049653.png" alt="image-20210302125049653"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/15-Nginx(%E4%B9%9D)%E5%8A%A8%E9%9D%99%E5%88%86%E7%A6%BB%E5%92%8Crewrite/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -3240,7 +2872,7 @@ web02的Tomcat服务正常，关掉web01的nginx服务
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day08-%E6%89%93%E5%8C%85%E4%B8%8E%E5%8E%8B%E7%BC%A9/%E6%89%93%E5%8C%85%E4%B8%8E%E5%8E%8B%E7%BC%A9%E7%AC%94%E8%AE%B0/">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/14-Nginx(%E5%85%AB)Nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/myavatar.png">
@@ -3254,7 +2886,7 @@ web02的Tomcat服务正常，关掉web01的nginx服务
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day08-%E6%89%93%E5%8C%85%E4%B8%8E%E5%8E%8B%E7%BC%A9/%E6%89%93%E5%8C%85%E4%B8%8E%E5%8E%8B%E7%BC%A9%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">运维之基础命令--打包与压缩</a>
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/14-Nginx(%E5%85%AB)Nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/" class="post-title-link" itemprop="url">运维之综合架构--07--Nginx(八)四层负载均衡</a>
         </h2>
 
         <div class="post-meta">
@@ -3263,10 +2895,16 @@ web02的Tomcat服务正常，关掉web01的nginx服务
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:13:25" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-11 13:55:26" itemprop="dateModified" datetime="2022-07-11T13:55:26+08:00">2022-07-11</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -3277,7 +2915,7 @@ web02的Tomcat服务正常，关掉web01的nginx服务
                 </span>
                   ，
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
                 </span>
             </span>
 
@@ -3292,484 +2930,203 @@ web02的Tomcat服务正常，关掉web01的nginx服务
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="打包和压缩"><a href="#打包和压缩" class="headerlink" title="打包和压缩"></a>打包和压缩</h1><blockquote>
-<p>将文件或文件夹合并成一个包，然后通过压缩算法进行数据压缩，减小包的体积，方便网络传输。</p>
+          <h2 id="一、Nginx四层负载均衡介绍"><a href="#一、Nginx四层负载均衡介绍" class="headerlink" title="一、Nginx四层负载均衡介绍"></a>一、Nginx四层负载均衡介绍</h2><p>四层负载均衡：（OSI传输层   ip:port）<br>    nginx1.9 版本加入<br>硬件：F5<br>软件：LVS、Haproxy、Nginx</p>
+<p>1.四层+七层来作负载均衡，4层可以保证7层的负载均衡的高可用性。如:nginx就无法保证自己的服务高可用，需要依赖lvs或者keepalive来作。</p>
+<p>2.如:tcp协议的负载均衡，有些请求是TCP协议的(mysql、ssh)，或者说这些请求只需要使用4层进行端口的转发就可以了，所以使用4层负载均衡。<br>    比如做：mysql读的负载均衡（轮询）<br>    比如做：端口映射、端口转发         tcp&#x2F;udp</p>
+<p>四层负载均衡总结<br>1.四层负载均衡仅能转发TCP&#x2F;IP协议、UDP协议，通常用来转发端口，如: tcp&#x2F;3306，tcp&#x2F;22，udp&#x2F;53。<br>2.四层负载均衡可以用来解决七层负载均衡的端口限制问题。（七层负载均衡最大使用65535个端口号）<br>3.可以用来解决七层负载均衡的高可用问题。（多台后端七层负载均衡能同时的使用）<br>4.四层的转发效率比七层的高的多，但仅支持tcp&#x2F;ip协议，不支持http或者https协议</p>
+<p><img src="/img/image-20210823230415237.png" alt="image-20210823230415237"></p>
+<h2 id="二、四层负载均衡配置"><a href="#二、四层负载均衡配置" class="headerlink" title="二、四层负载均衡配置"></a>二、四层负载均衡配置</h2><h3 id="2-1-环境准备"><a href="#2-1-环境准备" class="headerlink" title="2.1 环境准备"></a>2.1 环境准备</h3><table>
+<thead>
+<tr>
+<th>服务器名</th>
+<th>公网IP</th>
+<th>内网IP</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>lb4-01</td>
+<td>10.0.0.3</td>
+<td></td>
+</tr>
+<tr>
+<td>lb01</td>
+<td>10.0.0.5</td>
+<td>172.16.1.5</td>
+</tr>
+<tr>
+<td>lb02</td>
+<td>10.0.0.6</td>
+<td>172.16.1.6</td>
+</tr>
+<tr>
+<td>web、nfs、mysql服务器若干</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="2-2-新增lb02负载均衡服务器"><a href="#2-2-新增lb02负载均衡服务器" class="headerlink" title="2.2 新增lb02负载均衡服务器"></a>2.2 新增lb02负载均衡服务器</h3><p>1、准备<code>lb02</code>，安装Nginx服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb02 ~]# cat &#x2F;etc&#x2F;yum.repos.d&#x2F;nginx.repo 
+[nginx]
+name&#x3D;nginx repo
+baseurl&#x3D;http:&#x2F;&#x2F;nginx.org&#x2F;packages&#x2F;centos&#x2F;7&#x2F;$basearch&#x2F;
+gpgcheck&#x3D;0
+enabled&#x3D;1
+[root@lb02 ~]#  yum install nginx -y<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>2、拷贝<code>lb01</code>的 Nginx配置到<code>lb02</code></p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb02 ~]# scp -rp root@172.16.1.5:&#x2F;etc&#x2F;nginx &#x2F;etc&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>3、启动Nginx</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb02 conf.d]# nginx -t
+[root@lb02 conf.d]# systemctl start nginx
+[root@lb02 conf.d]# systemctl enable nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>报错：</p>
+<p>[root@lb02 ~]# nginx -t<br>nginx: [emerg] unknown directive “check” in &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf:4<br>nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test failed<br>[root@lb02 ~]# vim &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf<br>[root@lb02 ~]# nginx -t<br>nginx: [emerg] unknown directive “check_status” in &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf:17<br>nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test failed</p>
+<p>解决方法：</p>
+<p>因为lb01安装过第三方健康检查工具，而lb02上没有，先将这些报错点注释掉</p>
 </blockquote>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">windows：
-	<span class="token function">zip</span>
-	<span class="token function">rar</span>
+<p>4、测试lb02是否正常</p>
+<p>将hosts中的10.0.0.5换成10.0.0.6，phpadmin、wordpress网页可以正常访问,<br>但是wecenter异常502 Bad Gateway<br>解决方法: 将web01、02上的的php.ini中的session.auto_start改为0,不然会502</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 php]# vim &#x2F;etc&#x2F;php.ini
+session.auto_start &#x3D; 0
+[root@web01 php]# systemctl restart php-fpm.service<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
 
-linux:
-	<span class="token function">zip</span>
-	<span class="token function">tar</span>
-	gz
-	bz2
-	tar.gz
-	tar.bz2
-
-压缩算法：
-	<span class="token function">gzip</span>
-	<span class="token function">bzip2</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="zip"><a href="#zip" class="headerlink" title="zip"></a>zip</h2><blockquote>
-<p>是一个Windows和Linux中常用打包压缩工具，支持的压缩算法是zip。</p>
+<blockquote>
+<p>网上搜索的解释：<br>日常开发中，php.ini配置session.auto_start&#x3D;0默认关闭会话时如果想开启会话需要调用session_start：<br>session.auto_start 开启就自动完成了session_start()<br>区别就在于在用SESSION前是否需要session_start();<br>当session.auto_start &#x3D; on时，执行 session_start() 将产生新的 session_id<br>session.auto_start &#x3D; on 的优点在于，任何时候都不会因忘记执行 session_start() 或 session_start() 在程序里的位置不对，而导致错误<br>缺点在于，如果你使用的是第三方代码，则必须删去其中的全部 session_start() 。否则将不能得到正确的结果</p>
 </blockquote>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">zip工具需要安装
-	yum <span class="token function">install</span> <span class="token function">zip</span> <span class="token function">unzip</span> -y<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<h3 id="zip压缩一个文件"><a href="#zip压缩一个文件" class="headerlink" title="zip压缩一个文件"></a>zip压缩一个文件</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 格式</span>
-	<span class="token function">zip</span> <span class="token punctuation">[</span>参数<span class="token punctuation">]</span> 压缩包名称  文件路径
-
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># zip 123.zip 123.log </span>
-  adding: <span class="token number">123</span>.log <span class="token punctuation">(</span>deflated <span class="token number">87</span>%<span class="token punctuation">)</span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
-total <span class="token number">4732</span>
--rw-r--r--  <span class="token number">1</span> root root  <span class="token number">646165</span> Mar  <span class="token number">9</span> <span class="token number">10</span>:31 <span class="token number">123</span>.log
--rw-r--r--  <span class="token number">1</span> root root   <span class="token number">85296</span> Mar <span class="token number">11</span> <span class="token number">11</span>:58 <span class="token number">123</span>.zip<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="zip压缩文件夹"><a href="#zip压缩文件夹" class="headerlink" title="zip压缩文件夹"></a>zip压缩文件夹</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 需要一个-r参数去递归压缩文件夹下的所有内容</span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># zip -r dir.zip dir/</span>
-  adding: dir/ <span class="token punctuation">(</span>stored <span class="token number">0</span>%<span class="token punctuation">)</span>
-  adding: dir/one/ <span class="token punctuation">(</span>stored <span class="token number">0</span>%<span class="token punctuation">)</span>
-  adding: dir/123.log <span class="token punctuation">(</span>deflated <span class="token number">87</span>%<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="zip的静默输出"><a href="#zip的静默输出" class="headerlink" title="zip的静默输出"></a>zip的静默输出</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># -q：参数就是不输出任何打包信息</span>
-<span class="token punctuation">[</span>root@abc opt<span class="token punctuation">]</span><span class="token comment"># zip -r -q etc.zip /etc/</span>
-<span class="token punctuation">[</span>root@abc opt<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
-total <span class="token number">14200</span>
--rw-r--r-- <span class="token number">1</span> root root <span class="token number">13674457</span> Mar <span class="token number">11</span> <span class="token number">12</span>:15 etc.zip<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="zip解压命令（unzip）"><a href="#zip解压命令（unzip）" class="headerlink" title="zip解压命令（unzip）"></a>zip解压命令（unzip）</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 格式</span>
-	<span class="token function">unzip</span> <span class="token punctuation">[</span>参数<span class="token punctuation">]</span> 压缩包路径
-
-<span class="token comment"># unzip解压命令只能解压由zip打包的压缩文件</span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># unzip dir.zip </span>
-Archive:  dir.zip
-  inflating: dir/123.log             
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># </span>
-
-<span class="token comment"># 其他压缩包由unzip解压时随即报错。</span>
-<span class="token punctuation">[</span>root@abc opt<span class="token punctuation">]</span><span class="token comment"># unzip nginx-.tar.gz</span>
-Archive:  nginx-.tar.gz
-  End-of-central-directory signature not found.  Either this <span class="token function">file</span> is not
-  a zipfile, or it constitutes one disk of a multi-part archive.  In the
-  latter <span class="token keyword">case</span> the central directory and zipfile comment will be found on
-  the last disk<span class="token punctuation">(</span>s<span class="token punctuation">)</span> of this archive.
-unzip:  cannot <span class="token function">find</span> zipfile directory <span class="token keyword">in</span> one of nginx-.tar.gz or
-        nginx-.tar.gz.zip, and cannot <span class="token function">find</span> nginx-.tar.gz.ZIP, period.
-
-
-<span class="token comment"># 查看压缩包中压缩那些内容，不解压？</span>
-<span class="token comment"># 只查看压缩包内容不解压需要使用 -l 参数</span>
-<span class="token punctuation">[</span>root@abc opt<span class="token punctuation">]</span><span class="token comment"># unzip -l dir.zip </span>
-Archive:  dir.zip
-  Length      Date    Time    Name
----------  ---------- -----   ----
-        <span class="token number">0</span>  03-11-2021 <span class="token number">12</span>:04   dir/
----------                     -------
-        <span class="token number">0</span>                     <span class="token number">1</span> <span class="token function">file</span>
-
-<span class="token comment"># 解压到指定目录（-d）</span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># unzip -d /root/  etc.zip </span>
-<span class="token punctuation">[</span>root@abc opt<span class="token punctuation">]</span><span class="token comment"># cd /root/</span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls</span>
-<span class="token punctuation">]</span>        anaconda-ks.cfg  dir.zip  index.html           test.pdf.gz  xxxeth0xxx           系统优化.md
-<span class="token number">123</span>.log  demo.txt         etc      nginx-0.1.22.tar.gz  test.txt     上传与下载.md
-<span class="token number">123</span>.zip  <span class="token function">dir</span>              eth0xxx  <span class="token builtin class-name">test</span>                 xxxeth0      文件管理_<span class="token punctuation">(</span>高级<span class="token punctuation">)</span>.pdf
-
-<span class="token comment"># 静默输出(-q)</span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># rm -rf etc</span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># unzip -q -d /root/ /opt/etc.zip </span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
-total <span class="token number">4828</span>
-drwxr-xr-x  <span class="token number">91</span> root root    <span class="token number">8192</span> Mar <span class="token number">11</span> <span class="token number">11</span>:16 etc<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="tar"><a href="#tar" class="headerlink" title="tar"></a>tar</h2><blockquote>
-<p>tar压缩支持多种压缩算法</p>
-<p>tar.gz   gzip (用的最多)</p>
-<p>tar.bz2 bzip2</p>
+<h3 id="2-3-配置四层负载均衡"><a href="#2-3-配置四层负载均衡" class="headerlink" title="2.3 配置四层负载均衡"></a>2.3 配置四层负载均衡</h3><p>1、新增<code>lb4-01</code>服务器，安装nginx</p>
+<blockquote>
+<p>nginx需要带–with-stream模块</p>
 </blockquote>
-<h3 id="gzip"><a href="#gzip" class="headerlink" title="gzip"></a>gzip</h3><blockquote>
-<p>通过gzip压缩算法，将文件压缩一定体积，有利于传输, 不支持打包</p>
+<pre class="line-numbers language-she" data-language="she"><code class="language-she">[root@lb4-01 ~]# cat &#x2F;etc&#x2F;yum.repos.d&#x2F;nginx.repo 
+[nginx]
+name&#x3D;nginx repo
+baseurl&#x3D;http:&#x2F;&#x2F;nginx.org&#x2F;packages&#x2F;centos&#x2F;7&#x2F;$basearch&#x2F;
+gpgcheck&#x3D;0
+enabled&#x3D;1
+[root@lb4-01 ~]#  yum install nginx -y	
+[root@lb4-01 ~]# vim &#x2F;etc&#x2F;nginx&#x2F;nginx.conf
+events &#123;
+    ....
+&#125;
+
+include &#x2F;etc&#x2F;nginx&#x2F;conf.c&#x2F;*.conf;
+
+http &#123;
+	.....
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>2、创建四层负载均衡配置的目录</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb4-01 conf.c]# rm -f &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;default.conf   #删除http的80端口
+[root@lb4-01 ~]# mkdir &#x2F;etc&#x2F;nginx&#x2F;conf.c
+[root@lb4-01 ~]# cd &#x2F;etc&#x2F;nginx&#x2F;conf.c
+[root@lb4-01 conf.c]# cat lb_domain.conf 
+stream &#123;
+    upstream lb &#123;
+        server 172.16.1.5:80 weight&#x3D;5 max_fails&#x3D;3 fail_timeout&#x3D;30s;
+        server 172.16.1.6:80 weight&#x3D;5 max_fails&#x3D;3 fail_timeout&#x3D;30s;
+    &#125;
+
+    server &#123;
+        listen 80;
+        proxy_connect_timeout 3s;
+        proxy_timeout 3s;
+        proxy_pass lb;
+    &#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>3、重载服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb4-01 conf.c]# nginx -t
+nginx: the configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf syntax is ok
+nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test is successful
+[root@lb4-01 conf.c]# systemctl restart nginx
+[root@lb4-01 conf.c]# systemctl enable nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>报错：<br>[root@lb4-01 nginx]# nginx  -t<br>nginx: [emerg] unknown directive “stream” in &#x2F;etc&#x2F;nginx&#x2F;conf.c&#x2F;lb_domain.conf:1<br>nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test failed<br>解决方法：<br>yum install nginx-mod-stream.x86_64 -y</p>
 </blockquote>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
-total <span class="token number">4828</span>
--rw-r--r--   <span class="token number">1</span> root root  <span class="token number">244977</span> Mar <span class="token number">10</span> <span class="token number">12</span>:12 index.html
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># gzip index.html </span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
-total <span class="token number">4612</span>
--rw-r--r--   <span class="token number">1</span> root root   <span class="token number">22652</span> Mar <span class="token number">10</span> <span class="token number">12</span>:12 index.html.gz<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h4 id="gzip压缩一个目录"><a href="#gzip压缩一个目录" class="headerlink" title="gzip压缩一个目录"></a>gzip压缩一个目录</h4><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc etc<span class="token punctuation">]</span><span class="token comment"># gzip -r /etc</span>
-<span class="token punctuation">[</span>root@abc etc<span class="token punctuation">]</span><span class="token comment"># ls </span>
-abrt                        GREP_COLORS.gz               my.cnf.d                 security
-adjtime.gz                  groff                        my.cnf.gz                selinux
-aliases.db.gz               group-.gz                    NetworkManager           services.gz
-aliases.gz                  group.gz                     networks.gz              sestatus.conf.gz
-alternatives                grub2.cfg                    nsswitch.conf.bak.gz     sgml
-anacrontab.gz               grub.d                       nsswitch.conf.gz         shadow<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="gzip解压-d"><a href="#gzip解压-d" class="headerlink" title="gzip解压(-d)"></a>gzip解压(-d)</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
--rw-r--r--   <span class="token number">1</span> <span class="token number">0</span> <span class="token number">0</span>   <span class="token number">22652</span> Mar <span class="token number">10</span> <span class="token number">12</span>:12 index.html.gz
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># gzip -d index.html.gz </span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
-total <span class="token number">4828</span>
--rw-r--r--   <span class="token number">1</span> <span class="token number">0</span> <span class="token number">0</span>  <span class="token number">244977</span> Mar <span class="token number">10</span> <span class="token number">12</span>:12 index.html<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="bzip2"><a href="#bzip2" class="headerlink" title="bzip2"></a>bzip2</h3><blockquote>
-<p>使用bzip2 压缩算法来压缩一定体积的文件。</p>
+<blockquote>
+<p>报错：<br>[root@lb4-01 nginx]# systemctl status nginx<br>nginx.service - The nginx HTTP and reverse proxy server<br>Loaded: loaded (&#x2F;usr&#x2F;lib&#x2F;systemd&#x2F;system&#x2F;nginx.service; enabled; vendor preset: disabled)<br>Active: failed (Result: exit-code) since Tue 2021-08-24 07:48:42 CST; 13s ago<br>Process: 2969 ExecStart&#x3D;&#x2F;usr&#x2F;sbin&#x2F;nginx (code&#x3D;exited, status&#x3D;1&#x2F;FAILURE)<br>Process: 2967 ExecStartPre&#x3D;&#x2F;usr&#x2F;sbin&#x2F;nginx -t (code&#x3D;exited, status&#x3D;0&#x2F;SUCCESS)<br>Process: 2965 ExecStartPre&#x3D;&#x2F;usr&#x2F;bin&#x2F;rm -f &#x2F;run&#x2F;nginx.pid (code&#x3D;exited, status&#x3D;0&#x2F;SUCCESS)<br>Main PID: 1959 (code&#x3D;exited, status&#x3D;0&#x2F;SUCCESS)</p>
+<p>Aug 24 07:48:40 lb4-01 nginx[2969]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)<br>Aug 24 07:48:40 lb4-01 nginx[2969]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)<br>Aug 24 07:48:41 lb4-01 nginx[2969]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)<br>Aug 24 07:48:41 lb4-01 nginx[2969]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)<br>Aug 24 07:48:42 lb4-01 nginx[2969]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)<br>Aug 24 07:48:42 lb4-01 nginx[2969]: nginx: [emerg] still could not bind()<br>解决方法：<br>需要将[root@lb4-01 nginx]# vim &#x2F;etc&#x2F;nginx&#x2F;nginx.conf<br>中默认的80端口改掉，比如改成81,这样才不冲突（奇怪。。）</p>
 </blockquote>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
-total <span class="token number">4828</span>
--rw-r--r--   <span class="token number">1</span> root root  <span class="token number">646165</span> Mar  <span class="token number">9</span> <span class="token number">10</span>:31 <span class="token number">123</span>.log     
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># bzip2 123.log </span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
-total <span class="token number">4240</span>
--rw-r--r--   <span class="token number">1</span> root root       <span class="token number">0</span> Mar <span class="token number">10</span> <span class="token number">12</span>:04 <span class="token punctuation">]</span>
--rw-r--r--   <span class="token number">1</span> root root   <span class="token number">42210</span> Mar  <span class="token number">9</span> <span class="token number">10</span>:31 <span class="token number">123</span>.log.bz2<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>4、访问测试</p>
+<p>将Hosts中的对应网站地址的IP改成10.0.0.3，尝试访问，可以正常通过四层负载均衡来调度10.0.0.5和10.0.0.6七层负载均衡</p>
+<p><img src="/img/image-20210824001613717.png" alt="image-20210824001613717"></p>
+<p><img src="/img/image-20210824001638506.png" alt="image-20210824001638506"></p>
+<h2 id="三、四层负载均衡日志"><a href="#三、四层负载均衡日志" class="headerlink" title="三、四层负载均衡日志"></a>三、四层负载均衡日志</h2><h3 id="3-1-配置过程"><a href="#3-1-配置过程" class="headerlink" title="3.1 配置过程"></a>3.1 配置过程</h3><p>在四层负载均衡中配置Nginx</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb4-01 ~]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.c&#x2F;lb_domain.conf
+stream &#123;
+    log_format  proxy &#39;$remote_addr $remote_port - [$time_local] $status $protocol &#39;
+                  &#39;&quot;$upstream_addr&quot; &quot;$upstream_bytes_sent&quot; &quot;$upstream_connect_time&quot;&#39; ;
+    access_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;proxy.log proxy;
+
+    upstream lb &#123;
+....<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="3-2-查看日志"><a href="#3-2-查看日志" class="headerlink" title="3.2 查看日志"></a>3.2 查看日志</h3><p>网页访问后，可见产生的日志</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb4-01 ~]# tail -f &#x2F;var&#x2F;log&#x2F;nginx&#x2F;proxy.log
+10.0.0.1 56396 - [25&#x2F;Aug&#x2F;2021:19:25:33 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;15150&quot; &quot;0.000&quot;
+10.0.0.1 59800 - [25&#x2F;Aug&#x2F;2021:19:25:34 +0800] 200 TCP &quot;172.16.1.6:80&quot; &quot;8327&quot; &quot;0.000&quot;
+10.0.0.1 63468 - [25&#x2F;Aug&#x2F;2021:19:25:34 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;17882&quot; &quot;0.000&quot;
+10.0.0.1 50394 - [25&#x2F;Aug&#x2F;2021:19:25:35 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;24490&quot; &quot;0.000&quot;
+10.0.0.1 55549 - [25&#x2F;Aug&#x2F;2021:19:25:35 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;13201&quot; &quot;0.000&quot;
+10.0.0.1 64324 - [25&#x2F;Aug&#x2F;2021:19:25:42 +0800] 200 TCP &quot;172.16.1.6:80&quot; &quot;70995&quot; &quot;0.000&quot;
+10.0.0.1 64566 - [25&#x2F;Aug&#x2F;2021:19:25:42 +0800] 200 TCP &quot;172.16.1.6:80&quot; &quot;72650&quot; &quot;0.000&quot;
+10.0.0.1 65216 - [25&#x2F;Aug&#x2F;2021:19:25:42 +0800] 200 TCP &quot;172.16.1.6:80&quot; &quot;68171&quot; &quot;0.000&quot;
+10.0.0.1 49668 - [25&#x2F;Aug&#x2F;2021:19:25:42 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;82071&quot; &quot;0.004&quot;
+10.0.0.1 49745 - [25&#x2F;Aug&#x2F;2021:19:25:42 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;63941&quot; &quot;0.001&quot;
+10.0.0.1 50574 - [25&#x2F;Aug&#x2F;2021:19:25:42 +0800] 200 TCP &quot;172.16.1.6:80&quot; &quot;103581&quot; &quot;0.000&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="三、使用nginx四层负载均衡实现tcp的转发（跳板）"><a href="#三、使用nginx四层负载均衡实现tcp的转发（跳板）" class="headerlink" title="三、使用nginx四层负载均衡实现tcp的转发（跳板）"></a>三、使用nginx四层负载均衡实现tcp的转发（跳板）</h2><p>实现跳板机的功能，比如：</p>
+<pre><code>请求负载均衡 5555    ---&gt;     172.16.1.7:22;
+请求负载均衡 6666    ---&gt;     172.16.1.51:3306;
+</code></pre>
+<h3 id="3-1-配置过程-1"><a href="#3-1-配置过程-1" class="headerlink" title="3.1 配置过程"></a>3.1 配置过程</h3><p>配置Nginx</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb4-01 ~]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.c&#x2F;lb_domain.conf 
+stream &#123;
+log_format  proxy &#39;$remote_addr $remote_port - [$time_local] $status $protocol &#39;
+                  &#39;&quot;$upstream_addr&quot; &quot;$upstream_bytes_sent&quot; &quot;$upstream_connect_time&quot;&#39; ;
+    access_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;proxy.log proxy;
+
+#定义转发ssh的22端口
+	upstream ssh_7 &#123;
+		server 10.0.0.7:22;
+	&#125;
+#定义转发mysql的3306端口
+	upstream mysql_51 &#123;
+		server 10.0.0.51:3306;
+	&#125;
+    server &#123;
+        listen 5555;
+        proxy_connect_timeout 3s;
+        proxy_timeout 300s;
+        proxy_pass ssh_7;
+    &#125;
+
+    server &#123;
+        listen 6666;
+        proxy_connect_timeout 3s;
+        proxy_timeout 3s;
+        proxy_pass mysql_51;
+    &#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>测试访问</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 连接web01
+ssh root@10.0.0.3 -p 5555
+
+# 连接db01
+ssh root@10.0.0.3 -p 6666<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<h3 id="bzip2解压（-d）"><a href="#bzip2解压（-d）" class="headerlink" title="bzip2解压（-d）"></a>bzip2解压（-d）</h3><blockquote>
-<p>bzip2解压是针对于bzip2压缩的压缩包来进行解压。</p>
-</blockquote>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
-total <span class="token number">4240</span>
--rw-r--r--   <span class="token number">1</span> root root   <span class="token number">42210</span> Mar  <span class="token number">9</span> <span class="token number">10</span>:31 <span class="token number">123</span>.log.bz2
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># bzip2 -d 123.log.bz2 </span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
-total <span class="token number">4828</span>
--rw-r--r--   <span class="token number">1</span> root root  <span class="token number">646165</span> Mar  <span class="token number">9</span> <span class="token number">10</span>:31 <span class="token number">123</span>.log<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<h3 id="tar-1"><a href="#tar-1" class="headerlink" title="tar"></a>tar</h3><blockquote>
-<p>tar其实是一个打包工具，不具备压缩功能，但是可以使用参数调用压缩工具来进行解压。</p>
-</blockquote>
-<h4 id="参数"><a href="#参数" class="headerlink" title="参数"></a>参数</h4><ul>
-<li><p>-c : 创建压缩包</p>
-</li>
-<li><p>-f : 指定压缩包名称</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># tar -c -f test.tar 123.log </span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
-total <span class="token number">5468</span>
--rw-r--r--   <span class="token number">1</span> root root  <span class="token number">655360</span> Mar <span class="token number">11</span> <span class="token number">15</span>:49 test.tar<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>-z ： 指定使用gzip压缩工具进行压缩</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># tar  -c -z -f test-one.tar 123.log </span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l </span>
-total <span class="token number">5084</span>
--rw-r--r--   <span class="token number">1</span> root root   <span class="token number">85279</span> Mar <span class="token number">11</span> <span class="token number">15</span>:56 test-one.tar
 
-<span class="token comment"># 注：使用-z参数，不会自动添加.gz后缀</span>
 
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># tar -c -z -f anaconda.tar.gz  anaconda-ks.cfg </span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
-total <span class="token number">5084</span>
--rw-r--r--   <span class="token number">1</span> root root    <span class="token number">1010</span> Mar <span class="token number">11</span> <span class="token number">15</span>:58 anaconda.tar.gz<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>-j : 指定使用bzip2压缩工具进行压缩</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># tar -c -j -f 123-bask-one.tar 123.log </span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
-total <span class="token number">5172</span>
--rw-r--r--   <span class="token number">1</span> root root   <span class="token number">42328</span> Mar <span class="token number">11</span> <span class="token number">16</span>:00 <span class="token number">123</span>-bak.tar.bz2
--rw-r--r--   <span class="token number">1</span> root root   <span class="token number">42328</span> Mar <span class="token number">11</span> <span class="token number">16</span>:01 <span class="token number">123</span>-bask-one.tar<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>-J : 指定使用xz压缩工具进行压缩</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc test-tar<span class="token punctuation">]</span><span class="token comment"># tar -c -J  -f etc.tar.xz /etc/</span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
--rw-r--r-- <span class="token number">1</span> root root <span class="token number">9493376</span> Mar <span class="token number">11</span> <span class="token number">17</span>:00 etc.tar.xz<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>-t : 查看压缩包内容</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># tar -t -f 123-bak.tar.bz2 </span>
-<span class="token number">123</span>.log
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>-v ： 显示压缩包压缩过程</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># tar -x -v -f etc.tar -C /opt/</span>
-/etc/centos-release
-/etc/DIR_COLORS.lightbgcolor
-/etc/libaudit.conf
-/etc/mail.rc<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>-P : 允许使用绝对路径进行打包</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># tar -c -P -f 123-three.tar /etc/passwd</span>
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># tar -c -f 123-three.tar /etc/passwd</span>
-tar: Removing leading `/' from member names
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>-x ： 解压</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># tar解压是按照原来的路径进行解压</span>
-<span class="token punctuation">[</span>root@abc test<span class="token punctuation">]</span><span class="token comment"># tar -x -f etc.tar </span>
 
-<span class="token comment"># tar会自动识别压缩功能</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>-C ： 指定解压路径</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># tar -x -f etc.tar -C /opt/</span>
-tar: Removing leading `/' from member names
-<span class="token punctuation">[</span>root@abc ~<span class="token punctuation">]</span><span class="token comment"># cd /opt/</span>
-<span class="token punctuation">[</span>root@abc opt<span class="token punctuation">]</span><span class="token comment"># ls</span>
-abc23  <span class="token function">dir</span>  dir.zip  etc  nginx-0.1.22.tar.gz  nginx-.tar.gz  xxx
-<span class="token punctuation">[</span>root@abc opt<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>–exclude : 排除某些文件</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc test-tar<span class="token punctuation">]</span><span class="token comment"># tar -c -f abc.tar ./* --exclude=abc7 --exclude=abc5   --exclude=abc1 </span>
-<span class="token punctuation">[</span>root@abc test-tar<span class="token punctuation">]</span><span class="token comment"># tar -t -f abc.tar </span>
-./abc2
-./abc3
-./abc4
-./abc6
-./abc8
-./abc9
-<span class="token punctuation">[</span>root@abc test-tar<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>–exclude-from : 根据某个文件列表排除多个文件</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc test-tar<span class="token punctuation">]</span><span class="token comment"># cat list.txt </span>
-abc995
-abc996
-abc997
-abc998
-abc999
-<span class="token punctuation">[</span>root@abc test-tar<span class="token punctuation">]</span><span class="token comment"># tar -c -f abc.tar ./* --exclude-from=list.txt </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>-h : 打包软连接</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@abc test-tar<span class="token punctuation">]</span><span class="token comment"># tar -c -h -f bin-h.tar /bin</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></li>
-</ul>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">tar参数
-	-c <span class="token builtin class-name">:</span> 创建压缩
-	-f ； 指定压缩包名称
-	-z <span class="token builtin class-name">:</span> 使用gzip压缩工具进行压缩
-	-j <span class="token builtin class-name">:</span> 使用bzip2压缩工具进行压缩
-	-J <span class="token builtin class-name">:</span> 使用xz压缩工具进行压缩
-	-t <span class="token builtin class-name">:</span> 显示压缩包内容，不解压
-	-v <span class="token builtin class-name">:</span> 显示压缩过程
-	-P <span class="token builtin class-name">:</span> 允许使用绝对路径进行压缩
-	-x <span class="token builtin class-name">:</span> 解压
-	-C <span class="token builtin class-name">:</span> 指定解压路径
-	-h <span class="token builtin class-name">:</span> 打包软连接
-	--exclude <span class="token builtin class-name">:</span> 排除某些文件
-	--exclude-from <span class="token builtin class-name">:</span> 根据文件列表排除多个文件<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 
 
-
-
-<h2 id="习题"><a href="#习题" class="headerlink" title="习题"></a>习题</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>.linux下常见的压缩包类型有哪些
-<span class="token function">zip</span> 
-gz 
-bz2 
-tar.gz 
-tar.bz 
-<span class="token function">tar</span>
-
-<span class="token number">2</span>.将/etc/hosts文件用tar格式打包。
-<span class="token function">tar</span> -c -P -f hosts.tar /etc/hosts
-
-<span class="token number">3</span>.查看打包之后的/etc/hosts的文件内容，在不解压的情况下查看。
-<span class="token function">tar</span> -t -f hosts.tar
-
-<span class="token number">4</span>.使用tar打包/var/log/目录。
-<span class="token function">tar</span> -c -P -f hosts.tar /var/log/
-
-<span class="token number">5</span>.使用zip打包/etc目录。
-<span class="token function">zip</span> -r etc.zip /etc
-
-<span class="token number">6</span>.查看/var/log/abc.zip目录的压缩包中有哪些内容。
-<span class="token function">unzip</span> -l /var/log/abc.zip
-
-<span class="token number">7</span>.将/var/log/abc.zip目录解压到/opt目录中。
-<span class="token function">unzip</span> -d /opt /var/log/abc.zip
-
-<span class="token number">10</span>.解压/etc/abc.tar.gz目录到/opt目录中。
-<span class="token function">tar</span> -xf /etc/abc.tar.gz -C /opt
-
-<span class="token number">11</span>.用zip打包/opt目录，要求不显示打包过程。
-<span class="token function">zip</span> -q opt.zip /opt
-
-<span class="token function">zip</span> <span class="token punctuation">[</span>参数<span class="token punctuation">]</span> 压缩包名称  压缩文件路径
- 
-<span class="token number">12</span>.打包/etc/目录，要求是.bz2格式
-<span class="token function">tar</span> -c -j -f etc.tar /etc
-
-<span class="token number">13</span>.打包/var/log目录，要求是.xz格式
-<span class="token function">tar</span> -c -J -f log.tar.xz /var/log
-
-<span class="token number">14</span>.使用tar命令打包/etc/时，会出现一个删根的操作，怎样打包不会进行删根的操作
-<span class="token function">tar</span> -c -P -f etc.tar /etc
-
-<span class="token number">15</span>.打包/etc/目录，要求不打包/etc/hosts这个文件。
-
-<span class="token number">16</span>.打包/etc/目录，要求不打包/etc/hosts和/etc/hostname这两个文件。
-
-<span class="token number">17</span>.打包/etc/目录，但要排除passwd,shadow,group,gshadow,hosts,hostname这些文件。<span class="token punctuation">(</span>你能用两种方法实现吗<span class="token punctuation">)</span>
-
-<span class="token number">18</span>.已知/etc/grub2.cfg文件是个软连接文件，在你不知道的情况下，请问怎么打包该文件的真实文件。
-
-<span class="token number">19</span>.把/var/log/目录中所有.log的文件进行打包成一个压缩包，名称定义为log.tar.gz的压缩包。
-
-<span class="token number">20</span>.已知文件oldboy.gz,请问在不解压的情况下，怎样查看该文件的内容。
-
-<span class="token number">21</span>.打包/etc/目录，当前时间方式的压缩包:比如: <span class="token number">2019</span>-12-24_etc.tar.gz
-
-<span class="token number">22</span>.创建/data/bak目录，然后复制如下文件到/data/bak目录下
-
-<span class="token number">23</span>.接22题，使用tar命令对/data/bak目录下的文件及目录以gzip的格式进行归档压缩到/data目录下（压缩包的名字以自己名字命名）
-
-<span class="token number">24</span>.使用tar命令查看上题/data目录下压缩包内的内容。
-
-<span class="token number">25</span>.把第23题/data目录下的压缩包，解压到/backup目录下
-
-<span class="token number">26</span>.再次使用tar命令把/data/bak目录下的文件及目录以gzip的格式进行归档压缩到/data目录下，但是在进行归档压缩时，排除文件“sudoers”，然后查看该压缩包内容是否存在文件“sudoers”（压缩包名自行拟定）
-
-<span class="token number">27</span>.打包/etc目录下所有普通文件到root用户家目录。
-
-<span class="token number">28</span>.打包/etc/目录到/opt/目录下，名称要求以当前主机名和ip地址命名，例：oldboy_10.0.0.100.tar.gz
-
-<span class="token number">29</span>.如何使用gzip命令对文件进行压缩、解压
-
-<span class="token number">30</span>.如何用zip命令对文件以及目录进行压缩、解压
-
-<span class="token number">32</span>.打包opt整个目录，并命名test_opt.tar.gz
-
-<span class="token number">33</span>.查看打包好的test_opt.tar.gz里的文件
-
-<span class="token number">34</span>.将打包好的test_opt.tar.gz内容指定解压至/tmp目录
-
-<span class="token number">35</span>.打包etc目录下的所有文件，不要目录只要文件
-
-<span class="token number">36</span>.打包etc目录下的所有文件，排除passwd，shadow
-
-<span class="token number">37</span>.打包etc目录下的所有以p开头的文件
-
-<span class="token number">38</span>.打包etc目录下所有大于1M的文件<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-
-
-
-
-
-
-<h2 id="习题-1"><a href="#习题-1" class="headerlink" title="习题"></a>习题</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">2</span>.权限中的rwx-，每个字符所代表什么意思？对应的数字是什么？
-
-r		可读		<span class="token number">4</span>
-
-w		可写		<span class="token number">2</span>
-
-x		可执行		<span class="token number">1</span>
-
--		没有权限	<span class="token number">0</span>
-
-
-<span class="token number">3</span>.-rwxr-xr-x，写出对应数字权限
-
-
-
-<span class="token number">4</span>.-rwxr--r--，写出对应数字权限
-
-
-<span class="token number">5</span>.-r-xr-x--x，写出对应数字权限
-
-
-
-<span class="token number">6</span>.-rw-r-xr-x，写出对应数字权限
-
-
-<span class="token number">7</span>.-r--r--r--，写出对应数字权限
-
-
-
-<span class="token number">8</span>.-r-xr-----，写出对应数字权限
-
-
-<span class="token number">9</span>.---x-w-r--，写出对应数字权限
-
-
-<span class="token number">10</span>.-rwxr--rw-，写出对应数字权限
-
-
-
-<span class="token number">11</span>.-rw-r--r--，写出对应数字权限
-
-
-<span class="token number">12</span>.---xr--rwx，写出对应数字权限
-
-
-<span class="token number">13.777</span>，写出对应字母权限
-
-
-<span class="token number">14.545</span>，写出对应字母权限
-
-
-
-
-<span class="token number">15.744</span>，写出对应字母权限
-
-
-
-<span class="token number">16.600</span>，写出对应字母权限
-
-
-
-<span class="token number">17.641</span>，写出对应字母权限
-
-
-<span class="token number">18.711</span>，写出对应字母权限
-
-
-
-<span class="token number">19.700</span>，写出对应字母权限
-
-
-
-<span class="token number">20.555</span>，写出对应字母权限
-
-
-
-<span class="token number">21.733</span>，写出对应字母权限
-
-
-<span class="token number">22.713</span>，写出对应字母权限
-
-
-
-<span class="token number">23</span>.建一个目录/test,查看这个目录的默认权限是?
-
-
-
-
-<span class="token number">24</span>.进入/test目录中,建一个文件abc,查看其默认的权限为？
-
-
-
-
-<span class="token number">25</span>.创建一个文件test.txt,并其将权限改为600.
-
-
-
-<span class="token number">26</span>.将test.txt文件的权限改为755.
-
-
-
-<span class="token number">27</span>.将test.txt文件的权限改为000.
-
-
-
-<span class="token number">28</span>.修改test.txt文件的权限为644.
-
-
-
-<span class="token number">29</span>.给test.txt文件的属主加上x权限。
-
-
-
-
-<span class="token number">30</span>.给test.txt文件的其他用户加上x权限。
-
-
-
-<span class="token number">31</span>.去除test.txt文件的所有执行权限。
-
-
-
-<span class="token number">32</span>.给/test目录及目录下的所有文件或目录的权限统一改为744。
-
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 
       
@@ -3867,6 +3224,377 @@ Windows当中的老大：administrator<span aria-hidden="true" class="line-numbe
 <h2 id="用户与组相关的文件"><a href="#用户与组相关的文件" class="headerlink" title="用户与组相关的文件"></a>用户与组相关的文件</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># cat /etc/passwd</span>
 root:x:0:0:root:/root:/bin/bash
 用户名称   是否存在密码   uid  gid  组名称/注释信息 家目录  默认解析器 <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day01-%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AE%89%E8%A3%85/%E8%AF%BE%E5%A0%82%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day01-%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AE%89%E8%A3%85/%E8%AF%BE%E5%A0%82%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">运维之基础命令--虚拟机安装</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:08:58" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="day01-课堂笔记"><a href="#day01-课堂笔记" class="headerlink" title="day01 : 课堂笔记"></a>day01 : 课堂笔记</h1><h2 id="安装系统"><a href="#安装系统" class="headerlink" title="安装系统"></a>安装系统</h2><p><strong>1、安装虚拟机</strong></p>
+<p><img src="/.%5Cassets%5Cimage-20210302121236930.png" alt="image-20210302121236930"></p>
+<p>解压上述软件，创建vmware.exe快捷方式，然后用快捷方式打开。</p>
+<p><img src="/.%5Cassets%5Cimage-20210302121408360.png" alt="image-20210302121408360"></p>
+<p><strong>2、创建虚拟机</strong></p>
+<p><img src="/.%5Cassets%5Cimage-20210302121456338.png" alt="image-20210302121456338"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302121550128.png" alt="image-20210302121550128"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302121622000.png" alt="image-20210302121622000"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302121745568.png" alt="image-20210302121745568"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302122035359.png" alt="image-20210302122035359"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302122256831.png" alt="image-20210302122256831"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302122359568.png" alt="image-20210302122359568"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302122603313.png" alt="image-20210302122603313"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302122657199.png" alt="image-20210302122657199"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302123826623.png" alt="image-20210302123826623"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124229475.png" alt="image-20210302124229475"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124308081.png" alt="image-20210302124308081"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124327456.png" alt="image-20210302124327456"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124404318.png" alt="image-20210302124404318"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124713502.png" alt="image-20210302124713502"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124741038.png" alt="image-20210302124741038"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302125049653.png" alt="image-20210302125049653"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day10-Linux%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day10-Linux%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">运维之基础命令--用户权限</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:13:19" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="修改用户信息-usermod"><a href="#修改用户信息-usermod" class="headerlink" title="修改用户信息(usermod)"></a>修改用户信息(usermod)</h1><blockquote>
+<p>修改用户信息最主要的命令是usermod命令，其参数跟useradd基本一致。</p>
+</blockquote>
+<ul>
+<li><p>修改UID</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+xiaoyu:x:2002:2002::/home/xiaoyu:/bin/bash
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># usermod -u 2302 xiaoyu</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+xiaoyu:x:2302:2002::/home/xiaoyu:/bin/bash<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>修改基本组及附加组</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 基本组 : 一个用户必须拥有的哪个组</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+xiaoyu:x:2302:2002::/home/xiaoyu:/bin/bash
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># id xiaoyu</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>xiaoyu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2002</span><span class="token punctuation">(</span>xiaoyu<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2002</span><span class="token punctuation">(</span>xiaoyu<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># usermod -g group1 xiaoyu</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># id xiaoyu</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>xiaoyu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+xiaoyu:x:2302:2003::/home/xiaoyu:/bin/bash
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># </span>
+
+<span class="token comment"># 附加组 ： 用户加入的其他用户组</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># groupadd group1</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># id</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">(</span>root<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">(</span>root<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">(</span>root<span class="token punctuation">)</span>,1000<span class="token punctuation">(</span>oldboy<span class="token punctuation">)</span>,1001<span class="token punctuation">(</span>sssssssssssssssssssssss<span class="token punctuation">)</span>,1002<span class="token punctuation">(</span>test<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># usermod -G group1 root</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># vim /etc/group</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/group</span>
+group1:x:2003:root<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>修改家目录</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># usermod  -d /home/xiaoyu123 xiaoyu</span>
+
+<span class="token comment"># 注：修改家目录仅仅修改了配置，而原来的家目录文件没有迁移</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>修改用户描述信息</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+xiaoyu:x:2302:2003::/home/xiaoyu123:/bin/bash
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># usermod -c "这是一个甩锅" xiaoyu</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+xiaoyu:x:2302:2003:这是一个甩锅:/home/xiaoyu123:/bin/bash<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>修改用户默认解析器</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># usermod -s /bin/sh xiaoyu</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+xiaoyu:x:2302:2003:这是一个甩锅:/home/xiaoyu123:/bin/sh<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>锁定与解锁</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># usermod -L xiaoyu</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># usermod -U xiaoyu</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+</li>
+<li><p>修改登录名称</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># usermod -l dayu xiaoyu</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+dayu:x:2302:2003:这是一个甩锅:/home/xiaoyu123:/bin/bash<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>追加</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id dayu</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>dayu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span>,1000<span class="token punctuation">(</span>oldboy<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># usermod -G root dayu</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id dayu</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>dayu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span>,0<span class="token punctuation">(</span>root<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># usermod -G oldboy dayu</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id dayu</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>dayu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span>,1000<span class="token punctuation">(</span>oldboy<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># usermod -a -G root dayu</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id dayu</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>dayu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span>,0<span class="token punctuation">(</span>root<span class="token punctuation">)</span>,1000<span class="token punctuation">(</span>oldboy<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+<h1 id="密码（passwd）"><a href="#密码（passwd）" class="headerlink" title="密码（passwd）"></a>密码（passwd）</h1><blockquote>
+<p>修改或添加Linux普通用户的密码。直接影响的文件是&#x2F;etc&#x2F;shadow</p>
+</blockquote>
+<ul>
+<li><p>增加或修改密码</p>
+<p>当用户密码不存在的时候即为增加密码，当用户密码存在时即为修改密码。</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># useradd password</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+password:x:2303:2303::/home/password:/bin/bash
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/shadow</span>
+password:<span class="token operator">!</span><span class="token operator">!</span>:18701:0:99999:7:::
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># passwd password</span>
+Changing password <span class="token keyword">for</span> user password.
+New password: 
+BAD PASSWORD: The password is a palindrome
+Retype new password: 
+passwd: all authentication tokens updated successfully.
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+password:x:2303:2303::/home/password:/bin/bash
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/shadow</span>
+password:<span class="token variable">$6</span>$.EmM.4Bl<span class="token variable">$f</span>.LimfvMsxxFZq6yFklfyk08JKQORdQovlk2a2dtrpkP31lAMLQpezFqLheBYOTm4Sur9aAqZlC/6MN6wHFBM1:18701:0:99999:7:::
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>免交互修改密码</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># echo "123" | passwd --stdin dayu</span>
+Changing password <span class="token keyword">for</span> user dayu.
+passwd: all authentication tokens updated successfully.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+<h1 id="用户组"><a href="#用户组" class="headerlink" title="用户组"></a>用户组</h1><blockquote>
+<p>就类似于班级，是某个同权限用户的集合。</p>
+</blockquote>
+<h2 id="创建组"><a href="#创建组" class="headerlink" title="创建组"></a>创建组</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># groupadd group2</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/group</span>
+group2:x:2304:
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<ul>
+<li>指定gid</li>
+</ul>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># groupadd -g 2204 group3</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/group</span>
+group3:x:2204:<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<ul>
+<li>创建系统组</li>
+</ul>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># groupadd -r group4</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/group</span>
+group4:x:996:<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="修改组"><a href="#修改组" class="headerlink" title="修改组"></a>修改组</h2><ul>
+<li><p>修改名称</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -8 /etc/group</span>
+girl:x:2001:
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># groupmod -n boy girl</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -8 /etc/group</span>
+boy:x:2001:<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>修改gid</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># groupmod -g 2021 boy</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -8 /etc/group</span>
+boy:x:2021:<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+<h2 id="删除组"><a href="#删除组" class="headerlink" title="删除组"></a>删除组</h2><blockquote>
+<p>用户组在系统中删除，如果一个组被用户占用则不能删除。</p>
+</blockquote>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># groupdel group4</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -8 /etc/group</span>
+dajige:x:1003:
+abc:x:2000:
+xiaoyu:x:2002:
+group1:x:2003:root
+password:x:2303:
+group2:x:2304:
+group3:x:2204:
+boy:x:2021:
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># </span>
+
+<span class="token comment"># 注：用户被删除，用户基本组也会被删除</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># useradd test-group-del</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+test-group-del:x:2304:2305::/home/test-group-del:/bin/bash
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/group</span>
+test-group-del:x:2305:
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># userdel -r test-group-del</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/passwd</span>
+password:x:2303:2303::/home/password:/bin/bash
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># tail -1 /etc/group</span>
+boy:x:2021:
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="组成员管理"><a href="#组成员管理" class="headerlink" title="组成员管理"></a>组成员管理</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 添加一个组到用户</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># useradd gtest</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># vim /etc/group</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id gtest</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2304</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2305</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2305</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span>,2204<span class="token punctuation">(</span>group3<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># gpasswd -a gtest group2</span>
+Adding user gtest to group group2
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id gtest</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2304</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2305</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2305</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span>,2304<span class="token punctuation">(</span>group2<span class="token punctuation">)</span>,2204<span class="token punctuation">(</span>group3<span class="token punctuation">)</span>
+
+<span class="token comment"># 添加多个组到用户</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># gpasswd -M gtest,root,dayu group</span>
+gpasswd: group <span class="token string">'group'</span> does not exist <span class="token keyword">in</span> /etc/group
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># gpasswd -M gtest,root,dayu group3</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id root</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">(</span>root<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">(</span>root<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">(</span>root<span class="token punctuation">)</span>,2000<span class="token punctuation">(</span>abc<span class="token punctuation">)</span>,2003<span class="token punctuation">(</span>group1<span class="token punctuation">)</span>,2204<span class="token punctuation">(</span>group3<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id dayu</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>dayu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span>,0<span class="token punctuation">(</span>root<span class="token punctuation">)</span>,1000<span class="token punctuation">(</span>oldboy<span class="token punctuation">)</span>,2204<span class="token punctuation">(</span>group3<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@localhost home<span class="token punctuation">]</span><span class="token comment"># id gtest</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2304</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2305</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2305</span><span class="token punctuation">(</span>gtest<span class="token punctuation">)</span>,2304<span class="token punctuation">(</span>group2<span class="token punctuation">)</span>,2204<span class="token punctuation">(</span>group3<span class="token punctuation">)</span>
+
+<span class="token comment"># 为一个组添加组长(组长有权限向组内添加用户，其他用户[除root外]没有权限添加用户到该组)</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># gpasswd -A dayu group3</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># cat /etc/gshadow</span>
+group3:<span class="token operator">!</span>:dayu:gtest,dayu,oldboy
+
+<span class="token comment"># 组权限</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># id dayu</span>
+<span class="token assign-left variable">uid</span><span class="token operator">=</span><span class="token number">2302</span><span class="token punctuation">(</span>dayu<span class="token punctuation">)</span> <span class="token assign-left variable">gid</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span> <span class="token assign-left variable">groups</span><span class="token operator">=</span><span class="token number">2003</span><span class="token punctuation">(</span>group1<span class="token punctuation">)</span>,1000<span class="token punctuation">(</span>oldboy<span class="token punctuation">)</span>,2204<span class="token punctuation">(</span>group3<span class="token punctuation">)</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># chown .group3 /tmp/12.txt </span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># ls -l /tmp/12.txt</span>
+-rw-r--r-- <span class="token number">1</span> root group3 <span class="token number">4</span> Mar <span class="token number">15</span> <span class="token number">11</span>:35 /tmp/12.txt
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># chmod g+w /tmp/12.txt</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># ls -l /tmp/12.txt</span>
+-rw-rw-r-- <span class="token number">1</span> root group3 <span class="token number">4</span> Mar <span class="token number">15</span> <span class="token number">11</span>:35 /tmp/12.txt
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># su - dayu</span>
+Last login: Mon Mar <span class="token number">15</span> <span class="token number">11</span>:37:05 CST <span class="token number">2021</span> on pts/3
+<span class="token punctuation">[</span>dayu@localhost ~<span class="token punctuation">]</span>$ <span class="token builtin class-name">echo</span> <span class="token string">"456"</span> <span class="token operator">></span> /tmp/12.txt 
+<span class="token punctuation">[</span>dayu@localhost ~<span class="token punctuation">]</span>$ <span class="token function">cat</span> /tmp/12.txt
+<span class="token number">456</span>
+<span class="token punctuation">[</span>dayu@localhost ~<span class="token punctuation">]</span>$ <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
 
 
       
