@@ -57,7 +57,7 @@ tags:
 | nfs-server | eth1:172.16.1.31 | eth0:10.0.0.31 | nfsServer、rsync+inotify+sersync |
 | backup     | eth1:172.16.1.41 | eth0:10.0.0.41 | rsync-server                     |
 
-![sersync流程](03-sersync实时同步备份.assets/sersync流程-1628145534424.png)
+![sersync流程](/img/sersync流程-1628145534424.png)
 
 ### 1 web上传视频至nfs存储
 

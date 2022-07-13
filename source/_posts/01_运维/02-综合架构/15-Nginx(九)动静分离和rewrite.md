@@ -7,8 +7,6 @@ categories:
 tags:
 ---
 
-
-
 ## 一、动静分离介绍
 
 动静分离，通过中间件将动静分离和静态请求进⾏分离；
@@ -19,7 +17,7 @@ tags:
 
 逻辑图如下：
 
-![单台服务器动静分离](13-Nginx(九)动静分离和rewrite.assets/单台服务器动静分离.png)
+![单台服务器动静分离](/img/单台服务器动静分离.png)
 
 编辑Nginx配置文件
 
@@ -63,7 +61,7 @@ ln -s wordpress images
 
 ### 3.1 原理图
 
-![多台服务器动静分离](13-Nginx(九)动静分离和rewrite.assets/多台服务器动静分离.png)
+![多台服务器动静分离](/img/多台服务器动静分离.png)
 
 ### 3.2 实验环境准备
 
@@ -110,11 +108,11 @@ nginx: configuration file /etc/nginx/nginx.conf test is successful
 
 打开浏览器访问http://dongjing.gs.com
 
-![image-20210825141423629](13-Nginx(九)动静分离和rewrite.assets/image-20210825141423629.png)
+![image-20210825141423629](/img/image-20210825141423629.png)
 
 打开浏览器访问http://dongjing.gs.com/1.png
 
-![image-20210825142256349](13-Nginx(九)动静分离和rewrite.assets/image-20210825142256349.png)
+![image-20210825142256349](/img/image-20210825142256349.png)
 
 ### 3.4 配置web02提供动态资源（tomcat + java模拟)
 
@@ -145,7 +143,7 @@ EOF
 
 访问http://10.0.0.8:8080/java_test.jsp
 
-![image-20210825162829977](13-Nginx(九)动静分离和rewrite.assets/image-20210825162829977.png)
+![image-20210825162829977](/img/image-20210825162829977.png)
 
 ### 3.4 增加负载均衡，实现动静分离
 
@@ -262,7 +260,7 @@ $(document).ready(function(){
 
 浏览器访问：http://dongjing.gs.com
 
-![image-20210825143746986](13-Nginx(九)动静分离和rewrite.assets/image-20210825143746986.png)
+![image-20210825143746986](/img/image-20210825143746986.png)
 
 正常负载均衡的现象：
 

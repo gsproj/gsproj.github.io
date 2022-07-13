@@ -14,10 +14,11 @@
 
 
 <link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"gsproj.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta name="description" content="一、Nginx均衡调度算法Nginx七层负载均衡分为5种调度算法    调度算法 概述    轮询（常用） 按时间顺序逐一分配到不同的后端服务器(默认)   weight（面试点） 加权轮询,weight值越大,分配到的访问几率越高   ip_hash（面试点） 每个请求按访问IP的hash结果分配,这样来自同一IP的固定访问一个后端服务器   url_hash 按照访问URL的hash结果来分配">
@@ -27,16 +28,16 @@
 <meta property="og:site_name" content="GongSheng Blog">
 <meta property="og:description" content="一、Nginx均衡调度算法Nginx七层负载均衡分为5种调度算法    调度算法 概述    轮询（常用） 按时间顺序逐一分配到不同的后端服务器(默认)   weight（面试点） 加权轮询,weight值越大,分配到的访问几率越高   ip_hash（面试点） 每个请求按访问IP的hash结果分配,这样来自同一IP的固定访问一个后端服务器   url_hash 按照访问URL的hash结果来分配">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://gsproj.github.io/11-Nginx(%E4%B8%83)Nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5.assets/image-20210821113447825.png">
-<meta property="og:image" content="http://gsproj.github.io/11-Nginx(%E4%B8%83)Nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5.assets/image-20210821114011230.png">
-<meta property="og:image" content="http://gsproj.github.io/11-Nginx(%E4%B8%83)Nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5.assets/image-20210823225246243.png">
-<meta property="og:image" content="http://gsproj.github.io/11-Nginx(%E4%B8%83)Nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5.assets/image-20210823225305632.png">
-<meta property="og:image" content="http://gsproj.github.io/11-Nginx(%E4%B8%83)Nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5.assets/image-20210823225412626.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20210821113447825.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20210821114011230.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20210823225246243.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20210823225305632.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20210823225412626.png">
 <meta property="article:published_time" content="2022-07-06T03:19:52.000Z">
-<meta property="article:modified_time" content="2022-07-06T07:16:49.817Z">
+<meta property="article:modified_time" content="2022-07-11T05:55:06.515Z">
 <meta property="article:author" content="GongSheng">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://gsproj.github.io/11-Nginx(%E4%B8%83)Nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5.assets/image-20210821113447825.png">
+<meta name="twitter:image" content="http://gsproj.github.io/img/image-20210821113447825.png">
 
 <link rel="canonical" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/13-Nginx(%E4%B8%83)Nginx%E4%B8%83%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5/">
 
@@ -217,10 +218,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:16:49" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-11 13:55:06" itemprop="dateModified" datetime="2022-07-11T13:55:06+08:00">2022-07-11</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -406,9 +413,9 @@ upstream node &#123;
 &#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <h3 id="3-2-功能测试"><a href="#3-2-功能测试" class="headerlink" title="3.2 功能测试"></a>3.2 功能测试</h3><p>1、正常情况下的检测数据</p>
-<p><img src="/11-Nginx(%E4%B8%83)Nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5.assets/image-20210821113447825.png" alt="image-20210821113447825"></p>
+<p><img src="/img/image-20210821113447825.png" alt="image-20210821113447825"></p>
 <p>2、测试将web01的nginx服务关掉</p>
-<p><img src="/11-Nginx(%E4%B8%83)Nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5.assets/image-20210821114011230.png" alt="image-20210821114011230"></p>
+<p><img src="/img/image-20210821114011230.png" alt="image-20210821114011230"></p>
 <p>3、日志分析</p>
 <pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx-1.20.1]# tail -f &#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log
 # 两web服务正常，能获取peer
@@ -547,10 +554,10 @@ session.auto_start &#x3D; 1<span aria-hidden="true" class="line-numbers-rows"><s
 172.16.1.51:6379&gt;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <p>9、刷新页面的负载均衡效果展示</p>
-<p><img src="/11-Nginx(%E4%B8%83)Nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5.assets/image-20210823225246243.png" alt="image-20210823225246243"></p>
-<p><img src="/11-Nginx(%E4%B8%83)Nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5.assets/image-20210823225305632.png" alt="image-20210823225305632"></p>
+<p><img src="/img/image-20210823225246243.png" alt="image-20210823225246243"></p>
+<p><img src="/img/image-20210823225305632.png" alt="image-20210823225305632"></p>
 <p>10、cookie保存到redis展示</p>
-<p><img src="/11-Nginx(%E4%B8%83)Nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5.assets/image-20210823225412626.png" alt="image-20210823225412626"></p>
+<p><img src="/img/image-20210823225412626.png" alt="image-20210823225412626"></p>
 
     </div>
 
@@ -566,8 +573,8 @@ session.auto_start &#x3D; 1<span aria-hidden="true" class="line-numbers-rows"><s
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/14-Nginx(%E5%85%AB)Nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/" rel="prev" title="运维之综合架构--07--Nginx(八)四层负载均衡">
-      <i class="fa fa-chevron-left"></i> 运维之综合架构--07--Nginx(八)四层负载均衡
+    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/15-Nginx(%E4%B9%9D)%E5%8A%A8%E9%9D%99%E5%88%86%E7%A6%BB%E5%92%8Crewrite/" rel="prev" title="运维之综合架构--07--Nginx(九)动静分离">
+      <i class="fa fa-chevron-left"></i> 运维之综合架构--07--Nginx(九)动静分离
     </a></div>
       <div class="post-nav-item">
     <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/12-Nginx(%E5%85%AD)Nginx%E4%B8%83%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/" rel="next" title="运维之综合架构--07--Nginx(六)七层负载均衡">
@@ -631,7 +638,7 @@ session.auto_start &#x3D; 1<span aria-hidden="true" class="line-numbers-rows"><s
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81Nginx%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E7%AE%97%E6%B3%95"><span class="nav-number">1.</span> <span class="nav-text">一、Nginx均衡调度算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E5%8A%A0%E6%9D%83%E8%BD%AE%E8%AF%A2"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 加权轮询</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-ip-hash"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 ip_hash</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81Nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E5%90%8E%E7%AB%AF%E7%8A%B6%E6%80%81"><span class="nav-number">2.</span> <span class="nav-text">二、Nginx负载均衡后端状态</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-down%E7%8A%B6%E6%80%81"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 down状态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-backup%E7%8A%B6%E6%80%81"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 backup状态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 健康检查</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E7%AC%AC%E4%B8%89%E6%96%B9%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5%E6%A8%A1%E5%9D%97check-upstream"><span class="nav-number">3.</span> <span class="nav-text">三、第三方健康检查模块check_upstream</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85Nginx"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 编译安装Nginx</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E5%8A%9F%E8%83%BD%E6%B5%8B%E8%AF%95"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 功能测试</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3%E7%BD%91%E7%AB%99%E9%87%8D%E5%A4%8D%E7%99%BB%E5%BD%95%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">4.</span> <span class="nav-text">四、如何解决网站重复登录的问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-%E5%AE%89%E8%A3%85phpmyadmin%E9%87%8D%E7%8E%B0%E9%97%AE%E9%A2%98"><span class="nav-number">4.1.</span> <span class="nav-text">4.1 安装phpmyadmin重现问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-%E8%A7%A3%E5%86%B3%E9%97%AE%E9%A2%98"><span class="nav-number">4.2.</span> <span class="nav-text">4.2 解决问题</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81Nginx%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E7%AE%97%E6%B3%95"><span class="nav-text">一、Nginx均衡调度算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E5%8A%A0%E6%9D%83%E8%BD%AE%E8%AF%A2"><span class="nav-text">1.1 加权轮询</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-ip-hash"><span class="nav-text">1.2 ip_hash</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81Nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E5%90%8E%E7%AB%AF%E7%8A%B6%E6%80%81"><span class="nav-text">二、Nginx负载均衡后端状态</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-down%E7%8A%B6%E6%80%81"><span class="nav-text">2.1 down状态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-backup%E7%8A%B6%E6%80%81"><span class="nav-text">2.2 backup状态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5"><span class="nav-text">2.3 健康检查</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E7%AC%AC%E4%B8%89%E6%96%B9%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5%E6%A8%A1%E5%9D%97check-upstream"><span class="nav-text">三、第三方健康检查模块check_upstream</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85Nginx"><span class="nav-text">3.1 编译安装Nginx</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E5%8A%9F%E8%83%BD%E6%B5%8B%E8%AF%95"><span class="nav-text">3.2 功能测试</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3%E7%BD%91%E7%AB%99%E9%87%8D%E5%A4%8D%E7%99%BB%E5%BD%95%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-text">四、如何解决网站重复登录的问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-%E5%AE%89%E8%A3%85phpmyadmin%E9%87%8D%E7%8E%B0%E9%97%AE%E9%A2%98"><span class="nav-text">4.1 安装phpmyadmin重现问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-%E8%A7%A3%E5%86%B3%E9%97%AE%E9%A2%98"><span class="nav-text">4.2 解决问题</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -647,14 +654,14 @@ session.auto_start &#x3D; 1<span aria-hidden="true" class="line-numbers-rows"><s
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">49</span>
+          <span class="site-state-item-count">50</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-count">12</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
@@ -709,6 +716,8 @@ session.auto_start &#x3D; 1<span aria-hidden="true" class="line-numbers-rows"><s
 
   
   <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
   <script src="/lib/velocity/velocity.min.js"></script>
   <script src="/lib/velocity/velocity.ui.min.js"></script>
 
@@ -717,7 +726,7 @@ session.auto_start &#x3D; 1<span aria-hidden="true" class="line-numbers-rows"><s
 <script src="/js/motion.js"></script>
 
 
-<script src="/js/schemes/muse.js"></script>
+<script src="/js/schemes/pisces.js"></script>
 
 
 <script src="/js/next-boot.js"></script>

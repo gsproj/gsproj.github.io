@@ -14,10 +14,11 @@
 
 
 <link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"gsproj.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta name="description" content="一、Nginx四层负载均衡介绍四层负载均衡：（OSI传输层   ip:port）    nginx1.9 版本加入硬件：F5软件：LVS、Haproxy、Nginx 1.四层+七层来作负载均衡，4层可以保证7层的负载均衡的高可用性。如:nginx就无法保证自己的服务高可用，需要依赖lvs或者keepalive来作。 2.如:tcp协议的负载均衡，有些请求是TCP协议的(mysql、ssh)，或者说">
@@ -27,14 +28,14 @@
 <meta property="og:site_name" content="GongSheng Blog">
 <meta property="og:description" content="一、Nginx四层负载均衡介绍四层负载均衡：（OSI传输层   ip:port）    nginx1.9 版本加入硬件：F5软件：LVS、Haproxy、Nginx 1.四层+七层来作负载均衡，4层可以保证7层的负载均衡的高可用性。如:nginx就无法保证自己的服务高可用，需要依赖lvs或者keepalive来作。 2.如:tcp协议的负载均衡，有些请求是TCP协议的(mysql、ssh)，或者说">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://gsproj.github.io/12-Nginx(%E5%85%AB)Nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1.assets/image-20210823230415237.png">
-<meta property="og:image" content="http://gsproj.github.io/12-Nginx(%E5%85%AB)Nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1.assets/image-20210824001613717.png">
-<meta property="og:image" content="http://gsproj.github.io/12-Nginx(%E5%85%AB)Nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1.assets/image-20210824001638506.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20210823230415237.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20210824001613717.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20210824001638506.png">
 <meta property="article:published_time" content="2022-07-06T03:19:52.000Z">
-<meta property="article:modified_time" content="2022-07-06T07:16:54.615Z">
+<meta property="article:modified_time" content="2022-07-11T05:55:26.726Z">
 <meta property="article:author" content="GongSheng">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://gsproj.github.io/12-Nginx(%E5%85%AB)Nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1.assets/image-20210823230415237.png">
+<meta name="twitter:image" content="http://gsproj.github.io/img/image-20210823230415237.png">
 
 <link rel="canonical" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/14-Nginx(%E5%85%AB)Nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/">
 
@@ -215,10 +216,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:16:54" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-11 13:55:26" itemprop="dateModified" datetime="2022-07-11T13:55:26+08:00">2022-07-11</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -248,7 +255,7 @@
 <p>1.四层+七层来作负载均衡，4层可以保证7层的负载均衡的高可用性。如:nginx就无法保证自己的服务高可用，需要依赖lvs或者keepalive来作。</p>
 <p>2.如:tcp协议的负载均衡，有些请求是TCP协议的(mysql、ssh)，或者说这些请求只需要使用4层进行端口的转发就可以了，所以使用4层负载均衡。<br>    比如做：mysql读的负载均衡（轮询）<br>    比如做：端口映射、端口转发         tcp&#x2F;udp</p>
 <p>四层负载均衡总结<br>1.四层负载均衡仅能转发TCP&#x2F;IP协议、UDP协议，通常用来转发端口，如: tcp&#x2F;3306，tcp&#x2F;22，udp&#x2F;53。<br>2.四层负载均衡可以用来解决七层负载均衡的端口限制问题。（七层负载均衡最大使用65535个端口号）<br>3.可以用来解决七层负载均衡的高可用问题。（多台后端七层负载均衡能同时的使用）<br>4.四层的转发效率比七层的高的多，但仅支持tcp&#x2F;ip协议，不支持http或者https协议</p>
-<p><img src="/12-Nginx(%E5%85%AB)Nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1.assets/image-20210823230415237.png" alt="image-20210823230415237"></p>
+<p><img src="/img/image-20210823230415237.png" alt="image-20210823230415237"></p>
 <h2 id="二、四层负载均衡配置"><a href="#二、四层负载均衡配置" class="headerlink" title="二、四层负载均衡配置"></a>二、四层负载均衡配置</h2><h3 id="2-1-环境准备"><a href="#2-1-环境准备" class="headerlink" title="2.1 环境准备"></a>2.1 环境准备</h3><table>
 <thead>
 <tr>
@@ -367,8 +374,8 @@ nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test is successfu
 </blockquote>
 <p>4、访问测试</p>
 <p>将Hosts中的对应网站地址的IP改成10.0.0.3，尝试访问，可以正常通过四层负载均衡来调度10.0.0.5和10.0.0.6七层负载均衡</p>
-<p><img src="/12-Nginx(%E5%85%AB)Nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1.assets/image-20210824001613717.png" alt="image-20210824001613717"></p>
-<p><img src="/12-Nginx(%E5%85%AB)Nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1.assets/image-20210824001638506.png" alt="image-20210824001638506"></p>
+<p><img src="/img/image-20210824001613717.png" alt="image-20210824001613717"></p>
+<p><img src="/img/image-20210824001638506.png" alt="image-20210824001638506"></p>
 <h2 id="三、四层负载均衡日志"><a href="#三、四层负载均衡日志" class="headerlink" title="三、四层负载均衡日志"></a>三、四层负载均衡日志</h2><h3 id="3-1-配置过程"><a href="#3-1-配置过程" class="headerlink" title="3.1 配置过程"></a>3.1 配置过程</h3><p>在四层负载均衡中配置Nginx</p>
 <pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb4-01 ~]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.c&#x2F;lb_domain.conf
 stream &#123;
@@ -457,12 +464,12 @@ ssh root@10.0.0.3 -p 6666<span aria-hidden="true" class="line-numbers-rows"><spa
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/15-Nginx(%E4%B9%9D)%E5%8A%A8%E9%9D%99%E5%88%86%E7%A6%BB%E5%92%8Crewrite/" rel="prev" title="运维之综合架构--07--Nginx(九)动静分离">
-      <i class="fa fa-chevron-left"></i> 运维之综合架构--07--Nginx(九)动静分离
+    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day09-%E7%94%A8%E6%88%B7%E7%BB%84%E7%AE%A1%E7%90%86/%E7%AC%94%E8%AE%B0/" rel="prev" title="运维之基础命令--用户组管理">
+      <i class="fa fa-chevron-left"></i> 运维之基础命令--用户组管理
     </a></div>
       <div class="post-nav-item">
-    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/13-Nginx(%E4%B8%83)Nginx%E4%B8%83%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5/" rel="next" title="运维之综合架构--07--Nginx(七)均衡调度">
-      运维之综合架构--07--Nginx(七)均衡调度 <i class="fa fa-chevron-right"></i>
+    <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/15-Nginx(%E4%B9%9D)%E5%8A%A8%E9%9D%99%E5%88%86%E7%A6%BB%E5%92%8Crewrite/" rel="next" title="运维之综合架构--07--Nginx(九)动静分离">
+      运维之综合架构--07--Nginx(九)动静分离 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -522,7 +529,7 @@ ssh root@10.0.0.3 -p 6666<span aria-hidden="true" class="line-numbers-rows"><spa
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81Nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.</span> <span class="nav-text">一、Nginx四层负载均衡介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E9%85%8D%E7%BD%AE"><span class="nav-number">2.</span> <span class="nav-text">二、四层负载均衡配置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 环境准备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E6%96%B0%E5%A2%9Elb02%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 新增lb02负载均衡服务器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E9%85%8D%E7%BD%AE%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 配置四层负载均衡</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E6%97%A5%E5%BF%97"><span class="nav-number">3.</span> <span class="nav-text">三、四层负载均衡日志</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E9%85%8D%E7%BD%AE%E8%BF%87%E7%A8%8B"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 配置过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E6%9F%A5%E7%9C%8B%E6%97%A5%E5%BF%97"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 查看日志</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E4%BD%BF%E7%94%A8nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E5%AE%9E%E7%8E%B0tcp%E7%9A%84%E8%BD%AC%E5%8F%91%EF%BC%88%E8%B7%B3%E6%9D%BF%EF%BC%89"><span class="nav-number">4.</span> <span class="nav-text">三、使用nginx四层负载均衡实现tcp的转发（跳板）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E9%85%8D%E7%BD%AE%E8%BF%87%E7%A8%8B-1"><span class="nav-number">4.1.</span> <span class="nav-text">3.1 配置过程</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81Nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E4%BB%8B%E7%BB%8D"><span class="nav-text">一、Nginx四层负载均衡介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E9%85%8D%E7%BD%AE"><span class="nav-text">二、四层负载均衡配置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87"><span class="nav-text">2.1 环境准备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E6%96%B0%E5%A2%9Elb02%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-text">2.2 新增lb02负载均衡服务器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E9%85%8D%E7%BD%AE%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1"><span class="nav-text">2.3 配置四层负载均衡</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E6%97%A5%E5%BF%97"><span class="nav-text">三、四层负载均衡日志</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E9%85%8D%E7%BD%AE%E8%BF%87%E7%A8%8B"><span class="nav-text">3.1 配置过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E6%9F%A5%E7%9C%8B%E6%97%A5%E5%BF%97"><span class="nav-text">3.2 查看日志</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E4%BD%BF%E7%94%A8nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E5%AE%9E%E7%8E%B0tcp%E7%9A%84%E8%BD%AC%E5%8F%91%EF%BC%88%E8%B7%B3%E6%9D%BF%EF%BC%89"><span class="nav-text">三、使用nginx四层负载均衡实现tcp的转发（跳板）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E9%85%8D%E7%BD%AE%E8%BF%87%E7%A8%8B-1"><span class="nav-text">3.1 配置过程</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -538,14 +545,14 @@ ssh root@10.0.0.3 -p 6666<span aria-hidden="true" class="line-numbers-rows"><spa
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">49</span>
+          <span class="site-state-item-count">50</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-count">12</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
@@ -600,6 +607,8 @@ ssh root@10.0.0.3 -p 6666<span aria-hidden="true" class="line-numbers-rows"><spa
 
   
   <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
   <script src="/lib/velocity/velocity.min.js"></script>
   <script src="/lib/velocity/velocity.ui.min.js"></script>
 
@@ -608,7 +617,7 @@ ssh root@10.0.0.3 -p 6666<span aria-hidden="true" class="line-numbers-rows"><spa
 <script src="/js/motion.js"></script>
 
 
-<script src="/js/schemes/muse.js"></script>
+<script src="/js/schemes/pisces.js"></script>
 
 
 <script src="/js/next-boot.js"></script>

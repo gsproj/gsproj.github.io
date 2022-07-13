@@ -6,8 +6,6 @@ categories:
 tags:
 ---
 
-## 长城TD120A2安装OpenEuler
-
 >记录安装过程
 
 ### 一、环境

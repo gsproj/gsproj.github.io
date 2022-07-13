@@ -180,11 +180,11 @@ upstream node {
 
 1、正常情况下的检测数据
 
-![image-20210821113447825](11-Nginx(七)Nginx负载均衡调度与健康检查.assets/image-20210821113447825.png)
+![image-20210821113447825](/img/image-20210821113447825.png)
 
 2、测试将web01的nginx服务关掉
 
-![image-20210821114011230](11-Nginx(七)Nginx负载均衡调度与健康检查.assets/image-20210821114011230.png)
+![image-20210821114011230](/img/image-20210821114011230.png)
 
 3、日志分析
 
@@ -383,10 +383,10 @@ session.auto_start = 1
 
 9、刷新页面的负载均衡效果展示
 
-![image-20210823225246243](11-Nginx(七)Nginx负载均衡调度与健康检查.assets/image-20210823225246243.png)
+![image-20210823225246243](/img/image-20210823225246243.png)
 
-![image-20210823225305632](11-Nginx(七)Nginx负载均衡调度与健康检查.assets/image-20210823225305632.png)
+![image-20210823225305632](/img/image-20210823225305632.png)
 
 10、cookie保存到redis展示
 
-![image-20210823225412626](11-Nginx(七)Nginx负载均衡调度与健康检查.assets/image-20210823225412626.png)
+![image-20210823225412626](/img/image-20210823225412626.png)

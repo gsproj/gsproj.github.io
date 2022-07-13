@@ -6,8 +6,6 @@ categories:
 tags:
 ---
 
-# KylinV10 桌面版SVN搭建
-
 ## 一、服务端配置
 
 ### 1.1 安装SVN

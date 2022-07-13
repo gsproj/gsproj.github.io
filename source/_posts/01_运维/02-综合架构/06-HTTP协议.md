@@ -45,7 +45,7 @@ HyperText transfer protocol （超文本传输协议）
 1. 有一种流行的说法：“HTTP 是用于从互联网服务器传输超文本到本地浏览器的协议”，你认为这种说法对吗？对在哪里，又错在哪里？
 2. 你能再说出几个“HTTP 不是什么”吗？
 
-![http思维导图](05-HTTP协议.assets/http思维导图.png)
+![http思维导图](/img/http思维导图.png)
 
 ### 三、HTTP的应用领域
 
