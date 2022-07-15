@@ -185,6 +185,538 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/07-Nginx(%E4%B8%80)%E5%AE%89%E8%A3%85%E4%B8%8E%E9%85%8D%E7%BD%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/07-Nginx(%E4%B8%80)%E5%AE%89%E8%A3%85%E4%B8%8E%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">运维之综合架构--07--Nginx(一)安装与配置</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:16:03" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="一、Nginx简介"><a href="#一、Nginx简介" class="headerlink" title="一、Nginx简介"></a>一、Nginx简介</h2><p>参考网站：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/266153320">https://zhuanlan.zhihu.com/p/266153320</a></p>
+<h2 id="二、Nginx安装"><a href="#二、Nginx安装" class="headerlink" title="二、Nginx安装"></a>二、Nginx安装</h2><p>​	nginx有两种安装方式，yum安装和源码编译安装</p>
+<h3 id="2-1-yum安装（epel源）"><a href="#2-1-yum安装（epel源）" class="headerlink" title="2.1 yum安装（epel源）"></a>2.1 yum安装（epel源）</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;yum.repos.d&#x2F;nginx.repo
+[nginx]
+name&#x3D;nginx repo
+baseurl&#x3D;http:&#x2F;&#x2F;nginx.org&#x2F;packages&#x2F;centos&#x2F;7&#x2F;$basearch&#x2F;
+gpgcheck&#x3D;0
+enabled&#x3D;1
+
+yum clean all
+yum makecache
+
+yum install nginx -y<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-2-编译安装"><a href="#2-2-编译安装" class="headerlink" title="2.2 编译安装"></a>2.2 编译安装</h3><p>查看yum安装的nginx的编译参数</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# nginx -V
+nginx version: nginx&#x2F;1.20.1
+built by gcc 4.8.5 20150623 (Red Hat 4.8.5-44) (GCC)
+built with OpenSSL 1.1.1g FIPS  21 Apr 2020
+TLS SNI support enabled
+configure arguments: --prefix&#x3D;&#x2F;usr&#x2F;share&#x2F;nginx --sbin-path&#x3D;&#x2F;usr&#x2F;sbin&#x2F;nginx --modules-path&#x3D;&#x2F;usr&#x2F;lib64&#x2F;nginx&#x2F;modules --conf-path&#x3D;&#x2F;etc&#x2F;nginx&#x2F;nginx.conf --error-log-path&#x3D;&#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log --http-log-path&#x3D;&#x2F;var&#x2F;log&#x2F;nginx&#x2F;access.log --http-client-body-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;client_body --http-proxy-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;proxy --http-fastcgi-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;fastcgi --http-uwsgi-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;uwsgi --http-scgi-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;scgi --pid-path&#x3D;&#x2F;run&#x2F;nginx.pid --lock-path&#x3D;&#x2F;run&#x2F;lock&#x2F;subsys&#x2F;nginx --user&#x3D;nginx --group&#x3D;nginx --with-compat --with-debug --with-file-aio --with-google_perftools_module --with-http_addition_module --with-http_auth_request_module --with-http_dav_module --with-http_degradation_module --with-http_flv_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_image_filter_module&#x3D;dynamic --with-http_mp4_module --with-http_perl_module&#x3D;dynamic --with-http_random_index_module --with-http_realip_module --with-http_secure_link_module --with-http_slice_module --with-http_ssl_module --with-http_stub_status_module --with-http_sub_module --with-http_v2_module --with-http_xslt_module&#x3D;dynamic --with-mail&#x3D;dynamic --with-mail_ssl_module --with-pcre --with-pcre-jit --with-stream&#x3D;dynamic --with-stream_ssl_module --with-stream_ssl_preread_module --with-threads --with-cc-opt&#x3D;&#39;-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE&#x3D;2 -fexceptions -fstack-protector-strong --param&#x3D;ssp-buffer-size&#x3D;4 -grecord-gcc-switches -specs&#x3D;&#x2F;usr&#x2F;lib&#x2F;rpm&#x2F;redhat&#x2F;redhat-hardened-cc1 -m64 -mtune&#x3D;generic&#39; --with-ld-opt&#x3D;&#39;-Wl,-z,relro -specs&#x3D;&#x2F;usr&#x2F;lib&#x2F;rpm&#x2F;redhat&#x2F;redhat-hardened-ld -Wl,-E&#39;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>源码获取</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# wget http:&#x2F;&#x2F;nginx.org&#x2F;download&#x2F;nginx-1.20.1.tar.gz<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>构建与编译</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 解压源码文件并进入文件夹内
+tar -vxf nginx-1.20.1.tar.gz &amp;&amp; cd nginx-1.20.1
+
+# configure构建
+.&#x2F;configure --prefix&#x3D;&#x2F;usr&#x2F;share&#x2F;nginx --sbin-path&#x3D;&#x2F;usr&#x2F;sbin&#x2F;nginx --modules-path&#x3D;&#x2F;usr&#x2F;lib64&#x2F;nginx&#x2F;modules --conf-path&#x3D;&#x2F;etc&#x2F;nginx&#x2F;nginx.conf --error-log-path&#x3D;&#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log --http-log-path&#x3D;&#x2F;var&#x2F;log&#x2F;nginx&#x2F;access.log --http-client-body-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;client_body --http-proxy-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;proxy --http-fastcgi-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;fastcgi --http-uwsgi-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;uwsgi --http-scgi-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;scgi --pid-path&#x3D;&#x2F;run&#x2F;nginx.pid --lock-path&#x3D;&#x2F;run&#x2F;lock&#x2F;subsys&#x2F;nginx --user&#x3D;nginx --group&#x3D;nginx --with-compat --with-debug --with-file-aio --with-google_perftools_module --with-http_addition_module --with-http_auth_request_module --with-http_dav_module --with-http_degradation_module --with-http_flv_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_image_filter_module&#x3D;dynamic --with-http_mp4_module --with-http_perl_module&#x3D;dynamic --with-http_random_index_module --with-http_realip_module --with-http_secure_link_module --with-http_slice_module --with-http_ssl_module --with-http_stub_status_module --with-http_sub_module --with-http_v2_module --with-http_xslt_module&#x3D;dynamic --with-mail&#x3D;dynamic --with-mail_ssl_module --with-pcre --with-pcre-jit --with-stream&#x3D;dynamic --with-stream_ssl_module --with-stream_ssl_preread_module --with-threads --with-cc-opt&#x3D;&#39;-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE&#x3D;2 -fexceptions -fstack-protector-strong --param&#x3D;ssp-buffer-size&#x3D;4 -grecord-gcc-switches -specs&#x3D;&#x2F;usr&#x2F;lib&#x2F;rpm&#x2F;redhat&#x2F;redhat-hardened-cc1 -m64 -mtune&#x3D;generic&#39; --with-ld-opt&#x3D;&#39;-Wl,-z,relro -specs&#x3D;&#x2F;usr&#x2F;lib&#x2F;rpm&#x2F;redhat&#x2F;redhat-hardened-ld -Wl,-E&#39;
+
+# 编译并安装
+make -j 4 &amp;&amp; make install<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>错误解决</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 错误1：
+.&#x2F;configure: error: the invalid value in --with-ld-opt&#x3D;&quot;-Wl,-z,relro -specs&#x3D;&#x2F;usr&#x2F;lib&#x2F;rpm&#x2F;redhat&#x2F;redhat-hardened-ld -Wl,-E&quot;
+解决方法：
+yum -y install redhat-rpm-config.noarch
+
+# 错误2：
+.&#x2F;configure: error: the HTTP rewrite module requires the PCRE library.
+You can either disable the module by using --without-http_rewrite_module
+option, or install the PCRE library into the system, or build the PCRE library
+statically from the source with nginx by using --with-pcre&#x3D;&lt;path&gt; option.
+解决方法：
+yum install pcre-devel -y
+
+# 错误3：
+.&#x2F;configure: error: SSL modules require the OpenSSL library.
+You can either do not enable the modules, or install the OpenSSL library
+into the system, or build the OpenSSL library statically from the source
+with nginx by using --with-openssl&#x3D;&lt;path&gt; option.
+解决方法：
+yum install openssl openssl-devel -y
+
+# 错误4：
+.&#x2F;configure: error: the HTTP XSLT module requires the libxml2&#x2F;libxslt
+libraries. You can either do not enable the module or install the libraries.
+解决方法：
+yum install libxml2 libxml2-devel libxslt  libxslt-devel -y
+
+# 错误5：
+.&#x2F;configure: error: the HTTP image filter module requires the GD library.
+You can either do not enable the module or install the libraries.
+解决方法：
+yum -y install gd-devel
+
+# 错误6：
+.&#x2F;configure: error: perl module ExtUtils::Embed is required
+
+解决方法： 
+yum -y install perl-devel perl-ExtUtils-Embed
+
+# 错误7：
+.&#x2F;configure: error: the Google perftools module requires the Google perftools library
+解决方法：
+yum install gperftools-devel.x86_64 gperftools-libs.x86_64 gperftools.x86_64 -y<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-3-启动和停止服务"><a href="#2-3-启动和停止服务" class="headerlink" title="2.3 启动和停止服务"></a>2.3 启动和停止服务</h3><p>启动服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 先关闭httpd服务，防止冲突
+[root@web01 ~]# systemctl stop httpd
+[root@web01 ~]# systemctl disable httpd
+
+# 再启动nginx服务
+[root@web01 ~]# systemctl enable nginx
+[root@web01 html]# systemctl start nginx
+# 另一种启动方式
+nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>停止服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl stop nginx 
+# 或者
+nginx -s stop <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>重启&#x2F;重载服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl restart&#x2F;reload nginx
+nginx -s restart&#x2F;reload <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>PS：重载reload和重启restart的差别</p>
+<p>reload将会等服务进程执行完再重启，而restart则是强制重启</p>
+</blockquote>
+<h2 id="三、Nginx目录结构说明"><a href="#三、Nginx目录结构说明" class="headerlink" title="三、Nginx目录结构说明"></a>三、Nginx目录结构说明</h2><p>查看nginx的目录结构</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 html]# rpm -ql nginx<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>参考链接：</p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/137262519">https://zhuanlan.zhihu.com/p/137262519</a></p>
+<h2 id="四、Nginx配置文件说明"><a href="#四、Nginx配置文件说明" class="headerlink" title="四、Nginx配置文件说明"></a>四、Nginx配置文件说明</h2><blockquote>
+<p>http server location扩展了解项<br>http{}层下允许有多个Server{}层，一个Server{}层下又允许有多个Location<br>http{} 标签主要用来解决用户的请求与响应。<br>server{} 标签主要用来响应具体的某一个网站。<br>location{} 标签主要用于匹配网站具体URL路径。</p>
+</blockquote>
+<p>主配置文件说明</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 html]# cat &#x2F;etc&#x2F;nginx&#x2F;nginx.conf
+---核心模块---
+user nginx;	#nginx进程运行的用户
+worker_processes auto;	#nginx工作的进程数量
+error_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log;	#nginx的错误日志【警告及其警告以上的都记录】
+pid &#x2F;run&#x2F;nginx.pid;	#nginx进程运行后的进程id
+---核心模块---
+
+# Load dynamic modules. See &#x2F;usr&#x2F;share&#x2F;doc&#x2F;nginx&#x2F;README.dynamic.
+include &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;modules&#x2F;*.conf;
+
+---事件模块---
+events &#123;
+    worker_connections 1024; # 一个work进程的最大连接数
+    use epool;				 #使用epool网络模型
+&#125;
+---事件模块---
+
+---http核心层模块---
+http &#123;
+	# 日志格式定义
+    log_format  main  &#39;$remote_addr - $remote_user [$time_local] &quot;$request&quot; &#39;
+                      &#39;$status $body_bytes_sent &quot;$http_referer&quot; &#39;
+                      &#39;&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;&#39;;
+
+    access_log  &#x2F;var&#x2F;log&#x2F;nginx&#x2F;access.log  main;	# 访问日志
+
+    sendfile            on;
+    tcp_nopush          on;
+    tcp_nodelay         on;
+    keepalive_timeout   65;	# 长连接超时时间
+    types_hash_max_size 4096;
+    #gzip on;			#是否开启压缩功能			
+
+    include             &#x2F;etc&#x2F;nginx&#x2F;mime.types;
+    default_type        application&#x2F;octet-stream;
+
+    include &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;*.conf;	# 包含哪个目录下面的*.conf文件，用于写server
+
+    server &#123;
+        listen       80;	# 监听端口
+        listen       [::]:80;
+        server_name  _;		# 域名
+        root         &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html;
+
+		#charset koi8-r;			#字符集
+
+		location &#x2F; &#123;	 			#位置
+			root   &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html;	#代码的主文件位置
+			index  index.html index.htm;	#服务端默认返回给用户的文件
+		&#125;
+		location &#x2F;test &#123;	 			#位置
+			root   &#x2F;code&#x2F;test&#x2F;123&#x2F;;	#代码的主文件位置
+			index  index.html index.htm;	#服务端默认返回给用户的文件
+		&#125;
+
+        # Load configuration files for the default server block.
+        include &#x2F;etc&#x2F;nginx&#x2F;default.d&#x2F;*.conf;
+
+        error_page 404 &#x2F;404.html;
+        location &#x3D; &#x2F;404.html &#123;
+        &#125;
+
+        error_page 500 502 503 504 &#x2F;50x.html;
+        location &#x3D; &#x2F;50x.html &#123;
+        &#125;
+    &#125;
+&#125;
+---http核心层模块---<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="五、案例：搭建web网站"><a href="#五、案例：搭建web网站" class="headerlink" title="五、案例：搭建web网站"></a>五、案例：搭建web网站</h2><p>准备配置文件ds</p>
+<pre class="line-numbers language-she" data-language="she"><code class="language-she">[root@web01 code]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;game.conf
+server &#123;
+        listen 80;
+        server_name game.oldboy.com;
+
+        location &#x2F; &#123;
+                root &#x2F;code;
+                index index.html;
+        &#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>按照配置文件创建文件夹并放入html项目文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">mkdir &#x2F;code
+cp html5.zip &#x2F;code
+cd &#x2F;code
+unzip html5.zip
+
+[root@web01 code]# ls
+ceshi  game  html5.zip  img  index.html  __MACOSX  readme.txt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>重启nginx服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl restart nginx
+systemctl reload nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>通过物理机浏览器浏览</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 修改hosts文件
+10.0.0.7 game.oldboy.com
+# 网页访问
+game.oldboy.com<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="六、Nginx虚拟主机"><a href="#六、Nginx虚拟主机" class="headerlink" title="六、Nginx虚拟主机"></a>六、Nginx虚拟主机</h2><p>Nginx配置虚拟主机有如下三种方式：</p>
+<ul>
+<li>单主机多IP</li>
+<li>单主机多端口</li>
+<li>单主机多域名</li>
+</ul>
+<h3 id="6-1-基于主机多IP方式-不常用"><a href="#6-1-基于主机多IP方式-不常用" class="headerlink" title="6.1 基于主机多IP方式(不常用)"></a>6.1 基于主机多IP方式(不常用)</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cat ip.conf 
+server &#123;
+	listen 10.0.0.7:80;
+	server_name _;
+
+	location &#x2F; &#123;
+		root &#x2F;code_ip_eth0;
+		index index.html;
+	&#125;
+&#125;
+
+server &#123;
+	listen 172.16.1.7:80;
+	server_name _;
+
+	location &#x2F; &#123;
+		root &#x2F;code_ip_eth1;
+		index index.html;
+	&#125;
+&#125;
+
+2.根据配置创建目录
+[root@web01 conf.d]# mkdir &#x2F;code_ip_eth0
+[root@web01 conf.d]# echo &quot;Eth0&quot; &gt; &#x2F;code_ip_eth0&#x2F;index.html
+
+[root@web01 conf.d]# mkdir &#x2F;code_ip_eth1
+[root@web01 conf.d]# echo &quot;Eth1&quot; &gt; &#x2F;code_ip_eth1&#x2F;index.html
+
+3.重启nginx服务
+[root@web01 conf.d]# systemctl restart nginx
+
+4.使用curl命令测试
+[root@web01 ~]# curl 172.16.1.7
+Eth1
+[root@web01 ~]# curl 10.0.0.7
+Eth0<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="6-2-基于主机多端口方式（多用于内部测试）"><a href="#6-2-基于主机多端口方式（多用于内部测试）" class="headerlink" title="6.2 基于主机多端口方式（多用于内部测试）"></a>6.2 基于主机多端口方式（多用于内部测试）</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.配置多端口的虚拟主机
+[root@web01 conf.d]# vim port.conf
+server &#123;
+        listen 81;
+        
+        location &#x2F; &#123; 
+                root &#x2F;code_81;
+                index index.html;
+        &#125;
+&#125;
+server &#123;
+        listen 82;
+        
+        location &#x2F; &#123; 
+                root &#x2F;code_82;
+                index index.html;
+        &#125;
+&#125;		
+
+2.根据配置文件创建所需的目录
+[root@web01 conf.d]# mkdir &#x2F;code_8&#123;1..2&#125;
+[root@web01 conf.d]# echo &quot;81&quot; &gt; &#x2F;code_81&#x2F;index.html
+[root@web01 conf.d]# echo &quot;82&quot; &gt; &#x2F;code_82&#x2F;index.html
+
+3.检查语法并重启服务
+[root@web01 conf.d]# nginx -t
+nginx: the configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf syntax is ok
+nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test is successful
+[root@web01 conf.d]# systemctl restart nginx
+
+
+4.如何去访问
+	http:&#x2F;&#x2F;10.0.0.7:82&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="6-3-基于主机多域名方式（常用）"><a href="#6-3-基于主机多域名方式（常用）" class="headerlink" title="6.3 基于主机多域名方式（常用）"></a>6.3 基于主机多域名方式（常用）</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.准备多虚拟主机配置文件
+[root@web01 conf.d]# cat test1.oldboy.com.conf 
+server &#123;
+	listen 80;
+	server_name test1.oldboy.com;
+
+	location &#x2F; &#123;
+		root &#x2F;code&#x2F;test1;
+		index index.html;
+	&#125;
+&#125;
+
+[root@web01 conf.d]# cat test2.oldboy.com.conf 
+server &#123;
+	listen 80;
+	server_name test2.oldboy.com;
+
+	location &#x2F; &#123;
+		root &#x2F;code&#x2F;test2;
+		index index.html;
+	&#125;
+&#125;
+
+2.根据配置文件创建对应的目录
+[root@web01 conf.d]# mkdir &#x2F;code&#x2F;test&#123;1..2&#125; -p
+[root@web01 conf.d]# echo &quot;test1_server&quot; &gt; &#x2F;code&#x2F;test1&#x2F;index.html
+[root@web01 conf.d]# echo &quot;test2_server&quot; &gt; &#x2F;code&#x2F;test2&#x2F;index.html
+[root@web01 conf.d]# nginx -t
+[root@web01 conf.d]# systemctl restart nginx
+
+3.配置域名解析
+10.0.0.7      test1.oldboy.com
+10.0.0.7      test2.oldboy.com
+
+4.通过浏览器访问该网站<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="七、日志与错误排查"><a href="#七、日志与错误排查" class="headerlink" title="七、日志与错误排查"></a>七、日志与错误排查</h2><h3 id="7-1-nginx配置文件自查"><a href="#7-1-nginx配置文件自查" class="headerlink" title="7.1 nginx配置文件自查"></a>7.1 nginx配置文件自查</h3><p>1.修改完配置记得检查语法</p>
+<pre class="line-numbers language-none"><code class="language-none">nginx -t<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>2.如果没有检查语法，直接重载导致报错，可查看错误信息</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl status nginx -l <span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h3 id="7-2-访问日志"><a href="#7-2-访问日志" class="headerlink" title="7.2 访问日志"></a>7.2 访问日志</h3><p>可以为server和location单独设置访问日志（<em><strong>涉及日志作用域</strong></em>）</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">server &#123;
+    listen 80;
+    server_name code.oldboy.com;
+    
+    # 将当前的server网站的访问日志记录至对应的目录，使用main格式
+    access_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;code.oldboy.com.log main;
+    location &#x2F; &#123;
+        root &#x2F;code;
+    &#125;
+	
+    # 当有人请求改favicon.ico时，不记录日志
+    location &#x2F;favicon.ico &#123;
+        access_log off;  # off 关闭
+        return 200;
+    &#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>访问日志参数详解</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">log_format  main  &#39;$remote_addr - $remote_user [$time_local] &quot;$request&quot; &#39;
+                      &#39;$status $body_bytes_sent &quot;$http_referer&quot; &#39;
+                      &#39;&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;&#39;;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<table>
+<thead>
+<tr>
+<th><strong>变量名称</strong></th>
+<th><strong>变量描述</strong></th>
+<th><strong>举例说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$remote_addr</td>
+<td>客户端地址</td>
+<td>113.140.15.90</td>
+</tr>
+<tr>
+<td>$remote_user</td>
+<td>客户端用户名称</td>
+<td>–</td>
+</tr>
+<tr>
+<td>$time_local</td>
+<td>访问时间和时区</td>
+<td>18&#x2F;Jul&#x2F;2012:17:00:01 +0800</td>
+</tr>
+<tr>
+<td>$request</td>
+<td>请求的URI和HTTP协议</td>
+<td>“GET &#x2F;pa&#x2F;img&#x2F;home&#x2F;logo-alipay-t.png HTTP&#x2F;1.1″</td>
+</tr>
+<tr>
+<td>$http_host</td>
+<td>请求地址，即浏览器中你输入的地址（IP或域名）</td>
+<td>img.alipay.com10.253.70.103</td>
+</tr>
+<tr>
+<td>$status</td>
+<td>HTTP请求状态</td>
+<td>200</td>
+</tr>
+<tr>
+<td>$upstream_status</td>
+<td>upstream状态</td>
+<td>200</td>
+</tr>
+<tr>
+<td>$body_bytes_sent</td>
+<td>发送给客户端文件内容大小</td>
+<td>547</td>
+</tr>
+<tr>
+<td>$http_referer</td>
+<td>跳转来源</td>
+<td>“<a target="_blank" rel="noopener" href="https://cashier.alip/">https://cashier.alip</a>ay.com…&#x2F;”</td>
+</tr>
+<tr>
+<td>$http_user_agent</td>
+<td>用户终端代理</td>
+<td>“Mozilla&#x2F;4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident&#x2F;4.0; SV1; GTB7.0; .NET4.0C;</td>
+</tr>
+<tr>
+<td>$ssl_protocol</td>
+<td>SSL协议版本</td>
+<td>TLSv1</td>
+</tr>
+<tr>
+<td>$ssl_cipher</td>
+<td>交换数据中的算法</td>
+<td>RC4-SHA</td>
+</tr>
+<tr>
+<td>$upstream_addr</td>
+<td>后台upstream的地址，即真正提供服务的主机地址</td>
+<td>10.228.35.247:80</td>
+</tr>
+<tr>
+<td>$request_time</td>
+<td>整个请求的总时间</td>
+<td>0.205</td>
+</tr>
+<tr>
+<td>$upstream_response_time</td>
+<td>请求过程中，upstream响应时间</td>
+<td>0.002</td>
+</tr>
+</tbody></table>
+<h3 id="7-3-错误日志"><a href="#7-3-错误日志" class="headerlink" title="7.3 错误日志"></a>7.3 错误日志</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">tail -f &#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h3 id="7-4-日志切割logrotate"><a href="#7-4-日志切割logrotate" class="headerlink" title="7.4 日志切割logrotate"></a>7.4 日志切割logrotate</h3><p>配置文件，一般不需要修改，默认就行</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 logrotate.d]# cat &#x2F;etc&#x2F;logrotate.d&#x2F;nginx
+&#x2F;var&#x2F;log&#x2F;nginx&#x2F;*.log &#123;
+    create 0640 nginx root	 	
+    daily	# 每天切割日志
+    rotate 10
+    missingok	# 日志丢失忽略
+    notifempty
+    compress	# 日志文件压缩
+    sharedscripts
+    postrotate
+        &#x2F;bin&#x2F;kill -USR1 &#96;cat &#x2F;run&#x2F;nginx.pid 2&gt;&#x2F;dev&#x2F;null&#96; 2&gt;&#x2F;dev&#x2F;null || true
+    endscript
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+
+
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/06-HTTP%E5%8D%8F%E8%AE%AE/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -282,375 +814,6 @@
 <li>你觉得 CDN 在对待浏览器和爬虫时会有差异吗？为什么？</li>
 <li>你怎么理解 WebService 与 Web Server 这两个非常相似的词？</li>
 </ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/09-Nginx(%E4%B8%89)LNMP%E6%9E%B6%E6%9E%84%E5%AE%89%E8%A3%85/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/09-Nginx(%E4%B8%89)LNMP%E6%9E%B6%E6%9E%84%E5%AE%89%E8%A3%85/" class="post-title-link" itemprop="url">运维之综合架构--07--Nginx(三)LNMP介绍</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:16:26" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="一、LNMP简介-需补充"><a href="#一、LNMP简介-需补充" class="headerlink" title="一、LNMP简介(需补充)"></a>一、LNMP简介(需补充)</h2><h3 id="1-1-什么是LNMP"><a href="#1-1-什么是LNMP" class="headerlink" title="1.1 什么是LNMP"></a>1.1 什么是LNMP</h3><h3 id="1-2-LNMP架构是如何工作的"><a href="#1-2-LNMP架构是如何工作的" class="headerlink" title="1.2 LNMP架构是如何工作的"></a>1.2 LNMP架构是如何工作的</h3><p>浏览器 –http–&gt; Nginx(fastcgi_pass) –fastcgi–&gt;php(fastcgi_fpm调动wrapper再调动php解析再调用mysql)</p>
-<p>大致流程：</p>
-<p>用户在浏览器发起请求，如果请求的是静态资源，Nginx则直接返回，如果请求的是动态资源，Nginx会通过fastcgi协议，将请求交给PHP服务器，再返回动态资源。</p>
-<h3 id="1-3-LNMP和LAMP的区别是什么"><a href="#1-3-LNMP和LAMP的区别是什么" class="headerlink" title="1.3 LNMP和LAMP的区别是什么"></a>1.3 LNMP和LAMP的区别是什么</h3><p>nginx 是以fastcgi协议调用的php<br>apache是以模块的方式加载的php</p>
-<h2 id="二、LNMP架构简单搭建"><a href="#二、LNMP架构简单搭建" class="headerlink" title="二、LNMP架构简单搭建"></a>二、LNMP架构简单搭建</h2><p>1、准备一台名为nginx的服务器</p>
-<p>2、使用官方仓库安装nginx</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 添加安装源
-[root@nginx ~]# cat &#x2F;etc&#x2F;yum.repos.d&#x2F;nginx.repo 
-[nginx]
-name&#x3D;nginx repo
-baseurl&#x3D;http:&#x2F;&#x2F;nginx.org&#x2F;packages&#x2F;centos&#x2F;7&#x2F;$basearch&#x2F;
-gpgcheck&#x3D;0
-enabled&#x3D;1
-
-#安装Nginx
-[root@nginx ~]# yum install nginx -y<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>3、安装php7.1</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nginx ~]# yum remove php-mysql-5.4 php php-fpm php-common # 卸载默认5.4版本的php
-[root@nginx ~]# cat &#x2F;etc&#x2F;yum.repos.d&#x2F;php.repo
-[php]
-name &#x3D; php Repository
-baseurl &#x3D; http:&#x2F;&#x2F;us-east.repo.webtatic.com&#x2F;yum&#x2F;el7&#x2F;x86_64&#x2F;
-gpgcheck &#x3D; 0
-
-[root@nginx ~]# yum -y install php71w php71w-cli php71w-common php71w-devel php71w-embedded php71w-gd php71w-mcrypt php71w-mbstring php71w-pdo php71w-xml php71w-fpm php71w-mysqlnd php71w-opcache php71w-pecl-memcached php71w-pecl-redis php71w-pecl-mongodb<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>4、安装maria数据库</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nginx ~]# yum install mariadb-server mariadb -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>5、配置nginx和php集成</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cd &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;
-[root@web01 conf.d]# cat php.conf 
-server &#123;
-	listen 80;
-	server_name php.oldboy.com;
-	root &#x2F;code;
-
-	location &#x2F; &#123;
-		index index.php index.html;
-	&#125;
-
-	location ~ \.php$ &#123;
-		fastcgi_pass 127.0.0.1:9000;
-		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-		include fastcgi_params;
-	&#125;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>6、重载nginx</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# nginx -t
-nginx: the configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf syntax is ok
-nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test is successful
-[root@web01 conf.d]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>7、启动php-fpm，并加入开机自启</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# systemctl start php-fpm
-[root@web01 conf.d]# systemctl enable  php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>8、准备一个php文件，测试nginx和php是否继承成功</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cat &#x2F;code&#x2F;page.php
-&lt;?php
-	phpinfo();
-?&gt;
-# 测试：网页访问:http:&#x2F;&#x2F;php.oldboy.com&#x2F;page.php<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>9、启动数据库</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# systemctl start mariadb
-[root@web01 conf.d]# systemctl enable mariadb
-[root@web01 conf.d]# mysqladmin password &#39;Bgx123.com&#39;		#配置密码（默认mysql是空密码）
-[root@web01 conf.d]# mysql -uroot -pBgx123.com				#使用账号和密码登录mysql<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>10、准备一个php文件，测试是否可以正常连接数据库</p>
-<pre class="line-numbers language-she" data-language="she"><code class="language-she">&lt;?php
-  $servername &#x3D; &quot;localhost&quot;;
-  $username &#x3D; &quot;root&quot;;
-  $password &#x3D; &quot;Bgx123.com&quot;;
-
-  &#x2F;&#x2F; 创建连接
-  $conn &#x3D; mysqli_connect($servername, $username, $password);
-
-  &#x2F;&#x2F; 检测连接
-  if (!$conn) &#123;
-      die(&quot;Connection failed: &quot; . mysqli_connect_error()); &#x2F;&#x2F; 注意格式
-  &#125;
-  echo &quot;php连接MySQL数据库成功&quot;;
-  ?&gt;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="三、案例-搭建wordpress博客"><a href="#三、案例-搭建wordpress博客" class="headerlink" title="三、案例-搭建wordpress博客"></a>三、案例-搭建wordpress博客</h2><h3 id="3-1-环境准备"><a href="#3-1-环境准备" class="headerlink" title="3.1 环境准备"></a>3.1 环境准备</h3><table>
-<thead>
-<tr>
-<th>用途</th>
-<th>公网IP地址</th>
-<th>内网IP地址</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>web服务器01</td>
-<td>10.0.0.7</td>
-<td>172.16.1.7</td>
-</tr>
-</tbody></table>
-<h3 id="3-2-部署安装"><a href="#3-2-部署安装" class="headerlink" title="3.2 部署安装"></a>3.2 部署安装</h3><p>1、添加nginx配置文件</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cat blog.oldboy.com.conf 
-server &#123;
-	listen 80;
-	server_name blog.oldboy.com;
-	root &#x2F;code&#x2F;wordpress;
-
-	location &#x2F; &#123;
-		index index.php index.html;
-	&#125;
-
-	location ~ \.php$ &#123;
-		fastcgi_pass 127.0.0.1:9000;
-		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-		include fastcgi_params;
-	&#125;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>2、根据nginx中定义的内容，创建站点目录并进行授权</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# mkdir &#x2F;code
-[root@web01 conf.d]# cd &#x2F;code
-[root@web01 code]# wget https:&#x2F;&#x2F;cn.wordpress.org&#x2F;wordpress-5.0.3-zh_CN.tar.gz
-[root@web01 code]# tar xf wordpress-5.0.3-zh_CN.tar.gz<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>3、修改nginx与php-fpm的运行用户为www，并授权代码属主和属组都为www</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">#注意：如果没有该用户，启动一定会报错
-[root@web01 code]# groupadd -g 666 www
-[root@web01 code]# useradd -u666 -g666 www
-
-修改nginx与php-fpm管理进程，的运行身份为www
-[root@web01 code]# sed -i &#39;&#x2F;^user &#x2F;c user  www;&#39; &#x2F;etc&#x2F;nginx&#x2F;nginx.conf
-[root@web01 code]# sed -i &#39;&#x2F;^user&#x2F;c user &#x3D; www&#39; &#x2F;etc&#x2F;php-fpm.d&#x2F;www.conf 
-[root@web01 code]# sed -i &#39;&#x2F;^group&#x2F;c group &#x3D; www&#39; &#x2F;etc&#x2F;php-fpm.d&#x2F;www.conf 
-
-一定要重启才生效
-[root@web01 code]# systemctl restart nginx
-[root@web01 code]# systemctl restart php-fpm
-
-最后授权代码为www
-[root@web01 code]# chown -R www.www &#x2F;code&#x2F;wordpress	<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>4、创建数据库</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">MariaDB [(none)]&gt; create database wordpress;			#创建一个库，名称叫wordpress
-Query OK, 1 row affected (0.00 sec)
-
-MariaDB [(none)]&gt; show databases;						#查询该台数据库服务有多少个库
-+--------------------+
-| Database           |
-+--------------------+
-| information_schema |
-| mysql              |
-| performance_schema |
-| test               |
-| wordpress          |
-+--------------------+
-5 rows in set (0.00 sec)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>5、解决nginx上传文件大小限制（默认1M，超过大小会报413）</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">在wordpress的nginx配置文件中添加：client_max_body_size 100m;
-[root@web01 code]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;blog.oldboy.com.conf 
-server &#123;
-        listen 80;
-        server_name blog.oldboy.com;
-        root &#x2F;code&#x2F;wordpress;
-        client_max_body_size 100m;  # 默认1M，超过大小会报413
-
-        location &#x2F; &#123;
-                index index.php index.html;
-        &#125;
-
-        location ~ \.php$ &#123;
-                fastcgi_pass 127.0.0.1:9000;
-                fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-                include fastcgi_params;
-        &#125;
-&#125;
-重启nginx：systemctl restart nginx	<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<blockquote>
-<p>测试在wordpress页面上传主题或者写文章上传图片，均出现500报错<br>查看日志文件&#x2F;var&#x2F;log&#x2F;nginx&#x2F;err.log<br>2021&#x2F;08&#x2F;16 18:59:31 [crit] 1228#1228: *2 open() “&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;client_body&#x2F;0000000001” failed (13: Permission denied), client: 10.0.0.1, server: php.gs.com, request: “POST &#x2F;wp-admin&#x2F;update.php?action&#x3D;upload-theme HTTP&#x2F;1.1”, host: “php.gs.com”, referrer: “<a target="_blank" rel="noopener" href="http://php.gs.com/wp-admin/theme-install.php?browse=popular&quot;">http://php.gs.com/wp-admin/theme-install.php?browse=popular&quot;</a><br>解决方法，参考<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_15941409/article/details/114640122">https://blog.csdn.net/qq_15941409/article/details/114640122</a><br>chown www:www -R &#x2F;var&#x2F;lib&#x2F;nginx&#x2F;</p>
-</blockquote>
-<h2 id="四、案例-搭建wecenter知乎"><a href="#四、案例-搭建wecenter知乎" class="headerlink" title="四、案例-搭建wecenter知乎"></a>四、案例-搭建wecenter知乎</h2><h3 id="4-1-部署安装"><a href="#4-1-部署安装" class="headerlink" title="4.1 部署安装"></a>4.1 部署安装</h3><p>1、添加nginx配置文件</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">server &#123;
-	listen 80;
-	server_name zh.oldboy.com;
-	root &#x2F;code&#x2F;zh;
-	client_max_body_size 100m;
-
-	location &#x2F; &#123;
-		index index.php index.html;
-	&#125;
-
-	location ~ \.php$ &#123;
-		fastcgi_pass 127.0.0.1:9000;
-		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-		include fastcgi_params;
-	&#125;
-&#125;
-[root@web01 code]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>2、wencenter部署</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# rz -E WeCenter_3-2-1.zip
-[root@web01 code]# unzip WeCenter_3-2-1.zip
-[root@web01 code]# mv WeCenter_3-2-1 zh
-[root@web01 code]# chown -R www.www zh&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>3、配置数据库</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# mysql -uroot -pBgx123.com
-MariaDB [(none)]&gt; create database zh;
-MariaDB [(none)]&gt; show databases;
-+--------------------+
-| Database           |
-+--------------------+
-| information_schema |
-| mysql              |
-| performance_schema |
-| test               |
-| wordpress          |
-| zh                 |
-+--------------------+
-6 rows in set (0.00 sec)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="五、案例-搭建edusoho在线视频教育"><a href="#五、案例-搭建edusoho在线视频教育" class="headerlink" title="五、案例-搭建edusoho在线视频教育"></a>五、案例-搭建edusoho在线视频教育</h2><h3 id="5-1-部署安装"><a href="#5-1-部署安装" class="headerlink" title="5.1 部署安装"></a>5.1 部署安装</h3><p>1、添加nginx配置文件</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;edu.oldboy.com.conf 
-server &#123;
-    listen 80;
-    server_name edu.oldboy.com;
-    root &#x2F;code&#x2F;edusoho&#x2F;web;
-    client_max_body_size 200m;
-
-    location &#x2F; &#123;
-        index app.php;
-        try_files $uri @rewriteapp;
-    &#125;
-    location @rewriteapp &#123;
-        rewrite ^(.*)$ &#x2F;app.php&#x2F;$1 last;
-    &#125;
-
-    location ~ ^&#x2F;udisk &#123;
-        internal;
-        root &#x2F;code&#x2F;edusoho&#x2F;app&#x2F;data&#x2F;;
-    &#125;
-
-    location ~ ^&#x2F;(app|app_dev)\.php(&#x2F;|$) &#123;
-        fastcgi_pass   127.0.0.1:9000;
-        fastcgi_split_path_info ^(.+\.php)(&#x2F;.*)$;
-        include fastcgi_params;
-        fastcgi_param  SCRIPT_FILENAME    $document_root$fastcgi_script_name;
-        fastcgi_param  HTTPS              off;
-        fastcgi_param HTTP_X-Sendfile-Type X-Accel-Redirect;
-        fastcgi_param HTTP_X-Accel-Mapping &#x2F;udisk&#x3D;&#x2F;code&#x2F;edusoho&#x2F;app&#x2F;data&#x2F;udisk;
-        fastcgi_buffer_size 128k;
-        fastcgi_buffers 8 128k;
-    &#125;
-
-    # 配置设置图片格式文件
-    location ~* \.(jpg|jpeg|gif|png|ico|swf)$ &#123;
-        # 过期时间为3年
-        expires 3y;
-        # 关闭日志记录
-        access_log off;
-        # 关闭gzip压缩，减少CPU消耗，因为图片的压缩率不高。
-        gzip off;
-    &#125;
-    # 配置css&#x2F;js文件
-    location ~* \.(css|js)$ &#123;
-        access_log off;
-        expires 3y;
-    &#125;
-    # 禁止用户上传目录下所有.php文件的访问，提高安全性
-    location ~ ^&#x2F;files&#x2F;.*\.(php|php5)$ &#123;
-        deny all;
-    &#125;
-
-    # 以下配置允许运行.php的程序，方便于其他第三方系统的集成。
-    location ~ \.php$ &#123;
-        fastcgi_pass   127.0.0.1:9000;
-        fastcgi_split_path_info ^(.+\.php)(&#x2F;.*)$;
-        include fastcgi_params;
-        fastcgi_param  SCRIPT_FILENAME    $document_root$fastcgi_script_name;
-        fastcgi_param  HTTPS              off;
-    &#125;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>2、下载edusoho,并授权文件夹</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">wget http:&#x2F;&#x2F;download.edusoho.com&#x2F;edusoho-8.2.17.tar.gz
-tar xf edusoho-8.2.17.tar.gz
-chown -R www.www edusoho<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<p>3、调整php的上传大小(上传文件默认有限制大小)</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# vim &#x2F;etc&#x2F;php.ini
-post_max_size &#x3D; 200M
-upload_max_filesize &#x3D; 200M
-[root@web01 code]# systemctl restart php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="六、各开源项目网站"><a href="#六、各开源项目网站" class="headerlink" title="六、各开源项目网站"></a>六、各开源项目网站</h2><p>phpmyadmin	<a target="_blank" rel="noopener" href="https://www.phpmyadmin.net/">https://www.phpmyadmin.net/</a><br>zblog	<a target="_blank" rel="noopener" href="https://www.zblogcn.com/">https://www.zblogcn.com/</a><br>wordpress	<a target="_blank" rel="noopener" href="https://cn.wordpress.org/">https://cn.wordpress.org/</a><br>wecenter	<a target="_blank" rel="noopener" href="http://www.wecenter.com/downloads/">http://www.wecenter.com/downloads/</a><br>edusohu	<a target="_blank" rel="noopener" href="http://www.edusoho.com/open/show">http://www.edusoho.com/open/show</a></p>
 
       
     </div>
@@ -1274,7 +1437,7 @@ server &#123;
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/07-Nginx(%E4%B8%80)%E5%AE%89%E8%A3%85%E4%B8%8E%E9%85%8D%E7%BD%AE/">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/09-Nginx(%E4%B8%89)LNMP%E6%9E%B6%E6%9E%84%E5%AE%89%E8%A3%85/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/myavatar.png">
@@ -1288,7 +1451,7 @@ server &#123;
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/07-Nginx(%E4%B8%80)%E5%AE%89%E8%A3%85%E4%B8%8E%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">运维之综合架构--07--Nginx(一)安装与配置</a>
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/09-Nginx(%E4%B8%89)LNMP%E6%9E%B6%E6%9E%84%E5%AE%89%E8%A3%85/" class="post-title-link" itemprop="url">运维之综合架构--07--Nginx(三)LNMP介绍</a>
         </h2>
 
         <div class="post-meta">
@@ -1299,7 +1462,7 @@ server &#123;
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:16:03" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:16:26" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1326,467 +1489,304 @@ server &#123;
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="一、Nginx简介"><a href="#一、Nginx简介" class="headerlink" title="一、Nginx简介"></a>一、Nginx简介</h2><p>参考网站：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/266153320">https://zhuanlan.zhihu.com/p/266153320</a></p>
-<h2 id="二、Nginx安装"><a href="#二、Nginx安装" class="headerlink" title="二、Nginx安装"></a>二、Nginx安装</h2><p>​	nginx有两种安装方式，yum安装和源码编译安装</p>
-<h3 id="2-1-yum安装（epel源）"><a href="#2-1-yum安装（epel源）" class="headerlink" title="2.1 yum安装（epel源）"></a>2.1 yum安装（epel源）</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;yum.repos.d&#x2F;nginx.repo
+          <h2 id="一、LNMP简介-需补充"><a href="#一、LNMP简介-需补充" class="headerlink" title="一、LNMP简介(需补充)"></a>一、LNMP简介(需补充)</h2><h3 id="1-1-什么是LNMP"><a href="#1-1-什么是LNMP" class="headerlink" title="1.1 什么是LNMP"></a>1.1 什么是LNMP</h3><h3 id="1-2-LNMP架构是如何工作的"><a href="#1-2-LNMP架构是如何工作的" class="headerlink" title="1.2 LNMP架构是如何工作的"></a>1.2 LNMP架构是如何工作的</h3><p>浏览器 –http–&gt; Nginx(fastcgi_pass) –fastcgi–&gt;php(fastcgi_fpm调动wrapper再调动php解析再调用mysql)</p>
+<p>大致流程：</p>
+<p>用户在浏览器发起请求，如果请求的是静态资源，Nginx则直接返回，如果请求的是动态资源，Nginx会通过fastcgi协议，将请求交给PHP服务器，再返回动态资源。</p>
+<h3 id="1-3-LNMP和LAMP的区别是什么"><a href="#1-3-LNMP和LAMP的区别是什么" class="headerlink" title="1.3 LNMP和LAMP的区别是什么"></a>1.3 LNMP和LAMP的区别是什么</h3><p>nginx 是以fastcgi协议调用的php<br>apache是以模块的方式加载的php</p>
+<h2 id="二、LNMP架构简单搭建"><a href="#二、LNMP架构简单搭建" class="headerlink" title="二、LNMP架构简单搭建"></a>二、LNMP架构简单搭建</h2><p>1、准备一台名为nginx的服务器</p>
+<p>2、使用官方仓库安装nginx</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 添加安装源
+[root@nginx ~]# cat &#x2F;etc&#x2F;yum.repos.d&#x2F;nginx.repo 
 [nginx]
 name&#x3D;nginx repo
 baseurl&#x3D;http:&#x2F;&#x2F;nginx.org&#x2F;packages&#x2F;centos&#x2F;7&#x2F;$basearch&#x2F;
 gpgcheck&#x3D;0
 enabled&#x3D;1
 
-yum clean all
-yum makecache
+#安装Nginx
+[root@nginx ~]# yum install nginx -y<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-yum install nginx -y<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>3、安装php7.1</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nginx ~]# yum remove php-mysql-5.4 php php-fpm php-common # 卸载默认5.4版本的php
+[root@nginx ~]# cat &#x2F;etc&#x2F;yum.repos.d&#x2F;php.repo
+[php]
+name &#x3D; php Repository
+baseurl &#x3D; http:&#x2F;&#x2F;us-east.repo.webtatic.com&#x2F;yum&#x2F;el7&#x2F;x86_64&#x2F;
+gpgcheck &#x3D; 0
 
-<h3 id="2-2-编译安装"><a href="#2-2-编译安装" class="headerlink" title="2.2 编译安装"></a>2.2 编译安装</h3><p>查看yum安装的nginx的编译参数</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# nginx -V
-nginx version: nginx&#x2F;1.20.1
-built by gcc 4.8.5 20150623 (Red Hat 4.8.5-44) (GCC)
-built with OpenSSL 1.1.1g FIPS  21 Apr 2020
-TLS SNI support enabled
-configure arguments: --prefix&#x3D;&#x2F;usr&#x2F;share&#x2F;nginx --sbin-path&#x3D;&#x2F;usr&#x2F;sbin&#x2F;nginx --modules-path&#x3D;&#x2F;usr&#x2F;lib64&#x2F;nginx&#x2F;modules --conf-path&#x3D;&#x2F;etc&#x2F;nginx&#x2F;nginx.conf --error-log-path&#x3D;&#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log --http-log-path&#x3D;&#x2F;var&#x2F;log&#x2F;nginx&#x2F;access.log --http-client-body-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;client_body --http-proxy-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;proxy --http-fastcgi-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;fastcgi --http-uwsgi-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;uwsgi --http-scgi-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;scgi --pid-path&#x3D;&#x2F;run&#x2F;nginx.pid --lock-path&#x3D;&#x2F;run&#x2F;lock&#x2F;subsys&#x2F;nginx --user&#x3D;nginx --group&#x3D;nginx --with-compat --with-debug --with-file-aio --with-google_perftools_module --with-http_addition_module --with-http_auth_request_module --with-http_dav_module --with-http_degradation_module --with-http_flv_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_image_filter_module&#x3D;dynamic --with-http_mp4_module --with-http_perl_module&#x3D;dynamic --with-http_random_index_module --with-http_realip_module --with-http_secure_link_module --with-http_slice_module --with-http_ssl_module --with-http_stub_status_module --with-http_sub_module --with-http_v2_module --with-http_xslt_module&#x3D;dynamic --with-mail&#x3D;dynamic --with-mail_ssl_module --with-pcre --with-pcre-jit --with-stream&#x3D;dynamic --with-stream_ssl_module --with-stream_ssl_preread_module --with-threads --with-cc-opt&#x3D;&#39;-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE&#x3D;2 -fexceptions -fstack-protector-strong --param&#x3D;ssp-buffer-size&#x3D;4 -grecord-gcc-switches -specs&#x3D;&#x2F;usr&#x2F;lib&#x2F;rpm&#x2F;redhat&#x2F;redhat-hardened-cc1 -m64 -mtune&#x3D;generic&#39; --with-ld-opt&#x3D;&#39;-Wl,-z,relro -specs&#x3D;&#x2F;usr&#x2F;lib&#x2F;rpm&#x2F;redhat&#x2F;redhat-hardened-ld -Wl,-E&#39;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+[root@nginx ~]# yum -y install php71w php71w-cli php71w-common php71w-devel php71w-embedded php71w-gd php71w-mcrypt php71w-mbstring php71w-pdo php71w-xml php71w-fpm php71w-mysqlnd php71w-opcache php71w-pecl-memcached php71w-pecl-redis php71w-pecl-mongodb<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<p>源码获取</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# wget http:&#x2F;&#x2F;nginx.org&#x2F;download&#x2F;nginx-1.20.1.tar.gz<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>4、安装maria数据库</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nginx ~]# yum install mariadb-server mariadb -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
-<p>构建与编译</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 解压源码文件并进入文件夹内
-tar -vxf nginx-1.20.1.tar.gz &amp;&amp; cd nginx-1.20.1
-
-# configure构建
-.&#x2F;configure --prefix&#x3D;&#x2F;usr&#x2F;share&#x2F;nginx --sbin-path&#x3D;&#x2F;usr&#x2F;sbin&#x2F;nginx --modules-path&#x3D;&#x2F;usr&#x2F;lib64&#x2F;nginx&#x2F;modules --conf-path&#x3D;&#x2F;etc&#x2F;nginx&#x2F;nginx.conf --error-log-path&#x3D;&#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log --http-log-path&#x3D;&#x2F;var&#x2F;log&#x2F;nginx&#x2F;access.log --http-client-body-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;client_body --http-proxy-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;proxy --http-fastcgi-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;fastcgi --http-uwsgi-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;uwsgi --http-scgi-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;scgi --pid-path&#x3D;&#x2F;run&#x2F;nginx.pid --lock-path&#x3D;&#x2F;run&#x2F;lock&#x2F;subsys&#x2F;nginx --user&#x3D;nginx --group&#x3D;nginx --with-compat --with-debug --with-file-aio --with-google_perftools_module --with-http_addition_module --with-http_auth_request_module --with-http_dav_module --with-http_degradation_module --with-http_flv_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_image_filter_module&#x3D;dynamic --with-http_mp4_module --with-http_perl_module&#x3D;dynamic --with-http_random_index_module --with-http_realip_module --with-http_secure_link_module --with-http_slice_module --with-http_ssl_module --with-http_stub_status_module --with-http_sub_module --with-http_v2_module --with-http_xslt_module&#x3D;dynamic --with-mail&#x3D;dynamic --with-mail_ssl_module --with-pcre --with-pcre-jit --with-stream&#x3D;dynamic --with-stream_ssl_module --with-stream_ssl_preread_module --with-threads --with-cc-opt&#x3D;&#39;-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE&#x3D;2 -fexceptions -fstack-protector-strong --param&#x3D;ssp-buffer-size&#x3D;4 -grecord-gcc-switches -specs&#x3D;&#x2F;usr&#x2F;lib&#x2F;rpm&#x2F;redhat&#x2F;redhat-hardened-cc1 -m64 -mtune&#x3D;generic&#39; --with-ld-opt&#x3D;&#39;-Wl,-z,relro -specs&#x3D;&#x2F;usr&#x2F;lib&#x2F;rpm&#x2F;redhat&#x2F;redhat-hardened-ld -Wl,-E&#39;
-
-# 编译并安装
-make -j 4 &amp;&amp; make install<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>错误解决</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 错误1：
-.&#x2F;configure: error: the invalid value in --with-ld-opt&#x3D;&quot;-Wl,-z,relro -specs&#x3D;&#x2F;usr&#x2F;lib&#x2F;rpm&#x2F;redhat&#x2F;redhat-hardened-ld -Wl,-E&quot;
-解决方法：
-yum -y install redhat-rpm-config.noarch
-
-# 错误2：
-.&#x2F;configure: error: the HTTP rewrite module requires the PCRE library.
-You can either disable the module by using --without-http_rewrite_module
-option, or install the PCRE library into the system, or build the PCRE library
-statically from the source with nginx by using --with-pcre&#x3D;&lt;path&gt; option.
-解决方法：
-yum install pcre-devel -y
-
-# 错误3：
-.&#x2F;configure: error: SSL modules require the OpenSSL library.
-You can either do not enable the modules, or install the OpenSSL library
-into the system, or build the OpenSSL library statically from the source
-with nginx by using --with-openssl&#x3D;&lt;path&gt; option.
-解决方法：
-yum install openssl openssl-devel -y
-
-# 错误4：
-.&#x2F;configure: error: the HTTP XSLT module requires the libxml2&#x2F;libxslt
-libraries. You can either do not enable the module or install the libraries.
-解决方法：
-yum install libxml2 libxml2-devel libxslt  libxslt-devel -y
-
-# 错误5：
-.&#x2F;configure: error: the HTTP image filter module requires the GD library.
-You can either do not enable the module or install the libraries.
-解决方法：
-yum -y install gd-devel
-
-# 错误6：
-.&#x2F;configure: error: perl module ExtUtils::Embed is required
-
-解决方法： 
-yum -y install perl-devel perl-ExtUtils-Embed
-
-# 错误7：
-.&#x2F;configure: error: the Google perftools module requires the Google perftools library
-解决方法：
-yum install gperftools-devel.x86_64 gperftools-libs.x86_64 gperftools.x86_64 -y<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="2-3-启动和停止服务"><a href="#2-3-启动和停止服务" class="headerlink" title="2.3 启动和停止服务"></a>2.3 启动和停止服务</h3><p>启动服务</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 先关闭httpd服务，防止冲突
-[root@web01 ~]# systemctl stop httpd
-[root@web01 ~]# systemctl disable httpd
-
-# 再启动nginx服务
-[root@web01 ~]# systemctl enable nginx
-[root@web01 html]# systemctl start nginx
-# 另一种启动方式
-nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>停止服务</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl stop nginx 
-# 或者
-nginx -s stop <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<p>重启&#x2F;重载服务</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl restart&#x2F;reload nginx
-nginx -s restart&#x2F;reload <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<blockquote>
-<p>PS：重载reload和重启restart的差别</p>
-<p>reload将会等服务进程执行完再重启，而restart则是强制重启</p>
-</blockquote>
-<h2 id="三、Nginx目录结构说明"><a href="#三、Nginx目录结构说明" class="headerlink" title="三、Nginx目录结构说明"></a>三、Nginx目录结构说明</h2><p>查看nginx的目录结构</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 html]# rpm -ql nginx<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>参考链接：</p>
-<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/137262519">https://zhuanlan.zhihu.com/p/137262519</a></p>
-<h2 id="四、Nginx配置文件说明"><a href="#四、Nginx配置文件说明" class="headerlink" title="四、Nginx配置文件说明"></a>四、Nginx配置文件说明</h2><blockquote>
-<p>http server location扩展了解项<br>http{}层下允许有多个Server{}层，一个Server{}层下又允许有多个Location<br>http{} 标签主要用来解决用户的请求与响应。<br>server{} 标签主要用来响应具体的某一个网站。<br>location{} 标签主要用于匹配网站具体URL路径。</p>
-</blockquote>
-<p>主配置文件说明</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 html]# cat &#x2F;etc&#x2F;nginx&#x2F;nginx.conf
----核心模块---
-user nginx;	#nginx进程运行的用户
-worker_processes auto;	#nginx工作的进程数量
-error_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log;	#nginx的错误日志【警告及其警告以上的都记录】
-pid &#x2F;run&#x2F;nginx.pid;	#nginx进程运行后的进程id
----核心模块---
-
-# Load dynamic modules. See &#x2F;usr&#x2F;share&#x2F;doc&#x2F;nginx&#x2F;README.dynamic.
-include &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;modules&#x2F;*.conf;
-
----事件模块---
-events &#123;
-    worker_connections 1024; # 一个work进程的最大连接数
-    use epool;				 #使用epool网络模型
-&#125;
----事件模块---
-
----http核心层模块---
-http &#123;
-	# 日志格式定义
-    log_format  main  &#39;$remote_addr - $remote_user [$time_local] &quot;$request&quot; &#39;
-                      &#39;$status $body_bytes_sent &quot;$http_referer&quot; &#39;
-                      &#39;&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;&#39;;
-
-    access_log  &#x2F;var&#x2F;log&#x2F;nginx&#x2F;access.log  main;	# 访问日志
-
-    sendfile            on;
-    tcp_nopush          on;
-    tcp_nodelay         on;
-    keepalive_timeout   65;	# 长连接超时时间
-    types_hash_max_size 4096;
-    #gzip on;			#是否开启压缩功能			
-
-    include             &#x2F;etc&#x2F;nginx&#x2F;mime.types;
-    default_type        application&#x2F;octet-stream;
-
-    include &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;*.conf;	# 包含哪个目录下面的*.conf文件，用于写server
-
-    server &#123;
-        listen       80;	# 监听端口
-        listen       [::]:80;
-        server_name  _;		# 域名
-        root         &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html;
-
-		#charset koi8-r;			#字符集
-
-		location &#x2F; &#123;	 			#位置
-			root   &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html;	#代码的主文件位置
-			index  index.html index.htm;	#服务端默认返回给用户的文件
-		&#125;
-		location &#x2F;test &#123;	 			#位置
-			root   &#x2F;code&#x2F;test&#x2F;123&#x2F;;	#代码的主文件位置
-			index  index.html index.htm;	#服务端默认返回给用户的文件
-		&#125;
-
-        # Load configuration files for the default server block.
-        include &#x2F;etc&#x2F;nginx&#x2F;default.d&#x2F;*.conf;
-
-        error_page 404 &#x2F;404.html;
-        location &#x3D; &#x2F;404.html &#123;
-        &#125;
-
-        error_page 500 502 503 504 &#x2F;50x.html;
-        location &#x3D; &#x2F;50x.html &#123;
-        &#125;
-    &#125;
-&#125;
----http核心层模块---<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="五、案例：搭建web网站"><a href="#五、案例：搭建web网站" class="headerlink" title="五、案例：搭建web网站"></a>五、案例：搭建web网站</h2><p>准备配置文件ds</p>
-<pre class="line-numbers language-she" data-language="she"><code class="language-she">[root@web01 code]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;game.conf
+<p>5、配置nginx和php集成</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cd &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;
+[root@web01 conf.d]# cat php.conf 
 server &#123;
-        listen 80;
-        server_name game.oldboy.com;
-
-        location &#x2F; &#123;
-                root &#x2F;code;
-                index index.html;
-        &#125;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>按照配置文件创建文件夹并放入html项目文件</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">mkdir &#x2F;code
-cp html5.zip &#x2F;code
-cd &#x2F;code
-unzip html5.zip
-
-[root@web01 code]# ls
-ceshi  game  html5.zip  img  index.html  __MACOSX  readme.txt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>重启nginx服务</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl restart nginx
-systemctl reload nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>通过物理机浏览器浏览</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 修改hosts文件
-10.0.0.7 game.oldboy.com
-# 网页访问
-game.oldboy.com<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="六、Nginx虚拟主机"><a href="#六、Nginx虚拟主机" class="headerlink" title="六、Nginx虚拟主机"></a>六、Nginx虚拟主机</h2><p>Nginx配置虚拟主机有如下三种方式：</p>
-<ul>
-<li>单主机多IP</li>
-<li>单主机多端口</li>
-<li>单主机多域名</li>
-</ul>
-<h3 id="6-1-基于主机多IP方式-不常用"><a href="#6-1-基于主机多IP方式-不常用" class="headerlink" title="6.1 基于主机多IP方式(不常用)"></a>6.1 基于主机多IP方式(不常用)</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cat ip.conf 
-server &#123;
-	listen 10.0.0.7:80;
-	server_name _;
+	listen 80;
+	server_name php.oldboy.com;
+	root &#x2F;code;
 
 	location &#x2F; &#123;
-		root &#x2F;code_ip_eth0;
-		index index.html;
+		index index.php index.html;
 	&#125;
-&#125;
 
-server &#123;
-	listen 172.16.1.7:80;
-	server_name _;
-
-	location &#x2F; &#123;
-		root &#x2F;code_ip_eth1;
-		index index.html;
+	location ~ \.php$ &#123;
+		fastcgi_pass 127.0.0.1:9000;
+		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+		include fastcgi_params;
 	&#125;
-&#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-2.根据配置创建目录
-[root@web01 conf.d]# mkdir &#x2F;code_ip_eth0
-[root@web01 conf.d]# echo &quot;Eth0&quot; &gt; &#x2F;code_ip_eth0&#x2F;index.html
-
-[root@web01 conf.d]# mkdir &#x2F;code_ip_eth1
-[root@web01 conf.d]# echo &quot;Eth1&quot; &gt; &#x2F;code_ip_eth1&#x2F;index.html
-
-3.重启nginx服务
-[root@web01 conf.d]# systemctl restart nginx
-
-4.使用curl命令测试
-[root@web01 ~]# curl 172.16.1.7
-Eth1
-[root@web01 ~]# curl 10.0.0.7
-Eth0<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="6-2-基于主机多端口方式（多用于内部测试）"><a href="#6-2-基于主机多端口方式（多用于内部测试）" class="headerlink" title="6.2 基于主机多端口方式（多用于内部测试）"></a>6.2 基于主机多端口方式（多用于内部测试）</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.配置多端口的虚拟主机
-[root@web01 conf.d]# vim port.conf
-server &#123;
-        listen 81;
-        
-        location &#x2F; &#123; 
-                root &#x2F;code_81;
-                index index.html;
-        &#125;
-&#125;
-server &#123;
-        listen 82;
-        
-        location &#x2F; &#123; 
-                root &#x2F;code_82;
-                index index.html;
-        &#125;
-&#125;		
-
-2.根据配置文件创建所需的目录
-[root@web01 conf.d]# mkdir &#x2F;code_8&#123;1..2&#125;
-[root@web01 conf.d]# echo &quot;81&quot; &gt; &#x2F;code_81&#x2F;index.html
-[root@web01 conf.d]# echo &quot;82&quot; &gt; &#x2F;code_82&#x2F;index.html
-
-3.检查语法并重启服务
-[root@web01 conf.d]# nginx -t
+<p>6、重载nginx</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# nginx -t
 nginx: the configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf syntax is ok
 nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test is successful
-[root@web01 conf.d]# systemctl restart nginx
+[root@web01 conf.d]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
 
+<p>7、启动php-fpm，并加入开机自启</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# systemctl start php-fpm
+[root@web01 conf.d]# systemctl enable  php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
 
-4.如何去访问
-	http:&#x2F;&#x2F;10.0.0.7:82&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>8、准备一个php文件，测试nginx和php是否继承成功</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cat &#x2F;code&#x2F;page.php
+&lt;?php
+	phpinfo();
+?&gt;
+# 测试：网页访问:http:&#x2F;&#x2F;php.oldboy.com&#x2F;page.php<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<h3 id="6-3-基于主机多域名方式（常用）"><a href="#6-3-基于主机多域名方式（常用）" class="headerlink" title="6.3 基于主机多域名方式（常用）"></a>6.3 基于主机多域名方式（常用）</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.准备多虚拟主机配置文件
-[root@web01 conf.d]# cat test1.oldboy.com.conf 
-server &#123;
-	listen 80;
-	server_name test1.oldboy.com;
+<p>9、启动数据库</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# systemctl start mariadb
+[root@web01 conf.d]# systemctl enable mariadb
+[root@web01 conf.d]# mysqladmin password &#39;Bgx123.com&#39;		#配置密码（默认mysql是空密码）
+[root@web01 conf.d]# mysql -uroot -pBgx123.com				#使用账号和密码登录mysql<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
 
-	location &#x2F; &#123;
-		root &#x2F;code&#x2F;test1;
-		index index.html;
-	&#125;
-&#125;
+<p>10、准备一个php文件，测试是否可以正常连接数据库</p>
+<pre class="line-numbers language-she" data-language="she"><code class="language-she">&lt;?php
+  $servername &#x3D; &quot;localhost&quot;;
+  $username &#x3D; &quot;root&quot;;
+  $password &#x3D; &quot;Bgx123.com&quot;;
 
-[root@web01 conf.d]# cat test2.oldboy.com.conf 
-server &#123;
-	listen 80;
-	server_name test2.oldboy.com;
+  &#x2F;&#x2F; 创建连接
+  $conn &#x3D; mysqli_connect($servername, $username, $password);
 
-	location &#x2F; &#123;
-		root &#x2F;code&#x2F;test2;
-		index index.html;
-	&#125;
-&#125;
+  &#x2F;&#x2F; 检测连接
+  if (!$conn) &#123;
+      die(&quot;Connection failed: &quot; . mysqli_connect_error()); &#x2F;&#x2F; 注意格式
+  &#125;
+  echo &quot;php连接MySQL数据库成功&quot;;
+  ?&gt;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-2.根据配置文件创建对应的目录
-[root@web01 conf.d]# mkdir &#x2F;code&#x2F;test&#123;1..2&#125; -p
-[root@web01 conf.d]# echo &quot;test1_server&quot; &gt; &#x2F;code&#x2F;test1&#x2F;index.html
-[root@web01 conf.d]# echo &quot;test2_server&quot; &gt; &#x2F;code&#x2F;test2&#x2F;index.html
-[root@web01 conf.d]# nginx -t
-[root@web01 conf.d]# systemctl restart nginx
-
-3.配置域名解析
-10.0.0.7      test1.oldboy.com
-10.0.0.7      test2.oldboy.com
-
-4.通过浏览器访问该网站<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="七、日志与错误排查"><a href="#七、日志与错误排查" class="headerlink" title="七、日志与错误排查"></a>七、日志与错误排查</h2><h3 id="7-1-nginx配置文件自查"><a href="#7-1-nginx配置文件自查" class="headerlink" title="7.1 nginx配置文件自查"></a>7.1 nginx配置文件自查</h3><p>1.修改完配置记得检查语法</p>
-<pre class="line-numbers language-none"><code class="language-none">nginx -t<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>2.如果没有检查语法，直接重载导致报错，可查看错误信息</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl status nginx -l <span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<h3 id="7-2-访问日志"><a href="#7-2-访问日志" class="headerlink" title="7.2 访问日志"></a>7.2 访问日志</h3><p>可以为server和location单独设置访问日志（<em><strong>涉及日志作用域</strong></em>）</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">server &#123;
-    listen 80;
-    server_name code.oldboy.com;
-    
-    # 将当前的server网站的访问日志记录至对应的目录，使用main格式
-    access_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;code.oldboy.com.log main;
-    location &#x2F; &#123;
-        root &#x2F;code;
-    &#125;
-	
-    # 当有人请求改favicon.ico时，不记录日志
-    location &#x2F;favicon.ico &#123;
-        access_log off;  # off 关闭
-        return 200;
-    &#125;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>访问日志参数详解</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">log_format  main  &#39;$remote_addr - $remote_user [$time_local] &quot;$request&quot; &#39;
-                      &#39;$status $body_bytes_sent &quot;$http_referer&quot; &#39;
-                      &#39;&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;&#39;;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<table>
+<h2 id="三、案例-搭建wordpress博客"><a href="#三、案例-搭建wordpress博客" class="headerlink" title="三、案例-搭建wordpress博客"></a>三、案例-搭建wordpress博客</h2><h3 id="3-1-环境准备"><a href="#3-1-环境准备" class="headerlink" title="3.1 环境准备"></a>3.1 环境准备</h3><table>
 <thead>
 <tr>
-<th><strong>变量名称</strong></th>
-<th><strong>变量描述</strong></th>
-<th><strong>举例说明</strong></th>
+<th>用途</th>
+<th>公网IP地址</th>
+<th>内网IP地址</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>$remote_addr</td>
-<td>客户端地址</td>
-<td>113.140.15.90</td>
-</tr>
-<tr>
-<td>$remote_user</td>
-<td>客户端用户名称</td>
-<td>–</td>
-</tr>
-<tr>
-<td>$time_local</td>
-<td>访问时间和时区</td>
-<td>18&#x2F;Jul&#x2F;2012:17:00:01 +0800</td>
-</tr>
-<tr>
-<td>$request</td>
-<td>请求的URI和HTTP协议</td>
-<td>“GET &#x2F;pa&#x2F;img&#x2F;home&#x2F;logo-alipay-t.png HTTP&#x2F;1.1″</td>
-</tr>
-<tr>
-<td>$http_host</td>
-<td>请求地址，即浏览器中你输入的地址（IP或域名）</td>
-<td>img.alipay.com10.253.70.103</td>
-</tr>
-<tr>
-<td>$status</td>
-<td>HTTP请求状态</td>
-<td>200</td>
-</tr>
-<tr>
-<td>$upstream_status</td>
-<td>upstream状态</td>
-<td>200</td>
-</tr>
-<tr>
-<td>$body_bytes_sent</td>
-<td>发送给客户端文件内容大小</td>
-<td>547</td>
-</tr>
-<tr>
-<td>$http_referer</td>
-<td>跳转来源</td>
-<td>“<a target="_blank" rel="noopener" href="https://cashier.alip/">https://cashier.alip</a>ay.com…&#x2F;”</td>
-</tr>
-<tr>
-<td>$http_user_agent</td>
-<td>用户终端代理</td>
-<td>“Mozilla&#x2F;4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident&#x2F;4.0; SV1; GTB7.0; .NET4.0C;</td>
-</tr>
-<tr>
-<td>$ssl_protocol</td>
-<td>SSL协议版本</td>
-<td>TLSv1</td>
-</tr>
-<tr>
-<td>$ssl_cipher</td>
-<td>交换数据中的算法</td>
-<td>RC4-SHA</td>
-</tr>
-<tr>
-<td>$upstream_addr</td>
-<td>后台upstream的地址，即真正提供服务的主机地址</td>
-<td>10.228.35.247:80</td>
-</tr>
-<tr>
-<td>$request_time</td>
-<td>整个请求的总时间</td>
-<td>0.205</td>
-</tr>
-<tr>
-<td>$upstream_response_time</td>
-<td>请求过程中，upstream响应时间</td>
-<td>0.002</td>
+<td>web服务器01</td>
+<td>10.0.0.7</td>
+<td>172.16.1.7</td>
 </tr>
 </tbody></table>
-<h3 id="7-3-错误日志"><a href="#7-3-错误日志" class="headerlink" title="7.3 错误日志"></a>7.3 错误日志</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">tail -f &#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<h3 id="3-2-部署安装"><a href="#3-2-部署安装" class="headerlink" title="3.2 部署安装"></a>3.2 部署安装</h3><p>1、添加nginx配置文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cat blog.oldboy.com.conf 
+server &#123;
+	listen 80;
+	server_name blog.oldboy.com;
+	root &#x2F;code&#x2F;wordpress;
 
-<h3 id="7-4-日志切割logrotate"><a href="#7-4-日志切割logrotate" class="headerlink" title="7.4 日志切割logrotate"></a>7.4 日志切割logrotate</h3><p>配置文件，一般不需要修改，默认就行</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 logrotate.d]# cat &#x2F;etc&#x2F;logrotate.d&#x2F;nginx
-&#x2F;var&#x2F;log&#x2F;nginx&#x2F;*.log &#123;
-    create 0640 nginx root	 	
-    daily	# 每天切割日志
-    rotate 10
-    missingok	# 日志丢失忽略
-    notifempty
-    compress	# 日志文件压缩
-    sharedscripts
-    postrotate
-        &#x2F;bin&#x2F;kill -USR1 &#96;cat &#x2F;run&#x2F;nginx.pid 2&gt;&#x2F;dev&#x2F;null&#96; 2&gt;&#x2F;dev&#x2F;null || true
-    endscript
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+	location &#x2F; &#123;
+		index index.php index.html;
+	&#125;
 
+	location ~ \.php$ &#123;
+		fastcgi_pass 127.0.0.1:9000;
+		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+		include fastcgi_params;
+	&#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
+<p>2、根据nginx中定义的内容，创建站点目录并进行授权</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# mkdir &#x2F;code
+[root@web01 conf.d]# cd &#x2F;code
+[root@web01 code]# wget https:&#x2F;&#x2F;cn.wordpress.org&#x2F;wordpress-5.0.3-zh_CN.tar.gz
+[root@web01 code]# tar xf wordpress-5.0.3-zh_CN.tar.gz<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
 
+<p>3、修改nginx与php-fpm的运行用户为www，并授权代码属主和属组都为www</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">#注意：如果没有该用户，启动一定会报错
+[root@web01 code]# groupadd -g 666 www
+[root@web01 code]# useradd -u666 -g666 www
 
+修改nginx与php-fpm管理进程，的运行身份为www
+[root@web01 code]# sed -i &#39;&#x2F;^user &#x2F;c user  www;&#39; &#x2F;etc&#x2F;nginx&#x2F;nginx.conf
+[root@web01 code]# sed -i &#39;&#x2F;^user&#x2F;c user &#x3D; www&#39; &#x2F;etc&#x2F;php-fpm.d&#x2F;www.conf 
+[root@web01 code]# sed -i &#39;&#x2F;^group&#x2F;c group &#x3D; www&#39; &#x2F;etc&#x2F;php-fpm.d&#x2F;www.conf 
 
+一定要重启才生效
+[root@web01 code]# systemctl restart nginx
+[root@web01 code]# systemctl restart php-fpm
+
+最后授权代码为www
+[root@web01 code]# chown -R www.www &#x2F;code&#x2F;wordpress	<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>4、创建数据库</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">MariaDB [(none)]&gt; create database wordpress;			#创建一个库，名称叫wordpress
+Query OK, 1 row affected (0.00 sec)
+
+MariaDB [(none)]&gt; show databases;						#查询该台数据库服务有多少个库
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| test               |
+| wordpress          |
++--------------------+
+5 rows in set (0.00 sec)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>5、解决nginx上传文件大小限制（默认1M，超过大小会报413）</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">在wordpress的nginx配置文件中添加：client_max_body_size 100m;
+[root@web01 code]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;blog.oldboy.com.conf 
+server &#123;
+        listen 80;
+        server_name blog.oldboy.com;
+        root &#x2F;code&#x2F;wordpress;
+        client_max_body_size 100m;  # 默认1M，超过大小会报413
+
+        location &#x2F; &#123;
+                index index.php index.html;
+        &#125;
+
+        location ~ \.php$ &#123;
+                fastcgi_pass 127.0.0.1:9000;
+                fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                include fastcgi_params;
+        &#125;
+&#125;
+重启nginx：systemctl restart nginx	<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>测试在wordpress页面上传主题或者写文章上传图片，均出现500报错<br>查看日志文件&#x2F;var&#x2F;log&#x2F;nginx&#x2F;err.log<br>2021&#x2F;08&#x2F;16 18:59:31 [crit] 1228#1228: *2 open() “&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;client_body&#x2F;0000000001” failed (13: Permission denied), client: 10.0.0.1, server: php.gs.com, request: “POST &#x2F;wp-admin&#x2F;update.php?action&#x3D;upload-theme HTTP&#x2F;1.1”, host: “php.gs.com”, referrer: “<a target="_blank" rel="noopener" href="http://php.gs.com/wp-admin/theme-install.php?browse=popular&quot;">http://php.gs.com/wp-admin/theme-install.php?browse=popular&quot;</a><br>解决方法，参考<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_15941409/article/details/114640122">https://blog.csdn.net/qq_15941409/article/details/114640122</a><br>chown www:www -R &#x2F;var&#x2F;lib&#x2F;nginx&#x2F;</p>
+</blockquote>
+<h2 id="四、案例-搭建wecenter知乎"><a href="#四、案例-搭建wecenter知乎" class="headerlink" title="四、案例-搭建wecenter知乎"></a>四、案例-搭建wecenter知乎</h2><h3 id="4-1-部署安装"><a href="#4-1-部署安装" class="headerlink" title="4.1 部署安装"></a>4.1 部署安装</h3><p>1、添加nginx配置文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">server &#123;
+	listen 80;
+	server_name zh.oldboy.com;
+	root &#x2F;code&#x2F;zh;
+	client_max_body_size 100m;
+
+	location &#x2F; &#123;
+		index index.php index.html;
+	&#125;
+
+	location ~ \.php$ &#123;
+		fastcgi_pass 127.0.0.1:9000;
+		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+		include fastcgi_params;
+	&#125;
+&#125;
+[root@web01 code]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>2、wencenter部署</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# rz -E WeCenter_3-2-1.zip
+[root@web01 code]# unzip WeCenter_3-2-1.zip
+[root@web01 code]# mv WeCenter_3-2-1 zh
+[root@web01 code]# chown -R www.www zh&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>3、配置数据库</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# mysql -uroot -pBgx123.com
+MariaDB [(none)]&gt; create database zh;
+MariaDB [(none)]&gt; show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| test               |
+| wordpress          |
+| zh                 |
++--------------------+
+6 rows in set (0.00 sec)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="五、案例-搭建edusoho在线视频教育"><a href="#五、案例-搭建edusoho在线视频教育" class="headerlink" title="五、案例-搭建edusoho在线视频教育"></a>五、案例-搭建edusoho在线视频教育</h2><h3 id="5-1-部署安装"><a href="#5-1-部署安装" class="headerlink" title="5.1 部署安装"></a>5.1 部署安装</h3><p>1、添加nginx配置文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;edu.oldboy.com.conf 
+server &#123;
+    listen 80;
+    server_name edu.oldboy.com;
+    root &#x2F;code&#x2F;edusoho&#x2F;web;
+    client_max_body_size 200m;
+
+    location &#x2F; &#123;
+        index app.php;
+        try_files $uri @rewriteapp;
+    &#125;
+    location @rewriteapp &#123;
+        rewrite ^(.*)$ &#x2F;app.php&#x2F;$1 last;
+    &#125;
+
+    location ~ ^&#x2F;udisk &#123;
+        internal;
+        root &#x2F;code&#x2F;edusoho&#x2F;app&#x2F;data&#x2F;;
+    &#125;
+
+    location ~ ^&#x2F;(app|app_dev)\.php(&#x2F;|$) &#123;
+        fastcgi_pass   127.0.0.1:9000;
+        fastcgi_split_path_info ^(.+\.php)(&#x2F;.*)$;
+        include fastcgi_params;
+        fastcgi_param  SCRIPT_FILENAME    $document_root$fastcgi_script_name;
+        fastcgi_param  HTTPS              off;
+        fastcgi_param HTTP_X-Sendfile-Type X-Accel-Redirect;
+        fastcgi_param HTTP_X-Accel-Mapping &#x2F;udisk&#x3D;&#x2F;code&#x2F;edusoho&#x2F;app&#x2F;data&#x2F;udisk;
+        fastcgi_buffer_size 128k;
+        fastcgi_buffers 8 128k;
+    &#125;
+
+    # 配置设置图片格式文件
+    location ~* \.(jpg|jpeg|gif|png|ico|swf)$ &#123;
+        # 过期时间为3年
+        expires 3y;
+        # 关闭日志记录
+        access_log off;
+        # 关闭gzip压缩，减少CPU消耗，因为图片的压缩率不高。
+        gzip off;
+    &#125;
+    # 配置css&#x2F;js文件
+    location ~* \.(css|js)$ &#123;
+        access_log off;
+        expires 3y;
+    &#125;
+    # 禁止用户上传目录下所有.php文件的访问，提高安全性
+    location ~ ^&#x2F;files&#x2F;.*\.(php|php5)$ &#123;
+        deny all;
+    &#125;
+
+    # 以下配置允许运行.php的程序，方便于其他第三方系统的集成。
+    location ~ \.php$ &#123;
+        fastcgi_pass   127.0.0.1:9000;
+        fastcgi_split_path_info ^(.+\.php)(&#x2F;.*)$;
+        include fastcgi_params;
+        fastcgi_param  SCRIPT_FILENAME    $document_root$fastcgi_script_name;
+        fastcgi_param  HTTPS              off;
+    &#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>2、下载edusoho,并授权文件夹</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">wget http:&#x2F;&#x2F;download.edusoho.com&#x2F;edusoho-8.2.17.tar.gz
+tar xf edusoho-8.2.17.tar.gz
+chown -R www.www edusoho<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>3、调整php的上传大小(上传文件默认有限制大小)</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# vim &#x2F;etc&#x2F;php.ini
+post_max_size &#x3D; 200M
+upload_max_filesize &#x3D; 200M
+[root@web01 code]# systemctl restart php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="六、各开源项目网站"><a href="#六、各开源项目网站" class="headerlink" title="六、各开源项目网站"></a>六、各开源项目网站</h2><p>phpmyadmin	<a target="_blank" rel="noopener" href="https://www.phpmyadmin.net/">https://www.phpmyadmin.net/</a><br>zblog	<a target="_blank" rel="noopener" href="https://www.zblogcn.com/">https://www.zblogcn.com/</a><br>wordpress	<a target="_blank" rel="noopener" href="https://cn.wordpress.org/">https://cn.wordpress.org/</a><br>wecenter	<a target="_blank" rel="noopener" href="http://www.wecenter.com/downloads/">http://www.wecenter.com/downloads/</a><br>edusohu	<a target="_blank" rel="noopener" href="http://www.edusoho.com/open/show">http://www.edusoho.com/open/show</a></p>
 
       
     </div>
@@ -2008,388 +2008,6 @@ proxy_buffers 4 128k;<span aria-hidden="true" class="line-numbers-rows"><span></
 <p>PS：问题原因</p>
 <p>使用nginx负载均衡时，如何将后端请求超时的服务器流量平滑的切换到另一台上。<br>Nginx是本身是有机制的，如果出现一个节点down掉的时候，Nginx会更据你具体负载均衡的设置，将请求转移到其他的节点上，但是，如果后台服务连接没有down掉，并且返回错误异常码了如：504、502、500，Nginx就会直接返回从后端获取的异常代码。</p>
 </blockquote>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/13-Nginx(%E4%B8%83)Nginx%E4%B8%83%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/13-Nginx(%E4%B8%83)Nginx%E4%B8%83%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5/" class="post-title-link" itemprop="url">运维之综合架构--07--Nginx(七)均衡调度</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-07-11 13:55:06" itemprop="dateModified" datetime="2022-07-11T13:55:06+08:00">2022-07-11</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="一、Nginx均衡调度算法"><a href="#一、Nginx均衡调度算法" class="headerlink" title="一、Nginx均衡调度算法"></a>一、Nginx均衡调度算法</h2><p>Nginx七层负载均衡分为5种调度算法</p>
-<table>
-<thead>
-<tr>
-<th>调度算法</th>
-<th>概述</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>轮询（常用）</td>
-<td>按时间顺序逐一分配到不同的后端服务器(默认)</td>
-</tr>
-<tr>
-<td>weight（面试点）</td>
-<td>加权轮询,weight值越大,分配到的访问几率越高</td>
-</tr>
-<tr>
-<td>ip_hash（面试点）</td>
-<td>每个请求按访问IP的hash结果分配,这样来自同一IP的固定访问一个后端服务器</td>
-</tr>
-<tr>
-<td>url_hash</td>
-<td>按照访问URL的hash结果来分配请求,是每个URL定向到同一个后端服务器</td>
-</tr>
-<tr>
-<td>least_hash</td>
-<td>最少链接数,那个机器链接数少就分发</td>
-</tr>
-</tbody></table>
-<h3 id="1-1-加权轮询"><a href="#1-1-加权轮询" class="headerlink" title="1.1 加权轮询"></a>1.1 加权轮询</h3><p>比如实现访问5次web01，1次web02</p>
-<p>当web服务器配置不相同，有差距时，可以用此方法</p>
-<p>在<code>lb01</code>配置</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
-upstream node &#123;
-        server 172.16.1.7:80 weight&#x3D;5;
-        server 172.16.1.8:80 weight&#x3D;1;
-&#125;
-
-server &#123;
-...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="1-2-ip-hash"><a href="#1-2-ip-hash" class="headerlink" title="1.2 ip_hash"></a>1.2 ip_hash</h3><blockquote>
-<p>PS：不能与weight一起使用</p>
-</blockquote>
-<p>根据请求的IP地址，固定访问到某一后端，除非已选择的后端down了，有点浪费资源</p>
-<p>在<code>lb01</code>配置</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
-upstream node &#123;
-        ip_hash;
-        server 172.16.1.7:80;
-        server 172.16.1.8:80;
-&#125;
-
-server &#123; 
-...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="二、Nginx负载均衡后端状态"><a href="#二、Nginx负载均衡后端状态" class="headerlink" title="二、Nginx负载均衡后端状态"></a>二、Nginx负载均衡后端状态</h2><table>
-<thead>
-<tr>
-<th>状态</th>
-<th>概述</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>down</td>
-<td>当前的server暂时不参与负载均衡</td>
-</tr>
-<tr>
-<td>backup</td>
-<td>预留的备份服务器</td>
-</tr>
-<tr>
-<td>max_conns</td>
-<td>限制最大的接收连接数</td>
-</tr>
-<tr>
-<td>max_fails（健康检查）</td>
-<td>允许请求失败的次数（不够精准，作用不大，得知道，面试会问）</td>
-</tr>
-<tr>
-<td>fail_timeout（健康检查）</td>
-<td>经过max_fails失败后, 服务暂停时间</td>
-</tr>
-</tbody></table>
-<h3 id="2-1-down状态"><a href="#2-1-down状态" class="headerlink" title="2.1 down状态"></a>2.1 down状态</h3><blockquote>
-<p>一般用于停机维护</p>
-</blockquote>
-<p>在<code>lb01</code>配置，可见当两台web的Nginx服务都正常时，只能访问web02，当web02的Nginx服务挂了，返回502</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
-upstream node &#123;
-        server 172.16.1.7:80 down;
-        server 172.16.1.8:80;
-&#125;
-
-server &#123;
-...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="2-2-backup状态"><a href="#2-2-backup状态" class="headerlink" title="2.2 backup状态"></a>2.2 backup状态</h3><p>在<code>lb01</code>配置，可见当两台web都正常时，只能访问web02，如果web02的服务挂了，会访问web01，当web02恢复后，再次访问到的是web02</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
-upstream node &#123;
-        server 172.16.1.7:80 backup;
-        server 172.16.1.8:80;
-&#125;
-
-server &#123;
-...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="2-3-健康检查"><a href="#2-3-健康检查" class="headerlink" title="2.3 健康检查"></a>2.3 健康检查</h3><blockquote>
-<p>自带的健康检查不够精准，且看不到信息，面试会问</p>
-</blockquote>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
-upstream node &#123;
-        server 172.16.1.7:80 max_fails&#x3D;2 fail_timeout&#x3D;10s;
-        server 172.16.1.8:80 max_fails&#x3D;2 fail_timeout&#x3D;10s;
-&#125;
-
-server &#123;
-...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="三、第三方健康检查模块check-upstream"><a href="#三、第三方健康检查模块check-upstream" class="headerlink" title="三、第三方健康检查模块check_upstream"></a>三、第三方健康检查模块check_upstream</h2><blockquote>
-<p>检测更精准，且有页面可以展示服务端的状态，需要编译安装</p>
-</blockquote>
-<h3 id="3-1-编译安装Nginx"><a href="#3-1-编译安装Nginx" class="headerlink" title="3.1 编译安装Nginx"></a>3.1 编译安装Nginx</h3><p>1、安装依赖包</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb02 ~]# yum install -y gcc glibc gcc-c++ pcre-devel openssl-devel  patch libxml2 -libxml2-devel libxslt libxslt-devel gd-devel perl-ExtUtils-Embed gperftools-devel.x86_64 gperftools-libs.x86_64 gperftools.x86_64<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>2、下载Nginx源码及第三方模块源码</p>
-<blockquote>
-<p>PS：为保持一致，先通过yum源安装nginx，这是当前实验环境的Nginx版本</p>
-<p>[root@lb01 nginx]# nginx -version<br>nginx version: nginx&#x2F;1.20.1</p>
-</blockquote>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb02 ~]# wget http:&#x2F;&#x2F;nginx.org&#x2F;download&#x2F;nginx-1.20.1.tar.gz
-[root@lb02 ~]# wget https:&#x2F;&#x2F;github.com&#x2F;yaoweibin&#x2F;nginx_upstream_check_module&#x2F;archive&#x2F;master.zip<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>3、解压nginx源码包以及第三方模块</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 ~]# unzip master.zip
-[root@lb01 ~]# tar -vxf nginx-1.20.1.tar.gz<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>4、打补丁</p>
-<blockquote>
-<p>打补丁(nginx的版本是1.20.1补丁就选择1.20.1的,p1代表在nginx目录，p0是不在nginx目录)</p>
-</blockquote>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx-1.20.1]# cd nginx-1.20.1&#x2F;
-[root@lb01 nginx-1.20.1]# patch -p1 &lt; ..&#x2F;nginx_upstream_check_module-master&#x2F;check_1.20.1+.patch<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>5、编译Nginx，附带模块参数</p>
-<blockquote>
-<p>通过nginx -V获取configure参数，尽量保持一致</p>
-</blockquote>
-<p>–add-module&#x3D;&#x2F;root&#x2F;nginx_upstream_check_module-master</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx-1.20.1]# .&#x2F;configure --prefix&#x3D;&#x2F;usr&#x2F;share&#x2F;nginx --sbin-path&#x3D;&#x2F;usr&#x2F;sbin&#x2F;nginx --modules-path&#x3D;&#x2F;usr&#x2F;lib64&#x2F;nginx&#x2F;modules --conf-path&#x3D;&#x2F;etc&#x2F;nginx&#x2F;nginx.conf --error-log-path&#x3D;&#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log --http-log-path&#x3D;&#x2F;var&#x2F;log&#x2F;nginx&#x2F;access.log --http-client-body-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;client_body --http-proxy-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;proxy --http-fastcgi-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;fastcgi --http-uwsgi-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;uwsgi --http-scgi-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;scgi --pid-path&#x3D;&#x2F;run&#x2F;nginx.pid --lock-path&#x3D;&#x2F;run&#x2F;lock&#x2F;subsys&#x2F;nginx --user&#x3D;nginx --group&#x3D;nginx --with-compat --with-debug --with-google_perftools_module --with-http_addition_module --with-http_auth_request_module --with-http_dav_module --with-http_degradation_module --with-http_flv_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_image_filter_module&#x3D;dynamic --with-http_mp4_module --with-http_perl_module&#x3D;dynamic --with-http_random_index_module --with-http_realip_module --with-http_secure_link_module --with-http_slice_module --with-http_ssl_module --with-http_stub_status_module --with-http_sub_module --with-http_v2_module --with-http_xslt_module&#x3D;dynamic --with-mail&#x3D;dynamic --with-mail_ssl_module --with-pcre --with-pcre-jit --with-stream&#x3D;dynamic --with-stream_ssl_module --with-stream_ssl_preread_module --with-threads --add-module&#x3D;&#x2F;root&#x2F;nginx_upstream_check_module-master<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>6、在已有的负载均衡上增加健康检查的功能</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx-1.20.1]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
-upstream node &#123;
-        server 172.16.1.7:80;
-        server 172.16.1.8:80;
-        check interval&#x3D;3000 rise&#x3D;2 fall&#x3D;3 timeout&#x3D;1000 type&#x3D;tcp;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="3-2-功能测试"><a href="#3-2-功能测试" class="headerlink" title="3.2 功能测试"></a>3.2 功能测试</h3><p>1、正常情况下的检测数据</p>
-<p><img src="/img/image-20210821113447825.png" alt="image-20210821113447825"></p>
-<p>2、测试将web01的nginx服务关掉</p>
-<p><img src="/img/image-20210821114011230.png" alt="image-20210821114011230"></p>
-<p>3、日志分析</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx-1.20.1]# tail -f &#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log
-# 两web服务正常，能获取peer
-2021&#x2F;08&#x2F;21 02:42:11 [error] 50522#50522: enable check peer: 172.16.1.8:80
-2021&#x2F;08&#x2F;21 02:42:12 [error] 50522#50522: enable check peer: 172.16.1.7:80
-2021&#x2F;08&#x2F;21 02:46:17 [error] 50522#50522: *13 connect() failed (111: Connection refused) while connecting to upstream, client: 10.0.0.1, server: node.oldboy.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, upstream: &quot;http:&#x2F;&#x2F;172.16.1.7:80&#x2F;&quot;, host: &quot;node.oldboy.com&quot;
-# 停止web01的nginx服务
-2021&#x2F;08&#x2F;21 02:46:20 [error] 50522#50522: disable check peer: 172.16.1.7:80
-# 重新启动web01的nginx服务
-2021&#x2F;08&#x2F;21 02:47:59 [error] 50522#50522: enable check peer: 172.16.1.7:80<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="四、如何解决网站重复登录的问题"><a href="#四、如何解决网站重复登录的问题" class="headerlink" title="四、如何解决网站重复登录的问题"></a>四、如何解决网站重复登录的问题</h2><p>有三种方法解决：</p>
-<ol>
-<li>ip_hash – 会造成某一台主机的压力过大</li>
-<li>session复制</li>
-<li>session共享<ol>
-<li>本地文件 –&gt; nfs共享</li>
-<li>通过程序，写入redis数据库（常用）</li>
-<li>通过程序，写入mysql数据库</li>
-</ol>
-</li>
-</ol>
-<p>本案例，选用3.2配置，session共享，写入redis数据库</p>
-<h3 id="4-1-安装phpmyadmin重现问题"><a href="#4-1-安装phpmyadmin重现问题" class="headerlink" title="4.1 安装phpmyadmin重现问题"></a>4.1 安装phpmyadmin重现问题</h3><p><code>web01</code>和<code>web02</code>都需要安装</p>
-<p>1、配置Nginx</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cat php.conf
-server &#123;
-	listen 80;
-	server_name php.oldboy.com;
-	root &#x2F;code&#x2F;phpMyAdmin-4.8.4-all-languages;
-
-	location &#x2F; &#123;
-		index index.php index.html;
-	&#125;
-
-	location ~ \.php$ &#123;
-		fastcgi_pass 127.0.0.1:9000;
-		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-		include fastcgi_params;
-	&#125;
-&#125;
-[root@web01 conf.d]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>2、安装phpmyadmin</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cd &#x2F;code
-[root@web01 code]# wget https:&#x2F;&#x2F;files.phpmyadmin.net&#x2F;phpMyAdmin&#x2F;4.8.4&#x2F;phpMyAdmin-4.8.4-all-languages.zip
-[root@web01 code]# unzip phpMyAdmin-4.8.4-all-languages.zip<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<p>3、配置phpmyadmin连接远程数据库</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# cd phpMyAdmin-4.8.4-all-languages&#x2F;
-[root@web01 phpMyAdmin-4.8.4-all-languages]# cp config.sample.inc.php config.inc.php
-[root@web01 phpMyAdmin-4.8.4-all-languages]# vim config.inc.php
-&#x2F;* Server parameters *&#x2F;
-$cfg[&#39;Servers&#39;][$i][&#39;host&#39;] &#x3D; &#39;172.16.1.51&#39;;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>4、配置授权</p>
-<blockquote>
-<p>这个文件夹中会记录session，需要权限</p>
-<p>session_start(): Failed to read session data: files (path: &#x2F;var&#x2F;lib&#x2F;php&#x2F;session)</p>
-</blockquote>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# chown -R www.www &#x2F;var&#x2F;lib&#x2F;php&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>5、将web01上配置好的phpmyadmin以及nginx的配置文件推送到web02主机上</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# scp -rp  phpMyAdmin-4.8.4-all-languages root@172.16.1.8:&#x2F;code&#x2F;
-[root@web01 code]# scp &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;php.conf  root@172.16.1.8:&#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>6、重载Nginx服务，授权访问权限</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web02 code]# systemctl restart nginx
-[root@web02 code]# chown -R www.www &#x2F;var&#x2F;lib&#x2F;php&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>7、接入负载均衡，并重启nginx服务，<code>lb01</code>操作</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 conf.d]# vim proxy_php.com.conf 
-upstream php &#123;
-        server 172.16.1.7:80;
-        server 172.16.1.8:80;
-&#125;
-server &#123;
-        listen 80;
-        server_name php.oldboy.com;
-        location &#x2F; &#123;
-                proxy_pass http:&#x2F;&#x2F;php;
-                include proxy_params;
-        &#125;
-&#125;
-
-[root@lb01 conf.d]# nginx -t
-nginx: the configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf syntax is ok
-nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test is successful
-[root@lb01 conf.d]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>9、测试访问</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">网页访问：
-	http:&#x2F;&#x2F;php.oldboy.com
-登录账户:
-	采用db01（172.16.1.51）的mysql远程账户oldboy&#x2F;Bgx123.com
-此时访问phpmyadmin登录将一直失败，因为轮询访问，session一直变：
-报错：
-Failed to set session cookie. Maybe you are using HTTP instead of HTTPS to access phpMyAdmin.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="4-2-解决问题"><a href="#4-2-解决问题" class="headerlink" title="4.2 解决问题"></a>4.2 解决问题</h3><p>1、在<code>db01</code>安装redis数据库</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@db01 ~]# yum install redis -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>2、配置并启动redis</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@db01 ~]# sed  -i &#39;&#x2F;^bind&#x2F;c bind 127.0.0.1 172.16.1.51&#39; &#x2F;etc&#x2F;redis.conf
-[root@db01 ~]# systemctl start redis
-[root@db01 ~]# systemctl enable redis<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<p>3、<code>web01</code>的php配置session连接redis</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">#1.修改&#x2F;etc&#x2F;php.ini文件
-[root@web01 ~]# vim &#x2F;etc&#x2F;php.ini
-session.save_handler &#x3D; redis
-session.save_path &#x3D; &quot;tcp:&#x2F;&#x2F;172.16.1.51:6379&quot;
-;session.save_path &#x3D; &quot;tcp:&#x2F;&#x2F;172.16.1.51:6379?auth&#x3D;123&quot; #如果redis存在密码，则使用该方式
-session.auto_start &#x3D; 1<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>4、注释php-fpm.d&#x2F;<a target="_blank" rel="noopener" href="http://www.conf里面的两条内容,否则session内容会一直写入/var/lib/php/session%E7%9B%AE%E5%BD%95%E4%B8%AD">www.conf里面的两条内容，否则session内容会一直写入/var/lib/php/session目录中</a></p>
-<pre class="line-numbers language-she" data-language="she"><code class="language-she">;php_value[session.save_handler] &#x3D; files
-;php_value[session.save_path]    &#x3D; &#x2F;var&#x2F;lib&#x2F;php&#x2F;session<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>5、重启php-fpm</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web02 code]# systemctl restart php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>6、将<code>web01</code>的配置文件推送到<code>web02</code>上</p>
-<pre class="line-numbers language-she" data-language="she"><code class="language-she">[root@web01 code]# scp &#x2F;etc&#x2F;php.ini root@172.16.1.8:&#x2F;etc&#x2F;php.ini  
-[root@web01 code]# scp &#x2F;etc&#x2F;php-fpm.d&#x2F;www.conf root@172.16.1.8:&#x2F;etc&#x2F;php-fpm.d&#x2F;www.conf <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>7、重启服务</p>
-<pre class="line-numbers language-she" data-language="she"><code class="language-she">[root@web02 code]# systemctl restart php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>8、再次测试访问网站</p>
-<p>可以登录，并且session的值将记录到redis数据库</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@db01 ~]# redis-cli -h 172.16.1.51
-172.16.1.51:6379&gt; KEYS *
-1) &quot;PHPREDIS_SESSION:716e61cabeb40f974fcbcdcac65f8607&quot;
-2) &quot;PHPREDIS_SESSION:42ca5a8ea9375a93a7974427b77b3dd7&quot;
-172.16.1.51:6379&gt;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>9、刷新页面的负载均衡效果展示</p>
-<p><img src="/img/image-20210823225246243.png" alt="image-20210823225246243"></p>
-<p><img src="/img/image-20210823225305632.png" alt="image-20210823225305632"></p>
-<p>10、cookie保存到redis展示</p>
-<p><img src="/img/image-20210823225412626.png" alt="image-20210823225412626"></p>
 
       
     </div>
@@ -2929,6 +2547,388 @@ ssh root@10.0.0.3 -p 6666<span aria-hidden="true" class="line-numbers-rows"><spa
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/13-Nginx(%E4%B8%83)Nginx%E4%B8%83%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/13-Nginx(%E4%B8%83)Nginx%E4%B8%83%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5/" class="post-title-link" itemprop="url">运维之综合架构--07--Nginx(七)均衡调度</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-11 13:55:06" itemprop="dateModified" datetime="2022-07-11T13:55:06+08:00">2022-07-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="一、Nginx均衡调度算法"><a href="#一、Nginx均衡调度算法" class="headerlink" title="一、Nginx均衡调度算法"></a>一、Nginx均衡调度算法</h2><p>Nginx七层负载均衡分为5种调度算法</p>
+<table>
+<thead>
+<tr>
+<th>调度算法</th>
+<th>概述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>轮询（常用）</td>
+<td>按时间顺序逐一分配到不同的后端服务器(默认)</td>
+</tr>
+<tr>
+<td>weight（面试点）</td>
+<td>加权轮询,weight值越大,分配到的访问几率越高</td>
+</tr>
+<tr>
+<td>ip_hash（面试点）</td>
+<td>每个请求按访问IP的hash结果分配,这样来自同一IP的固定访问一个后端服务器</td>
+</tr>
+<tr>
+<td>url_hash</td>
+<td>按照访问URL的hash结果来分配请求,是每个URL定向到同一个后端服务器</td>
+</tr>
+<tr>
+<td>least_hash</td>
+<td>最少链接数,那个机器链接数少就分发</td>
+</tr>
+</tbody></table>
+<h3 id="1-1-加权轮询"><a href="#1-1-加权轮询" class="headerlink" title="1.1 加权轮询"></a>1.1 加权轮询</h3><p>比如实现访问5次web01，1次web02</p>
+<p>当web服务器配置不相同，有差距时，可以用此方法</p>
+<p>在<code>lb01</code>配置</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
+upstream node &#123;
+        server 172.16.1.7:80 weight&#x3D;5;
+        server 172.16.1.8:80 weight&#x3D;1;
+&#125;
+
+server &#123;
+...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="1-2-ip-hash"><a href="#1-2-ip-hash" class="headerlink" title="1.2 ip_hash"></a>1.2 ip_hash</h3><blockquote>
+<p>PS：不能与weight一起使用</p>
+</blockquote>
+<p>根据请求的IP地址，固定访问到某一后端，除非已选择的后端down了，有点浪费资源</p>
+<p>在<code>lb01</code>配置</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
+upstream node &#123;
+        ip_hash;
+        server 172.16.1.7:80;
+        server 172.16.1.8:80;
+&#125;
+
+server &#123; 
+...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="二、Nginx负载均衡后端状态"><a href="#二、Nginx负载均衡后端状态" class="headerlink" title="二、Nginx负载均衡后端状态"></a>二、Nginx负载均衡后端状态</h2><table>
+<thead>
+<tr>
+<th>状态</th>
+<th>概述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>down</td>
+<td>当前的server暂时不参与负载均衡</td>
+</tr>
+<tr>
+<td>backup</td>
+<td>预留的备份服务器</td>
+</tr>
+<tr>
+<td>max_conns</td>
+<td>限制最大的接收连接数</td>
+</tr>
+<tr>
+<td>max_fails（健康检查）</td>
+<td>允许请求失败的次数（不够精准，作用不大，得知道，面试会问）</td>
+</tr>
+<tr>
+<td>fail_timeout（健康检查）</td>
+<td>经过max_fails失败后, 服务暂停时间</td>
+</tr>
+</tbody></table>
+<h3 id="2-1-down状态"><a href="#2-1-down状态" class="headerlink" title="2.1 down状态"></a>2.1 down状态</h3><blockquote>
+<p>一般用于停机维护</p>
+</blockquote>
+<p>在<code>lb01</code>配置，可见当两台web的Nginx服务都正常时，只能访问web02，当web02的Nginx服务挂了，返回502</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
+upstream node &#123;
+        server 172.16.1.7:80 down;
+        server 172.16.1.8:80;
+&#125;
+
+server &#123;
+...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-2-backup状态"><a href="#2-2-backup状态" class="headerlink" title="2.2 backup状态"></a>2.2 backup状态</h3><p>在<code>lb01</code>配置，可见当两台web都正常时，只能访问web02，如果web02的服务挂了，会访问web01，当web02恢复后，再次访问到的是web02</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
+upstream node &#123;
+        server 172.16.1.7:80 backup;
+        server 172.16.1.8:80;
+&#125;
+
+server &#123;
+...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-3-健康检查"><a href="#2-3-健康检查" class="headerlink" title="2.3 健康检查"></a>2.3 健康检查</h3><blockquote>
+<p>自带的健康检查不够精准，且看不到信息，面试会问</p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
+upstream node &#123;
+        server 172.16.1.7:80 max_fails&#x3D;2 fail_timeout&#x3D;10s;
+        server 172.16.1.8:80 max_fails&#x3D;2 fail_timeout&#x3D;10s;
+&#125;
+
+server &#123;
+...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="三、第三方健康检查模块check-upstream"><a href="#三、第三方健康检查模块check-upstream" class="headerlink" title="三、第三方健康检查模块check_upstream"></a>三、第三方健康检查模块check_upstream</h2><blockquote>
+<p>检测更精准，且有页面可以展示服务端的状态，需要编译安装</p>
+</blockquote>
+<h3 id="3-1-编译安装Nginx"><a href="#3-1-编译安装Nginx" class="headerlink" title="3.1 编译安装Nginx"></a>3.1 编译安装Nginx</h3><p>1、安装依赖包</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb02 ~]# yum install -y gcc glibc gcc-c++ pcre-devel openssl-devel  patch libxml2 -libxml2-devel libxslt libxslt-devel gd-devel perl-ExtUtils-Embed gperftools-devel.x86_64 gperftools-libs.x86_64 gperftools.x86_64<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>2、下载Nginx源码及第三方模块源码</p>
+<blockquote>
+<p>PS：为保持一致，先通过yum源安装nginx，这是当前实验环境的Nginx版本</p>
+<p>[root@lb01 nginx]# nginx -version<br>nginx version: nginx&#x2F;1.20.1</p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb02 ~]# wget http:&#x2F;&#x2F;nginx.org&#x2F;download&#x2F;nginx-1.20.1.tar.gz
+[root@lb02 ~]# wget https:&#x2F;&#x2F;github.com&#x2F;yaoweibin&#x2F;nginx_upstream_check_module&#x2F;archive&#x2F;master.zip<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>3、解压nginx源码包以及第三方模块</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 ~]# unzip master.zip
+[root@lb01 ~]# tar -vxf nginx-1.20.1.tar.gz<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>4、打补丁</p>
+<blockquote>
+<p>打补丁(nginx的版本是1.20.1补丁就选择1.20.1的,p1代表在nginx目录，p0是不在nginx目录)</p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx-1.20.1]# cd nginx-1.20.1&#x2F;
+[root@lb01 nginx-1.20.1]# patch -p1 &lt; ..&#x2F;nginx_upstream_check_module-master&#x2F;check_1.20.1+.patch<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>5、编译Nginx，附带模块参数</p>
+<blockquote>
+<p>通过nginx -V获取configure参数，尽量保持一致</p>
+</blockquote>
+<p>–add-module&#x3D;&#x2F;root&#x2F;nginx_upstream_check_module-master</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx-1.20.1]# .&#x2F;configure --prefix&#x3D;&#x2F;usr&#x2F;share&#x2F;nginx --sbin-path&#x3D;&#x2F;usr&#x2F;sbin&#x2F;nginx --modules-path&#x3D;&#x2F;usr&#x2F;lib64&#x2F;nginx&#x2F;modules --conf-path&#x3D;&#x2F;etc&#x2F;nginx&#x2F;nginx.conf --error-log-path&#x3D;&#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log --http-log-path&#x3D;&#x2F;var&#x2F;log&#x2F;nginx&#x2F;access.log --http-client-body-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;client_body --http-proxy-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;proxy --http-fastcgi-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;fastcgi --http-uwsgi-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;uwsgi --http-scgi-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;scgi --pid-path&#x3D;&#x2F;run&#x2F;nginx.pid --lock-path&#x3D;&#x2F;run&#x2F;lock&#x2F;subsys&#x2F;nginx --user&#x3D;nginx --group&#x3D;nginx --with-compat --with-debug --with-google_perftools_module --with-http_addition_module --with-http_auth_request_module --with-http_dav_module --with-http_degradation_module --with-http_flv_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_image_filter_module&#x3D;dynamic --with-http_mp4_module --with-http_perl_module&#x3D;dynamic --with-http_random_index_module --with-http_realip_module --with-http_secure_link_module --with-http_slice_module --with-http_ssl_module --with-http_stub_status_module --with-http_sub_module --with-http_v2_module --with-http_xslt_module&#x3D;dynamic --with-mail&#x3D;dynamic --with-mail_ssl_module --with-pcre --with-pcre-jit --with-stream&#x3D;dynamic --with-stream_ssl_module --with-stream_ssl_preread_module --with-threads --add-module&#x3D;&#x2F;root&#x2F;nginx_upstream_check_module-master<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>6、在已有的负载均衡上增加健康检查的功能</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx-1.20.1]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
+upstream node &#123;
+        server 172.16.1.7:80;
+        server 172.16.1.8:80;
+        check interval&#x3D;3000 rise&#x3D;2 fall&#x3D;3 timeout&#x3D;1000 type&#x3D;tcp;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="3-2-功能测试"><a href="#3-2-功能测试" class="headerlink" title="3.2 功能测试"></a>3.2 功能测试</h3><p>1、正常情况下的检测数据</p>
+<p><img src="/img/image-20210821113447825.png" alt="image-20210821113447825"></p>
+<p>2、测试将web01的nginx服务关掉</p>
+<p><img src="/img/image-20210821114011230.png" alt="image-20210821114011230"></p>
+<p>3、日志分析</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx-1.20.1]# tail -f &#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log
+# 两web服务正常，能获取peer
+2021&#x2F;08&#x2F;21 02:42:11 [error] 50522#50522: enable check peer: 172.16.1.8:80
+2021&#x2F;08&#x2F;21 02:42:12 [error] 50522#50522: enable check peer: 172.16.1.7:80
+2021&#x2F;08&#x2F;21 02:46:17 [error] 50522#50522: *13 connect() failed (111: Connection refused) while connecting to upstream, client: 10.0.0.1, server: node.oldboy.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, upstream: &quot;http:&#x2F;&#x2F;172.16.1.7:80&#x2F;&quot;, host: &quot;node.oldboy.com&quot;
+# 停止web01的nginx服务
+2021&#x2F;08&#x2F;21 02:46:20 [error] 50522#50522: disable check peer: 172.16.1.7:80
+# 重新启动web01的nginx服务
+2021&#x2F;08&#x2F;21 02:47:59 [error] 50522#50522: enable check peer: 172.16.1.7:80<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="四、如何解决网站重复登录的问题"><a href="#四、如何解决网站重复登录的问题" class="headerlink" title="四、如何解决网站重复登录的问题"></a>四、如何解决网站重复登录的问题</h2><p>有三种方法解决：</p>
+<ol>
+<li>ip_hash – 会造成某一台主机的压力过大</li>
+<li>session复制</li>
+<li>session共享<ol>
+<li>本地文件 –&gt; nfs共享</li>
+<li>通过程序，写入redis数据库（常用）</li>
+<li>通过程序，写入mysql数据库</li>
+</ol>
+</li>
+</ol>
+<p>本案例，选用3.2配置，session共享，写入redis数据库</p>
+<h3 id="4-1-安装phpmyadmin重现问题"><a href="#4-1-安装phpmyadmin重现问题" class="headerlink" title="4.1 安装phpmyadmin重现问题"></a>4.1 安装phpmyadmin重现问题</h3><p><code>web01</code>和<code>web02</code>都需要安装</p>
+<p>1、配置Nginx</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cat php.conf
+server &#123;
+	listen 80;
+	server_name php.oldboy.com;
+	root &#x2F;code&#x2F;phpMyAdmin-4.8.4-all-languages;
+
+	location &#x2F; &#123;
+		index index.php index.html;
+	&#125;
+
+	location ~ \.php$ &#123;
+		fastcgi_pass 127.0.0.1:9000;
+		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+		include fastcgi_params;
+	&#125;
+&#125;
+[root@web01 conf.d]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>2、安装phpmyadmin</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cd &#x2F;code
+[root@web01 code]# wget https:&#x2F;&#x2F;files.phpmyadmin.net&#x2F;phpMyAdmin&#x2F;4.8.4&#x2F;phpMyAdmin-4.8.4-all-languages.zip
+[root@web01 code]# unzip phpMyAdmin-4.8.4-all-languages.zip<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>3、配置phpmyadmin连接远程数据库</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# cd phpMyAdmin-4.8.4-all-languages&#x2F;
+[root@web01 phpMyAdmin-4.8.4-all-languages]# cp config.sample.inc.php config.inc.php
+[root@web01 phpMyAdmin-4.8.4-all-languages]# vim config.inc.php
+&#x2F;* Server parameters *&#x2F;
+$cfg[&#39;Servers&#39;][$i][&#39;host&#39;] &#x3D; &#39;172.16.1.51&#39;;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>4、配置授权</p>
+<blockquote>
+<p>这个文件夹中会记录session，需要权限</p>
+<p>session_start(): Failed to read session data: files (path: &#x2F;var&#x2F;lib&#x2F;php&#x2F;session)</p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# chown -R www.www &#x2F;var&#x2F;lib&#x2F;php&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>5、将web01上配置好的phpmyadmin以及nginx的配置文件推送到web02主机上</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# scp -rp  phpMyAdmin-4.8.4-all-languages root@172.16.1.8:&#x2F;code&#x2F;
+[root@web01 code]# scp &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;php.conf  root@172.16.1.8:&#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>6、重载Nginx服务，授权访问权限</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web02 code]# systemctl restart nginx
+[root@web02 code]# chown -R www.www &#x2F;var&#x2F;lib&#x2F;php&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>7、接入负载均衡，并重启nginx服务，<code>lb01</code>操作</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 conf.d]# vim proxy_php.com.conf 
+upstream php &#123;
+        server 172.16.1.7:80;
+        server 172.16.1.8:80;
+&#125;
+server &#123;
+        listen 80;
+        server_name php.oldboy.com;
+        location &#x2F; &#123;
+                proxy_pass http:&#x2F;&#x2F;php;
+                include proxy_params;
+        &#125;
+&#125;
+
+[root@lb01 conf.d]# nginx -t
+nginx: the configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf syntax is ok
+nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test is successful
+[root@lb01 conf.d]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>9、测试访问</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">网页访问：
+	http:&#x2F;&#x2F;php.oldboy.com
+登录账户:
+	采用db01（172.16.1.51）的mysql远程账户oldboy&#x2F;Bgx123.com
+此时访问phpmyadmin登录将一直失败，因为轮询访问，session一直变：
+报错：
+Failed to set session cookie. Maybe you are using HTTP instead of HTTPS to access phpMyAdmin.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="4-2-解决问题"><a href="#4-2-解决问题" class="headerlink" title="4.2 解决问题"></a>4.2 解决问题</h3><p>1、在<code>db01</code>安装redis数据库</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@db01 ~]# yum install redis -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>2、配置并启动redis</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@db01 ~]# sed  -i &#39;&#x2F;^bind&#x2F;c bind 127.0.0.1 172.16.1.51&#39; &#x2F;etc&#x2F;redis.conf
+[root@db01 ~]# systemctl start redis
+[root@db01 ~]# systemctl enable redis<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>3、<code>web01</code>的php配置session连接redis</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">#1.修改&#x2F;etc&#x2F;php.ini文件
+[root@web01 ~]# vim &#x2F;etc&#x2F;php.ini
+session.save_handler &#x3D; redis
+session.save_path &#x3D; &quot;tcp:&#x2F;&#x2F;172.16.1.51:6379&quot;
+;session.save_path &#x3D; &quot;tcp:&#x2F;&#x2F;172.16.1.51:6379?auth&#x3D;123&quot; #如果redis存在密码，则使用该方式
+session.auto_start &#x3D; 1<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>4、注释php-fpm.d&#x2F;<a target="_blank" rel="noopener" href="http://www.conf里面的两条内容,否则session内容会一直写入/var/lib/php/session%E7%9B%AE%E5%BD%95%E4%B8%AD">www.conf里面的两条内容，否则session内容会一直写入/var/lib/php/session目录中</a></p>
+<pre class="line-numbers language-she" data-language="she"><code class="language-she">;php_value[session.save_handler] &#x3D; files
+;php_value[session.save_path]    &#x3D; &#x2F;var&#x2F;lib&#x2F;php&#x2F;session<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>5、重启php-fpm</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web02 code]# systemctl restart php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>6、将<code>web01</code>的配置文件推送到<code>web02</code>上</p>
+<pre class="line-numbers language-she" data-language="she"><code class="language-she">[root@web01 code]# scp &#x2F;etc&#x2F;php.ini root@172.16.1.8:&#x2F;etc&#x2F;php.ini  
+[root@web01 code]# scp &#x2F;etc&#x2F;php-fpm.d&#x2F;www.conf root@172.16.1.8:&#x2F;etc&#x2F;php-fpm.d&#x2F;www.conf <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>7、重启服务</p>
+<pre class="line-numbers language-she" data-language="she"><code class="language-she">[root@web02 code]# systemctl restart php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>8、再次测试访问网站</p>
+<p>可以登录，并且session的值将记录到redis数据库</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@db01 ~]# redis-cli -h 172.16.1.51
+172.16.1.51:6379&gt; KEYS *
+1) &quot;PHPREDIS_SESSION:716e61cabeb40f974fcbcdcac65f8607&quot;
+2) &quot;PHPREDIS_SESSION:42ca5a8ea9375a93a7974427b77b3dd7&quot;
+172.16.1.51:6379&gt;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>9、刷新页面的负载均衡效果展示</p>
+<p><img src="/img/image-20210823225246243.png" alt="image-20210823225246243"></p>
+<p><img src="/img/image-20210823225305632.png" alt="image-20210823225305632"></p>
+<p>10、cookie保存到redis展示</p>
+<p><img src="/img/image-20210823225412626.png" alt="image-20210823225412626"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/15-Nginx(%E4%B9%9D)%E5%8A%A8%E9%9D%99%E5%88%86%E7%A6%BB%E5%92%8Crewrite/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -3244,6 +3244,99 @@ web02的Tomcat服务正常，关掉web01的nginx服务
 <td>提供PC访问页面</td>
 </tr>
 </tbody></table>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day01-%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AE%89%E8%A3%85/%E8%AF%BE%E5%A0%82%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day01-%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AE%89%E8%A3%85/%E8%AF%BE%E5%A0%82%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">运维之基础命令--虚拟机安装</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:08:58" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="day01-课堂笔记"><a href="#day01-课堂笔记" class="headerlink" title="day01 : 课堂笔记"></a>day01 : 课堂笔记</h1><h2 id="安装系统"><a href="#安装系统" class="headerlink" title="安装系统"></a>安装系统</h2><p><strong>1、安装虚拟机</strong></p>
+<p><img src="/.%5Cassets%5Cimage-20210302121236930.png" alt="image-20210302121236930"></p>
+<p>解压上述软件，创建vmware.exe快捷方式，然后用快捷方式打开。</p>
+<p><img src="/.%5Cassets%5Cimage-20210302121408360.png" alt="image-20210302121408360"></p>
+<p><strong>2、创建虚拟机</strong></p>
+<p><img src="/.%5Cassets%5Cimage-20210302121456338.png" alt="image-20210302121456338"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302121550128.png" alt="image-20210302121550128"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302121622000.png" alt="image-20210302121622000"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302121745568.png" alt="image-20210302121745568"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302122035359.png" alt="image-20210302122035359"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302122256831.png" alt="image-20210302122256831"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302122359568.png" alt="image-20210302122359568"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302122603313.png" alt="image-20210302122603313"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302122657199.png" alt="image-20210302122657199"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302123826623.png" alt="image-20210302123826623"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124229475.png" alt="image-20210302124229475"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124308081.png" alt="image-20210302124308081"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124327456.png" alt="image-20210302124327456"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124404318.png" alt="image-20210302124404318"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124713502.png" alt="image-20210302124713502"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124741038.png" alt="image-20210302124741038"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302125049653.png" alt="image-20210302125049653"></p>
 
       
     </div>
@@ -3794,99 +3887,6 @@ x		可执行		<span class="token number">1</span>
 
 <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day01-%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AE%89%E8%A3%85/%E8%AF%BE%E5%A0%82%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day01-%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AE%89%E8%A3%85/%E8%AF%BE%E5%A0%82%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">运维之基础命令--虚拟机安装</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:08:58" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="day01-课堂笔记"><a href="#day01-课堂笔记" class="headerlink" title="day01 : 课堂笔记"></a>day01 : 课堂笔记</h1><h2 id="安装系统"><a href="#安装系统" class="headerlink" title="安装系统"></a>安装系统</h2><p><strong>1、安装虚拟机</strong></p>
-<p><img src="/.%5Cassets%5Cimage-20210302121236930.png" alt="image-20210302121236930"></p>
-<p>解压上述软件，创建vmware.exe快捷方式，然后用快捷方式打开。</p>
-<p><img src="/.%5Cassets%5Cimage-20210302121408360.png" alt="image-20210302121408360"></p>
-<p><strong>2、创建虚拟机</strong></p>
-<p><img src="/.%5Cassets%5Cimage-20210302121456338.png" alt="image-20210302121456338"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302121550128.png" alt="image-20210302121550128"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302121622000.png" alt="image-20210302121622000"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302121745568.png" alt="image-20210302121745568"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302122035359.png" alt="image-20210302122035359"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302122256831.png" alt="image-20210302122256831"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302122359568.png" alt="image-20210302122359568"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302122603313.png" alt="image-20210302122603313"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302122657199.png" alt="image-20210302122657199"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302123826623.png" alt="image-20210302123826623"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302124229475.png" alt="image-20210302124229475"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302124308081.png" alt="image-20210302124308081"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302124327456.png" alt="image-20210302124327456"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302124404318.png" alt="image-20210302124404318"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302124713502.png" alt="image-20210302124713502"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302124741038.png" alt="image-20210302124741038"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302125049653.png" alt="image-20210302125049653"></p>
 
       
     </div>
