@@ -282,493 +282,6 @@ root:x:0:0:root:/root:/bin/bash
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day11-sudo%E4%B8%8Esu/facl/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day11-sudo%E4%B8%8Esu/facl/" class="post-title-link" itemprop="url">运维之基础命令--文件ACL</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:13:53" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="笔记"><a href="#笔记" class="headerlink" title="笔记"></a>笔记</h1><blockquote>
-<p>补充：</p>
-<p>​	权限的归属</p>
-<p>​		a : 属组、属主以及其他人的权限一起设置。</p>
-<p>​		o : 其他人</p>
-<p>​		g : 属组</p>
-<p>​		u : 属主</p>
-</blockquote>
-<h2 id="umask"><a href="#umask" class="headerlink" title="umask"></a>umask</h2><blockquote>
-<p>就是解决目录及文件的默认权限。</p>
-</blockquote>
-<ul>
-<li>文件的最高权限是多少     777</li>
-<li>文件夹的最高权限是多少  777</li>
-</ul>
-<h2 id="ACL"><a href="#ACL" class="headerlink" title="ACL"></a>ACL</h2><blockquote>
-<p>ACL是为了解决某种特殊环境下的，用户权限需求。</p>
-</blockquote>
-<ul>
-<li>setfacl ： 设置acl权限</li>
-<li>getfacl ：查看ACL权限</li>
-</ul>
-<h3 id="acl权限归属"><a href="#acl权限归属" class="headerlink" title="acl权限归属"></a>acl权限归属</h3><ul>
-<li>u : 指定用户</li>
-<li>g : 指定组</li>
-<li>o : 修改其他用户权限</li>
-<li>m : 指定mask权限</li>
-</ul>
-<p>注：默认情况下，ACL权限跟普通权限保持一致。</p>
-<h2 id="ACL-的流程"><a href="#ACL-的流程" class="headerlink" title="ACL 的流程"></a>ACL 的流程</h2><ul>
-<li><p>1、创建文件</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">chmod</span> o+x /root
-<span class="token function">chmod</span> o+x /root/xiaochen
-<span class="token builtin class-name">cd</span> xiaochen
-
-<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># touch abc.txt</span>
-<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># chmod 000 abc.txt </span>
-<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># ll</span>
-total <span class="token number">0</span>
----------- <span class="token number">1</span> root root <span class="token number">0</span> Mar <span class="token number">16</span> <span class="token number">11</span>:39 abc.txt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>编写文件</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># echo 111 > abc.txt </span>
-<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># cat abc.txt </span>
-<span class="token number">111</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>设置ACL权限</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># useradd xiaozhang</span>
-<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># setfacl -m u:xiaozhang:r abc.txt </span>
-<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
-<span class="token comment"># file: abc.txt</span>
-<span class="token comment"># owner: root</span>
-<span class="token comment"># group: root</span>
-user::---
-user:xiaozhang:r--
-group::---
-mask::r--
-other::---
-
-<span class="token comment"># 注：</span>
-setfacl -m u:用户名称:权限<span class="token punctuation">(</span>rwx<span class="token punctuation">)</span> 文件名称<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>查看文件</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># su - xiaozhang</span>
-<span class="token punctuation">[</span>xiaozhang@localhost ~<span class="token punctuation">]</span>$ <span class="token function">cat</span> /root/xiaochen/abc.txt
-<span class="token number">111</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></li>
-</ul>
-<p>mask :  rw-</p>
-<p>xxxx :   -w-</p>
-<p>-w-</p>
-<h2 id="ACL权限的删除"><a href="#ACL权限的删除" class="headerlink" title="ACL权限的删除"></a>ACL权限的删除</h2><ul>
-<li><p>删除某个权限</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
-<span class="token comment"># file: abc.txt</span>
-<span class="token comment"># owner: root</span>
-<span class="token comment"># group: root</span>
-user::---
-user:xiaozhang:r--
-group::---
-group:xiaochen:r-x		<span class="token comment">#effective:r--</span>
-mask::rw-
-other::r--
-
-<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># setfacl -x u:xiaozhang abc.txt</span>
-
-<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
-<span class="token comment"># file: abc.txt</span>
-<span class="token comment"># owner: root</span>
-<span class="token comment"># group: root</span>
-user::---
-group::---
-group:xiaochen:r-x
-mask::r-x
-other::r--
-
-
-<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
-<span class="token comment"># file: abc.txt</span>
-<span class="token comment"># owner: root</span>
-<span class="token comment"># group: root</span>
-user::---
-group::---
-group:xiaochen:r-x
-mask::r-x
-other::r--
-
-<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># setfacl -x g:xiaochen abc.txt </span>
-<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
-<span class="token comment"># file: abc.txt</span>
-<span class="token comment"># owner: root</span>
-<span class="token comment"># group: root</span>
-user::---
-group::---
-mask::---
-other::r--
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-
-</li>
-<li><p>清空acl权限</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
-<span class="token comment"># file: abc.txt</span>
-<span class="token comment"># owner: root</span>
-<span class="token comment"># group: root</span>
-user::---
-user:xiaochen:rw-
-user:xiaocao:rw-
-group::---
-group:xiaochen:rw-
-group:xiaocao:rw-
-mask::rw-
-other::r--
-
-<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># setfacl -b abc.txt </span>
-<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
-<span class="token comment"># file: abc.txt</span>
-<span class="token comment"># owner: root</span>
-<span class="token comment"># group: root</span>
-user::---
-group::---
-other::r--
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
-</ul>
-<h2 id="ACL继承"><a href="#ACL继承" class="headerlink" title="ACL继承"></a>ACL继承</h2><blockquote>
-<p>默认情况下，ACL是不会继承上层目录的权限的。只有目录设置可继承子集文件才可以继承ACL权限。</p>
-</blockquote>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost linux12<span class="token punctuation">]</span><span class="token comment"># setfacl -m d:u:xiaochen:w ../linux12</span>
-<span class="token punctuation">[</span>root@localhost linux12<span class="token punctuation">]</span><span class="token comment"># touch bcd.txt</span>
-<span class="token punctuation">[</span>root@localhost linux12<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
-total <span class="token number">0</span>
--rw-r--r--  <span class="token number">1</span> root root <span class="token number">0</span> Mar <span class="token number">16</span> <span class="token number">15</span>:40 abc.txt
--rw-rw-r--+ <span class="token number">1</span> root root <span class="token number">0</span> Mar <span class="token number">16</span> <span class="token number">15</span>:43 bcd.txt
-<span class="token punctuation">[</span>root@localhost linux12<span class="token punctuation">]</span><span class="token comment"># getfacl bcd.txt </span>
-<span class="token comment"># file: bcd.txt</span>
-<span class="token comment"># owner: root</span>
-<span class="token comment"># group: root</span>
-user::rw-
-user:xiaochen:-w-
-group::r-x			<span class="token comment">#effective:r--</span>
-mask::rw-
-other::r--
-
-<span class="token punctuation">[</span>root@localhost linux12<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day11-sudo%E4%B8%8Esu/sudo%20and%20su/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day11-sudo%E4%B8%8Esu/sudo%20and%20su/" class="post-title-link" itemprop="url">运维之基础命令--sudo和su</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:13:48" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="sudo"><a href="#sudo" class="headerlink" title="sudo"></a>sudo</h1><blockquote>
-<p>用于普通用提升权限的。</p>
-</blockquote>
-<ul>
-<li><p>相关的文件：<code>/etc/sudoers</code></p>
-</li>
-<li><p>检查<code>/etc/sudoers</code>是否修改正确：visudo -c</p>
-</li>
-<li><p>sudoers文件格式</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">tom       <span class="token assign-left variable">ALL</span><span class="token operator">=</span>           <span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>          ALL
-用户名称   所有机器可登陆    所有IP或主机名   所有的指令<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-</li>
-<li><p>指令编写格式</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 必须写全路径：which查看命令全路径</span>
-
-<span class="token comment">## 只支持vim命令提权</span>
-xianchen <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>  /usr/bin/vim
-
-<span class="token comment">## 支持所有的命令提权</span>
-tom <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>  ALL
-
-<span class="token comment">## 不支持某个命令提权</span>
-tom <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span> ALL, <span class="token operator">!</span>/usr/bin/vim
-
-<span class="token comment">## 不支持某个命令的部分功能</span>
-xiaochen <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>   ALL, <span class="token operator">!</span>/usr/bin/vim /root/123.txt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
-</ul>
-<h1 id="su"><a href="#su" class="headerlink" title="su"></a>su</h1><ul>
-<li><p>su - xxx  和 su xxx之间区别</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>、su - xxx ：相当于切换一个窗口，su xxx 仅仅切换了用户
-
-<span class="token number">2</span>、su - xxx ： 切换用户执行的系统文件要多于 <span class="token function">su</span> xxx
-
-<span class="token number">3</span>、su - xxx 是登录
-   <span class="token function">su</span>  xxx  切换用户<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day17-Linux%E4%BF%A1%E5%8F%B7/%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day17-Linux%E4%BF%A1%E5%8F%B7/%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">运维之基础命令--linux信号</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:14:23" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="笔记"><a href="#笔记" class="headerlink" title="笔记"></a>笔记</h1><p>1、设置进程的nice值</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 设置进程的优先级</span>
-<span class="token function">nice</span> -n -11 <span class="token function">bash</span> test.sh
-
--n ： 设置优先级
-	普通用户：（0~19）
-	超级用户：（-20~19）
-	
-<span class="token comment"># 给指定进程设置优先级</span>
-<span class="token function">renice</span> <span class="token punctuation">[</span>设置优先级<span class="token punctuation">]</span> pid
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>2、Linux系统信号</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">中断信号
-	ctrl + c
-	ctrl + z
-
-	INT<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span> <span class="token builtin class-name">:</span> 
-		<span class="token function">kill</span> -<span class="token punctuation">[</span>信号名称<span class="token operator">|</span>信号ID<span class="token punctuation">]</span>　pid
-		
-		<span class="token function">kill</span> -SIGINT  PID
-		<span class="token function">kill</span> -INT     PID
-		<span class="token function">kill</span> -2       PID 
-
-退出信号:
-	ctrl + d
-
-暂停信号：将进程暂停
-	SIGTSTP（20）
-		<span class="token function">kill</span> -20 PID 
-		<span class="token function">kill</span> -SIGTSTP PID 
-		<span class="token function">kill</span> -TSTP PID
-
-杀死进程信号
-	SIGKILL
-		<span class="token function">kill</span> -9 PID 
-		<span class="token function">kill</span> -SIGKILL PID
-		<span class="token function">kill</span> -KILL PID
-注：不能够被捕捉
-
-终止信号
-	SIGTREM
-		<span class="token function">kill</span> -15 PID 
-		<span class="token function">kill</span> -SIGTERM PID
-		<span class="token function">kill</span> -<span class="token environment constant">TERM</span> PID
-
-注：优雅终止进程
-
-暂停和恢复信号
-	SIGCONT <span class="token builtin class-name">:</span> 恢复
-	SIGSTOP ：暂停
-
-重载信号
-	SIGHUP（1）
-
-
-<span class="token number">1</span>、nohup <span class="token punctuation">[</span>执行的命令<span class="token punctuation">]</span> <span class="token operator">&amp;</span>
-后台启动，会在当前目录生成一个nohub.out文件，用于执行的命令的输出。
-<span class="token number">2</span>、setsid <span class="token builtin class-name">:</span> 实际上开了一个孤儿进程
-<span class="token number">3</span>、（执行的命令<span class="token operator">&amp;</span>）
-<span class="token number">4</span>、screen  开启一个子窗口<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day10-Linux%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/%E7%AC%94%E8%AE%B0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1028,281 +541,6 @@ Last login: Mon Mar <span class="token number">15</span> <span class="token numb
 
 
 
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day13-yum%E4%BB%93%E5%BA%93/yum%E4%BB%93%E5%BA%93/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day13-yum%E4%BB%93%E5%BA%93/yum%E4%BB%93%E5%BA%93/" class="post-title-link" itemprop="url">运维之基础命令--yum仓库</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:14:09" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="yum仓库"><a href="#yum仓库" class="headerlink" title="yum仓库"></a>yum仓库</h1><p>1、克隆两台主机</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">yum仓库主机
-	外网地址：192.168.15.30
-	内网地址：172.16.1.30
-
-yum测试主机
-	外网地址：192.168.15.31
-	内网地址：172.16.1.31
-
-修改的命令：
-	<span class="token function">vim</span> /etc/sysconfig/network-scripts/ifcfg-eth0
-	<span class="token function">vim</span> /etc/sysconfig/network-scripts/ifcfg-eth1
-	
-	重启网卡：systemctl restart network
-	
-	修改主机名：
-		yum仓库主机：hostnamectl set-hostname warehouse
-		yum测试主机：hostnamectl set-hostname yum-test
-	<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>2、配置yum仓库</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>、需要有一个软件包目录，存放软件包的
-<span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># mkdir /backup</span>
-	
-	<span class="token number">1.1</span>、缓存yum安装下载的软件包
-	<span class="token punctuation">[</span>root@warehouse <span class="token number">7</span><span class="token punctuation">]</span><span class="token comment"># vim /etc/yum.conf</span>
-	<span class="token punctuation">[</span>main<span class="token punctuation">]</span>
-    <span class="token assign-left variable">cachedir</span><span class="token operator">=</span>/var/cache/yum/<span class="token variable">$basearch</span>/<span class="token variable">$releasever</span>
-    <span class="token assign-left variable">keepcache</span><span class="token operator">=</span><span class="token number">1</span>
-    <span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># yum install mariadb -y</span>
-	
-	<span class="token number">1.2</span>、将缓存的软件包复制到yum仓库目录
-	<span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># cd /var/cache/yum/x86_64/7/base/packages/</span>
-	<span class="token punctuation">[</span>root@warehouse packages<span class="token punctuation">]</span><span class="token comment"># cp -rp ./* /backup/</span>
-    <span class="token punctuation">[</span>root@warehouse packages<span class="token punctuation">]</span><span class="token comment"># cd /backup/</span>
-    <span class="token punctuation">[</span>root@warehouse backup<span class="token punctuation">]</span><span class="token comment"># ll</span>
-    total <span class="token number">8964</span>
-    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">9175948</span> Oct <span class="token number">15</span> 02:55 mariadb-5.5.68-1.el7.x86_64.rpm
-	
-<span class="token number">2</span>、建立软件包依赖关系
-	<span class="token punctuation">[</span>root@warehouse backup<span class="token punctuation">]</span><span class="token comment"># yum install createrepo -y</span>
-	<span class="token punctuation">[</span>root@warehouse backup<span class="token punctuation">]</span><span class="token comment"># createrepo /backup/</span>
-    Spawning worker <span class="token number">0</span> with <span class="token number">1</span> pkgs
-    Spawning worker <span class="token number">1</span> with <span class="token number">0</span> pkgs
-    Workers Finished
-    Saving Primary metadata
-    Saving <span class="token function">file</span> lists metadata
-    Saving other metadata
-    Generating sqlite DBs
-    Sqlite DBs complete
-    <span class="token punctuation">[</span>root@warehouse backup<span class="token punctuation">]</span><span class="token comment"># ll</span>
-    total <span class="token number">8968</span>
-    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">9175948</span> Oct <span class="token number">15</span> 02:55 mariadb-5.5.68-1.el7.x86_64.rpm
-    drwxr-xr-x <span class="token number">2</span> root root    <span class="token number">4096</span> Mar <span class="token number">18</span> 08:54 repodata
-    <span class="token punctuation">[</span>root@warehouse backup<span class="token punctuation">]</span><span class="token comment"># ll repodata/</span>
-    total <span class="token number">28</span>
-    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">1970</span> Mar <span class="token number">18</span> 08:54 5d54624b2aa7a1fe974ff5553a9a78289683189c6a7b60c8c1421ecf011d270f-other.sqlite.bz2
-    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">3449</span> Mar <span class="token number">18</span> 08:54 5e68ee34f7e8f1a11a039f55c990bcc044f16bceb6af7f4486b55d518ad91346-primary.sqlite.bz2
-    -rw-r--r-- <span class="token number">1</span> root root  <span class="token number">539</span> Mar <span class="token number">18</span> 08:54 6e94b0fa1d98955542fb8238348ea171be7a130ba97573eb3ac756e1aadcec50-filelists.xml.gz
-    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">1291</span> Mar <span class="token number">18</span> 08:54 a9afb0b2457f41f5c2d64744a07d5d12599e6c2588c870ae73568cf345a0abca-other.xml.gz
-    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">1333</span> Mar <span class="token number">18</span> 08:54 cf41627875b17ef4bea5f0ea566ac63a5c83adc606d3ca730a74944ceb969028-primary.xml.gz
-    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">1158</span> Mar <span class="token number">18</span> 08:54 f34cbfd9e5608e8402041e98100f853e913f3df04d6946874c73ba31a78969ba-filelists.sqlite.bz2
-    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">2969</span> Mar <span class="token number">18</span> 08:54 repomd.xml
-    <span class="token punctuation">[</span>root@warehouse backup<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>3、测试连接（本地版本）</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>、备份系统所有的yum源
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># cd /etc/yum.repos.d/</span>
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mkdir backup1</span>
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mv *.repo backup1</span>
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># vim local.repo</span>
-<span class="token punctuation">[</span>local<span class="token punctuation">]</span>
-<span class="token assign-left variable">name</span><span class="token operator">=</span><span class="token string">"This is xxx"</span>
-<span class="token assign-left variable">baseurl</span><span class="token operator">=</span>file:///backup
-<span class="token assign-left variable">gpgcheck</span><span class="token operator">=</span><span class="token number">0</span>
-<span class="token assign-left variable">enabled</span><span class="token operator">=</span><span class="token number">1</span>
-
-<span class="token comment"># 清理yum缓存</span>
-<span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># yum clean all</span>
-<span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># rm -rf /var/cache/yum/x86_64/7/*</span>
-
-<span class="token comment"># 生成新的yum缓存</span>
-<span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># yum makecache</span>
-
-<span class="token comment"># 测试连接</span>
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># rpm -e mariadb</span>
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># rpm -ql mariadb</span>
-package mariadb is not installed
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum install mariadb</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-
-
-<p>4、测试连接（远程版本）</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#########################  yum仓库机器上执行  ###################################</span>
-<span class="token number">1</span>、备份系统所有的yum源
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># cd /etc/yum.repos.d/</span>
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mkdir local</span>
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mv *.repo local</span>
-
-<span class="token number">2</span>、安装远程访问软件
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># cd /etc/yum.repos.d/</span>
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mv backup1/*  .</span>
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum install vsftpd -y</span>
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># systemctl enable --now vsftpd </span>
-Created symlink from /etc/systemd/system/multi-user.target.wants/vsftpd.service to /usr/lib/systemd/system/vsftpd.service.
-
-<span class="token number">3</span>、配置系统yum仓库
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># cd /var/ftp</span>
-<span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># mkdir yum_warehouse</span>
-
-<span class="token number">4</span>、将软件包复制到yum仓库目录
-<span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># cp -rp /backup/* /var/ftp/yum_warehouse/</span>
-<span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># ll yum_warehouse/</span>
-total <span class="token number">8968</span>
--rw-r--r-- <span class="token number">1</span> root root <span class="token number">9175948</span> Oct <span class="token number">15</span> 02:55 mariadb-5.5.68-1.el7.x86_64.rpm
-drwxr-xr-x <span class="token number">2</span> root root    <span class="token number">4096</span> Mar <span class="token number">18</span> 08:54 repodata
-
-<span class="token number">5</span>、建立yum软件包依赖关系
-<span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># createrepo /var/ftp/yum_warehouse/</span>
-
-
-<span class="token comment">#########################  yum测试机器上执行  ###################################</span>
-<span class="token number">1</span>、本机测试网络连接
-    <span class="token number">1</span>、备份系统所有的yum源
-    <span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># cd /etc/yum.repos.d/</span>
-    <span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mv *.repo backup1</span>
-    <span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># vim local.repo</span>
-    <span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># cat local.repo </span>
-    <span class="token punctuation">[</span>local-ftp<span class="token punctuation">]</span>
-    <span class="token assign-left variable">name</span><span class="token operator">=</span><span class="token string">"This is ftp server"</span>
-    <span class="token assign-left variable">baseurl</span><span class="token operator">=</span>ftp://172.16.1.30/yum_warehouse
-    <span class="token assign-left variable">gpgcheck</span><span class="token operator">=</span><span class="token number">0</span>
-    <span class="token assign-left variable">enabled</span><span class="token operator">=</span><span class="token number">1</span>
-
-    <span class="token comment"># 清理yum缓存</span>
-    <span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># yum clean all</span>
-    <span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># rm -rf /var/cache/yum/x86_64/7/*</span>
-
-    <span class="token comment"># 生成新的yum缓存</span>
-    <span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># yum makecache</span>
-
-    <span class="token comment"># 测试连接</span>
-    <span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># rpm -e mariadb</span>
-    <span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># rpm -ql mariadb</span>
-    package mariadb is not installed
-    <span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum install mariadb</span>
-
-<span class="token number">2</span>、yum测试机器执行
-	<span class="token number">1</span>、备份yum仓库内容
-	<span class="token punctuation">[</span>root@yum-test ~<span class="token punctuation">]</span><span class="token comment"># cd /etc/yum.repos.d/</span>
-    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mkdir backup1</span>
-    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mv *.repo backup1</span>
-    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># ll</span>
-    total <span class="token number">0</span>
-    drwxr-xr-x. <span class="token number">2</span> root root <span class="token number">187</span> Mar  <span class="token number">4</span> 09:55 backup
-    drwxr-xr-x  <span class="token number">2</span> root root <span class="token number">220</span> Mar <span class="token number">18</span> 09:20 backup1
-    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># </span>
-    
-    <span class="token number">2</span>、编写本地yum源配置文件
-    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># vim local.repo</span>
-    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># cat local.repo </span>
-    <span class="token punctuation">[</span>loacl-ftp-30<span class="token punctuation">]</span>
-    <span class="token assign-left variable">name</span><span class="token operator">=</span><span class="token string">"This is 30 ftp server"</span>
-    <span class="token assign-left variable">baseurl</span><span class="token operator">=</span>ftp://172.16.1.30/yum_warehouse
-    <span class="token assign-left variable">gpgcheck</span><span class="token operator">=</span><span class="token number">0</span>
-    <span class="token assign-left variable">enabled</span><span class="token operator">=</span><span class="token number">1</span>
-    
-    <span class="token number">3</span>、清理yum缓存
-    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum clean all</span>
-    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># rm -rf /var/cache/yum/x86_64/7/*</span>
-    
-    <span class="token number">4</span>、生成yum缓存
-    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum makecache</span>
-    
-    <span class="token number">5</span>、测试安装
-    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum install mariadb</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-
-
-<p>4、同步远程yum仓库内容到本机</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>、安装华为云镜像仓库
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># rm -rf /etc/yum.repos.d/*</span>
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># wget -O /etc/yum.repos.d/CentOS-Base.repo https://repo.huaweicloud.com/repository/conf/CentOS-7-reg.repo</span>
-
-<span class="token number">2</span>、生成yum缓存
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum clean all</span>
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># rm -rf /var/cache/yum/x86_64/7/*</span>
-<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum makecache</span>
-
-<span class="token number">3</span>、同步华为云镜像站软件包到本地yum仓库
-<span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># yum install yum-utils -y</span>
-<span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># reposync -r (仓库名称：yum repolist)</span>
-
-<span class="token number">4</span>、建立依赖关系
-<span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># createrepo base</span>
-
-<span class="token number">5</span>、测试
-    <span class="token punctuation">[</span>loacl-ftp-30<span class="token punctuation">]</span>
-    <span class="token assign-left variable">name</span><span class="token operator">=</span><span class="token string">"This is 30 ftp server"</span>
-    <span class="token assign-left variable">baseurl</span><span class="token operator">=</span>ftp://172.16.1.30/base
-    <span class="token assign-left variable">gpgcheck</span><span class="token operator">=</span><span class="token number">0</span>
-    <span class="token assign-left variable">enabled</span><span class="token operator">=</span><span class="token number">1</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p><img src="/.%5Cassets%5Cimage-20210318112338781.png" alt="image-20210318112338781"></p>
 
       
     </div>
@@ -1798,6 +1036,635 @@ yum <span class="token function">install</span> mariadb -y<span aria-hidden="tru
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day11-sudo%E4%B8%8Esu/facl/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day11-sudo%E4%B8%8Esu/facl/" class="post-title-link" itemprop="url">运维之基础命令--文件ACL</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:13:53" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="笔记"><a href="#笔记" class="headerlink" title="笔记"></a>笔记</h1><blockquote>
+<p>补充：</p>
+<p>​	权限的归属</p>
+<p>​		a : 属组、属主以及其他人的权限一起设置。</p>
+<p>​		o : 其他人</p>
+<p>​		g : 属组</p>
+<p>​		u : 属主</p>
+</blockquote>
+<h2 id="umask"><a href="#umask" class="headerlink" title="umask"></a>umask</h2><blockquote>
+<p>就是解决目录及文件的默认权限。</p>
+</blockquote>
+<ul>
+<li>文件的最高权限是多少     777</li>
+<li>文件夹的最高权限是多少  777</li>
+</ul>
+<h2 id="ACL"><a href="#ACL" class="headerlink" title="ACL"></a>ACL</h2><blockquote>
+<p>ACL是为了解决某种特殊环境下的，用户权限需求。</p>
+</blockquote>
+<ul>
+<li>setfacl ： 设置acl权限</li>
+<li>getfacl ：查看ACL权限</li>
+</ul>
+<h3 id="acl权限归属"><a href="#acl权限归属" class="headerlink" title="acl权限归属"></a>acl权限归属</h3><ul>
+<li>u : 指定用户</li>
+<li>g : 指定组</li>
+<li>o : 修改其他用户权限</li>
+<li>m : 指定mask权限</li>
+</ul>
+<p>注：默认情况下，ACL权限跟普通权限保持一致。</p>
+<h2 id="ACL-的流程"><a href="#ACL-的流程" class="headerlink" title="ACL 的流程"></a>ACL 的流程</h2><ul>
+<li><p>1、创建文件</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">chmod</span> o+x /root
+<span class="token function">chmod</span> o+x /root/xiaochen
+<span class="token builtin class-name">cd</span> xiaochen
+
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># touch abc.txt</span>
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># chmod 000 abc.txt </span>
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># ll</span>
+total <span class="token number">0</span>
+---------- <span class="token number">1</span> root root <span class="token number">0</span> Mar <span class="token number">16</span> <span class="token number">11</span>:39 abc.txt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>编写文件</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># echo 111 > abc.txt </span>
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># cat abc.txt </span>
+<span class="token number">111</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>设置ACL权限</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># useradd xiaozhang</span>
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># setfacl -m u:xiaozhang:r abc.txt </span>
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
+<span class="token comment"># file: abc.txt</span>
+<span class="token comment"># owner: root</span>
+<span class="token comment"># group: root</span>
+user::---
+user:xiaozhang:r--
+group::---
+mask::r--
+other::---
+
+<span class="token comment"># 注：</span>
+setfacl -m u:用户名称:权限<span class="token punctuation">(</span>rwx<span class="token punctuation">)</span> 文件名称<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>查看文件</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># su - xiaozhang</span>
+<span class="token punctuation">[</span>xiaozhang@localhost ~<span class="token punctuation">]</span>$ <span class="token function">cat</span> /root/xiaochen/abc.txt
+<span class="token number">111</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+<p>mask :  rw-</p>
+<p>xxxx :   -w-</p>
+<p>-w-</p>
+<h2 id="ACL权限的删除"><a href="#ACL权限的删除" class="headerlink" title="ACL权限的删除"></a>ACL权限的删除</h2><ul>
+<li><p>删除某个权限</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
+<span class="token comment"># file: abc.txt</span>
+<span class="token comment"># owner: root</span>
+<span class="token comment"># group: root</span>
+user::---
+user:xiaozhang:r--
+group::---
+group:xiaochen:r-x		<span class="token comment">#effective:r--</span>
+mask::rw-
+other::r--
+
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># setfacl -x u:xiaozhang abc.txt</span>
+
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
+<span class="token comment"># file: abc.txt</span>
+<span class="token comment"># owner: root</span>
+<span class="token comment"># group: root</span>
+user::---
+group::---
+group:xiaochen:r-x
+mask::r-x
+other::r--
+
+
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
+<span class="token comment"># file: abc.txt</span>
+<span class="token comment"># owner: root</span>
+<span class="token comment"># group: root</span>
+user::---
+group::---
+group:xiaochen:r-x
+mask::r-x
+other::r--
+
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># setfacl -x g:xiaochen abc.txt </span>
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
+<span class="token comment"># file: abc.txt</span>
+<span class="token comment"># owner: root</span>
+<span class="token comment"># group: root</span>
+user::---
+group::---
+mask::---
+other::r--
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+</li>
+<li><p>清空acl权限</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
+<span class="token comment"># file: abc.txt</span>
+<span class="token comment"># owner: root</span>
+<span class="token comment"># group: root</span>
+user::---
+user:xiaochen:rw-
+user:xiaocao:rw-
+group::---
+group:xiaochen:rw-
+group:xiaocao:rw-
+mask::rw-
+other::r--
+
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># setfacl -b abc.txt </span>
+<span class="token punctuation">[</span>root@localhost xiaochen<span class="token punctuation">]</span><span class="token comment"># getfacl abc.txt </span>
+<span class="token comment"># file: abc.txt</span>
+<span class="token comment"># owner: root</span>
+<span class="token comment"># group: root</span>
+user::---
+group::---
+other::r--
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+<h2 id="ACL继承"><a href="#ACL继承" class="headerlink" title="ACL继承"></a>ACL继承</h2><blockquote>
+<p>默认情况下，ACL是不会继承上层目录的权限的。只有目录设置可继承子集文件才可以继承ACL权限。</p>
+</blockquote>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost linux12<span class="token punctuation">]</span><span class="token comment"># setfacl -m d:u:xiaochen:w ../linux12</span>
+<span class="token punctuation">[</span>root@localhost linux12<span class="token punctuation">]</span><span class="token comment"># touch bcd.txt</span>
+<span class="token punctuation">[</span>root@localhost linux12<span class="token punctuation">]</span><span class="token comment"># ls -l</span>
+total <span class="token number">0</span>
+-rw-r--r--  <span class="token number">1</span> root root <span class="token number">0</span> Mar <span class="token number">16</span> <span class="token number">15</span>:40 abc.txt
+-rw-rw-r--+ <span class="token number">1</span> root root <span class="token number">0</span> Mar <span class="token number">16</span> <span class="token number">15</span>:43 bcd.txt
+<span class="token punctuation">[</span>root@localhost linux12<span class="token punctuation">]</span><span class="token comment"># getfacl bcd.txt </span>
+<span class="token comment"># file: bcd.txt</span>
+<span class="token comment"># owner: root</span>
+<span class="token comment"># group: root</span>
+user::rw-
+user:xiaochen:-w-
+group::r-x			<span class="token comment">#effective:r--</span>
+mask::rw-
+other::r--
+
+<span class="token punctuation">[</span>root@localhost linux12<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day11-sudo%E4%B8%8Esu/sudo%20and%20su/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day11-sudo%E4%B8%8Esu/sudo%20and%20su/" class="post-title-link" itemprop="url">运维之基础命令--sudo和su</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:13:48" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="sudo"><a href="#sudo" class="headerlink" title="sudo"></a>sudo</h1><blockquote>
+<p>用于普通用提升权限的。</p>
+</blockquote>
+<ul>
+<li><p>相关的文件：<code>/etc/sudoers</code></p>
+</li>
+<li><p>检查<code>/etc/sudoers</code>是否修改正确：visudo -c</p>
+</li>
+<li><p>sudoers文件格式</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">tom       <span class="token assign-left variable">ALL</span><span class="token operator">=</span>           <span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>          ALL
+用户名称   所有机器可登陆    所有IP或主机名   所有的指令<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+</li>
+<li><p>指令编写格式</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 必须写全路径：which查看命令全路径</span>
+
+<span class="token comment">## 只支持vim命令提权</span>
+xianchen <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>  /usr/bin/vim
+
+<span class="token comment">## 支持所有的命令提权</span>
+tom <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>  ALL
+
+<span class="token comment">## 不支持某个命令提权</span>
+tom <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span> ALL, <span class="token operator">!</span>/usr/bin/vim
+
+<span class="token comment">## 不支持某个命令的部分功能</span>
+xiaochen <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>   ALL, <span class="token operator">!</span>/usr/bin/vim /root/123.txt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+<h1 id="su"><a href="#su" class="headerlink" title="su"></a>su</h1><ul>
+<li><p>su - xxx  和 su xxx之间区别</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>、su - xxx ：相当于切换一个窗口，su xxx 仅仅切换了用户
+
+<span class="token number">2</span>、su - xxx ： 切换用户执行的系统文件要多于 <span class="token function">su</span> xxx
+
+<span class="token number">3</span>、su - xxx 是登录
+   <span class="token function">su</span>  xxx  切换用户<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day13-yum%E4%BB%93%E5%BA%93/yum%E4%BB%93%E5%BA%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day13-yum%E4%BB%93%E5%BA%93/yum%E4%BB%93%E5%BA%93/" class="post-title-link" itemprop="url">运维之基础命令--yum仓库</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:14:09" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="yum仓库"><a href="#yum仓库" class="headerlink" title="yum仓库"></a>yum仓库</h1><p>1、克隆两台主机</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">yum仓库主机
+	外网地址：192.168.15.30
+	内网地址：172.16.1.30
+
+yum测试主机
+	外网地址：192.168.15.31
+	内网地址：172.16.1.31
+
+修改的命令：
+	<span class="token function">vim</span> /etc/sysconfig/network-scripts/ifcfg-eth0
+	<span class="token function">vim</span> /etc/sysconfig/network-scripts/ifcfg-eth1
+	
+	重启网卡：systemctl restart network
+	
+	修改主机名：
+		yum仓库主机：hostnamectl set-hostname warehouse
+		yum测试主机：hostnamectl set-hostname yum-test
+	<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>2、配置yum仓库</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>、需要有一个软件包目录，存放软件包的
+<span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># mkdir /backup</span>
+	
+	<span class="token number">1.1</span>、缓存yum安装下载的软件包
+	<span class="token punctuation">[</span>root@warehouse <span class="token number">7</span><span class="token punctuation">]</span><span class="token comment"># vim /etc/yum.conf</span>
+	<span class="token punctuation">[</span>main<span class="token punctuation">]</span>
+    <span class="token assign-left variable">cachedir</span><span class="token operator">=</span>/var/cache/yum/<span class="token variable">$basearch</span>/<span class="token variable">$releasever</span>
+    <span class="token assign-left variable">keepcache</span><span class="token operator">=</span><span class="token number">1</span>
+    <span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># yum install mariadb -y</span>
+	
+	<span class="token number">1.2</span>、将缓存的软件包复制到yum仓库目录
+	<span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># cd /var/cache/yum/x86_64/7/base/packages/</span>
+	<span class="token punctuation">[</span>root@warehouse packages<span class="token punctuation">]</span><span class="token comment"># cp -rp ./* /backup/</span>
+    <span class="token punctuation">[</span>root@warehouse packages<span class="token punctuation">]</span><span class="token comment"># cd /backup/</span>
+    <span class="token punctuation">[</span>root@warehouse backup<span class="token punctuation">]</span><span class="token comment"># ll</span>
+    total <span class="token number">8964</span>
+    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">9175948</span> Oct <span class="token number">15</span> 02:55 mariadb-5.5.68-1.el7.x86_64.rpm
+	
+<span class="token number">2</span>、建立软件包依赖关系
+	<span class="token punctuation">[</span>root@warehouse backup<span class="token punctuation">]</span><span class="token comment"># yum install createrepo -y</span>
+	<span class="token punctuation">[</span>root@warehouse backup<span class="token punctuation">]</span><span class="token comment"># createrepo /backup/</span>
+    Spawning worker <span class="token number">0</span> with <span class="token number">1</span> pkgs
+    Spawning worker <span class="token number">1</span> with <span class="token number">0</span> pkgs
+    Workers Finished
+    Saving Primary metadata
+    Saving <span class="token function">file</span> lists metadata
+    Saving other metadata
+    Generating sqlite DBs
+    Sqlite DBs complete
+    <span class="token punctuation">[</span>root@warehouse backup<span class="token punctuation">]</span><span class="token comment"># ll</span>
+    total <span class="token number">8968</span>
+    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">9175948</span> Oct <span class="token number">15</span> 02:55 mariadb-5.5.68-1.el7.x86_64.rpm
+    drwxr-xr-x <span class="token number">2</span> root root    <span class="token number">4096</span> Mar <span class="token number">18</span> 08:54 repodata
+    <span class="token punctuation">[</span>root@warehouse backup<span class="token punctuation">]</span><span class="token comment"># ll repodata/</span>
+    total <span class="token number">28</span>
+    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">1970</span> Mar <span class="token number">18</span> 08:54 5d54624b2aa7a1fe974ff5553a9a78289683189c6a7b60c8c1421ecf011d270f-other.sqlite.bz2
+    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">3449</span> Mar <span class="token number">18</span> 08:54 5e68ee34f7e8f1a11a039f55c990bcc044f16bceb6af7f4486b55d518ad91346-primary.sqlite.bz2
+    -rw-r--r-- <span class="token number">1</span> root root  <span class="token number">539</span> Mar <span class="token number">18</span> 08:54 6e94b0fa1d98955542fb8238348ea171be7a130ba97573eb3ac756e1aadcec50-filelists.xml.gz
+    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">1291</span> Mar <span class="token number">18</span> 08:54 a9afb0b2457f41f5c2d64744a07d5d12599e6c2588c870ae73568cf345a0abca-other.xml.gz
+    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">1333</span> Mar <span class="token number">18</span> 08:54 cf41627875b17ef4bea5f0ea566ac63a5c83adc606d3ca730a74944ceb969028-primary.xml.gz
+    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">1158</span> Mar <span class="token number">18</span> 08:54 f34cbfd9e5608e8402041e98100f853e913f3df04d6946874c73ba31a78969ba-filelists.sqlite.bz2
+    -rw-r--r-- <span class="token number">1</span> root root <span class="token number">2969</span> Mar <span class="token number">18</span> 08:54 repomd.xml
+    <span class="token punctuation">[</span>root@warehouse backup<span class="token punctuation">]</span><span class="token comment"># </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>3、测试连接（本地版本）</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>、备份系统所有的yum源
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># cd /etc/yum.repos.d/</span>
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mkdir backup1</span>
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mv *.repo backup1</span>
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># vim local.repo</span>
+<span class="token punctuation">[</span>local<span class="token punctuation">]</span>
+<span class="token assign-left variable">name</span><span class="token operator">=</span><span class="token string">"This is xxx"</span>
+<span class="token assign-left variable">baseurl</span><span class="token operator">=</span>file:///backup
+<span class="token assign-left variable">gpgcheck</span><span class="token operator">=</span><span class="token number">0</span>
+<span class="token assign-left variable">enabled</span><span class="token operator">=</span><span class="token number">1</span>
+
+<span class="token comment"># 清理yum缓存</span>
+<span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># yum clean all</span>
+<span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># rm -rf /var/cache/yum/x86_64/7/*</span>
+
+<span class="token comment"># 生成新的yum缓存</span>
+<span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># yum makecache</span>
+
+<span class="token comment"># 测试连接</span>
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># rpm -e mariadb</span>
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># rpm -ql mariadb</span>
+package mariadb is not installed
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum install mariadb</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+
+<p>4、测试连接（远程版本）</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#########################  yum仓库机器上执行  ###################################</span>
+<span class="token number">1</span>、备份系统所有的yum源
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># cd /etc/yum.repos.d/</span>
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mkdir local</span>
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mv *.repo local</span>
+
+<span class="token number">2</span>、安装远程访问软件
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># cd /etc/yum.repos.d/</span>
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mv backup1/*  .</span>
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum install vsftpd -y</span>
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># systemctl enable --now vsftpd </span>
+Created symlink from /etc/systemd/system/multi-user.target.wants/vsftpd.service to /usr/lib/systemd/system/vsftpd.service.
+
+<span class="token number">3</span>、配置系统yum仓库
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># cd /var/ftp</span>
+<span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># mkdir yum_warehouse</span>
+
+<span class="token number">4</span>、将软件包复制到yum仓库目录
+<span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># cp -rp /backup/* /var/ftp/yum_warehouse/</span>
+<span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># ll yum_warehouse/</span>
+total <span class="token number">8968</span>
+-rw-r--r-- <span class="token number">1</span> root root <span class="token number">9175948</span> Oct <span class="token number">15</span> 02:55 mariadb-5.5.68-1.el7.x86_64.rpm
+drwxr-xr-x <span class="token number">2</span> root root    <span class="token number">4096</span> Mar <span class="token number">18</span> 08:54 repodata
+
+<span class="token number">5</span>、建立yum软件包依赖关系
+<span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># createrepo /var/ftp/yum_warehouse/</span>
+
+
+<span class="token comment">#########################  yum测试机器上执行  ###################################</span>
+<span class="token number">1</span>、本机测试网络连接
+    <span class="token number">1</span>、备份系统所有的yum源
+    <span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># cd /etc/yum.repos.d/</span>
+    <span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mv *.repo backup1</span>
+    <span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># vim local.repo</span>
+    <span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># cat local.repo </span>
+    <span class="token punctuation">[</span>local-ftp<span class="token punctuation">]</span>
+    <span class="token assign-left variable">name</span><span class="token operator">=</span><span class="token string">"This is ftp server"</span>
+    <span class="token assign-left variable">baseurl</span><span class="token operator">=</span>ftp://172.16.1.30/yum_warehouse
+    <span class="token assign-left variable">gpgcheck</span><span class="token operator">=</span><span class="token number">0</span>
+    <span class="token assign-left variable">enabled</span><span class="token operator">=</span><span class="token number">1</span>
+
+    <span class="token comment"># 清理yum缓存</span>
+    <span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># yum clean all</span>
+    <span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># rm -rf /var/cache/yum/x86_64/7/*</span>
+
+    <span class="token comment"># 生成新的yum缓存</span>
+    <span class="token punctuation">[</span>root@warehouse ~<span class="token punctuation">]</span><span class="token comment"># yum makecache</span>
+
+    <span class="token comment"># 测试连接</span>
+    <span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># rpm -e mariadb</span>
+    <span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># rpm -ql mariadb</span>
+    package mariadb is not installed
+    <span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum install mariadb</span>
+
+<span class="token number">2</span>、yum测试机器执行
+	<span class="token number">1</span>、备份yum仓库内容
+	<span class="token punctuation">[</span>root@yum-test ~<span class="token punctuation">]</span><span class="token comment"># cd /etc/yum.repos.d/</span>
+    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mkdir backup1</span>
+    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># mv *.repo backup1</span>
+    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># ll</span>
+    total <span class="token number">0</span>
+    drwxr-xr-x. <span class="token number">2</span> root root <span class="token number">187</span> Mar  <span class="token number">4</span> 09:55 backup
+    drwxr-xr-x  <span class="token number">2</span> root root <span class="token number">220</span> Mar <span class="token number">18</span> 09:20 backup1
+    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># </span>
+    
+    <span class="token number">2</span>、编写本地yum源配置文件
+    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># vim local.repo</span>
+    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># cat local.repo </span>
+    <span class="token punctuation">[</span>loacl-ftp-30<span class="token punctuation">]</span>
+    <span class="token assign-left variable">name</span><span class="token operator">=</span><span class="token string">"This is 30 ftp server"</span>
+    <span class="token assign-left variable">baseurl</span><span class="token operator">=</span>ftp://172.16.1.30/yum_warehouse
+    <span class="token assign-left variable">gpgcheck</span><span class="token operator">=</span><span class="token number">0</span>
+    <span class="token assign-left variable">enabled</span><span class="token operator">=</span><span class="token number">1</span>
+    
+    <span class="token number">3</span>、清理yum缓存
+    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum clean all</span>
+    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># rm -rf /var/cache/yum/x86_64/7/*</span>
+    
+    <span class="token number">4</span>、生成yum缓存
+    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum makecache</span>
+    
+    <span class="token number">5</span>、测试安装
+    <span class="token punctuation">[</span>root@yum-test yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum install mariadb</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+
+<p>4、同步远程yum仓库内容到本机</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>、安装华为云镜像仓库
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># rm -rf /etc/yum.repos.d/*</span>
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># wget -O /etc/yum.repos.d/CentOS-Base.repo https://repo.huaweicloud.com/repository/conf/CentOS-7-reg.repo</span>
+
+<span class="token number">2</span>、生成yum缓存
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum clean all</span>
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># rm -rf /var/cache/yum/x86_64/7/*</span>
+<span class="token punctuation">[</span>root@warehouse yum.repos.d<span class="token punctuation">]</span><span class="token comment"># yum makecache</span>
+
+<span class="token number">3</span>、同步华为云镜像站软件包到本地yum仓库
+<span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># yum install yum-utils -y</span>
+<span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># reposync -r (仓库名称：yum repolist)</span>
+
+<span class="token number">4</span>、建立依赖关系
+<span class="token punctuation">[</span>root@warehouse ftp<span class="token punctuation">]</span><span class="token comment"># createrepo base</span>
+
+<span class="token number">5</span>、测试
+    <span class="token punctuation">[</span>loacl-ftp-30<span class="token punctuation">]</span>
+    <span class="token assign-left variable">name</span><span class="token operator">=</span><span class="token string">"This is 30 ftp server"</span>
+    <span class="token assign-left variable">baseurl</span><span class="token operator">=</span>ftp://172.16.1.30/base
+    <span class="token assign-left variable">gpgcheck</span><span class="token operator">=</span><span class="token number">0</span>
+    <span class="token assign-left variable">enabled</span><span class="token operator">=</span><span class="token number">1</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p><img src="/.%5Cassets%5Cimage-20210318112338781.png" alt="image-20210318112338781"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day16-%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/%E7%AC%94%E8%AE%B0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2043,7 +1910,7 @@ SHR  ： 共享内存
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day22-%E9%98%B2%E7%81%AB%E5%A2%99%E4%B8%8Eiptables/iptables%E4%BD%BF%E7%94%A8/">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day17-Linux%E4%BF%A1%E5%8F%B7/%E7%AC%94%E8%AE%B0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/myavatar.png">
@@ -2057,7 +1924,7 @@ SHR  ： 共享内存
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day22-%E9%98%B2%E7%81%AB%E5%A2%99%E4%B8%8Eiptables/iptables%E4%BD%BF%E7%94%A8/" class="post-title-link" itemprop="url">运维之基础命令--防火墙与iptables</a>
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day17-Linux%E4%BF%A1%E5%8F%B7/%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">运维之基础命令--linux信号</a>
         </h2>
 
         <div class="post-meta">
@@ -2068,7 +1935,7 @@ SHR  ： 共享内存
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:15:01" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:14:23" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -2095,317 +1962,206 @@ SHR  ： 共享内存
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="iptables使用手册"><a href="#iptables使用手册" class="headerlink" title="iptables使用手册"></a>iptables使用手册</h1><h2 id="一、简单实践"><a href="#一、简单实践" class="headerlink" title="一、简单实践"></a>一、简单实践</h2><blockquote>
-<p>从信息查看、保存规则、清除规则、恢复规则、更改规则五个方面来学习。</p>
-</blockquote>
-<h3 id="1-1-信息查看"><a href="#1-1-信息查看" class="headerlink" title="1.1 信息查看"></a>1.1 信息查看</h3><p>查看现有规则</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -L</span>
-Chain INPUT <span class="token punctuation">(</span>policy ACCEPT<span class="token punctuation">)</span>
-target     prot opt <span class="token builtin class-name">source</span>               destination
-neutron-linuxbri-INPUT  all  --  anywhere             anywhere
-nova-api-INPUT  all  --  anywhere             anywhere
+          <h1 id="笔记"><a href="#笔记" class="headerlink" title="笔记"></a>笔记</h1><p>1、设置进程的nice值</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 设置进程的优先级</span>
+<span class="token function">nice</span> -n -11 <span class="token function">bash</span> test.sh
 
-Chain FORWARD <span class="token punctuation">(</span>policy ACCEPT<span class="token punctuation">)</span>
-target     prot opt <span class="token builtin class-name">source</span>               destination
-neutron-filter-top  all  --  anywhere             anywhere
-neutron-linuxbri-FORWARD  all  --  anywhere             anywhere
-nova-filter-top  all  --  anywhere             anywhere
-nova-api-FORWARD  all  --  anywhere             anywhere
-<span class="token punctuation">..</span><span class="token punctuation">..</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+-n ： 设置优先级
+	普通用户：（0~19）
+	超级用户：（-20~19）
+	
+<span class="token comment"># 给指定进程设置优先级</span>
+<span class="token function">renice</span> <span class="token punctuation">[</span>设置优先级<span class="token punctuation">]</span> pid
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<p>查看现有规则，显示主机ip和端口号，-n</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -L -n</span>
-Chain INPUT <span class="token punctuation">(</span>policy ACCEPT<span class="token punctuation">)</span>
-target     prot opt <span class="token builtin class-name">source</span>               destination
-neutron-linuxbri-INPUT  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-nova-api-INPUT  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+<p>2、Linux系统信号</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">中断信号
+	ctrl + c
+	ctrl + z
 
-Chain FORWARD <span class="token punctuation">(</span>policy ACCEPT<span class="token punctuation">)</span>
-target     prot opt <span class="token builtin class-name">source</span>               destination
-neutron-filter-top  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-neutron-linuxbri-FORWARD  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-nova-filter-top  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-nova-api-FORWARD  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-<span class="token punctuation">..</span><span class="token punctuation">..</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+	INT<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span> <span class="token builtin class-name">:</span> 
+		<span class="token function">kill</span> -<span class="token punctuation">[</span>信号名称<span class="token operator">|</span>信号ID<span class="token punctuation">]</span>　pid
+		
+		<span class="token function">kill</span> -SIGINT  PID
+		<span class="token function">kill</span> -INT     PID
+		<span class="token function">kill</span> -2       PID 
 
-<blockquote>
-<p>结果显示：</p>
-<p>默认显示三条链的规则INPUT、FORWARD、OUTPUT，而且所有的规则都是默认接受的</p>
-<p>每条链下面显示的信息是：</p>
-<p>动作  协议 参数 源地址 目标地址</p>
-</blockquote>
-<p>显示详细信息，-v</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -L -n -v</span>
-Chain INPUT <span class="token punctuation">(</span>policy ACCEPT <span class="token number">11839</span> packets, 2842K bytes<span class="token punctuation">)</span>
- pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
-<span class="token number">11839</span> 2842K neutron-linuxbri-INPUT  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-<span class="token number">12985</span> 3090K nova-api-INPUT  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+退出信号:
+	ctrl + d
 
-Chain FORWARD <span class="token punctuation">(</span>policy ACCEPT <span class="token number">0</span> packets, <span class="token number">0</span> bytes<span class="token punctuation">)</span>
- pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
-    <span class="token number">0</span>     <span class="token number">0</span> neutron-filter-top  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-    <span class="token number">0</span>     <span class="token number">0</span> neutron-linuxbri-FORWARD  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-    <span class="token number">0</span>     <span class="token number">0</span> nova-filter-top  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-    <span class="token number">0</span>     <span class="token number">0</span> nova-api-FORWARD  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-<span class="token punctuation">..</span><span class="token punctuation">..</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+暂停信号：将进程暂停
+	SIGTSTP（20）
+		<span class="token function">kill</span> -20 PID 
+		<span class="token function">kill</span> -SIGTSTP PID 
+		<span class="token function">kill</span> -TSTP PID
 
-<blockquote>
-<p>结果显示：</p>
-<p>-v显示的内容比-L -n 显示的内容多了四个字段</p>
-<p>pkts  规则匹配到的报文数量的多少</p>
-<p>bytes 规则匹配到的报文内容量的大小</p>
-<p>in   规则匹配到的流入的接口，*代表任意接口</p>
-<p>out   规则匹配到的流出的接口</p>
-</blockquote>
-<p>显示规则的标号 –line-numbers</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -L -n -v --line-numbers</span>
-Chain INPUT <span class="token punctuation">(</span>policy ACCEPT <span class="token number">13663</span> packets, 3221K bytes<span class="token punctuation">)</span>
-num   pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
-<span class="token number">1</span>    <span class="token number">13663</span> 3221K neutron-linuxbri-INPUT  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-<span class="token number">2</span>    <span class="token number">14809</span> 3469K nova-api-INPUT  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+杀死进程信号
+	SIGKILL
+		<span class="token function">kill</span> -9 PID 
+		<span class="token function">kill</span> -SIGKILL PID
+		<span class="token function">kill</span> -KILL PID
+注：不能够被捕捉
 
-Chain FORWARD <span class="token punctuation">(</span>policy ACCEPT <span class="token number">0</span> packets, <span class="token number">0</span> bytes<span class="token punctuation">)</span>
-num   pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
-<span class="token number">1</span>        <span class="token number">0</span>     <span class="token number">0</span> neutron-filter-top  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-<span class="token number">2</span>        <span class="token number">0</span>     <span class="token number">0</span> neutron-linuxbri-FORWARD  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-<span class="token number">3</span>        <span class="token number">0</span>     <span class="token number">0</span> nova-filter-top  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-<span class="token number">4</span>        <span class="token number">0</span>     <span class="token number">0</span> nova-api-FORWARD  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-<span class="token punctuation">..</span><span class="token punctuation">..</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+终止信号
+	SIGTREM
+		<span class="token function">kill</span> -15 PID 
+		<span class="token function">kill</span> -SIGTERM PID
+		<span class="token function">kill</span> -<span class="token environment constant">TERM</span> PID
 
-<p>打印规则命令，将防火墙的编写命令给我们打印出来，可以通过这种方式来学习规则的编写。</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -S</span>
--P INPUT ACCEPT
--P FORWARD ACCEPT
--P OUTPUT ACCEPT
--N neutron-filter-top
--N neutron-linuxbri-FORWARD
--N neutron-linuxbri-INPUT
--N neutron-linuxbri-OUTPUT
--N neutron-linuxbri-local
--N neutron-linuxbri-scope
--N neutron-linuxbri-sg-chain
--N neutron-linuxbri-sg-fallback
--N nova-api-FORWARD
--N nova-api-INPUT
--N nova-api-OUTPUT
--N nova-api-local
--N nova-filter-top
--A INPUT -j neutron-linuxbri-INPUT
--A INPUT -j nova-api-INPUT
--A FORWARD -j neutron-filter-top
--A FORWARD -j neutron-linuxbri-FORWARD
--A FORWARD -j nova-filter-top
--A FORWARD -j nova-api-FORWARD
-<span class="token punctuation">..</span><span class="token punctuation">..</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+注：优雅终止进程
 
-<h3 id="1-2-保存规则"><a href="#1-2-保存规则" class="headerlink" title="1.2 保存规则"></a>1.2 保存规则</h3><blockquote>
-<p>使用 iptables-save命令可以保存规则</p>
-</blockquote>
-<p>将当前的规则保存到文件中</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables-save > iptables.rules</span>
-<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># cat iptables.rules</span>
-<span class="token comment"># Generated by iptables-save v1.4.21 on Wed Oct 20 09:22:53 2021</span>
-*filter
-:INPUT ACCEPT <span class="token punctuation">[</span><span class="token number">16785</span>:3861723<span class="token punctuation">]</span>
-:FORWARD ACCEPT <span class="token punctuation">[</span><span class="token number">0</span>:0<span class="token punctuation">]</span>
-:OUTPUT ACCEPT <span class="token punctuation">[</span><span class="token number">16549</span>:3883715<span class="token punctuation">]</span>
-:neutron-filter-top - <span class="token punctuation">[</span><span class="token number">0</span>:0<span class="token punctuation">]</span>
-:neutron-linuxbri-FORWARD - <span class="token punctuation">[</span><span class="token number">0</span>:0<span class="token punctuation">]</span>
-:neutron-linuxbri-INPUT - <span class="token punctuation">[</span><span class="token number">0</span>:0<span class="token punctuation">]</span>
-:neutron-linuxbri-OUTPUT - <span class="token punctuation">[</span><span class="token number">0</span>:0<span class="token punctuation">]</span>
-:neutron-linuxbri-local - <span class="token punctuation">[</span><span class="token number">0</span>:0<span class="token punctuation">]</span>
-:neutron-linuxbri-scope - <span class="token punctuation">[</span><span class="token number">0</span>:0<span class="token punctuation">]</span>
-:neutron-linuxbri-sg-chain - <span class="token punctuation">[</span><span class="token number">0</span>:0<span class="token punctuation">]</span>
-:neutron-linuxbri-sg-fallback - <span class="token punctuation">[</span><span class="token number">0</span>:0<span class="token punctuation">]</span>
-:nova-api-FORWARD - <span class="token punctuation">[</span><span class="token number">0</span>:0<span class="token punctuation">]</span>
-:nova-api-INPUT - <span class="token punctuation">[</span><span class="token number">0</span>:0<span class="token punctuation">]</span>
-<span class="token punctuation">..</span><span class="token punctuation">..</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+暂停和恢复信号
+	SIGCONT <span class="token builtin class-name">:</span> 恢复
+	SIGSTOP ：暂停
 
-<h3 id="1-3-清除规则"><a href="#1-3-清除规则" class="headerlink" title="1.3 清除规则"></a>1.3 清除规则</h3><p>清除单个规则</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token comment"># 先查看</span>
-<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -L -n --line-numbers</span>
-Chain INPUT <span class="token punctuation">(</span>policy ACCEPT<span class="token punctuation">)</span>
-num  target     prot opt <span class="token builtin class-name">source</span>               destination
-<span class="token number">1</span>    neutron-linuxbri-INPUT  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-<span class="token number">2</span>    nova-api-INPUT  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+重载信号
+	SIGHUP（1）
 
-Chain FORWARD <span class="token punctuation">(</span>policy ACCEPT<span class="token punctuation">)</span>
-num  target     prot opt <span class="token builtin class-name">source</span>               destination
-<span class="token number">1</span>    neutron-filter-top  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-<span class="token number">2</span>    neutron-linuxbri-FORWARD  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-<span class="token number">3</span>    nova-filter-top  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-<span class="token number">4</span>    nova-api-FORWARD  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-<span class="token punctuation">..</span><span class="token punctuation">..</span>
 
-<span class="token comment"># 删除FORWARD的第2条规则</span>
-<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -D FORWARD 2</span>
+<span class="token number">1</span>、nohup <span class="token punctuation">[</span>执行的命令<span class="token punctuation">]</span> <span class="token operator">&amp;</span>
+后台启动，会在当前目录生成一个nohub.out文件，用于执行的命令的输出。
+<span class="token number">2</span>、setsid <span class="token builtin class-name">:</span> 实际上开了一个孤儿进程
+<span class="token number">3</span>、（执行的命令<span class="token operator">&amp;</span>）
+<span class="token number">4</span>、screen  开启一个子窗口<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<span class="token comment"># 再次查看，删除成功</span>
-<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -L -n --line-numbers</span>
-Chain INPUT <span class="token punctuation">(</span>policy ACCEPT<span class="token punctuation">)</span>
-num  target     prot opt <span class="token builtin class-name">source</span>               destination
-<span class="token number">1</span>    neutron-linuxbri-INPUT  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-<span class="token number">2</span>    nova-api-INPUT  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
 
-Chain FORWARD <span class="token punctuation">(</span>policy ACCEPT<span class="token punctuation">)</span>
-num  target     prot opt <span class="token builtin class-name">source</span>               destination
-<span class="token number">1</span>    neutron-filter-top  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-<span class="token number">2</span>    nova-filter-top  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-<span class="token number">3</span>    nova-api-FORWARD  all  --  <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-<span class="token punctuation">..</span><span class="token punctuation">..</span>
+      
+    </div>
 
-<span class="token comment"># 如果不指定删除的序号，会报错</span>
-<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -D FORWARD</span>
-iptables: Bad rule <span class="token punctuation">(</span>does a matching rule exist <span class="token keyword">in</span> that chain?<span class="token punctuation">)</span>.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
 
-<p>清除规则计数</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token comment"># 查看原内容</span>
-<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -L -n -v</span>
-Chain INPUT <span class="token punctuation">(</span>policy ACCEPT <span class="token number">3196</span> packets, 657K bytes<span class="token punctuation">)</span>
- pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
-<span class="token number">23118</span> 5147K neutron-linuxbri-INPUT  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-<span class="token number">24264</span> 5395K nova-api-INPUT  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day18-netstat%E4%BD%BF%E7%94%A8/%E7%AC%94%E8%AE%B0/">
 
-Chain FORWARD <span class="token punctuation">(</span>policy ACCEPT <span class="token number">0</span> packets, <span class="token number">0</span> bytes<span class="token punctuation">)</span>
- pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
-    <span class="token number">0</span>     <span class="token number">0</span> neutron-filter-top  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-    <span class="token number">0</span>     <span class="token number">0</span> nova-filter-top  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-    <span class="token number">0</span>     <span class="token number">0</span> nova-api-FORWARD  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-<span class="token punctuation">..</span><span class="token punctuation">..</span>
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
 
-<span class="token comment"># 清除规则计数 -Z</span>
-<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -Z</span>
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day18-netstat%E4%BD%BF%E7%94%A8/%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">运维之基础命令--netstat使用</a>
+        </h2>
 
-<span class="token comment"># 查看效果，pkts与bytes减少，即规则匹配到的报文数量与报文内容大小均减少，清除成功</span>
-<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -L -n -v</span>
-Chain INPUT <span class="token punctuation">(</span>policy ACCEPT <span class="token number">58</span> packets, <span class="token number">11344</span> bytes<span class="token punctuation">)</span>
- pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
-   <span class="token number">58</span> <span class="token number">11344</span> neutron-linuxbri-INPUT  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-   <span class="token number">58</span> <span class="token number">11344</span> nova-api-INPUT  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
 
-Chain FORWARD <span class="token punctuation">(</span>policy ACCEPT <span class="token number">0</span> packets, <span class="token number">0</span> bytes<span class="token punctuation">)</span>
- pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
-    <span class="token number">0</span>     <span class="token number">0</span> neutron-filter-top  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-    <span class="token number">0</span>     <span class="token number">0</span> nova-filter-top  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-    <span class="token number">0</span>     <span class="token number">0</span> nova-api-FORWARD  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-<span class="token punctuation">..</span><span class="token punctuation">..</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:14:29" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
+                </span>
+            </span>
 
-<p>清除所有规则</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token comment"># 清除默认规则</span>
-<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -F</span>
+          
 
-<span class="token comment"># 清除自定义规则</span>
-<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -X</span>
+        </div>
+      </header>
 
-<span class="token comment"># 查看效果</span>
-<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -L -n -v</span>
-Chain INPUT <span class="token punctuation">(</span>policy ACCEPT <span class="token number">424</span> packets, <span class="token number">84770</span> bytes<span class="token punctuation">)</span>
- pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
-Chain FORWARD <span class="token punctuation">(</span>policy ACCEPT <span class="token number">0</span> packets, <span class="token number">0</span> bytes<span class="token punctuation">)</span>
- pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
+      
+          <h1 id="笔记"><a href="#笔记" class="headerlink" title="笔记"></a>笔记</h1><p>1、netstat</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">netstat主要用来查询系统端口相关问题
 
-Chain OUTPUT <span class="token punctuation">(</span>policy ACCEPT <span class="token number">398</span> packets, <span class="token number">83826</span> bytes<span class="token punctuation">)</span>
- pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+注：要使用netstat，需要安装yum <span class="token function">install</span> -y net-tools
 
-<h3 id="1-4-恢复规则"><a href="#1-4-恢复规则" class="headerlink" title="1.4 恢复规则"></a>1.4 恢复规则</h3><p>从备份文件恢复规则</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token comment"># 从文件恢复</span>
-<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables-restore &lt; iptables.rules</span>
+<span class="token comment"># netstat常用参数</span>
+-t <span class="token builtin class-name">:</span> 打印tcp链接的进程
+-u <span class="token builtin class-name">:</span> 打印UDP链接的进程
+-l <span class="token builtin class-name">:</span> 监听
+-p <span class="token builtin class-name">:</span> 打印进程的PID
+-n <span class="token builtin class-name">:</span> 不反解，不将ip地址解析成域名同时不将端口解析成对应的协议名称
 
-<span class="token comment"># 查看确认已恢复</span>
-<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -L -n -v</span>
-Chain INPUT <span class="token punctuation">(</span>policy ACCEPT <span class="token number">268</span> packets, <span class="token number">46570</span> bytes<span class="token punctuation">)</span>
- pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
-  <span class="token number">268</span> <span class="token number">46570</span> neutron-linuxbri-INPUT  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-  <span class="token number">268</span> <span class="token number">46570</span> nova-api-INPUT  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+<span class="token function">netstat</span> -nutlp<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-Chain FORWARD <span class="token punctuation">(</span>policy ACCEPT <span class="token number">0</span> packets, <span class="token number">0</span> bytes<span class="token punctuation">)</span>
- pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
-    <span class="token number">0</span>     <span class="token number">0</span> neutron-filter-top  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-    <span class="token number">0</span>     <span class="token number">0</span> neutron-linuxbri-FORWARD  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-    <span class="token number">0</span>     <span class="token number">0</span> nova-filter-top  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-    <span class="token number">0</span>     <span class="token number">0</span> nova-api-FORWARD  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-<span class="token punctuation">..</span><span class="token punctuation">..</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>2、分区</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 查看系统磁盘</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># lsblk </span>
+NAME            MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sda               <span class="token number">8</span>:0    <span class="token number">0</span>   20G  <span class="token number">0</span> disk 
+├─sda1            <span class="token number">8</span>:1    <span class="token number">0</span>    1G  <span class="token number">0</span> part /boot
+└─sda2            <span class="token number">8</span>:2    <span class="token number">0</span>   19G  <span class="token number">0</span> part 
+  ├─centos-root <span class="token number">253</span>:0    <span class="token number">0</span>   18G  <span class="token number">0</span> lvm  /
+  └─centos-swap <span class="token number">253</span>:1    <span class="token number">0</span>    1G  <span class="token number">0</span> lvm  <span class="token punctuation">[</span>SWAP<span class="token punctuation">]</span>
+sdb               <span class="token number">8</span>:16   <span class="token number">0</span>   40G  <span class="token number">0</span> disk 
+sdc               <span class="token number">8</span>:32   <span class="token number">0</span>  <span class="token number">3</span>.9T  <span class="token number">0</span> disk 
 
-<h3 id="1-5-更改规则"><a href="#1-5-更改规则" class="headerlink" title="1.5 更改规则"></a>1.5 更改规则</h3><p>可以从ACCEPT改为DROP</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token comment"># 查看原规则</span>
-<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -L -n -v</span>
-Chain INPUT <span class="token punctuation">(</span>policy ACCEPT <span class="token number">342</span> packets, <span class="token number">49890</span> bytes<span class="token punctuation">)</span>
- pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
- <span class="token number">4455</span>  836K neutron-linuxbri-INPUT  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
- <span class="token number">4455</span>  836K nova-api-INPUT  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+<span class="token comment"># 分区</span>
+<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># fdisk /dev/sdb </span>
 
-Chain FORWARD <span class="token punctuation">(</span>policy ACCEPT <span class="token number">0</span> packets, <span class="token number">0</span> bytes<span class="token punctuation">)</span>
- pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
-    <span class="token number">0</span>     <span class="token number">0</span> neutron-filter-top  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-    <span class="token number">0</span>     <span class="token number">0</span> neutron-linuxbri-FORWARD  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-    <span class="token number">0</span>     <span class="token number">0</span> nova-filter-top  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-    <span class="token number">0</span>     <span class="token number">0</span> nova-api-FORWARD  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-<span class="token punctuation">..</span><span class="token punctuation">..</span>
+n <span class="token builtin class-name">:</span> 新建一个分区
+p <span class="token builtin class-name">:</span> 查看分区情况
+m ：查看帮助
+d <span class="token builtin class-name">:</span> 删除分区
+w ；保存分区修改内容<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<span class="token comment"># -P 修改</span>
-<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -P FORWARD DROP</span>
+<p>3、使用文件系统的流程</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>、装硬盘
 
-<span class="token comment"># 再次查看，FORWARD链修改DROP成功</span>
-<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -L -n -v</span>
-Chain INPUT <span class="token punctuation">(</span>policy ACCEPT <span class="token number">38</span> packets, <span class="token number">5017</span> bytes<span class="token punctuation">)</span>
- pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
- <span class="token number">4849</span>  905K neutron-linuxbri-INPUT  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
- <span class="token number">4849</span>  905K nova-api-INPUT  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
+<span class="token number">2</span>、查看当前系统硬盘
+<span class="token punctuation">[</span>root@localhost a<span class="token punctuation">]</span><span class="token comment"># lsblk </span>
+NAME            MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sda               <span class="token number">8</span>:0    <span class="token number">0</span>   20G  <span class="token number">0</span> disk 
+├─sda1            <span class="token number">8</span>:1    <span class="token number">0</span>    1G  <span class="token number">0</span> part /boot
+└─sda2            <span class="token number">8</span>:2    <span class="token number">0</span>   19G  <span class="token number">0</span> part 
+  ├─centos-root <span class="token number">253</span>:0    <span class="token number">0</span>   18G  <span class="token number">0</span> lvm  /
+  └─centos-swap <span class="token number">253</span>:1    <span class="token number">0</span>    1G  <span class="token number">0</span> lvm  <span class="token punctuation">[</span>SWAP<span class="token punctuation">]</span>
+sdb               <span class="token number">8</span>:16   <span class="token number">0</span>   40G  <span class="token number">0</span> disk 
+sdc               <span class="token number">8</span>:32   <span class="token number">0</span>  <span class="token number">3</span>.9T  <span class="token number">0</span> disk 
+sr0              <span class="token number">11</span>:0    <span class="token number">1</span>  <span class="token number">4</span>.3G  <span class="token number">0</span> rom  
 
-Chain FORWARD <span class="token punctuation">(</span>policy DROP <span class="token number">0</span> packets, <span class="token number">0</span> bytes<span class="token punctuation">)</span>
- pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
-    <span class="token number">0</span>     <span class="token number">0</span> neutron-filter-top  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-    <span class="token number">0</span>     <span class="token number">0</span> neutron-linuxbri-FORWARD  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-    <span class="token number">0</span>     <span class="token number">0</span> nova-filter-top  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-    <span class="token number">0</span>     <span class="token number">0</span> nova-api-FORWARD  all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-<span class="token punctuation">..</span><span class="token punctuation">..</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<span class="token number">3</span>、分区
+	2TB 以下的硬盘，使用MBR分区
+	2TB 以上的硬盘，使用GPT分区
+	
+	<span class="token function">fdisk</span> /dev/sdb
 
-<blockquote>
-<p>-P 更改的规则，使用 -F 不能自动还原</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token operator">></span><span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -F</span>
-<span class="token operator">></span><span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -L -n -v</span>
-<span class="token operator">></span>Chain INPUT <span class="token punctuation">(</span>policy ACCEPT <span class="token number">36</span> packets, <span class="token number">6554</span> bytes<span class="token punctuation">)</span>
-<span class="token operator">></span>pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
+<span class="token number">4</span>、格式化分区（将分区做成文件系统）
+	mkfs.xfs /dev/sdb1
 
-<span class="token operator">></span>Chain FORWARD <span class="token punctuation">(</span>policy DROP <span class="token number">0</span> packets, <span class="token number">0</span> bytes<span class="token punctuation">)</span>
-<span class="token operator">></span>pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
-<span class="token operator">></span><span class="token punctuation">..</span><span class="token punctuation">..</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-</blockquote>
-<p>重启iptables服务后，可以使用系统所有默认规则</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token comment"># 清除所有默认规则</span>
-<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -F</span>
+<span class="token number">5</span>、挂载分区
+	<span class="token function">mount</span> /dev/sdb1  /a
 
-<span class="token comment"># 查看，没有默认规则</span>
-<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -L -n -v</span>
-Chain INPUT <span class="token punctuation">(</span>policy ACCEPT <span class="token number">8</span> packets, <span class="token number">520</span> bytes<span class="token punctuation">)</span>
- pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
+<span class="token number">6</span>、检测
+	<span class="token function">df</span>
+		-h <span class="token builtin class-name">:</span> 显示硬盘大小单位
 
-Chain FORWARD <span class="token punctuation">(</span>policy ACCEPT <span class="token number">0</span> packets, <span class="token number">0</span> bytes<span class="token punctuation">)</span>
- pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
-
-Chain OUTPUT <span class="token punctuation">(</span>policy ACCEPT <span class="token number">4</span> packets, <span class="token number">448</span> bytes<span class="token punctuation">)</span>
- pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
- 
-<span class="token comment"># 重启iptables服务</span>
-<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># systemctl restart iptables</span>
-
-<span class="token comment"># 再次查看，新增了系统的默认规则</span>
-<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># iptables -L -n -v</span>
-Chain INPUT <span class="token punctuation">(</span>policy ACCEPT <span class="token number">0</span> packets, <span class="token number">0</span> bytes<span class="token punctuation">)</span>
- pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
-    <span class="token number">6</span>   <span class="token number">432</span> ACCEPT     all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0            state RELATED,ESTABLISHED
-    <span class="token number">0</span>     <span class="token number">0</span> ACCEPT     icmp --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-    <span class="token number">0</span>     <span class="token number">0</span> ACCEPT     all  --  lo     *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0
-    <span class="token number">0</span>     <span class="token number">0</span> ACCEPT     tcp  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0            state NEW tcp dpt:22
-    <span class="token number">0</span>     <span class="token number">0</span> REJECT     all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0            reject-with icmp-host-prohibited
-
-Chain FORWARD <span class="token punctuation">(</span>policy ACCEPT <span class="token number">0</span> packets, <span class="token number">0</span> bytes<span class="token punctuation">)</span>
- pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination
-    <span class="token number">0</span>     <span class="token number">0</span> REJECT     all  --  *      *       <span class="token number">0.0</span>.0.0/0            <span class="token number">0.0</span>.0.0/0            reject-with icmp-host-prohibited
-
-Chain OUTPUT <span class="token punctuation">(</span>policy ACCEPT <span class="token number">4</span> packets, <span class="token number">544</span> bytes<span class="token punctuation">)</span>
- pkts bytes target     prot opt <span class="token keyword">in</span>     out     <span class="token builtin class-name">source</span>               destination<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<span class="token comment"># 注：挂载哪个硬盘则显示对应硬盘里面的内容</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 
       
