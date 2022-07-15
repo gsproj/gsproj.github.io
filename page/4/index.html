@@ -185,7 +185,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day20-dd%E4%B8%8E%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%A4%87%E4%BB%BD/%E7%AC%94%E8%AE%B0/">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day17-Linux%E4%BF%A1%E5%8F%B7/%E7%AC%94%E8%AE%B0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/myavatar.png">
@@ -199,7 +199,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day20-dd%E4%B8%8E%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%A4%87%E4%BB%BD/%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">运维之基础命令--dd与文件系统备份</a>
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day17-Linux%E4%BF%A1%E5%8F%B7/%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">运维之基础命令--linux信号</a>
         </h2>
 
         <div class="post-meta">
@@ -210,7 +210,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:14:48" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:14:23" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -237,122 +237,67 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="笔记"><a href="#笔记" class="headerlink" title="笔记"></a>笔记</h2><p>1、dd命令</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">dd</span> <span class="token assign-left variable">if</span><span class="token operator">=</span>/dev/zero <span class="token assign-left variable">of</span><span class="token operator">=</span>/dev/sdb <span class="token assign-left variable">bs</span><span class="token operator">=</span>500M <span class="token assign-left variable">count</span><span class="token operator">=</span><span class="token number">1</span> 
- 
-<span class="token keyword">if</span> <span class="token builtin class-name">:</span> 从哪里读文件
-of <span class="token builtin class-name">:</span> 写入到哪里
-bs <span class="token builtin class-name">:</span> 写入500M
-count <span class="token builtin class-name">:</span> 写一块<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+          <h1 id="笔记"><a href="#笔记" class="headerlink" title="笔记"></a>笔记</h1><p>1、设置进程的nice值</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 设置进程的优先级</span>
+<span class="token function">nice</span> -n -11 <span class="token function">bash</span> test.sh
 
-<p>2、模拟文件系统出问题</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>、直接向硬盘中写数据，不能测试向分区写数据
-<span class="token number">2</span>、卸载之后重新挂载
-<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># mount /dev/sdc1 /root/test</span>
-mount: <span class="token function">mount</span> /dev/sdc1 on /root/test failed: Structure needs cleaning
-
-<span class="token number">3</span>、对文件系统进行修复
-xfs_repair <span class="token punctuation">[</span>磁盘或分区路径<span class="token punctuation">]</span>
-
-注： xfs_repair修改硬盘之后，硬盘数据丢失，所以对重要的数据要进行数据备份<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>3、文件系统的备份与恢复</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">备份：另外在保存一份
-恢复：将以前保存的数据进行还原
-
-<span class="token function">touch</span> <span class="token number">1</span>.txt
-<span class="token builtin class-name">echo</span> aaaa <span class="token operator">></span> <span class="token number">1</span>.txt
-<span class="token function">cp</span>  <span class="token number">1</span>.txt   <span class="token number">2</span>.txt
-
-<span class="token function">rm</span> <span class="token number">1</span>.txt
-
-<span class="token function">cp</span> <span class="token number">2</span>.txt <span class="token number">1</span>.txt
-
-<span class="token number">1</span>.log   1T <span class="token operator">=</span> 1024G
-
-全量备份和增量备份
-全量备份：将需要备份的文件全部复制一份
-增量备份：在原来备份基础上，把新增数据重新备份一份
-
-备份与恢复的命令
-xfsdump <span class="token builtin class-name">:</span> 备份的命令
-xfsrestore  <span class="token builtin class-name">:</span> 恢复的命令
-
-
-<span class="token comment"># 备份的步骤</span>
-<span class="token number">1</span>、安装备份命令
-<span class="token punctuation">[</span>root@localhost test<span class="token punctuation">]</span><span class="token comment"># yum install xfsdump -y</span>
-
-<span class="token number">2</span>、备份的等级
-<span class="token number">0</span>  全量备份
-
-<span class="token number">1</span> ~ <span class="token number">9</span> 增量备份（等级）
-
-<span class="token number">3</span>、备份的参数
--L ：记录每次备份的地方
--M ：注释，此次备份的注释
--l ：指定备份的等级
--f ：备份的文件名称
--I ：查看备份信息
-
-<span class="token number">4</span>、备份的条件（限制）
-	<span class="token number">1</span>、必须使用root权限
-	<span class="token number">2</span>、只能备份已经挂载的内容
-	<span class="token number">3</span>、只能备份xfs文件系统
-	<span class="token number">4</span>、只能够用xfsrestore来恢复
-
-<span class="token number">5</span>、备份的命令格式
-xfsdump <span class="token punctuation">[</span>参数<span class="token punctuation">]</span> 备份路径
-xfsdump -L sdb1_bak -M <span class="token string">"sbd1_from_xxx"</span> -l <span class="token number">0</span> -f sdb1_from_bak_1 /root/oldboy
-
-<span class="token number">6</span>、数据恢复
-xfsrestore
-
-<span class="token number">7</span>、恢复数据的参数
--f <span class="token builtin class-name">:</span> 指定备份的文件路径
-
-<span class="token number">8</span>、恢复的格式
-xfsrestore <span class="token punctuation">[</span>参数<span class="token punctuation">]</span> 恢复的路径
-<span class="token punctuation">[</span>root@localhost oldboy<span class="token punctuation">]</span><span class="token comment"># xfsrestore -f /root/sdb1_from_bak_3 /root/oldboy/</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>4、LVM</p>
-<pre class="line-numbers language-bsah" data-language="bsah"><code class="language-bsah">1、什么是lvm
-
-你如何保证你的硬盘空间恰好够用？
-如果你的硬盘你够用了怎么扩容？
-
-LVM是文件系统管理工具
-
-&#x2F;root&#x2F;oldboy ---&gt;  lv[5G]
-&#x2F;root&#x2F;oldboy ---&gt;  lv[3G]
-
-2、LVM的优点
-	1、可以动态扩容与缩容
-	2、可以将新增加的硬盘添加到VG存储池
-	3、可以突破物理存储卷的限制
-
-
-
-3、使用lvm
-	1、安装lvm软件包
-		yum install lvm2 -y
-	2、将磁盘交给pv
-		pvreate [磁盘|磁盘分区]
-	3、查看pv
-		pvs
-		pvscan
-	4、创建vg
-		vgcreate [vg名称] [pv路径]
-	5、查看vg
-	6、创建lvm逻辑卷（lv）
-		-L ： 创建逻辑卷的大小
-		-n : 逻辑卷的名字
-		lvcreate [参数] 逻辑卷名称
-	7、制作文件系统
-		mkfs.xfs &#x2F;dev&#x2F;vg1&#x2F;xxx
+-n ： 设置优先级
+	普通用户：（0~19）
+	超级用户：（-20~19）
 	
-	8、挂载文件系统
-		mount [lv的路径] [挂载点的路径]<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<span class="token comment"># 给指定进程设置优先级</span>
+<span class="token function">renice</span> <span class="token punctuation">[</span>设置优先级<span class="token punctuation">]</span> pid
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>2、Linux系统信号</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">中断信号
+	ctrl + c
+	ctrl + z
+
+	INT<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span> <span class="token builtin class-name">:</span> 
+		<span class="token function">kill</span> -<span class="token punctuation">[</span>信号名称<span class="token operator">|</span>信号ID<span class="token punctuation">]</span>　pid
+		
+		<span class="token function">kill</span> -SIGINT  PID
+		<span class="token function">kill</span> -INT     PID
+		<span class="token function">kill</span> -2       PID 
+
+退出信号:
+	ctrl + d
+
+暂停信号：将进程暂停
+	SIGTSTP（20）
+		<span class="token function">kill</span> -20 PID 
+		<span class="token function">kill</span> -SIGTSTP PID 
+		<span class="token function">kill</span> -TSTP PID
+
+杀死进程信号
+	SIGKILL
+		<span class="token function">kill</span> -9 PID 
+		<span class="token function">kill</span> -SIGKILL PID
+		<span class="token function">kill</span> -KILL PID
+注：不能够被捕捉
+
+终止信号
+	SIGTREM
+		<span class="token function">kill</span> -15 PID 
+		<span class="token function">kill</span> -SIGTERM PID
+		<span class="token function">kill</span> -<span class="token environment constant">TERM</span> PID
+
+注：优雅终止进程
+
+暂停和恢复信号
+	SIGCONT <span class="token builtin class-name">:</span> 恢复
+	SIGSTOP ：暂停
+
+重载信号
+	SIGHUP（1）
+
+
+<span class="token number">1</span>、nohup <span class="token punctuation">[</span>执行的命令<span class="token punctuation">]</span> <span class="token operator">&amp;</span>
+后台启动，会在当前目录生成一个nohub.out文件，用于执行的命令的输出。
+<span class="token number">2</span>、setsid <span class="token builtin class-name">:</span> 实际上开了一个孤儿进程
+<span class="token number">3</span>、（执行的命令<span class="token operator">&amp;</span>）
+<span class="token number">4</span>、screen  开启一个子窗口<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 
       
@@ -756,6 +701,118 @@ Chain OUTPUT <span class="token punctuation">(</span>policy ACCEPT <span class="
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day21-%E8%AE%A1%E5%88%92%E4%BB%BB%E5%8A%A1/%E8%AE%A1%E5%88%92%E4%BB%BB%E5%8A%A1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day21-%E8%AE%A1%E5%88%92%E4%BB%BB%E5%8A%A1/%E8%AE%A1%E5%88%92%E4%BB%BB%E5%8A%A1/" class="post-title-link" itemprop="url">运维之基础命令--计划任务</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:14:55" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="计划任务"><a href="#计划任务" class="headerlink" title="计划任务"></a>计划任务</h1><p>1、Crontab表达式</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">*  *  *  * * 
+分 时 日 月 周
+
+每天的凌晨2点   02：00     00 02 * * *
+每月执行一次    00  00  01  * *
+每个月的一号零点零时零分同时这一天时星期六 00  00  01  *  <span class="token number">6</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>2、系统级别的计划任务</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>、/etc/crontab
+
+<span class="token number">2</span>、如下的目录
+    /etc/cron.hourly/ <span class="token comment"># 系统定时任务每个⼩时运⾏这个⽬录⾥的内容</span>
+    /etc/cron.daily/ <span class="token comment"># 系统定时任务每天运⾏这个⽬录⾥的内容</span>
+    /etc/cron.weekly/ <span class="token comment"># 系统定时任务每周运⾏这个⽬录⾥的内容</span>
+    /etc/cron.monthly/ <span class="token comment"># 系统定时任务每⽉运⾏这个⽬录⾥的内容</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>3、用户级别的计划任务</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">crontab</span> -e
+
+-e <span class="token builtin class-name">:</span> 编辑计划任务
+-l <span class="token builtin class-name">:</span> 查看计划任务
+
+<span class="token comment"># 注：用户级别的计划任务存放在/var/spool/cron/，不同的用户存放的计划任务是以其自己的名字命名的脚本</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>4、crontab语法</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 1 3 5</span>
+00 00 <span class="token number">1,3</span>,5 * *
+
+<span class="token comment"># 1到5号</span>
+00 00 <span class="token number">1</span>-5
+
+<span class="token comment"># 每几分钟，每几个小数，每几天</span>
+<span class="token number">0</span>/2  /2 
+00 <span class="token number">0</span>/2    00 /2
+00 00 <span class="token number">0</span>/2   00 00 /2<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+
+<p>5、每3分钟同步一下系统时间</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/04-%E8%99%9A%E6%8B%9F%E5%8C%96/OpenStack%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -810,9 +867,9 @@ Chain OUTPUT <span class="token punctuation">(</span>policy ACCEPT <span class="
       
           <h1 id="OpenStack笔记"><a href="#OpenStack笔记" class="headerlink" title="OpenStack笔记"></a><strong><font color=green>OpenStack笔记</font></strong></h1><p>​	OpenStack实现的是云计算IAAS</p>
 <h2 id="一、服务架构发展"><a href="#一、服务架构发展" class="headerlink" title="一、服务架构发展"></a><font color=blue>一、服务架构发展</font></h2><h3 id="1-1-MVC架构"><a href="#1-1-MVC架构" class="headerlink" title="1.1 MVC架构"></a>1.1 MVC架构</h3><p>​	业务不拆分，一个服务挂，则所有的全挂</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">首页 www.jd.com&#x2F;index.html
-秒杀 www.jd.com&#x2F;miaosha&#x2F;index.html
-优惠券 www.jd.com&#x2F;juan&#x2F;index.html<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">首页 www.jd.com/index.html
+秒杀 www.jd.com/miaosha/index.html
+优惠券 www.jd.com/juan/index.html<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
 
 <h3 id="1-2-SOA架构（千万级）"><a href="#1-2-SOA架构（千万级）" class="headerlink" title="1.2 SOA架构（千万级）"></a>1.2 SOA架构（千万级）</h3><p>​	业务拆分，每一个功能都拆分成一个独立的web服务，每个独立的web服务，都至少拥有一个集群</p>
 <pre class="line-numbers language-she" data-language="she"><code class="language-she">首页 www.jd.com&#x2F;index.html
@@ -824,7 +881,7 @@ Chain OUTPUT <span class="token punctuation">(</span>policy ACCEPT <span class="
 <p>自动化代码上线：Jekins + gilab ci</p>
 <p>自动化代码质量检查：sonarqube</p>
 <h2 id="二、搭建OpenStack"><a href="#二、搭建OpenStack" class="headerlink" title="二、搭建OpenStack"></a><font color=blue>二、搭建OpenStack</font></h2><p>​	本流程为手动安装M版，脚本安装可以参考</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">https:&#x2F;&#x2F;my.oschina.net&#x2F;u&#x2F;4367225&#x2F;blog&#x2F;4255750<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">https://my.oschina.net/u/4367225/blog/4255750<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
 <p>OpenStack的结构介绍：</p>
 <blockquote>
@@ -840,121 +897,121 @@ Chain OUTPUT <span class="token punctuation">(</span>policy ACCEPT <span class="
 </blockquote>
 <p><img src="C:\Users\fr724\AppData\Roaming\Typora\typora-user-images\image-20210615135957367.png" alt="image-20210615135957367"></p>
 <h3 id="2-1-虚拟机准备"><a href="#2-1-虚拟机准备" class="headerlink" title="2.1 虚拟机准备"></a>2.1 虚拟机准备</h3><p>虚拟机规划</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 系统：CentOS7.4
-controller: 内存3G, CPU开启虚拟化	10.0.0.11
-compute1: 内存1G，CPU开启虚拟化	    10.0.0.31
-# 修改主机名，IP地址，host解析，测试ping百度<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token comment"># 系统：CentOS7.4</span>
+controller: 内存3G, CPU开启虚拟化	<span class="token number">10.0</span>.0.11
+compute1: 内存1G，CPU开启虚拟化	    <span class="token number">10.0</span>.0.31
+<span class="token comment"># 修改主机名，IP地址，host解析，测试ping百度</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
 
 <p>配置本地M版yum源</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 1、资源准备
-mount &#x2F;dev&#x2F;cdrom &#x2F;mnt # 追加到&#x2F;etc&#x2F;rc.local,自动挂载
-解压openstack_rpm.tar.gz到&#x2F;opt&#x2F;repo
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token comment"># 1、资源准备</span>
+<span class="token function">mount</span> /dev/cdrom /mnt <span class="token comment"># 追加到/etc/rc.local,自动挂载</span>
+解压openstack_rpm.tar.gz到/opt/repo
 
-# 2、编辑repo文件
-vim &#x2F;etc&#x2F;yum.repo.d&#x2F;local&#x2F;repo
+<span class="token comment"># 2、编辑repo文件</span>
+<span class="token function">vim</span> /etc/yum.repo.d/local/repo
 
-#### 内容
-[local]
-name&#x3D;local
-baseurl&#x3D;file:&#x2F;&#x2F;&#x2F;mnt
-gpgcheck&#x3D;0
+<span class="token comment">#### 内容</span>
+<span class="token punctuation">[</span>local<span class="token punctuation">]</span>
+<span class="token assign-left variable">name</span><span class="token operator">=</span>local
+<span class="token assign-left variable">baseurl</span><span class="token operator">=</span>file:///mnt
+<span class="token assign-left variable">gpgcheck</span><span class="token operator">=</span><span class="token number">0</span>
 
-[openstack]
-name&#x3D;openstack
-baseurl&#x3D;file:&#x2F;&#x2F;&#x2F;opt&#x2F;repo
-gpgcheck&#x3D;0
-####
+<span class="token punctuation">[</span>openstack<span class="token punctuation">]</span>
+<span class="token assign-left variable">name</span><span class="token operator">=</span>openstack
+<span class="token assign-left variable">baseurl</span><span class="token operator">=</span>file:///opt/repo
+<span class="token assign-left variable">gpgcheck</span><span class="token operator">=</span><span class="token number">0</span>
+<span class="token comment">####</span>
 
-# 3、更新yum源
+<span class="token comment"># 3、更新yum源</span>
 yum makecache
 yum repolist<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 
 
 <h3 id="2-2-基础服务安装"><a href="#2-2-基础服务安装" class="headerlink" title="2.2 基础服务安装"></a>2.2 基础服务安装</h3><h4 id="2-2-1-NTP时间同步"><a href="#2-2-1-NTP时间同步" class="headerlink" title="2.2.1 NTP时间同步"></a>2.2.1 NTP时间同步</h4><p>controller与阿里NTP服务器同步</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;chrony.conf
-server ntp6.aliyun.com # 3行
-allow 10.0.0.0&#x2F;24 # 24行
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token function">vim</span> /etc/chrony.conf
+server ntp6.aliyun.com <span class="token comment"># 3行</span>
+allow <span class="token number">10.0</span>.0.0/24 <span class="token comment"># 24行</span>
 systemctl restart chronyd<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
 
 <p>computer与controller同步</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;chrony.conf
-server 10.0.0.11 iburst # 3行
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token function">vim</span> /etc/chrony.conf
+server <span class="token number">10.0</span>.0.11 iburst <span class="token comment"># 3行</span>
 systemctl restart chronyd<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
 
-<h4 id="2-2-2-扩展-公网安装O版OpenStack的方法介绍（跳过该步骤）"><a href="#2-2-2-扩展-公网安装O版OpenStack的方法介绍（跳过该步骤）" class="headerlink" title="2.2.2 扩展-公网安装O版OpenStack的方法介绍（跳过该步骤）"></a>2.2.2 扩展-公网安装O版OpenStack的方法介绍（跳过该步骤）</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">curl -o &#x2F;etc&#x2F;yum.repos.d&#x2F;CentOS-Base.repo http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;repo&#x2F;Centos-7.repo
+<h4 id="2-2-2-扩展-公网安装O版OpenStack的方法介绍（跳过该步骤）"><a href="#2-2-2-扩展-公网安装O版OpenStack的方法介绍（跳过该步骤）" class="headerlink" title="2.2.2 扩展-公网安装O版OpenStack的方法介绍（跳过该步骤）"></a>2.2.2 扩展-公网安装O版OpenStack的方法介绍（跳过该步骤）</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token function">curl</span> -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
 yum makecache
-yum list | grep openstack
-yum install centos-release-openstack-ocata.noarch -y # 安装O版<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+yum list <span class="token operator">|</span> <span class="token function">grep</span> openstack
+yum <span class="token function">install</span> centos-release-openstack-ocata.noarch -y <span class="token comment"># 安装O版</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
 
-<h4 id="2-2-3-安装OpenStack客户端openstack-selinux-（所有节点执行）"><a href="#2-2-3-安装OpenStack客户端openstack-selinux-（所有节点执行）" class="headerlink" title="2.2.3 安装OpenStack客户端openstack-selinux （所有节点执行）"></a>2.2.3 安装OpenStack客户端openstack-selinux （所有节点执行）</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum install python-openstackclient openstack-selinux -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<h4 id="2-2-3-安装OpenStack客户端openstack-selinux-（所有节点执行）"><a href="#2-2-3-安装OpenStack客户端openstack-selinux-（所有节点执行）" class="headerlink" title="2.2.3 安装OpenStack客户端openstack-selinux （所有节点执行）"></a>2.2.3 安装OpenStack客户端openstack-selinux （所有节点执行）</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum <span class="token function">install</span> python-openstackclient openstack-selinux -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
 <h4 id="2-2-4-安装和配置mariadb-仅控制节点执行"><a href="#2-2-4-安装和配置mariadb-仅控制节点执行" class="headerlink" title="2.2.4 安装和配置mariadb (仅控制节点执行)"></a>2.2.4 安装和配置mariadb (仅控制节点执行)</h4><p>安装</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum install mariadb mariadb-server python2-PyMySQL -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum <span class="token function">install</span> mariadb mariadb-server python2-PyMySQL -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
 <p>配置</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;my.cnf.d&#x2F;openstack.cnf
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token function">vim</span> /etc/my.cnf.d/openstack.cnf
 
-#----------------
-[mysqld]	
-bind-address &#x3D; 10.0.0.11	# 监听地址
-default-storage-engine &#x3D; innodb # 默认存储引擎
-innodb_file_per_table  # 独立表空间文件
-max_connections &#x3D; 4096	# 最大连接数
-collation-server &#x3D; utf8_general_ci	# 默认字符集utf8
-character-set-server &#x3D; utf8
-#-----------------
+<span class="token comment">#----------------</span>
+<span class="token punctuation">[</span>mysqld<span class="token punctuation">]</span>	
+bind-address <span class="token operator">=</span> <span class="token number">10.0</span>.0.11	<span class="token comment"># 监听地址</span>
+default-storage-engine <span class="token operator">=</span> innodb <span class="token comment"># 默认存储引擎</span>
+innodb_file_per_table  <span class="token comment"># 独立表空间文件</span>
+max_connections <span class="token operator">=</span> <span class="token number">4096</span>	<span class="token comment"># 最大连接数</span>
+collation-server <span class="token operator">=</span> utf8_general_ci	<span class="token comment"># 默认字符集utf8</span>
+character-set-server <span class="token operator">=</span> utf8
+<span class="token comment">#-----------------</span>
 
-# 启动服务
+<span class="token comment"># 启动服务</span>
 systemctl start mariadb
-systemctl enable mariadb
+systemctl <span class="token builtin class-name">enable</span> mariadb
 
-# 数据库安全初始化,保障数据库安全性，如果不执行，同步数据库表会报错
+<span class="token comment"># 数据库安全初始化,保障数据库安全性，如果不执行，同步数据库表会报错</span>
 mysql_secure_installation
 回车 n y y y y<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<h4 id="2-2-5-消息队列配置-仅控制节点执行"><a href="#2-2-5-消息队列配置-仅控制节点执行" class="headerlink" title="2.2.5 消息队列配置(仅控制节点执行)"></a>2.2.5 消息队列配置(仅控制节点执行)</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 安装rabbitmq
-yum install rabbitmq-server -y
-# 启动服务
+<h4 id="2-2-5-消息队列配置-仅控制节点执行"><a href="#2-2-5-消息队列配置-仅控制节点执行" class="headerlink" title="2.2.5 消息队列配置(仅控制节点执行)"></a>2.2.5 消息队列配置(仅控制节点执行)</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token comment"># 安装rabbitmq</span>
+yum <span class="token function">install</span> rabbitmq-server -y
+<span class="token comment"># 启动服务</span>
 systemctl start rabbitmq-server
-systemctl enable rabbitmq-server
-# 添加用户
+systemctl <span class="token builtin class-name">enable</span> rabbitmq-server
+<span class="token comment"># 添加用户</span>
 rabbitmqctl add_user openstack RABBIT_PASS
-# 设置用户权限（读、写、执行）
-rabbitmqctl set_permissions openstack &quot;.*&quot; &quot;.*&quot; &quot;.*&quot;
-rabbitmq-plugins enable rabbitmq_management
-# 查看是否开启15672端口
-netstat -lntup
-# 浏览器登录rabbitmq
-http:&#x2F;&#x2F;10.0.0.11:15672
+<span class="token comment"># 设置用户权限（读、写、执行）</span>
+rabbitmqctl set_permissions openstack <span class="token string">".*"</span> <span class="token string">".*"</span> <span class="token string">".*"</span>
+rabbitmq-plugins <span class="token builtin class-name">enable</span> rabbitmq_management
+<span class="token comment"># 查看是否开启15672端口</span>
+<span class="token function">netstat</span> -lntup
+<span class="token comment"># 浏览器登录rabbitmq</span>
+http://10.0.0.11:15672
 默认用户名和密码：guest<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<h4 id="2-2-6-缓存系统配置memcache（仅控制节点执行）"><a href="#2-2-6-缓存系统配置memcache（仅控制节点执行）" class="headerlink" title="2.2.6 缓存系统配置memcache（仅控制节点执行）"></a>2.2.6 缓存系统配置memcache（仅控制节点执行）</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 安装
-yum install memcached python-memched -y
-# 配置
-sed -i &#39;s#127.0.0.1#10.0.0.11#g&#39; &#x2F;etc&#x2F;sysconfig&#x2F;memcached
-# 启动服务
+<h4 id="2-2-6-缓存系统配置memcache（仅控制节点执行）"><a href="#2-2-6-缓存系统配置memcache（仅控制节点执行）" class="headerlink" title="2.2.6 缓存系统配置memcache（仅控制节点执行）"></a>2.2.6 缓存系统配置memcache（仅控制节点执行）</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token comment"># 安装</span>
+yum <span class="token function">install</span> memcached python-memched -y
+<span class="token comment"># 配置</span>
+<span class="token function">sed</span> -i <span class="token string">'s#127.0.0.1#10.0.0.11#g'</span> /etc/sysconfig/memcached
+<span class="token comment"># 启动服务</span>
 systemctl restart memcached
-systemctl enable memcached
-# 查询端口11211是否已监听，默认使用该端口<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+systemctl <span class="token builtin class-name">enable</span> memcached
+<span class="token comment"># 查询端口11211是否已监听，默认使用该端口</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<h3 id="2-3-安装keystone认证服务-仅控制节点执行"><a href="#2-3-安装keystone认证服务-仅控制节点执行" class="headerlink" title="2.3 安装keystone认证服务(仅控制节点执行)"></a>2.3 安装keystone认证服务(仅控制节点执行)</h3><h4 id="2-3-1-Keystone功能介绍"><a href="#2-3-1-Keystone功能介绍" class="headerlink" title="2.3.1 Keystone功能介绍"></a>2.3.1 Keystone功能介绍</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1、认证管理：
+<h3 id="2-3-安装keystone认证服务-仅控制节点执行"><a href="#2-3-安装keystone认证服务-仅控制节点执行" class="headerlink" title="2.3 安装keystone认证服务(仅控制节点执行)"></a>2.3 安装keystone认证服务(仅控制节点执行)</h3><h4 id="2-3-1-Keystone功能介绍"><a href="#2-3-1-Keystone功能介绍" class="headerlink" title="2.3.1 Keystone功能介绍"></a>2.3.1 Keystone功能介绍</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token number">1</span>、认证管理：
 	账户密码
-2、授权管理
-3、服务目录：
+<span class="token number">2</span>、授权管理
+<span class="token number">3</span>、服务目录：
 	跟电话本一样，keystone上可以查询到glance、nova等服务的地址端口等信息，每一个新加的服务都需要在keystone上注册<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<h4 id="2-3-2-OpenStack服务器安装的通用步骤"><a href="#2-3-2-OpenStack服务器安装的通用步骤" class="headerlink" title="2.3.2 OpenStack服务器安装的通用步骤"></a>2.3.2 OpenStack服务器安装的通用步骤</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1、创库授权
-2、在Keystone创建用户，关联角色
-3、在keystone创建服务，注册api
-4、安装服务相关的软件包
-5、修改配置
+<h4 id="2-3-2-OpenStack服务器安装的通用步骤"><a href="#2-3-2-OpenStack服务器安装的通用步骤" class="headerlink" title="2.3.2 OpenStack服务器安装的通用步骤"></a>2.3.2 OpenStack服务器安装的通用步骤</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token number">1</span>、创库授权
+<span class="token number">2</span>、在Keystone创建用户，关联角色
+<span class="token number">3</span>、在keystone创建服务，注册api
+<span class="token number">4</span>、安装服务相关的软件包
+<span class="token number">5</span>、修改配置
 	数据库的连接
 	keystone认证授权信息
 	rabbitmq连接信息
 	其他配置
-6、同步数据库，创建表
-7、启动服务<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<span class="token number">6</span>、同步数据库，创建表
+<span class="token number">7</span>、启动服务<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <h4 id="2-3-3-安装步骤"><a href="#2-3-3-安装步骤" class="headerlink" title="2.3.3 安装步骤"></a>2.3.3 安装步骤</h4><p>1、创库授权</p>
 <pre class="line-numbers language-mysql" data-language="mysql"><code class="language-mysql"># 登录mysql
@@ -968,233 +1025,233 @@ GRANT ALL PRIVILEGES ON keystone.* TO &#39;keystone&#39;@&#39;%&#39; \
   IDENTIFIED BY &#39;KEYSTONE_DBPASS&#39;;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <p>2、安装keystone相关软件包</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum install openstack-keystone httpd mod_wsgi -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yum <span class="token function">install</span> openstack-keystone httpd mod_wsgi -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
 <p>3、修改配置文件</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 备份原配置文件
-\cp &#x2F;etc&#x2F;keystone&#x2F;keystone.conf&#123;,.bak&#125;
-# 去除配置文件中的空格行和注释行
-grep -Ev &#39;^$|#&#39; &#x2F;etc&#x2F;keystone&#x2F;keystone.conf.bak &gt; &#x2F;etc&#x2F;keystone&#x2F;keystone.conf
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token comment"># 备份原配置文件</span>
+<span class="token punctuation">\</span>cp /etc/keystone/keystone.conf<span class="token punctuation">&#123;</span>,.bak<span class="token punctuation">&#125;</span>
+<span class="token comment"># 去除配置文件中的空格行和注释行</span>
+<span class="token function">grep</span> -Ev <span class="token string">'^$|#'</span> /etc/keystone/keystone.conf.bak <span class="token operator">></span> /etc/keystone/keystone.conf
 
-# 安装自动配置工具
-yum install openstack-utils -y
-# 使用工具设置（也可以直接修改文件）修改项 参数 &#x3D; 值
-openstack-config --set &#x2F;etc&#x2F;keystone&#x2F;keystone.conf DEFAULT admin_token ADMIN_TOKEN
-openstack-config --set &#x2F;etc&#x2F;keystone&#x2F;keystone.conf database connection  mysql+pymysql:&#x2F;&#x2F;keystone:KEYSTONE_DBPASS@controller&#x2F;keystone # 注意hostname--controller
-openstack-config --set &#x2F;etc&#x2F;keystone&#x2F;keystone.conf token provider fernet
-# 校验
-md5sum &#x2F;etc&#x2F;keystone&#x2F;keystone.conf
+<span class="token comment"># 安装自动配置工具</span>
+yum <span class="token function">install</span> openstack-utils -y
+<span class="token comment"># 使用工具设置（也可以直接修改文件）修改项 参数 = 值</span>
+openstack-config --set /etc/keystone/keystone.conf DEFAULT admin_token ADMIN_TOKEN
+openstack-config --set /etc/keystone/keystone.conf database connection  mysql+pymysql://keystone:KEYSTONE_DBPASS@controller/keystone <span class="token comment"># 注意hostname--controller</span>
+openstack-config --set /etc/keystone/keystone.conf token provider fernet
+<span class="token comment"># 校验</span>
+md5sum /etc/keystone/keystone.conf
 d5acb3db852fe3f247f4f872b051b7a9 
 
-# 同步数据库
-su -s &#x2F;bin&#x2F;sh -c &quot;keystone-manage db_sync&quot; keystone
-# 查询是否生成表
-mysql keystone -e &quot;show tables;&quot;
+<span class="token comment"># 同步数据库</span>
+<span class="token function">su</span> -s /bin/sh -c <span class="token string">"keystone-manage db_sync"</span> keystone
+<span class="token comment"># 查询是否生成表</span>
+mysql keystone -e <span class="token string">"show tables;"</span>
 
-# 初始化fernet
+<span class="token comment"># 初始化fernet</span>
 keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
-# 验证
-&#x2F;etc&#x2F;keystone&#x2F;fernet-keys已创建
+<span class="token comment"># 验证</span>
+/etc/keystone/fernet-keys已创建
 
-# 配置httpd
-echo &quot;ServerName controller&quot; &gt;&gt; &#x2F;etc&#x2F;httpd&#x2F;conf&#x2F;httpd.conf
+<span class="token comment"># 配置httpd</span>
+<span class="token builtin class-name">echo</span> <span class="token string">"ServerName controller"</span> <span class="token operator">>></span> /etc/httpd/conf/httpd.conf
 
-# 创建wsgi配置文件
-vim &#x2F;etc&#x2F;httpd&#x2F;conf.d&#x2F;wsgi-keystone.conf
-###内容
-Listen 5000
-Listen 35357
+<span class="token comment"># 创建wsgi配置文件</span>
+<span class="token function">vim</span> /etc/httpd/conf.d/wsgi-keystone.conf
+<span class="token comment">###内容</span>
+Listen <span class="token number">5000</span>
+Listen <span class="token number">35357</span>
 
-&lt;VirtualHost *:5000&gt;
-    WSGIDaemonProcess keystone-public processes&#x3D;5 threads&#x3D;1 user&#x3D;keystone group&#x3D;keystone display-name&#x3D;%&#123;GROUP&#125;
+<span class="token operator">&lt;</span>VirtualHost *:500<span class="token operator"><span class="token file-descriptor important">0</span>></span>
+    WSGIDaemonProcess keystone-public <span class="token assign-left variable">processes</span><span class="token operator">=</span><span class="token number">5</span> <span class="token assign-left variable">threads</span><span class="token operator">=</span><span class="token number">1</span> <span class="token assign-left variable">user</span><span class="token operator">=</span>keystone <span class="token assign-left variable">group</span><span class="token operator">=</span>keystone display-name<span class="token operator">=</span>%<span class="token punctuation">&#123;</span>GROUP<span class="token punctuation">&#125;</span>
     WSGIProcessGroup keystone-public
-    WSGIScriptAlias &#x2F; &#x2F;usr&#x2F;bin&#x2F;keystone-wsgi-public
-    WSGIApplicationGroup %&#123;GLOBAL&#125;
+    WSGIScriptAlias / /usr/bin/keystone-wsgi-public
+    WSGIApplicationGroup %<span class="token punctuation">&#123;</span>GLOBAL<span class="token punctuation">&#125;</span>
     WSGIPassAuthorization On
-    ErrorLogFormat &quot;%&#123;cu&#125;t %M&quot;
-    ErrorLog &#x2F;var&#x2F;log&#x2F;httpd&#x2F;keystone-error.log
-    CustomLog &#x2F;var&#x2F;log&#x2F;httpd&#x2F;keystone-access.log combined
+    ErrorLogFormat <span class="token string">"%&#123;cu&#125;t %M"</span>
+    ErrorLog /var/log/httpd/keystone-error.log
+    CustomLog /var/log/httpd/keystone-access.log combined
 
-    &lt;Directory &#x2F;usr&#x2F;bin&gt;
+    <span class="token operator">&lt;</span>Directory /usr/bin<span class="token operator">></span>
         Require all granted
-    &lt;&#x2F;Directory&gt;
-&lt;&#x2F;VirtualHost&gt;
+    <span class="token operator">&lt;</span>/Directory<span class="token operator">></span>
+<span class="token operator">&lt;</span>/VirtualHost<span class="token operator">></span>
 
-&lt;VirtualHost *:35357&gt;
-    WSGIDaemonProcess keystone-admin processes&#x3D;5 threads&#x3D;1 user&#x3D;keystone group&#x3D;keystone display-name&#x3D;%&#123;GROUP&#125;
+<span class="token operator">&lt;</span>VirtualHost *:3535<span class="token operator"><span class="token file-descriptor important">7</span>></span>
+    WSGIDaemonProcess keystone-admin <span class="token assign-left variable">processes</span><span class="token operator">=</span><span class="token number">5</span> <span class="token assign-left variable">threads</span><span class="token operator">=</span><span class="token number">1</span> <span class="token assign-left variable">user</span><span class="token operator">=</span>keystone <span class="token assign-left variable">group</span><span class="token operator">=</span>keystone display-name<span class="token operator">=</span>%<span class="token punctuation">&#123;</span>GROUP<span class="token punctuation">&#125;</span>
     WSGIProcessGroup keystone-admin
-    WSGIScriptAlias &#x2F; &#x2F;usr&#x2F;bin&#x2F;keystone-wsgi-admin
-    WSGIApplicationGroup %&#123;GLOBAL&#125;
+    WSGIScriptAlias / /usr/bin/keystone-wsgi-admin
+    WSGIApplicationGroup %<span class="token punctuation">&#123;</span>GLOBAL<span class="token punctuation">&#125;</span>
     WSGIPassAuthorization On
-    ErrorLogFormat &quot;%&#123;cu&#125;t %M&quot;
-    ErrorLog &#x2F;var&#x2F;log&#x2F;httpd&#x2F;keystone-error.log
-    CustomLog &#x2F;var&#x2F;log&#x2F;httpd&#x2F;keystone-access.log combined
+    ErrorLogFormat <span class="token string">"%&#123;cu&#125;t %M"</span>
+    ErrorLog /var/log/httpd/keystone-error.log
+    CustomLog /var/log/httpd/keystone-access.log combined
 
-    &lt;Directory &#x2F;usr&#x2F;bin&gt;
+    <span class="token operator">&lt;</span>Directory /usr/bin<span class="token operator">></span>
         Require all granted
-    &lt;&#x2F;Directory&gt;
-&lt;&#x2F;VirtualHost&gt;
-# 校验
-md5sum &#x2F;etc&#x2F;httpd&#x2F;conf.d&#x2F;wsgi-keystone.conf
+    <span class="token operator">&lt;</span>/Directory<span class="token operator">></span>
+<span class="token operator">&lt;</span>/VirtualHost<span class="token operator">></span>
+<span class="token comment"># 校验</span>
+md5sum /etc/httpd/conf.d/wsgi-keystone.conf
 8f051eb53577f67356ed03e4550315c2 
 
-# 启动httpd
-systemctl enable httpd
+<span class="token comment"># 启动httpd</span>
+systemctl <span class="token builtin class-name">enable</span> httpd
 systemctl start httpd
 
-# 创建服务和注册api
-export OS_TOKEN&#x3D;ADMIN_TOKEN
-export OS_URL&#x3D;http:&#x2F;&#x2F;controller:35357&#x2F;v3
-export OS_IDENTITY_API_VERSION&#x3D;3
-openstack service create --name keystone --description &quot;OpenStack Identity&quot; identity
-openstack endpoint create --region RegionOne identity public http:&#x2F;&#x2F;controller:5000&#x2F;v3
-openstack endpoint create --region RegionOne identity internal http:&#x2F;&#x2F;controller:5000&#x2F;v3
-openstack endpoint create --region RegionOne identity admin http:&#x2F;&#x2F;controller:35357&#x2F;v3
+<span class="token comment"># 创建服务和注册api</span>
+<span class="token builtin class-name">export</span> <span class="token assign-left variable">OS_TOKEN</span><span class="token operator">=</span>ADMIN_TOKEN
+<span class="token builtin class-name">export</span> <span class="token assign-left variable">OS_URL</span><span class="token operator">=</span>http://controller:35357/v3
+<span class="token builtin class-name">export</span> <span class="token assign-left variable">OS_IDENTITY_API_VERSION</span><span class="token operator">=</span><span class="token number">3</span>
+openstack <span class="token function">service</span> create --name keystone --description <span class="token string">"OpenStack Identity"</span> identity
+openstack endpoint create --region RegionOne identity public http://controller:5000/v3
+openstack endpoint create --region RegionOne identity internal http://controller:5000/v3
+openstack endpoint create --region RegionOne identity admin http://controller:35357/v3
 
-# 创建域、项目（租户）、用户和角色
-openstack domain create --description &quot;Default Domain&quot; default
-openstack project create --domain default --description &quot;Admin Project&quot; admin
+<span class="token comment"># 创建域、项目（租户）、用户和角色</span>
+openstack domain create --description <span class="token string">"Default Domain"</span> default
+openstack project create --domain default --description <span class="token string">"Admin Project"</span> admin
 openstack user create --domain default --password ADMIN_PASS admin
 openstack role create admin
 
-# 关联项目，用户，角色
-openstack role add --project admin --user admin admin
-# 在admin项目上，给admin用户赋予admin角色
-openstack project create --domain default --description &quot;Service Project&quot; service
+<span class="token comment"># 关联项目，用户，角色</span>
+openstack role <span class="token function">add</span> --project admin --user admin admin
+<span class="token comment"># 在admin项目上，给admin用户赋予admin角色</span>
+openstack project create --domain default --description <span class="token string">"Service Project"</span> <span class="token function">service</span>
 
-# 创建环境变量脚本
-export OS_PROJECT_DOMAIN_NAME&#x3D;default
-export OS_USER_DOMAIN_NAME&#x3D;default
-export OS_PROJECT_NAME&#x3D;admin
-export OS_USERNAME&#x3D;admin
-export OS_PASSWORD&#x3D;ADMIN_PASS
-export OS_IMAGE_API_VERSION&#x3D;2
-export OS_IDENTITY_API_VERSION&#x3D;3
-export OS_AUTH_URL&#x3D;http:&#x2F;&#x2F;controller:35357&#x2F;v3
+<span class="token comment"># 创建环境变量脚本</span>
+<span class="token builtin class-name">export</span> <span class="token assign-left variable">OS_PROJECT_DOMAIN_NAME</span><span class="token operator">=</span>default
+<span class="token builtin class-name">export</span> <span class="token assign-left variable">OS_USER_DOMAIN_NAME</span><span class="token operator">=</span>default
+<span class="token builtin class-name">export</span> <span class="token assign-left variable">OS_PROJECT_NAME</span><span class="token operator">=</span>admin
+<span class="token builtin class-name">export</span> <span class="token assign-left variable">OS_USERNAME</span><span class="token operator">=</span>admin
+<span class="token builtin class-name">export</span> <span class="token assign-left variable">OS_PASSWORD</span><span class="token operator">=</span>ADMIN_PASS
+<span class="token builtin class-name">export</span> <span class="token assign-left variable">OS_IMAGE_API_VERSION</span><span class="token operator">=</span><span class="token number">2</span>
+<span class="token builtin class-name">export</span> <span class="token assign-left variable">OS_IDENTITY_API_VERSION</span><span class="token operator">=</span><span class="token number">3</span>
+<span class="token builtin class-name">export</span> <span class="token assign-left variable">OS_AUTH_URL</span><span class="token operator">=</span>http://controller:35357/v3
 
-# 作为admin用户请求认证令牌
+<span class="token comment"># 作为admin用户请求认证令牌</span>
 openstack token issue  
 
-# 如果不设置环境变量可以通过传入参数的方式申请
-openstack --os-auth-url http:&#x2F;&#x2F;controller:35357&#x2F;v3   --os-project-domain-name default --os-user-domain-name default   --os-project-name admin --os-username admin --os-password ADMIN_PASS token issue
+<span class="token comment"># 如果不设置环境变量可以通过传入参数的方式申请</span>
+openstack --os-auth-url http://controller:35357/v3   --os-project-domain-name default --os-user-domain-name default   --os-project-name admin --os-username admin --os-password ADMIN_PASS token issue
 
-# 查看用户列表
+<span class="token comment"># 查看用户列表</span>
 openstack user list
 
-# 查看endpoint列表
+<span class="token comment"># 查看endpoint列表</span>
 openstack endpoint list<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <h3 id="2-4-安装glance镜像服务"><a href="#2-4-安装glance镜像服务" class="headerlink" title="2.4 安装glance镜像服务"></a>2.4 安装glance镜像服务</h3><p>​	镜像服务 (glance) 允许用户发现、注册和获取虚拟机镜像。</p>
-<h4 id="2-4-1-安装步骤"><a href="#2-4-1-安装步骤" class="headerlink" title="2.4.1 安装步骤"></a>2.4.1 安装步骤</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 数据库创库授权
-mysql &gt;&gt;
+<h4 id="2-4-1-安装步骤"><a href="#2-4-1-安装步骤" class="headerlink" title="2.4.1 安装步骤"></a>2.4.1 安装步骤</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token comment"># 数据库创库授权</span>
+mysql <span class="token operator">>></span>
 CREATE DATABASE glance
-GRANT ALL PRIVILEGES ON glance.* TO &#39;glance&#39;@&#39;localhost&#39; \
-  IDENTIFIED BY &#39;GLANCE_DBPASS&#39;;
-GRANT ALL PRIVILEGES ON glance.* TO &#39;glance&#39;@&#39;%&#39; \
-  IDENTIFIED BY &#39;GLANCE_DBPASS&#39;;
+GRANT ALL PRIVILEGES ON glance.* TO <span class="token string">'glance'</span>@<span class="token string">'localhost'</span> <span class="token punctuation">\</span>
+  IDENTIFIED BY <span class="token string">'GLANCE_DBPASS'</span><span class="token punctuation">;</span>
+GRANT ALL PRIVILEGES ON glance.* TO <span class="token string">'glance'</span>@<span class="token string">'%'</span> <span class="token punctuation">\</span>
+  IDENTIFIED BY <span class="token string">'GLANCE_DBPASS'</span><span class="token punctuation">;</span>
   
- # 在keystone创建glance用户关联角色
+ <span class="token comment"># 在keystone创建glance用户关联角色</span>
  openstack user create --domain default --password GLANCE_PASS glance
- openstack role add --project service --user glance admin
+ openstack role <span class="token function">add</span> --project <span class="token function">service</span> --user glance admin
  
- # 在keystone上创建服务和注册api
-openstack service create --name glance   --description &quot;OpenStack Image&quot; image
-openstack endpoint create --region RegionOne \
-  image public http:&#x2F;&#x2F;controller:9292
-openstack endpoint create --region RegionOne \
-  image internal http:&#x2F;&#x2F;controller:9292
-openstack endpoint create --region RegionOne \
-  image admin http:&#x2F;&#x2F;controller:9292
+ <span class="token comment"># 在keystone上创建服务和注册api</span>
+openstack <span class="token function">service</span> create --name glance   --description <span class="token string">"OpenStack Image"</span> image
+openstack endpoint create --region RegionOne <span class="token punctuation">\</span>
+  image public http://controller:9292
+openstack endpoint create --region RegionOne <span class="token punctuation">\</span>
+  image internal http://controller:9292
+openstack endpoint create --region RegionOne <span class="token punctuation">\</span>
+  image admin http://controller:9292
   
-# 查看已创建的信息
+<span class="token comment"># 查看已创建的信息</span>
 openstack role assignment list
 openstack role list
 openstack project list
 openstack user list （要有glance用户）
 
-# mysql中验证表是否已创建
-[root@controller ~]# mysql keystone -e &quot;show tables;&quot; | grep user
+<span class="token comment"># mysql中验证表是否已创建</span>
+<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># mysql keystone -e "show tables;" | grep user</span>
 federated_user
 local_user
 user
 user_group_membership
-[root@controller ~]# mysql keystone -e &quot;show tables;&quot; | grep project
+<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># mysql keystone -e "show tables;" | grep project</span>
 project
 project_endpoint
 project_endpoint_group
 
-# 安装服务相应软件包
-yum install openstack-glance -y
+<span class="token comment"># 安装服务相应软件包</span>
+yum <span class="token function">install</span> openstack-glance -y
 
-# 修改相应的配置文件--api
-cp &#x2F;etc&#x2F;glance&#x2F;glance-api.conf&#123;,.bak&#125;
-grep &#39;^[a-Z\[]&#39; &#x2F;etc&#x2F;glance&#x2F;glance-api.conf.bak &gt; &#x2F;etc&#x2F;glance&#x2F;glance-api.conf
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf database connection mysql+pymysql:&#x2F;&#x2F;glance:GLANCE_DBPASS@controller&#x2F;glance
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken auth_uri http:&#x2F;&#x2F;controller:5000
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken auth_url http:&#x2F;&#x2F;controller:35357
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken memcached_servers controller:11211
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken auth_type password
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken project_domain_name default
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken user_domain_name default
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken project_name service
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken username glance
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf keystone_authtoken password GLANCE_PASS
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf paste_deploy flavor keystone
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf glance_store stores file,http
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf glance_store default_store file
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-api.conf glance_store filesystem_store_datadir &#x2F;var&#x2F;lib&#x2F;glance&#x2F;images&#x2F;
+<span class="token comment"># 修改相应的配置文件--api</span>
+<span class="token function">cp</span> /etc/glance/glance-api.conf<span class="token punctuation">&#123;</span>,.bak<span class="token punctuation">&#125;</span>
+<span class="token function">grep</span> <span class="token string">'^[a-Z\[]'</span> /etc/glance/glance-api.conf.bak <span class="token operator">></span> /etc/glance/glance-api.conf
+openstack-config --set /etc/glance/glance-api.conf database connection mysql+pymysql://glance:GLANCE_DBPASS@controller/glance
+openstack-config --set /etc/glance/glance-api.conf keystone_authtoken auth_uri http://controller:5000
+openstack-config --set /etc/glance/glance-api.conf keystone_authtoken auth_url http://controller:35357
+openstack-config --set /etc/glance/glance-api.conf keystone_authtoken memcached_servers controller:11211
+openstack-config --set /etc/glance/glance-api.conf keystone_authtoken auth_type password
+openstack-config --set /etc/glance/glance-api.conf keystone_authtoken project_domain_name default
+openstack-config --set /etc/glance/glance-api.conf keystone_authtoken user_domain_name default
+openstack-config --set /etc/glance/glance-api.conf keystone_authtoken project_name <span class="token function">service</span>
+openstack-config --set /etc/glance/glance-api.conf keystone_authtoken username glance
+openstack-config --set /etc/glance/glance-api.conf keystone_authtoken password GLANCE_PASS
+openstack-config --set /etc/glance/glance-api.conf paste_deploy flavor keystone
+openstack-config --set /etc/glance/glance-api.conf glance_store stores file,http
+openstack-config --set /etc/glance/glance-api.conf glance_store default_store <span class="token function">file</span>
+openstack-config --set /etc/glance/glance-api.conf glance_store filesystem_store_datadir /var/lib/glance/images/
 
-# 修改相应的配置文件--registry
-cp &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf&#123;,.bak&#125;
-grep &#39;^[a-Z\[]&#39; &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf.bak &gt; &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf database connection mysql+pymysql:&#x2F;&#x2F;glance:GLANCE_DBPASS@controller&#x2F;glance
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken auth_uri http:&#x2F;&#x2F;controller:5000
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken auth_url http:&#x2F;&#x2F;controller:35357
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken memcached_servers controller:11211
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken auth_type password
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken project_domain_name default
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken user_domain_name default
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken project_name service
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken username glance
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf keystone_authtoken password GLANCE_PASS
-openstack-config --set &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf paste_deploy flavor keystone
+<span class="token comment"># 修改相应的配置文件--registry</span>
+<span class="token function">cp</span> /etc/glance/glance-registry.conf<span class="token punctuation">&#123;</span>,.bak<span class="token punctuation">&#125;</span>
+<span class="token function">grep</span> <span class="token string">'^[a-Z\[]'</span> /etc/glance/glance-registry.conf.bak <span class="token operator">></span> /etc/glance/glance-registry.conf
+openstack-config --set /etc/glance/glance-registry.conf database connection mysql+pymysql://glance:GLANCE_DBPASS@controller/glance
+openstack-config --set /etc/glance/glance-registry.conf keystone_authtoken auth_uri http://controller:5000
+openstack-config --set /etc/glance/glance-registry.conf keystone_authtoken auth_url http://controller:35357
+openstack-config --set /etc/glance/glance-registry.conf keystone_authtoken memcached_servers controller:11211
+openstack-config --set /etc/glance/glance-registry.conf keystone_authtoken auth_type password
+openstack-config --set /etc/glance/glance-registry.conf keystone_authtoken project_domain_name default
+openstack-config --set /etc/glance/glance-registry.conf keystone_authtoken user_domain_name default
+openstack-config --set /etc/glance/glance-registry.conf keystone_authtoken project_name <span class="token function">service</span>
+openstack-config --set /etc/glance/glance-registry.conf keystone_authtoken username glance
+openstack-config --set /etc/glance/glance-registry.conf keystone_authtoken password GLANCE_PASS
+openstack-config --set /etc/glance/glance-registry.conf paste_deploy flavor keystone
 
-# md5值验证
-md5sum &#x2F;etc&#x2F;glance&#x2F;glance-api.conf
-3e1a4234c133eda11b413788e001cba3  &#x2F;etc&#x2F;glance&#x2F;glance-api.conf
-md5sum &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf
-46acabd81a65b924256f56fe34d90b8f  &#x2F;etc&#x2F;glance&#x2F;glance-registry.conf
+<span class="token comment"># md5值验证</span>
+md5sum /etc/glance/glance-api.conf
+3e1a4234c133eda11b413788e001cba3  /etc/glance/glance-api.conf
+md5sum /etc/glance/glance-registry.conf
+46acabd81a65b924256f56fe34d90b8f  /etc/glance/glance-registry.conf
 
-# 写入镜像服务数据库
-su -s &#x2F;bin&#x2F;sh -c &quot;glance-manage db_sync&quot; glance # 会有Warning不用在意
-# 验证
-mysql glance -e &quot;show tables;&quot;
+<span class="token comment"># 写入镜像服务数据库</span>
+<span class="token function">su</span> -s /bin/sh -c <span class="token string">"glance-manage db_sync"</span> glance <span class="token comment"># 会有Warning不用在意</span>
+<span class="token comment"># 验证</span>
+mysql glance -e <span class="token string">"show tables;"</span>
 
-# 启动服务
-systemctl enable openstack-glance-api.service   openstack-glance-registry.service
+<span class="token comment"># 启动服务</span>
+systemctl <span class="token builtin class-name">enable</span> openstack-glance-api.service   openstack-glance-registry.service
 systemctl start openstack-glance-api.service   openstack-glance-registry.service<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<h4 id="2-4-2-上传镜像测试"><a href="#2-4-2-上传镜像测试" class="headerlink" title="2.4.2 上传镜像测试"></a>2.4.2 上传镜像测试</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 错误日志查看
-&#x2F;var&#x2F;log&#x2F;glance
+<h4 id="2-4-2-上传镜像测试"><a href="#2-4-2-上传镜像测试" class="headerlink" title="2.4.2 上传镜像测试"></a>2.4.2 上传镜像测试</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token comment"># 错误日志查看</span>
+/var/log/glance
 
-# 确保已获取token令牌
+<span class="token comment"># 确保已获取token令牌</span>
 openstack token issue
 
-# 下载测试镜像
-wget http:&#x2F;&#x2F;download.cirros-cloud.net&#x2F;0.3.4&#x2F;cirros-0.3.4-x86_64-disk.img
+<span class="token comment"># 下载测试镜像</span>
+<span class="token function">wget</span> http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img
 
-# 上传测试镜像
-openstack image create &quot;cirros&quot; \
---file cirros-0.3.4-x86_64-disk.img \
---disk-format qcow2 --container-format bare \
+<span class="token comment"># 上传测试镜像</span>
+openstack image create <span class="token string">"cirros"</span> <span class="token punctuation">\</span>
+--file cirros-0.3.4-x86_64-disk.img <span class="token punctuation">\</span>
+--disk-format qcow2 --container-format bare <span class="token punctuation">\</span>
 --public
 
-# 上传文件确认
-ls &#x2F;var&#x2F;lib&#x2F;glance&#x2F;images&#x2F; (在&#x2F;etc&#x2F;glance&#x2F;glance-api.conf中设置)
-mysql glance -e &quot;show tables;&quot; | grep image<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<span class="token comment"># 上传文件确认</span>
+<span class="token function">ls</span> /var/lib/glance/images/ <span class="token punctuation">(</span>在/etc/glance/glance-api.conf中设置<span class="token punctuation">)</span>
+mysql glance -e <span class="token string">"show tables;"</span> <span class="token operator">|</span> <span class="token function">grep</span> image<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <h3 id="2-5-安装nova计算服务"><a href="#2-5-安装nova计算服务" class="headerlink" title="2.5 安装nova计算服务"></a>2.5 安装nova计算服务</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">nova-api -- 接受并相应所有的计算服务请求，管理云主机生命周期
-nova-compute（多个）-- 真正管理虚拟机(nova-compute调用libvirt)
+nova-compute（多个）-- 真正管理虚拟机<span class="token punctuation">(</span>nova-compute调用libvirt<span class="token punctuation">)</span>
 nova-scheduler -- nova 调度器（挑选最合适的nova-compute）
 nova-conductor -- 帮助nova-compute连接数据库
 nova-network --  早期版本管理虚拟机的网络（已弃用，改用neutron，留着为了方便兼容早期版本）
@@ -1202,466 +1259,466 @@ nova-consoleauth和nova-novncproxy -- web版的vnc来直接操作云主机
 novnproxy -- web版vnc客户端
 nova-api-metadata -- 接受来自虚拟机发送的元数据请求（配合neutron-metadata-agent实现虚拟机定制化）<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<h4 id="2-5-1-控制节点–安装步骤"><a href="#2-5-1-控制节点–安装步骤" class="headerlink" title="2.5.1 控制节点–安装步骤"></a>2.5.1 控制节点–安装步骤</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 创库授权
-mysql &gt;&gt;
-CREATE DATABASE nova_api;
-CREATE DATABASE nova;
-GRANT ALL PRIVILEGES ON nova_api.* TO &#39;nova&#39;@&#39;localhost&#39; \
-  IDENTIFIED BY &#39;NOVA_DBPASS&#39;;
-GRANT ALL PRIVILEGES ON nova_api.* TO &#39;nova&#39;@&#39;%&#39; \
-  IDENTIFIED BY &#39;NOVA_DBPASS&#39;;
-GRANT ALL PRIVILEGES ON nova.* TO &#39;nova&#39;@&#39;localhost&#39; \
-  IDENTIFIED BY &#39;NOVA_DBPASS&#39;;
-GRANT ALL PRIVILEGES ON nova.* TO &#39;nova&#39;@&#39;%&#39; \
-  IDENTIFIED BY &#39;NOVA_DBPASS&#39;;
+<h4 id="2-5-1-控制节点–安装步骤"><a href="#2-5-1-控制节点–安装步骤" class="headerlink" title="2.5.1 控制节点–安装步骤"></a>2.5.1 控制节点–安装步骤</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token comment"># 创库授权</span>
+mysql <span class="token operator">>></span>
+CREATE DATABASE nova_api<span class="token punctuation">;</span>
+CREATE DATABASE nova<span class="token punctuation">;</span>
+GRANT ALL PRIVILEGES ON nova_api.* TO <span class="token string">'nova'</span>@<span class="token string">'localhost'</span> <span class="token punctuation">\</span>
+  IDENTIFIED BY <span class="token string">'NOVA_DBPASS'</span><span class="token punctuation">;</span>
+GRANT ALL PRIVILEGES ON nova_api.* TO <span class="token string">'nova'</span>@<span class="token string">'%'</span> <span class="token punctuation">\</span>
+  IDENTIFIED BY <span class="token string">'NOVA_DBPASS'</span><span class="token punctuation">;</span>
+GRANT ALL PRIVILEGES ON nova.* TO <span class="token string">'nova'</span>@<span class="token string">'localhost'</span> <span class="token punctuation">\</span>
+  IDENTIFIED BY <span class="token string">'NOVA_DBPASS'</span><span class="token punctuation">;</span>
+GRANT ALL PRIVILEGES ON nova.* TO <span class="token string">'nova'</span>@<span class="token string">'%'</span> <span class="token punctuation">\</span>
+  IDENTIFIED BY <span class="token string">'NOVA_DBPASS'</span><span class="token punctuation">;</span>
   
-# 在keystone创建用户nova
+<span class="token comment"># 在keystone创建用户nova</span>
 openstack user create --domain default   --password NOVA_PASS nova
-# 给Nova用户添加admin角色
-openstack role add --project service --user nova admin
+<span class="token comment"># 给Nova用户添加admin角色</span>
+openstack role <span class="token function">add</span> --project <span class="token function">service</span> --user nova admin
 
-# 在keystone上创建服务和注册api
-openstack service create --name nova   --description &quot;OpenStack Compute&quot; compute
-openstack endpoint create --region RegionOne   compute public http:&#x2F;&#x2F;controller:8774&#x2F;v2.1&#x2F;%\(tenant_id\)s
-openstack endpoint create --region RegionOne   compute internal http:&#x2F;&#x2F;controller:8774&#x2F;v2.1&#x2F;%\(tenant_id\)s
-openstack endpoint create --region RegionOne   compute admin http:&#x2F;&#x2F;controller:8774&#x2F;v2.1&#x2F;%\(tenant_id\)s
+<span class="token comment"># 在keystone上创建服务和注册api</span>
+openstack <span class="token function">service</span> create --name nova   --description <span class="token string">"OpenStack Compute"</span> compute
+openstack endpoint create --region RegionOne   compute public http://controller:8774/v2.1/%<span class="token punctuation">\</span><span class="token punctuation">(</span>tenant_id<span class="token punctuation">\</span><span class="token punctuation">)</span>s
+openstack endpoint create --region RegionOne   compute internal http://controller:8774/v2.1/%<span class="token punctuation">\</span><span class="token punctuation">(</span>tenant_id<span class="token punctuation">\</span><span class="token punctuation">)</span>s
+openstack endpoint create --region RegionOne   compute admin http://controller:8774/v2.1/%<span class="token punctuation">\</span><span class="token punctuation">(</span>tenant_id<span class="token punctuation">\</span><span class="token punctuation">)</span>s
 
-# 安装相应软件包
-yum install -y openstack-nova-api openstack-nova-conductor \
-  openstack-nova-console openstack-nova-novncproxy \
+<span class="token comment"># 安装相应软件包</span>
+yum <span class="token function">install</span> -y openstack-nova-api openstack-nova-conductor <span class="token punctuation">\</span>
+  openstack-nova-console openstack-nova-novncproxy <span class="token punctuation">\</span>
   openstack-nova-scheduler
   
-# 修改配置文件
-cp &#x2F;etc&#x2F;nova&#x2F;nova.conf&#123;,.bak&#125;
-grep -Ev &#39;^$|#&#39; &#x2F;etc&#x2F;nova&#x2F;nova.conf.bak &gt; &#x2F;etc&#x2F;nova&#x2F;nova.conf
+<span class="token comment"># 修改配置文件</span>
+<span class="token function">cp</span> /etc/nova/nova.conf<span class="token punctuation">&#123;</span>,.bak<span class="token punctuation">&#125;</span>
+<span class="token function">grep</span> -Ev <span class="token string">'^$|#'</span> /etc/nova/nova.conf.bak <span class="token operator">></span> /etc/nova/nova.conf
 
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT enabled_apis osapi_compute,metadata
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT rpc_backend rabbit
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT auth_strategy keystone
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT my_ip 10.0.0.11
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT use_neutron True
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT firewall_driver nova.virt.firewall.NoopFirewallDriver
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf api_database connection mysql+pymysql:&#x2F;&#x2F;nova:NOVA_DBPASS@controller&#x2F;nova_api
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf database connection mysql+pymysql:&#x2F;&#x2F;nova:NOVA_DBPASS@controller&#x2F;nova
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf glance api_servers http:&#x2F;&#x2F;controller:9292
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken auth_uri http:&#x2F;&#x2F;controller:5000
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken auth_url http:&#x2F;&#x2F;controller:35357
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken memcached_servers controller:11211
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken auth_type password
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken project_domain_name default
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken user_domain_name default
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken project_name service
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken username nova
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken password NOVA_PASS
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_concurrency lock_path &#x2F;var&#x2F;lib&#x2F;nova&#x2F;tmp
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_messaging_rabbit rabbit_host controller
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_messaging_rabbit rabbit_userid openstack
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_messaging_rabbit rabbit_password RABBIT_PASS
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf vnc vncserver_listen &#39;$my_ip&#39;
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf vnc vncserver_proxyclient_address &#39;$my_ip&#39;
+openstack-config --set /etc/nova/nova.conf DEFAULT enabled_apis osapi_compute,metadata
+openstack-config --set /etc/nova/nova.conf DEFAULT rpc_backend rabbit
+openstack-config --set /etc/nova/nova.conf DEFAULT auth_strategy keystone
+openstack-config --set /etc/nova/nova.conf DEFAULT my_ip <span class="token number">10.0</span>.0.11
+openstack-config --set /etc/nova/nova.conf DEFAULT use_neutron True
+openstack-config --set /etc/nova/nova.conf DEFAULT firewall_driver nova.virt.firewall.NoopFirewallDriver
+openstack-config --set /etc/nova/nova.conf api_database connection mysql+pymysql://nova:NOVA_DBPASS@controller/nova_api
+openstack-config --set /etc/nova/nova.conf database connection mysql+pymysql://nova:NOVA_DBPASS@controller/nova
+openstack-config --set /etc/nova/nova.conf glance api_servers http://controller:9292
+openstack-config --set /etc/nova/nova.conf keystone_authtoken auth_uri http://controller:5000
+openstack-config --set /etc/nova/nova.conf keystone_authtoken auth_url http://controller:35357
+openstack-config --set /etc/nova/nova.conf keystone_authtoken memcached_servers controller:11211
+openstack-config --set /etc/nova/nova.conf keystone_authtoken auth_type password
+openstack-config --set /etc/nova/nova.conf keystone_authtoken project_domain_name default
+openstack-config --set /etc/nova/nova.conf keystone_authtoken user_domain_name default
+openstack-config --set /etc/nova/nova.conf keystone_authtoken project_name <span class="token function">service</span>
+openstack-config --set /etc/nova/nova.conf keystone_authtoken username nova
+openstack-config --set /etc/nova/nova.conf keystone_authtoken password NOVA_PASS
+openstack-config --set /etc/nova/nova.conf oslo_concurrency lock_path /var/lib/nova/tmp
+openstack-config --set /etc/nova/nova.conf oslo_messaging_rabbit rabbit_host controller
+openstack-config --set /etc/nova/nova.conf oslo_messaging_rabbit rabbit_userid openstack
+openstack-config --set /etc/nova/nova.conf oslo_messaging_rabbit rabbit_password RABBIT_PASS
+openstack-config --set /etc/nova/nova.conf vnc vncserver_listen <span class="token string">'$my_ip'</span>
+openstack-config --set /etc/nova/nova.conf vnc vncserver_proxyclient_address <span class="token string">'$my_ip'</span>
 
-# 校验
-md5sum &#x2F;etc&#x2F;nova&#x2F;nova.conf
-47ded61fdd1a79ab91bdb37ce59ef192  &#x2F;etc&#x2F;nova&#x2F;nova.conf
+<span class="token comment"># 校验</span>
+md5sum /etc/nova/nova.conf
+47ded61fdd1a79ab91bdb37ce59ef192  /etc/nova/nova.conf
 
-# 同步数据库
-su -s &#x2F;bin&#x2F;sh -c &quot;nova-manage api_db sync&quot; nova
-su -s &#x2F;bin&#x2F;sh -c &quot;nova-manage db sync&quot; nova
+<span class="token comment"># 同步数据库</span>
+<span class="token function">su</span> -s /bin/sh -c <span class="token string">"nova-manage api_db sync"</span> nova
+<span class="token function">su</span> -s /bin/sh -c <span class="token string">"nova-manage db sync"</span> nova
 
-# 验证
-mysql nova_api -e &quot;show tables;&quot;
-mysql nova -e &quot;show tables;&quot;
+<span class="token comment"># 验证</span>
+mysql nova_api -e <span class="token string">"show tables;"</span>
+mysql nova -e <span class="token string">"show tables;"</span>
 
-# 启动服务
-systemctl enable openstack-nova-api.service \
-openstack-nova-consoleauth.service openstack-nova-scheduler.service \
+<span class="token comment"># 启动服务</span>
+systemctl <span class="token builtin class-name">enable</span> openstack-nova-api.service <span class="token punctuation">\</span>
+openstack-nova-consoleauth.service openstack-nova-scheduler.service <span class="token punctuation">\</span>
 openstack-nova-conductor.service openstack-nova-novncproxy.service
-systemctl restart openstack-nova-api.service \
-openstack-nova-consoleauth.service openstack-nova-scheduler.service \
+systemctl restart openstack-nova-api.service <span class="token punctuation">\</span>
+openstack-nova-consoleauth.service openstack-nova-scheduler.service <span class="token punctuation">\</span>
 openstack-nova-conductor.service openstack-nova-novncproxy.service
 
-# 验证
-[root@controller ~]# nova service-list
+<span class="token comment"># 验证</span>
+<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># nova service-list</span>
 +----+------------------+------------+----------+---------+-------+------------+-----------------+
-| Id | Binary           | Host       | Zone     | Status  | State | Updated_at | Disabled Reason |
+<span class="token operator">|</span> Id <span class="token operator">|</span> Binary           <span class="token operator">|</span> Host       <span class="token operator">|</span> Zone     <span class="token operator">|</span> Status  <span class="token operator">|</span> State <span class="token operator">|</span> Updated_at <span class="token operator">|</span> Disabled Reason <span class="token operator">|</span>
 +----+------------------+------------+----------+---------+-------+------------+-----------------+
-| 1  | nova-conductor   | controller | internal | enabled | down  | -          | -               |
-| 4  | nova-scheduler   | controller | internal | enabled | down  | -          | -               |
-| 5  | nova-consoleauth | controller | internal | enabled | down  | -          | -               |
+<span class="token operator">|</span> <span class="token number">1</span>  <span class="token operator">|</span> nova-conductor   <span class="token operator">|</span> controller <span class="token operator">|</span> internal <span class="token operator">|</span> enabled <span class="token operator">|</span> down  <span class="token operator">|</span> -          <span class="token operator">|</span> -               <span class="token operator">|</span>
+<span class="token operator">|</span> <span class="token number">4</span>  <span class="token operator">|</span> nova-scheduler   <span class="token operator">|</span> controller <span class="token operator">|</span> internal <span class="token operator">|</span> enabled <span class="token operator">|</span> down  <span class="token operator">|</span> -          <span class="token operator">|</span> -               <span class="token operator">|</span>
+<span class="token operator">|</span> <span class="token number">5</span>  <span class="token operator">|</span> nova-consoleauth <span class="token operator">|</span> controller <span class="token operator">|</span> internal <span class="token operator">|</span> enabled <span class="token operator">|</span> down  <span class="token operator">|</span> -          <span class="token operator">|</span> -               <span class="token operator">|</span>
 +----+------------------+------------+----------+---------+-------+------------+-----------------+
 
-# novncproxy 怎么检测起来没有？
-[root@controller ~]# netstat -lntup | grep 6080
-tcp        0      0 0.0.0.0:6080            0.0.0.0:*               LISTEN      8719&#x2F;python2
-[root@controller ~]# ps -ef | grep 8719
-nova       8719      1  0 21:53 ?        00:00:01 &#x2F;usr&#x2F;bin&#x2F;python2 &#x2F;usr&#x2F;bin&#x2F;nova-novncproxy --web &#x2F;usr&#x2F;share&#x2F;novnc&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<span class="token comment"># novncproxy 怎么检测起来没有？</span>
+<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># netstat -lntup | grep 6080</span>
+tcp        <span class="token number">0</span>      <span class="token number">0</span> <span class="token number">0.0</span>.0.0:6080            <span class="token number">0.0</span>.0.0:*               LISTEN      <span class="token number">8719</span>/python2
+<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># ps -ef | grep 8719</span>
+nova       <span class="token number">8719</span>      <span class="token number">1</span>  <span class="token number">0</span> <span class="token number">21</span>:53 ?        00:00:01 /usr/bin/python2 /usr/bin/nova-novncproxy --web /usr/share/novnc/<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<h4 id="2-5-1-计算节点–安装步骤"><a href="#2-5-1-计算节点–安装步骤" class="headerlink" title="2.5.1 计算节点–安装步骤"></a>2.5.1 计算节点–安装步骤</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 安装软件包
-yum install -y openstack-nova-compute openstack-utils
+<h4 id="2-5-1-计算节点–安装步骤"><a href="#2-5-1-计算节点–安装步骤" class="headerlink" title="2.5.1 计算节点–安装步骤"></a>2.5.1 计算节点–安装步骤</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token comment"># 安装软件包</span>
+yum <span class="token function">install</span> -y openstack-nova-compute openstack-utils
 
-# 修改配置文件
-cp &#x2F;etc&#x2F;nova&#x2F;nova.conf&#123;,.bak&#125;
-grep -Ev &#39;^$|#&#39; &#x2F;etc&#x2F;nova&#x2F;nova.conf.bak &gt; &#x2F;etc&#x2F;nova&#x2F;nova.conf
+<span class="token comment"># 修改配置文件</span>
+<span class="token function">cp</span> /etc/nova/nova.conf<span class="token punctuation">&#123;</span>,.bak<span class="token punctuation">&#125;</span>
+<span class="token function">grep</span> -Ev <span class="token string">'^$|#'</span> /etc/nova/nova.conf.bak <span class="token operator">></span> /etc/nova/nova.conf
 
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT enabled_apis osapi_compute,metadata
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT rpc_backend rabbit
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT auth_strategy keystone
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT my_ip 10.0.0.31 # 注意ip
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT use_neutron True
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf DEFAULT firewall_driver nova.virt.firewall.NoopFirewallDriver
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf glance api_servers http:&#x2F;&#x2F;controller:9292
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken auth_uri http:&#x2F;&#x2F;controller:5000
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken auth_url http:&#x2F;&#x2F;controller:35357
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken memcached_servers controller:11211
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken auth_type password
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken project_domain_name default
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken user_domain_name default
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken project_name service
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken username nova
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf keystone_authtoken password NOVA_PASS
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_concurrency lock_path &#x2F;var&#x2F;lib&#x2F;nova&#x2F;tmp
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_messaging_rabbit rabbit_host controller
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_messaging_rabbit rabbit_userid openstack
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf oslo_messaging_rabbit rabbit_password RABBIT_PASS
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf vnc enabled  True
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf vnc vncserver_listen 0.0.0.0
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf vnc vncserver_proxyclient_address &#39;$my_ip&#39;
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf vnc novncproxy_base_url http:&#x2F;&#x2F;controller:6080&#x2F;vnc_auto.html
+openstack-config --set /etc/nova/nova.conf DEFAULT enabled_apis osapi_compute,metadata
+openstack-config --set /etc/nova/nova.conf DEFAULT rpc_backend rabbit
+openstack-config --set /etc/nova/nova.conf DEFAULT auth_strategy keystone
+openstack-config --set /etc/nova/nova.conf DEFAULT my_ip <span class="token number">10.0</span>.0.31 <span class="token comment"># 注意ip</span>
+openstack-config --set /etc/nova/nova.conf DEFAULT use_neutron True
+openstack-config --set /etc/nova/nova.conf DEFAULT firewall_driver nova.virt.firewall.NoopFirewallDriver
+openstack-config --set /etc/nova/nova.conf glance api_servers http://controller:9292
+openstack-config --set /etc/nova/nova.conf keystone_authtoken auth_uri http://controller:5000
+openstack-config --set /etc/nova/nova.conf keystone_authtoken auth_url http://controller:35357
+openstack-config --set /etc/nova/nova.conf keystone_authtoken memcached_servers controller:11211
+openstack-config --set /etc/nova/nova.conf keystone_authtoken auth_type password
+openstack-config --set /etc/nova/nova.conf keystone_authtoken project_domain_name default
+openstack-config --set /etc/nova/nova.conf keystone_authtoken user_domain_name default
+openstack-config --set /etc/nova/nova.conf keystone_authtoken project_name <span class="token function">service</span>
+openstack-config --set /etc/nova/nova.conf keystone_authtoken username nova
+openstack-config --set /etc/nova/nova.conf keystone_authtoken password NOVA_PASS
+openstack-config --set /etc/nova/nova.conf oslo_concurrency lock_path /var/lib/nova/tmp
+openstack-config --set /etc/nova/nova.conf oslo_messaging_rabbit rabbit_host controller
+openstack-config --set /etc/nova/nova.conf oslo_messaging_rabbit rabbit_userid openstack
+openstack-config --set /etc/nova/nova.conf oslo_messaging_rabbit rabbit_password RABBIT_PASS
+openstack-config --set /etc/nova/nova.conf vnc enabled  True
+openstack-config --set /etc/nova/nova.conf vnc vncserver_listen <span class="token number">0.0</span>.0.0
+openstack-config --set /etc/nova/nova.conf vnc vncserver_proxyclient_address <span class="token string">'$my_ip'</span>
+openstack-config --set /etc/nova/nova.conf vnc novncproxy_base_url http://controller:6080/vnc_auto.html
 
-# 校验
-md5sum &#x2F;etc&#x2F;nova&#x2F;nova.conf
-45cab6030a9ab82761e9f697d6d79e14  &#x2F;etc&#x2F;nova&#x2F;nova.conf
+<span class="token comment"># 校验</span>
+md5sum /etc/nova/nova.conf
+45cab6030a9ab82761e9f697d6d79e14  /etc/nova/nova.conf
 
-# 启动服务
-systemctl enable libvirtd.service openstack-nova-compute.service
+<span class="token comment"># 启动服务</span>
+systemctl <span class="token builtin class-name">enable</span> libvirtd.service openstack-nova-compute.service
 systemctl restart libvirtd.service openstack-nova-compute.service
 
-# 服务启动错误排查
-参考博客：https:&#x2F;&#x2F;www.codeleading.com&#x2F;article&#x2F;89785382846&#x2F;
-cat &#x2F;etc&#x2F;nova&#x2F;nova.conf # compute1日志查看
-报错 nova AccessRefused: (0, 0): (403) ACCESS_REFUSED
+<span class="token comment"># 服务启动错误排查</span>
+参考博客：https://www.codeleading.com/article/89785382846/
+<span class="token function">cat</span> /etc/nova/nova.conf <span class="token comment"># compute1日志查看</span>
+报错 nova AccessRefused: <span class="token punctuation">(</span><span class="token number">0</span>, <span class="token number">0</span><span class="token punctuation">)</span>: <span class="token punctuation">(</span><span class="token number">403</span><span class="token punctuation">)</span> ACCESS_REFUSED
 处理步骤：
 在controller
-cat &#x2F;var&#x2F;log&#x2F;rabbitmq&#x2F;rabbit@controller.log # 发现报错AMQPLAIN login refused: user &#39;openstack&#39; - invalid credentials 无效凭证
-rabbitmqctl list_users # 确认是否还有openstack用户
+<span class="token function">cat</span> /var/log/rabbitmq/rabbit@controller.log <span class="token comment"># 发现报错AMQPLAIN login refused: user 'openstack' - invalid credentials 无效凭证</span>
+rabbitmqctl list_users <span class="token comment"># 确认是否还有openstack用户</span>
 rabbitmqctl add_user openstack RABBIT_PASS
-rabbitmqctl set_permissions openstack &quot;.*&quot; &quot;.*&quot; &quot;.*&quot;
-systemctl restart rabbitmq-server.service # 重新创用户，并重启服务<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+rabbitmqctl set_permissions openstack <span class="token string">".*"</span> <span class="token string">".*"</span> <span class="token string">".*"</span>
+systemctl restart rabbitmq-server.service <span class="token comment"># 重新创用户，并重启服务</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <h3 id="2-6-安装neutron网络服务"><a href="#2-6-安装neutron网络服务" class="headerlink" title="2.6 安装neutron网络服务"></a>2.6 安装neutron网络服务</h3><p>neutron-server – 端口9696，api接受和响应外部的网络管理请求</p>
 <p>neutron-linuxbridge-agent –  负责创建桥接网卡</p>
 <p>neutron-dhcp-agent – 负责分配ip</p>
 <p>neutron-metadata-agent –  配合nova-metadata-api实现虚拟机的定制化操作</p>
 <p>L3-agent – 实现三层网络vxlan（网络层）</p>
-<h4 id="2-6-1-控制节点–安装步骤"><a href="#2-6-1-控制节点–安装步骤" class="headerlink" title="2.6.1 控制节点–安装步骤"></a>2.6.1 控制节点–安装步骤</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 创库授权
-Mysql &gt;&gt;
-CREATE DATABASE neutron;
-GRANT ALL PRIVILEGES ON neutron.* TO &#39;neutron&#39;@&#39;localhost&#39; \
-  IDENTIFIED BY &#39;NEUTRON_DBPASS&#39;;
-GRANT ALL PRIVILEGES ON neutron.* TO &#39;neutron&#39;@&#39;%&#39; \
-  IDENTIFIED BY &#39;NEUTRON_DBPASS&#39;;
+<h4 id="2-6-1-控制节点–安装步骤"><a href="#2-6-1-控制节点–安装步骤" class="headerlink" title="2.6.1 控制节点–安装步骤"></a>2.6.1 控制节点–安装步骤</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token comment"># 创库授权</span>
+Mysql <span class="token operator">>></span>
+CREATE DATABASE neutron<span class="token punctuation">;</span>
+GRANT ALL PRIVILEGES ON neutron.* TO <span class="token string">'neutron'</span>@<span class="token string">'localhost'</span> <span class="token punctuation">\</span>
+  IDENTIFIED BY <span class="token string">'NEUTRON_DBPASS'</span><span class="token punctuation">;</span>
+GRANT ALL PRIVILEGES ON neutron.* TO <span class="token string">'neutron'</span>@<span class="token string">'%'</span> <span class="token punctuation">\</span>
+  IDENTIFIED BY <span class="token string">'NEUTRON_DBPASS'</span><span class="token punctuation">;</span>
   
-# 在keystone创建用户neutron
+<span class="token comment"># 在keystone创建用户neutron</span>
 openstack user create --domain default   --password NEUTRON_PASS neutron
-# 给neutron用户添加admin角色
-openstack role add --project service --user neutron admin
+<span class="token comment"># 给neutron用户添加admin角色</span>
+openstack role <span class="token function">add</span> --project <span class="token function">service</span> --user neutron admin
 
-# 在keystone上创建服务和注册api
-openstack service create --name neutron   --description &quot;OpenStack Networking&quot; network
-openstack endpoint create --region RegionOne   network public http:&#x2F;&#x2F;controller:9696
-openstack endpoint create --region RegionOne   network internal http:&#x2F;&#x2F;controller:9696
-openstack endpoint create --region RegionOne   network admin http:&#x2F;&#x2F;controller:9696
+<span class="token comment"># 在keystone上创建服务和注册api</span>
+openstack <span class="token function">service</span> create --name neutron   --description <span class="token string">"OpenStack Networking"</span> network
+openstack endpoint create --region RegionOne   network public http://controller:9696
+openstack endpoint create --region RegionOne   network internal http://controller:9696
+openstack endpoint create --region RegionOne   network admin http://controller:9696
 
-# 网络配置--公共网络
-cp &#x2F;etc&#x2F;neutron&#x2F;neutron.conf&#123;,.bak&#125;
-grep -Ev &quot;^$|#&quot; &#x2F;etc&#x2F;neutron&#x2F;neutron.conf.bak  &gt; &#x2F;etc&#x2F;neutron&#x2F;neutron.conf
-&gt;&gt;&gt;&gt;&gt;
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf database connection mysql+pymysql:&#x2F;&#x2F;neutron:NEUTRON_DBPASS@controller&#x2F;neutron
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT core_plugin ml2
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT service_plugins
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT rpc_backend rabbit
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT auth_strategy keystone
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT notify_nova_on_port_status_changes True
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT notify_nova_on_port_data_changes True
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_messaging_rabbit rabbit_host controller
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_messaging_rabbit rabbit_userid openstack
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_messaging_rabbit rabbit_password RABBIT_PASS
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken auth_uri http:&#x2F;&#x2F;controller:5000
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken auth_url http:&#x2F;&#x2F;controller:35357
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken memcached_servers controller:11211
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken auth_type password
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken project_domain_name default
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken user_domain_name default
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken project_name service
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken username neutron
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken password NEUTRON_PASS
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova auth_url http:&#x2F;&#x2F;controller:35357
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova auth_type password
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova project_domain_name default
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova user_domain_name default
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova region_name RegionOne
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova project_name service
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova username nova
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf nova password NOVA_PASS
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_concurrency lock_path &#x2F;var&#x2F;lib&#x2F;neutron&#x2F;tmp
-&gt;&gt;&gt;&gt;&gt;
+<span class="token comment"># 网络配置--公共网络</span>
+<span class="token function">cp</span> /etc/neutron/neutron.conf<span class="token punctuation">&#123;</span>,.bak<span class="token punctuation">&#125;</span>
+<span class="token function">grep</span> -Ev <span class="token string">"^$|#"</span> /etc/neutron/neutron.conf.bak  <span class="token operator">></span> /etc/neutron/neutron.conf
+<span class="token operator">>></span><span class="token operator">>></span><span class="token operator">></span>
+openstack-config --set /etc/neutron/neutron.conf database connection mysql+pymysql://neutron:NEUTRON_DBPASS@controller/neutron
+openstack-config --set /etc/neutron/neutron.conf DEFAULT core_plugin ml2
+openstack-config --set /etc/neutron/neutron.conf DEFAULT service_plugins
+openstack-config --set /etc/neutron/neutron.conf DEFAULT rpc_backend rabbit
+openstack-config --set /etc/neutron/neutron.conf DEFAULT auth_strategy keystone
+openstack-config --set /etc/neutron/neutron.conf DEFAULT notify_nova_on_port_status_changes True
+openstack-config --set /etc/neutron/neutron.conf DEFAULT notify_nova_on_port_data_changes True
+openstack-config --set /etc/neutron/neutron.conf oslo_messaging_rabbit rabbit_host controller
+openstack-config --set /etc/neutron/neutron.conf oslo_messaging_rabbit rabbit_userid openstack
+openstack-config --set /etc/neutron/neutron.conf oslo_messaging_rabbit rabbit_password RABBIT_PASS
+openstack-config --set /etc/neutron/neutron.conf keystone_authtoken auth_uri http://controller:5000
+openstack-config --set /etc/neutron/neutron.conf keystone_authtoken auth_url http://controller:35357
+openstack-config --set /etc/neutron/neutron.conf keystone_authtoken memcached_servers controller:11211
+openstack-config --set /etc/neutron/neutron.conf keystone_authtoken auth_type password
+openstack-config --set /etc/neutron/neutron.conf keystone_authtoken project_domain_name default
+openstack-config --set /etc/neutron/neutron.conf keystone_authtoken user_domain_name default
+openstack-config --set /etc/neutron/neutron.conf keystone_authtoken project_name <span class="token function">service</span>
+openstack-config --set /etc/neutron/neutron.conf keystone_authtoken username neutron
+openstack-config --set /etc/neutron/neutron.conf keystone_authtoken password NEUTRON_PASS
+openstack-config --set /etc/neutron/neutron.conf nova auth_url http://controller:35357
+openstack-config --set /etc/neutron/neutron.conf nova auth_type password
+openstack-config --set /etc/neutron/neutron.conf nova project_domain_name default
+openstack-config --set /etc/neutron/neutron.conf nova user_domain_name default
+openstack-config --set /etc/neutron/neutron.conf nova region_name RegionOne
+openstack-config --set /etc/neutron/neutron.conf nova project_name <span class="token function">service</span>
+openstack-config --set /etc/neutron/neutron.conf nova username nova
+openstack-config --set /etc/neutron/neutron.conf nova password NOVA_PASS
+openstack-config --set /etc/neutron/neutron.conf oslo_concurrency lock_path /var/lib/neutron/tmp
+<span class="token operator">>></span><span class="token operator">>></span><span class="token operator">></span>
 
-cp &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini&#123;,.bak&#125;
-grep -Ev &quot;^$|#&quot; &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini.bak &gt; &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini
-&gt;&gt;&gt;&gt;&gt;
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini ml2 type_drivers flat,vlan
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini ml2 tenant_network_types
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini ml2 mechanism_drivers linuxbridge
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini ml2 extension_drivers port_security
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini ml2_type_flat flat_networks provider
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini securitygroup enable_ipset True
-&gt;&gt;&gt;&gt;&gt;
+<span class="token function">cp</span> /etc/neutron/plugins/ml2/ml2_conf.ini<span class="token punctuation">&#123;</span>,.bak<span class="token punctuation">&#125;</span>
+<span class="token function">grep</span> -Ev <span class="token string">"^$|#"</span> /etc/neutron/plugins/ml2/ml2_conf.ini.bak <span class="token operator">></span> /etc/neutron/plugins/ml2/ml2_conf.ini
+<span class="token operator">>></span><span class="token operator">>></span><span class="token operator">></span>
+openstack-config --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 type_drivers flat,vlan
+openstack-config --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 tenant_network_types
+openstack-config --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 mechanism_drivers linuxbridge
+openstack-config --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 extension_drivers port_security
+openstack-config --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2_type_flat flat_networks provider
+openstack-config --set /etc/neutron/plugins/ml2/ml2_conf.ini securitygroup enable_ipset True
+<span class="token operator">>></span><span class="token operator">>></span><span class="token operator">></span>
 
-cp &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini&#123;,.bak&#125;
-grep -Ev &quot;^$|#&quot; &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini.bak &gt; &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini
-&gt;&gt;&gt;&gt;&gt;
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini linux_bridge physical_interface_mappings provider:ens33  # 要修改网络接口名
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini vxlan enable_vxlan False
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini securitygroup enable_security_group True
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini securitygroup firewall_driver neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
-&gt;&gt;&gt;&gt;&gt;
+<span class="token function">cp</span> /etc/neutron/plugins/ml2/linuxbridge_agent.ini<span class="token punctuation">&#123;</span>,.bak<span class="token punctuation">&#125;</span>
+<span class="token function">grep</span> -Ev <span class="token string">"^$|#"</span> /etc/neutron/plugins/ml2/linuxbridge_agent.ini.bak <span class="token operator">></span> /etc/neutron/plugins/ml2/linuxbridge_agent.ini
+<span class="token operator">>></span><span class="token operator">>></span><span class="token operator">></span>
+openstack-config --set /etc/neutron/plugins/ml2/linuxbridge_agent.ini linux_bridge physical_interface_mappings provider:ens33  <span class="token comment"># 要修改网络接口名</span>
+openstack-config --set /etc/neutron/plugins/ml2/linuxbridge_agent.ini vxlan enable_vxlan False
+openstack-config --set /etc/neutron/plugins/ml2/linuxbridge_agent.ini securitygroup enable_security_group True
+openstack-config --set /etc/neutron/plugins/ml2/linuxbridge_agent.ini securitygroup firewall_driver neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
+<span class="token operator">>></span><span class="token operator">>></span><span class="token operator">></span>
 
-cp &#x2F;etc&#x2F;neutron&#x2F;dhcp_agent.ini&#123;,.bak&#125;
-grep -Ev &quot;^$|#&quot; &#x2F;etc&#x2F;neutron&#x2F;dhcp_agent.ini.bak &gt; &#x2F;etc&#x2F;neutron&#x2F;dhcp_agent.ini
-&gt;&gt;&gt;&gt;&gt;
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;dhcp_agent.ini DEFAULT interface_driver neutron.agent.linux.interface.BridgeInterfaceDriver
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;dhcp_agent.ini DEFAULT  dhcp_driver neutron.agent.linux.dhcp.Dnsmasq
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;dhcp_agent.ini DEFAULT  enable_isolated_metadata True
-&gt;&gt;&gt;&gt;&gt;
+<span class="token function">cp</span> /etc/neutron/dhcp_agent.ini<span class="token punctuation">&#123;</span>,.bak<span class="token punctuation">&#125;</span>
+<span class="token function">grep</span> -Ev <span class="token string">"^$|#"</span> /etc/neutron/dhcp_agent.ini.bak <span class="token operator">></span> /etc/neutron/dhcp_agent.ini
+<span class="token operator">>></span><span class="token operator">>></span><span class="token operator">></span>
+openstack-config --set /etc/neutron/dhcp_agent.ini DEFAULT interface_driver neutron.agent.linux.interface.BridgeInterfaceDriver
+openstack-config --set /etc/neutron/dhcp_agent.ini DEFAULT  dhcp_driver neutron.agent.linux.dhcp.Dnsmasq
+openstack-config --set /etc/neutron/dhcp_agent.ini DEFAULT  enable_isolated_metadata True
+<span class="token operator">>></span><span class="token operator">>></span><span class="token operator">></span>
 
-cp &#x2F;etc&#x2F;neutron&#x2F;metadata_agent.ini&#123;,.bak&#125;
-grep -Ev &quot;^$|#&quot; &#x2F;etc&#x2F;neutron&#x2F;metadata_agent.ini.bak &gt; &#x2F;etc&#x2F;neutron&#x2F;metadata_agent.ini
-&gt;&gt;&gt;&gt;&gt;
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;metadata_agent.ini DEFAULT nova_metadata_ip controller
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;metadata_agent.ini DEFAULT metadata_proxy_shared_secret METADATA_SECRET
-&gt;&gt;&gt;&gt;&gt;
+<span class="token function">cp</span> /etc/neutron/metadata_agent.ini<span class="token punctuation">&#123;</span>,.bak<span class="token punctuation">&#125;</span>
+<span class="token function">grep</span> -Ev <span class="token string">"^$|#"</span> /etc/neutron/metadata_agent.ini.bak <span class="token operator">></span> /etc/neutron/metadata_agent.ini
+<span class="token operator">>></span><span class="token operator">>></span><span class="token operator">></span>
+openstack-config --set /etc/neutron/metadata_agent.ini DEFAULT nova_metadata_ip controller
+openstack-config --set /etc/neutron/metadata_agent.ini DEFAULT metadata_proxy_shared_secret METADATA_SECRET
+<span class="token operator">>></span><span class="token operator">>></span><span class="token operator">></span>
 
-# 再次修改nova配置文件，添加neutron服务
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron url http:&#x2F;&#x2F;controller:9696
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron auth_url http:&#x2F;&#x2F;controller:35357
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron auth_type password
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron project_domain_name default
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron user_domain_name default
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron region_name RegionOne
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron project_name service
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron username neutron
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron password NEUTRON_PASS
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron service_metadata_proxy True
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron metadata_proxy_shared_secret METADATA_SECRET
-# 校验文件
-[root@controller ~]# md5sum &#x2F;etc&#x2F;nova&#x2F;nova.conf
-6334f359655efdbcf083b812ab94efc1  &#x2F;etc&#x2F;nova&#x2F;nova.conf
+<span class="token comment"># 再次修改nova配置文件，添加neutron服务</span>
+openstack-config --set /etc/nova/nova.conf neutron url http://controller:9696
+openstack-config --set /etc/nova/nova.conf neutron auth_url http://controller:35357
+openstack-config --set /etc/nova/nova.conf neutron auth_type password
+openstack-config --set /etc/nova/nova.conf neutron project_domain_name default
+openstack-config --set /etc/nova/nova.conf neutron user_domain_name default
+openstack-config --set /etc/nova/nova.conf neutron region_name RegionOne
+openstack-config --set /etc/nova/nova.conf neutron project_name <span class="token function">service</span>
+openstack-config --set /etc/nova/nova.conf neutron username neutron
+openstack-config --set /etc/nova/nova.conf neutron password NEUTRON_PASS
+openstack-config --set /etc/nova/nova.conf neutron service_metadata_proxy True
+openstack-config --set /etc/nova/nova.conf neutron metadata_proxy_shared_secret METADATA_SECRET
+<span class="token comment"># 校验文件</span>
+<span class="token punctuation">[</span>root@controller ~<span class="token punctuation">]</span><span class="token comment"># md5sum /etc/nova/nova.conf</span>
+6334f359655efdbcf083b812ab94efc1  /etc/nova/nova.conf
 
-# 网络服务初始化脚本需要一个超链接
-ln -s &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini &#x2F;etc&#x2F;neutron&#x2F;plugin.ini
+<span class="token comment"># 网络服务初始化脚本需要一个超链接</span>
+<span class="token function">ln</span> -s /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugin.ini
 
-# 同步数据库
-su -s &#x2F;bin&#x2F;sh -c &quot;neutron-db-manage --config-file &#x2F;etc&#x2F;neutron&#x2F;neutron.conf \
-  --config-file &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;ml2_conf.ini upgrade head&quot; neutron
+<span class="token comment"># 同步数据库</span>
+<span class="token function">su</span> -s /bin/sh -c <span class="token string">"neutron-db-manage --config-file /etc/neutron/neutron.conf \
+  --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade head"</span> neutron
   
-# 检查数据库
-mysql neutron -e &quot;show tables;&quot;
+<span class="token comment"># 检查数据库</span>
+mysql neutron -e <span class="token string">"show tables;"</span>
 
-# 重启Nova服务
+<span class="token comment"># 重启Nova服务</span>
 systemctl restart openstack-nova-api.service
 
-# 启动Neutron服务
-systemctl enable neutron-server.service   neutron-linuxbridge-agent.service neutron-dhcp-agent.service   neutron-metadata-agent.service
+<span class="token comment"># 启动Neutron服务</span>
+systemctl <span class="token builtin class-name">enable</span> neutron-server.service   neutron-linuxbridge-agent.service neutron-dhcp-agent.service   neutron-metadata-agent.service
 systemctl start neutron-server.service   neutron-linuxbridge-agent.service neutron-dhcp-agent.service   neutron-metadata-agent.service
 
-# 查看服务有没有起来
+<span class="token comment"># 查看服务有没有起来</span>
 neutron agent-list
 +--------------------------------------+--------------------+------------+-------------------+-------+----------------+---------------------------+
-| id                                   | agent_type         | host       | availability_zone | alive | admin_state_up | binary                    |
+<span class="token operator">|</span> <span class="token function">id</span>                                   <span class="token operator">|</span> agent_type         <span class="token operator">|</span> <span class="token function">host</span>       <span class="token operator">|</span> availability_zone <span class="token operator">|</span> alive <span class="token operator">|</span> admin_state_up <span class="token operator">|</span> binary                    <span class="token operator">|</span>
 +--------------------------------------+--------------------+------------+-------------------+-------+----------------+---------------------------+
-| 0d68dc27-f2b8-4cae-9c30-cddd126076b4 | Linux bridge agent | controller |                   | :-)   | True           | neutron-linuxbridge-agent |
-| 688cc47d-424d-4243-ae2b-b1c4b298a2a8 | Metadata agent     | controller |                   | :-)   | True           | neutron-metadata-agent    |
-| c4c5e360-ee02-4b9b-a1a5-59a0d0d088b0 | DHCP agent         | controller | nova              | :-)   | True           | neutron-dhcp-agent        |
+<span class="token operator">|</span> 0d68dc27-f2b8-4cae-9c30-cddd126076b4 <span class="token operator">|</span> Linux bridge agent <span class="token operator">|</span> controller <span class="token operator">|</span>                   <span class="token operator">|</span> :-<span class="token punctuation">)</span>   <span class="token operator">|</span> True           <span class="token operator">|</span> neutron-linuxbridge-agent <span class="token operator">|</span>
+<span class="token operator">|</span> 688cc47d-424d-4243-ae2b-b1c4b298a2a8 <span class="token operator">|</span> Metadata agent     <span class="token operator">|</span> controller <span class="token operator">|</span>                   <span class="token operator">|</span> :-<span class="token punctuation">)</span>   <span class="token operator">|</span> True           <span class="token operator">|</span> neutron-metadata-agent    <span class="token operator">|</span>
+<span class="token operator">|</span> c4c5e360-ee02-4b9b-a1a5-59a0d0d088b0 <span class="token operator">|</span> DHCP agent         <span class="token operator">|</span> controller <span class="token operator">|</span> nova              <span class="token operator">|</span> :-<span class="token punctuation">)</span>   <span class="token operator">|</span> True           <span class="token operator">|</span> neutron-dhcp-agent        <span class="token operator">|</span>
 +--------------------------------------+--------------------+------------+-------------------+-------+----------------+---------------------------+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<h4 id="2-6-2-计算节点–安装步骤"><a href="#2-6-2-计算节点–安装步骤" class="headerlink" title="2.6.2 计算节点–安装步骤"></a>2.6.2 计算节点–安装步骤</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 安装组件
-yum install -y openstack-neutron-linuxbridge ebtables ipset
+<h4 id="2-6-2-计算节点–安装步骤"><a href="#2-6-2-计算节点–安装步骤" class="headerlink" title="2.6.2 计算节点–安装步骤"></a>2.6.2 计算节点–安装步骤</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token comment"># 安装组件</span>
+yum <span class="token function">install</span> -y openstack-neutron-linuxbridge ebtables ipset
 
-# 网络配置--公共网络
-cp &#x2F;etc&#x2F;neutron&#x2F;neutron.conf&#123;,.bak&#125;
-grep -Ev &quot;^$|#&quot; &#x2F;etc&#x2F;neutron&#x2F;neutron.conf.bak  &gt; &#x2F;etc&#x2F;neutron&#x2F;neutron.conf
-&gt;&gt;&gt;&gt;&gt;&gt;
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT rpc_backend rabbit
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf DEFAULT auth_strategy keystone
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_messaging_rabbit rabbit_host controller
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_messaging_rabbit rabbit_userid openstack
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_messaging_rabbit rabbit_password RABBIT_PASS
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken auth_uri http:&#x2F;&#x2F;controller:5000
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken auth_url http:&#x2F;&#x2F;controller:35357
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken memcached_servers controller:11211
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken auth_type password
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken project_domain_name default
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken user_domain_name default
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken project_name service
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken username neutron
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf keystone_authtoken password NEUTRON_PASS
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;neutron.conf oslo_concurrency lock_path &#x2F;var&#x2F;lib&#x2F;neutron&#x2F;tmp
-&gt;&gt;&gt;&gt;&gt;&gt;
-# md5校验
-md5sum &#x2F;etc&#x2F;nova&#x2F;nova.conf
-328cd5f0745e26a420e828b0dfc2934e  &#x2F;etc&#x2F;nova&#x2F;nova.conf
+<span class="token comment"># 网络配置--公共网络</span>
+<span class="token function">cp</span> /etc/neutron/neutron.conf<span class="token punctuation">&#123;</span>,.bak<span class="token punctuation">&#125;</span>
+<span class="token function">grep</span> -Ev <span class="token string">"^$|#"</span> /etc/neutron/neutron.conf.bak  <span class="token operator">></span> /etc/neutron/neutron.conf
+<span class="token operator">>></span><span class="token operator">>></span><span class="token operator">>></span>
+openstack-config --set /etc/neutron/neutron.conf DEFAULT rpc_backend rabbit
+openstack-config --set /etc/neutron/neutron.conf DEFAULT auth_strategy keystone
+openstack-config --set /etc/neutron/neutron.conf oslo_messaging_rabbit rabbit_host controller
+openstack-config --set /etc/neutron/neutron.conf oslo_messaging_rabbit rabbit_userid openstack
+openstack-config --set /etc/neutron/neutron.conf oslo_messaging_rabbit rabbit_password RABBIT_PASS
+openstack-config --set /etc/neutron/neutron.conf keystone_authtoken auth_uri http://controller:5000
+openstack-config --set /etc/neutron/neutron.conf keystone_authtoken auth_url http://controller:35357
+openstack-config --set /etc/neutron/neutron.conf keystone_authtoken memcached_servers controller:11211
+openstack-config --set /etc/neutron/neutron.conf keystone_authtoken auth_type password
+openstack-config --set /etc/neutron/neutron.conf keystone_authtoken project_domain_name default
+openstack-config --set /etc/neutron/neutron.conf keystone_authtoken user_domain_name default
+openstack-config --set /etc/neutron/neutron.conf keystone_authtoken project_name <span class="token function">service</span>
+openstack-config --set /etc/neutron/neutron.conf keystone_authtoken username neutron
+openstack-config --set /etc/neutron/neutron.conf keystone_authtoken password NEUTRON_PASS
+openstack-config --set /etc/neutron/neutron.conf oslo_concurrency lock_path /var/lib/neutron/tmp
+<span class="token operator">>></span><span class="token operator">>></span><span class="token operator">>></span>
+<span class="token comment"># md5校验</span>
+md5sum /etc/nova/nova.conf
+328cd5f0745e26a420e828b0dfc2934e  /etc/nova/nova.conf
 
-cp &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini&#123;,.bak&#125;
-grep -Ev &quot;^$|#&quot; &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini.bak &gt; &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini
-&gt;&gt;&gt;&gt;&gt;&gt;
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini linux_bridge physical_interface_mappings provider:ens33  # 要修改网络接口名
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini vxlan enable_vxlan False
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini securitygroup enable_security_group True
-openstack-config --set &#x2F;etc&#x2F;neutron&#x2F;plugins&#x2F;ml2&#x2F;linuxbridge_agent.ini securitygroup firewall_driver neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
-&gt;&gt;&gt;&gt;&gt;&gt;
+<span class="token function">cp</span> /etc/neutron/plugins/ml2/linuxbridge_agent.ini<span class="token punctuation">&#123;</span>,.bak<span class="token punctuation">&#125;</span>
+<span class="token function">grep</span> -Ev <span class="token string">"^$|#"</span> /etc/neutron/plugins/ml2/linuxbridge_agent.ini.bak <span class="token operator">></span> /etc/neutron/plugins/ml2/linuxbridge_agent.ini
+<span class="token operator">>></span><span class="token operator">>></span><span class="token operator">>></span>
+openstack-config --set /etc/neutron/plugins/ml2/linuxbridge_agent.ini linux_bridge physical_interface_mappings provider:ens33  <span class="token comment"># 要修改网络接口名</span>
+openstack-config --set /etc/neutron/plugins/ml2/linuxbridge_agent.ini vxlan enable_vxlan False
+openstack-config --set /etc/neutron/plugins/ml2/linuxbridge_agent.ini securitygroup enable_security_group True
+openstack-config --set /etc/neutron/plugins/ml2/linuxbridge_agent.ini securitygroup firewall_driver neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
+<span class="token operator">>></span><span class="token operator">>></span><span class="token operator">>></span>
 
-# 再次修改nova配置文件，添加neutron配置
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron url http:&#x2F;&#x2F;controller:9696
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron auth_url http:&#x2F;&#x2F;controller:35357
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron auth_type password
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron project_domain_name default
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron user_domain_name default
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron region_name RegionOne
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron project_name service
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron username neutron
-openstack-config --set &#x2F;etc&#x2F;nova&#x2F;nova.conf neutron password NEUTRON_PASS
+<span class="token comment"># 再次修改nova配置文件，添加neutron配置</span>
+openstack-config --set /etc/nova/nova.conf neutron url http://controller:9696
+openstack-config --set /etc/nova/nova.conf neutron auth_url http://controller:35357
+openstack-config --set /etc/nova/nova.conf neutron auth_type password
+openstack-config --set /etc/nova/nova.conf neutron project_domain_name default
+openstack-config --set /etc/nova/nova.conf neutron user_domain_name default
+openstack-config --set /etc/nova/nova.conf neutron region_name RegionOne
+openstack-config --set /etc/nova/nova.conf neutron project_name <span class="token function">service</span>
+openstack-config --set /etc/nova/nova.conf neutron username neutron
+openstack-config --set /etc/nova/nova.conf neutron password NEUTRON_PASS
 
-# 重启nova服务
+<span class="token comment"># 重启nova服务</span>
 systemctl restart openstack-nova-compute.service
 
-# 启动linuxbridge代理服务
-systemctl enable neutron-linuxbridge-agent.service
+<span class="token comment"># 启动linuxbridge代理服务</span>
+systemctl <span class="token builtin class-name">enable</span> neutron-linuxbridge-agent.service
 systemctl restart neutron-linuxbridge-agent.service
 
-# 查看是否配置成功
-controller执行 &gt;&gt; neutron agent-list
+<span class="token comment"># 查看是否配置成功</span>
+controller执行 <span class="token operator">>></span> neutron agent-list
 配置正确会多出来一个
-Linux bridge agent | compute1   |                   | :-)   | True 
+Linux bridge agent <span class="token operator">|</span> compute1   <span class="token operator">|</span>                   <span class="token operator">|</span> :-<span class="token punctuation">)</span>   <span class="token operator">|</span> True 
 
-# 查看计算资源
-openstack compute service list<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<span class="token comment"># 查看计算资源</span>
+openstack compute <span class="token function">service</span> list<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<h3 id="2-7-安装horizon-（Dashboard）web界面"><a href="#2-7-安装horizon-（Dashboard）web界面" class="headerlink" title="2.7 安装horizon （Dashboard）web界面"></a>2.7 安装horizon （Dashboard）web界面</h3><h4 id="2-7-1-安装步骤（控制节点"><a href="#2-7-1-安装步骤（控制节点" class="headerlink" title="2.7.1 安装步骤（控制节点)"></a>2.7.1 安装步骤（控制节点)</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 安装组件包
-yum install -y openstack-dashboard
+<h3 id="2-7-安装horizon-（Dashboard）web界面"><a href="#2-7-安装horizon-（Dashboard）web界面" class="headerlink" title="2.7 安装horizon （Dashboard）web界面"></a>2.7 安装horizon （Dashboard）web界面</h3><h4 id="2-7-1-安装步骤（控制节点"><a href="#2-7-1-安装步骤（控制节点" class="headerlink" title="2.7.1 安装步骤（控制节点)"></a>2.7.1 安装步骤（控制节点)</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token comment"># 安装组件包</span>
+yum <span class="token function">install</span> -y openstack-dashboard
 
-# 修改配置文件
-vim &#x2F;etc&#x2F;openstack-dashboard&#x2F;local_settings
-&gt;&gt;&gt;&gt;
-OPENSTACK_HOST &#x3D; &quot;controller&quot;
-ALLOWED_HOSTS &#x3D; [&#39;*&#39;, ]
-SESSION_ENGINE &#x3D; &#39;django.contrib.sessions.backends.cache&#39;
-CACHES &#x3D; &#123;
-    &#39;default&#39;: &#123;
-         &#39;BACKEND&#39;: &#39;django.core.cache.backends.memcached.MemcachedCache&#39;,
-         &#39;LOCATION&#39;: &#39;controller:11211&#39;,
-    &#125;
-&#125;
-OPENSTACK_KEYSTONE_URL &#x3D; &quot;http:&#x2F;&#x2F;%s:5000&#x2F;v3&quot; % OPENSTACK_HOST
-OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT &#x3D; True
-OPENSTACK_API_VERSIONS &#x3D; &#123;
-    &quot;identity&quot;: 3,
-    &quot;image&quot;: 2,
-    &quot;volume&quot;: 2,
-&#125;
-OPENSTACK_KEYSTONE_DEFAULT_DOMAIN &#x3D; &quot;default&quot;
-OPENSTACK_KEYSTONE_DEFAULT_ROLE &#x3D; &quot;user&quot;
-OPENSTACK_NEUTRON_NETWORK &#x3D; &#123;
-    ...
-    &#39;enable_router&#39;: False,
-    &#39;enable_quotas&#39;: False,
-    &#39;enable_distributed_router&#39;: False,
-    &#39;enable_ha_router&#39;: False,
-    &#39;enable_lb&#39;: False,
-    &#39;enable_firewall&#39;: False,
-    &#39;enable_vpn&#39;: False,
-    &#39;enable_fip_topology_check&#39;: False,
-&#125;
-TIME_ZONE &#x3D; &quot;Asia&#x2F;Shanghai&quot;
-&gt;&gt;&gt;&gt;
+<span class="token comment"># 修改配置文件</span>
+<span class="token function">vim</span> /etc/openstack-dashboard/local_settings
+<span class="token operator">>></span><span class="token operator">>></span>
+OPENSTACK_HOST <span class="token operator">=</span> <span class="token string">"controller"</span>
+ALLOWED_HOSTS <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'*'</span>, <span class="token punctuation">]</span>
+SESSION_ENGINE <span class="token operator">=</span> <span class="token string">'django.contrib.sessions.backends.cache'</span>
+CACHES <span class="token operator">=</span> <span class="token punctuation">&#123;</span>
+    <span class="token string">'default'</span><span class="token builtin class-name">:</span> <span class="token punctuation">&#123;</span>
+         <span class="token string">'BACKEND'</span><span class="token builtin class-name">:</span> <span class="token string">'django.core.cache.backends.memcached.MemcachedCache'</span>,
+         <span class="token string">'LOCATION'</span><span class="token builtin class-name">:</span> <span class="token string">'controller:11211'</span>,
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+OPENSTACK_KEYSTONE_URL <span class="token operator">=</span> <span class="token string">"http://%s:5000/v3"</span> % OPENSTACK_HOST
+OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT <span class="token operator">=</span> True
+OPENSTACK_API_VERSIONS <span class="token operator">=</span> <span class="token punctuation">&#123;</span>
+    <span class="token string">"identity"</span><span class="token builtin class-name">:</span> <span class="token number">3</span>,
+    <span class="token string">"image"</span><span class="token builtin class-name">:</span> <span class="token number">2</span>,
+    <span class="token string">"volume"</span><span class="token builtin class-name">:</span> <span class="token number">2</span>,
+<span class="token punctuation">&#125;</span>
+OPENSTACK_KEYSTONE_DEFAULT_DOMAIN <span class="token operator">=</span> <span class="token string">"default"</span>
+OPENSTACK_KEYSTONE_DEFAULT_ROLE <span class="token operator">=</span> <span class="token string">"user"</span>
+OPENSTACK_NEUTRON_NETWORK <span class="token operator">=</span> <span class="token punctuation">&#123;</span>
+    <span class="token punctuation">..</span>.
+    <span class="token string">'enable_router'</span><span class="token builtin class-name">:</span> False,
+    <span class="token string">'enable_quotas'</span><span class="token builtin class-name">:</span> False,
+    <span class="token string">'enable_distributed_router'</span><span class="token builtin class-name">:</span> False,
+    <span class="token string">'enable_ha_router'</span><span class="token builtin class-name">:</span> False,
+    <span class="token string">'enable_lb'</span><span class="token builtin class-name">:</span> False,
+    <span class="token string">'enable_firewall'</span><span class="token builtin class-name">:</span> False,
+    <span class="token string">'enable_vpn'</span><span class="token builtin class-name">:</span> False,
+    <span class="token string">'enable_fip_topology_check'</span><span class="token builtin class-name">:</span> False,
+<span class="token punctuation">&#125;</span>
+TIME_ZONE <span class="token operator">=</span> <span class="token string">"Asia/Shanghai"</span>
+<span class="token operator">>></span><span class="token operator">>></span>
 
-# 解决不能进入页面的BUG
-vim &#x2F;etc&#x2F;httpd&#x2F;conf.d&#x2F;openstack-dashboard.conf
-添加一行 &gt;&gt; WSGIAppicationGroup %&#123;GLOBAL&#125;
+<span class="token comment"># 解决不能进入页面的BUG</span>
+<span class="token function">vim</span> /etc/httpd/conf.d/openstack-dashboard.conf
+添加一行 <span class="token operator">>></span> WSGIAppicationGroup %<span class="token punctuation">&#123;</span>GLOBAL<span class="token punctuation">&#125;</span>
 
-# 重启服务
+<span class="token comment"># 重启服务</span>
 systemctl restart httpd.service memcached.service
 
-# 登录界面
-https:&#x2F;&#x2F;10.0.0.11&#x2F;dashboard
+<span class="token comment"># 登录界面</span>
+https://10.0.0.11/dashboard
 域:default
 用户名:admin
 密码:ADMIN_PASS
 
-# 扩展：查看文件输入那个rpm包
-rpm -qf &#x2F;etc&#x2F;openstack-dashboard&#x2F;local_settings<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<span class="token comment"># 扩展：查看文件输入那个rpm包</span>
+<span class="token function">rpm</span> -qf /etc/openstack-dashboard/local_settings<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<h4 id="2-7-2-Dashboard报错解决"><a href="#2-7-2-Dashboard报错解决" class="headerlink" title="2.7.2 Dashboard报错解决"></a>2.7.2 Dashboard报错解决</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 问题1--Invalid service catalog service: image
+<h4 id="2-7-2-Dashboard报错解决"><a href="#2-7-2-Dashboard报错解决" class="headerlink" title="2.7.2 Dashboard报错解决"></a>2.7.2 Dashboard报错解决</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token comment"># 问题1--Invalid service catalog service: image</span>
 发生原因：
-	openstack service list 存在两个 glance
+	openstack <span class="token function">service</span> list 存在两个 glance
 解决方法：
-    openstack service delete c12c125edc2041e3aaf2f250442162c6
-    openstack service delete 6a11431b95bc44d1bd1e9371c0faa16b # 两个glance都删掉
+    openstack <span class="token function">service</span> delete c12c125edc2041e3aaf2f250442162c6
+    openstack <span class="token function">service</span> delete 6a11431b95bc44d1bd1e9371c0faa16b <span class="token comment"># 两个glance都删掉</span>
     重复2.4.1在keystone上创建glance服务和注册api
     再重启服务systemctl restart httpd.service memcached.service<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<h3 id="2-8-启动一个云主机"><a href="#2-8-启动一个云主机" class="headerlink" title="2.8 启动一个云主机"></a>2.8 启动一个云主机</h3><h3 id="2-8-1-创建步骤"><a href="#2-8-1-创建步骤" class="headerlink" title="2.8.1 创建步骤"></a>2.8.1 创建步骤</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 创建网络
-neutron net-create --shared --provider:physical_network provider \
+<h3 id="2-8-启动一个云主机"><a href="#2-8-启动一个云主机" class="headerlink" title="2.8 启动一个云主机"></a>2.8 启动一个云主机</h3><h3 id="2-8-1-创建步骤"><a href="#2-8-1-创建步骤" class="headerlink" title="2.8.1 创建步骤"></a>2.8.1 创建步骤</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token comment"># 创建网络</span>
+neutron net-create --shared --provider:physical_network provider <span class="token punctuation">\</span>
   --provider:network_type flat gs
   
-# 在网络中创建一个子网
-neutron subnet-create --name gs2 \
-  --allocation-pool start&#x3D;10.0.0.101,end&#x3D;10.0.0.250 \
-  --dns-nameserver 223.5.5.5 --gateway 10.0.0.2 \
-  gs 10.0.0.0&#x2F;24
+<span class="token comment"># 在网络中创建一个子网</span>
+neutron subnet-create --name gs2 <span class="token punctuation">\</span>
+  --allocation-pool <span class="token assign-left variable">start</span><span class="token operator">=</span><span class="token number">10.0</span>.0.101,end<span class="token operator">=</span><span class="token number">10.0</span>.0.250 <span class="token punctuation">\</span>
+  --dns-nameserver <span class="token number">223.5</span>.5.5 --gateway <span class="token number">10.0</span>.0.2 <span class="token punctuation">\</span>
+  gs <span class="token number">10.0</span>.0.0/24
   
-# 创建云主机硬件配置方案（规格）
-openstack flavor create --id 0 --vcpus 1 --ram 64 --disk 1 m1.nano
+<span class="token comment"># 创建云主机硬件配置方案（规格）</span>
+openstack flavor create --id <span class="token number">0</span> --vcpus <span class="token number">1</span> --ram <span class="token number">64</span> --disk <span class="token number">1</span> m1.nano
 
-# 创建密钥键值对
-ssh-keygen -q -N &quot;&quot; -f ~&#x2F;.ssh&#x2F;id_rsa
-openstack keypair create --public-key ~&#x2F;.ssh&#x2F;id_rsa.pub mykey
-# 验证公钥的添加
+<span class="token comment"># 创建密钥键值对</span>
+ssh-keygen -q -N <span class="token string">""</span> -f ~/.ssh/id_rsa
+openstack keypair create --public-key ~/.ssh/id_rsa.pub mykey
+<span class="token comment"># 验证公钥的添加</span>
 openstack keypair list
 
-# 添加安全组规则
+<span class="token comment"># 添加安全组规则</span>
 openstack security group rule create --proto icmp default
-openstack security group rule create --proto tcp --dst-port 22 default
+openstack security group rule create --proto tcp --dst-port <span class="token number">22</span> default
 
-# 在公有网络启动一个实例
-openstack flavor list # 查看可用的配置规格
-openstack image list # 查看可用镜像
-openstack network list # 查看可用网络
-openstack security group list # 查看已设置的安全组
+<span class="token comment"># 在公有网络启动一个实例</span>
+openstack flavor list <span class="token comment"># 查看可用的配置规格</span>
+openstack image list <span class="token comment"># 查看可用镜像</span>
+openstack network list <span class="token comment"># 查看可用网络</span>
+openstack security group list <span class="token comment"># 查看已设置的安全组</span>
 
-openstack server create --flavor 规格名&#x2F;ID --image 镜像名&#x2F;ID \
-  --nic net-id&#x3D;网络ID --security-group default \
+openstack server create --flavor 规格名/ID --image 镜像名/ID <span class="token punctuation">\</span>
+  --nic net-id<span class="token operator">=</span>网络ID --security-group default <span class="token punctuation">\</span>
   --key-name mykey 实例名称
 示例：
-openstack server create --flavor m1.tiny --image cirros \
---nic net-id&#x3D;cb032582-893b-414d-b78d-c89c6548612d --security-group default \
+openstack server create --flavor m1.tiny --image cirros <span class="token punctuation">\</span>
+--nic net-id<span class="token operator">=</span>cb032582-893b-414d-b78d-c89c6548612d --security-group default <span class="token punctuation">\</span>
 --key-name mykey my-instance<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<h3 id="2-8-2-创建云主机问题解决"><a href="#2-8-2-创建云主机问题解决" class="headerlink" title="2.8.2 创建云主机问题解决"></a>2.8.2 创建云主机问题解决</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 1、启动云主机时，No valid host was found
+<h3 id="2-8-2-创建云主机问题解决"><a href="#2-8-2-创建云主机问题解决" class="headerlink" title="2.8.2 创建云主机问题解决"></a>2.8.2 创建云主机问题解决</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"><span class="token comment"># 1、启动云主机时，No valid host was found</span>
 【计算节点中】
-查看云主机创建日志：&#x2F;var&#x2F;log&#x2F;nova&#x2F;nova-compute.log，里面有记录问题原因是CPU feature spec-ctrl not found
-修改&#x2F;usr&#x2F;share&#x2F;libvirt&#x2F;cpu_map.xml，将和spec-ctrl相关的特性删除
+查看云主机创建日志：/var/log/nova/nova-compute.log，里面有记录问题原因是CPU feature spec-ctrl not found
+修改/usr/share/libvirt/cpu_map.xml，将和spec-ctrl相关的特性删除
 然后重启服务
 systemctl restart libvirtd openstack-nova-compute
-参考博客：https:&#x2F;&#x2F;www.cnblogs.com&#x2F;laolieren&#x2F;p&#x2F;solve_openstack_create_instance_error.html
+参考博客：https://www.cnblogs.com/laolieren/p/solve_openstack_create_instance_error.html
 
-# 2、云主机控制台seabios -- Booting from Hard Disk错误
+<span class="token comment"># 2、云主机控制台seabios -- Booting from Hard Disk错误</span>
 【计算节点中】
-vim &#x2F;etc&#x2F;nova&#x2F;nova.conf
-&gt;&gt;&gt;&gt;
-[libvirt]
-virt_type &#x3D; qemu
-cpu_mode &#x3D; none
-&gt;&gt;&gt;&gt;
+<span class="token function">vim</span> /etc/nova/nova.conf
+<span class="token operator">>></span><span class="token operator">>></span>
+<span class="token punctuation">[</span>libvirt<span class="token punctuation">]</span>
+virt_type <span class="token operator">=</span> qemu
+cpu_mode <span class="token operator">=</span> none
+<span class="token operator">>></span><span class="token operator">>></span>
 systemctl restart libvirtd openstack-nova-compute
 重启云主机<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
@@ -3450,116 +3507,6 @@ docker run -d -p 80:80 -p 81:81 -v &#x2F;opt&#x2F;fruitninjia:&#x2F;data -v &#x2
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2021/06/29/01_%E8%BF%90%E7%BB%B4/03-Docker/Docker%E7%B3%BB%E5%88%97-%E4%B8%89-%E5%AE%B9%E5%99%A8%E7%9A%84%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/06/29/01_%E8%BF%90%E7%BB%B4/03-Docker/Docker%E7%B3%BB%E5%88%97-%E4%B8%89-%E5%AE%B9%E5%99%A8%E7%9A%84%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE/" class="post-title-link" itemprop="url">Docker系列(三)-容器的网络访问</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-06-29 09:34:01" itemprop="dateCreated datePublished" datetime="2021-06-29T09:34:01+08:00">2021-06-29</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-07-06 15:19:40" itemprop="dateModified" datetime="2022-07-06T15:19:40+08:00">2022-07-06</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%89%EF%BC%89Docker/" itemprop="url" rel="index"><span itemprop="name">（三）Docker</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="一、容器的网络访问流程"><a href="#一、容器的网络访问流程" class="headerlink" title="一、容器的网络访问流程"></a>一、容器的网络访问流程</h2><blockquote>
-<p>参考：<a target="_blank" rel="noopener" href="https://z.itpub.net/article/detail/FE8EBAC62D5881E3A432291F8C8E4F02">https://z.itpub.net/article/detail/FE8EBAC62D5881E3A432291F8C8E4F02</a></p>
-</blockquote>
-<h3 id="1-虚拟机注意事项"><a href="#1-虚拟机注意事项" class="headerlink" title="1 虚拟机注意事项"></a>1 虚拟机注意事项</h3><p>查看net.ipv4.ip_forward值是否为1</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">sysctl -a | grep ipv4 | grep forward <span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>只有值为1时docker容器才能上网，而vmware虚拟机挂起将使他变成0，解决方法：</p>
-<ul>
-<li>sysctl net.ipv4.ip_forward &#x3D; 1 设置为1</li>
-<li>不要挂起虚拟机，直接关机重启，docker服务在启动时会将它改为1</li>
-</ul>
-<h2 id="二、容器端口映射"><a href="#二、容器端口映射" class="headerlink" title="二、容器端口映射"></a>二、容器端口映射</h2><h3 id="1-docker-run-p端口映射参数"><a href="#1-docker-run-p端口映射参数" class="headerlink" title="1 docker run -p端口映射参数"></a>1 docker run -p端口映射参数</h3><p>指定端口访问</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 将容器80端口，映射到主机180端口
-docker run -p 180:80<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>指定IP+端口访问</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 多网卡环境下，将容器80端口映射到10.0.0.1的180端口
-docker run -p 10.0.0.1:180:80<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>指定随机端口</p>
-<pre class="line-numbers language-she" data-language="she"><code class="language-she"># 将容器80端口，映射到主机随机端口
-docker run -p 10.0.0.1::80<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>指定随机端口+UDP (默认映射TCP)</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 将容器80端口映射到主机随机端口，并使用UDP协议
--p 10.0.0.100:80:udp # 指定随机端口 + udp<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>可以指定多个端口</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">-p 180:80 -p 1443:443 # 指定多个端口<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>随机映射</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker run -P<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -3631,7 +3578,7 @@ docker run -p 10.0.0.1::80<span aria-hidden="true" class="line-numbers-rows"><sp
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">51</span>
+          <span class="site-state-item-count">52</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
