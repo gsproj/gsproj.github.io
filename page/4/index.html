@@ -185,7 +185,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/13-Nginx(%E4%B8%83)Nginx%E4%B8%83%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5/">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/14-Nginx(%E5%85%AB)Nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/myavatar.png">
@@ -199,7 +199,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/13-Nginx(%E4%B8%83)Nginx%E4%B8%83%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5/" class="post-title-link" itemprop="url">运维之综合架构--07--Nginx(七)均衡调度</a>
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/14-Nginx(%E5%85%AB)Nginx%E5%9B%9B%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/" class="post-title-link" itemprop="url">运维之综合架构--07--Nginx(八)四层负载均衡</a>
         </h2>
 
         <div class="post-meta">
@@ -216,7 +216,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-07-11 13:55:06" itemprop="dateModified" datetime="2022-07-11T13:55:06+08:00">2022-07-11</time>
+                <time title="修改时间：2022-07-11 13:55:26" itemprop="dateModified" datetime="2022-07-11T13:55:26+08:00">2022-07-11</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -243,311 +243,425 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="一、Nginx均衡调度算法"><a href="#一、Nginx均衡调度算法" class="headerlink" title="一、Nginx均衡调度算法"></a>一、Nginx均衡调度算法</h2><p>Nginx七层负载均衡分为5种调度算法</p>
-<table>
+          <h2 id="一、Nginx四层负载均衡介绍"><a href="#一、Nginx四层负载均衡介绍" class="headerlink" title="一、Nginx四层负载均衡介绍"></a>一、Nginx四层负载均衡介绍</h2><p>四层负载均衡：（OSI传输层   ip:port）<br>    nginx1.9 版本加入<br>硬件：F5<br>软件：LVS、Haproxy、Nginx</p>
+<p>1.四层+七层来作负载均衡，4层可以保证7层的负载均衡的高可用性。如:nginx就无法保证自己的服务高可用，需要依赖lvs或者keepalive来作。</p>
+<p>2.如:tcp协议的负载均衡，有些请求是TCP协议的(mysql、ssh)，或者说这些请求只需要使用4层进行端口的转发就可以了，所以使用4层负载均衡。<br>    比如做：mysql读的负载均衡（轮询）<br>    比如做：端口映射、端口转发         tcp&#x2F;udp</p>
+<p>四层负载均衡总结<br>1.四层负载均衡仅能转发TCP&#x2F;IP协议、UDP协议，通常用来转发端口，如: tcp&#x2F;3306，tcp&#x2F;22，udp&#x2F;53。<br>2.四层负载均衡可以用来解决七层负载均衡的端口限制问题。（七层负载均衡最大使用65535个端口号）<br>3.可以用来解决七层负载均衡的高可用问题。（多台后端七层负载均衡能同时的使用）<br>4.四层的转发效率比七层的高的多，但仅支持tcp&#x2F;ip协议，不支持http或者https协议</p>
+<p><img src="/img/image-20210823230415237.png" alt="image-20210823230415237"></p>
+<h2 id="二、四层负载均衡配置"><a href="#二、四层负载均衡配置" class="headerlink" title="二、四层负载均衡配置"></a>二、四层负载均衡配置</h2><h3 id="2-1-环境准备"><a href="#2-1-环境准备" class="headerlink" title="2.1 环境准备"></a>2.1 环境准备</h3><table>
 <thead>
 <tr>
-<th>调度算法</th>
-<th>概述</th>
+<th>服务器名</th>
+<th>公网IP</th>
+<th>内网IP</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>轮询（常用）</td>
-<td>按时间顺序逐一分配到不同的后端服务器(默认)</td>
+<td>lb4-01</td>
+<td>10.0.0.3</td>
+<td></td>
 </tr>
 <tr>
-<td>weight（面试点）</td>
-<td>加权轮询,weight值越大,分配到的访问几率越高</td>
+<td>lb01</td>
+<td>10.0.0.5</td>
+<td>172.16.1.5</td>
 </tr>
 <tr>
-<td>ip_hash（面试点）</td>
-<td>每个请求按访问IP的hash结果分配,这样来自同一IP的固定访问一个后端服务器</td>
+<td>lb02</td>
+<td>10.0.0.6</td>
+<td>172.16.1.6</td>
 </tr>
 <tr>
-<td>url_hash</td>
-<td>按照访问URL的hash结果来分配请求,是每个URL定向到同一个后端服务器</td>
-</tr>
-<tr>
-<td>least_hash</td>
-<td>最少链接数,那个机器链接数少就分发</td>
+<td>web、nfs、mysql服务器若干</td>
+<td></td>
+<td></td>
 </tr>
 </tbody></table>
-<h3 id="1-1-加权轮询"><a href="#1-1-加权轮询" class="headerlink" title="1.1 加权轮询"></a>1.1 加权轮询</h3><p>比如实现访问5次web01，1次web02</p>
-<p>当web服务器配置不相同，有差距时，可以用此方法</p>
-<p>在<code>lb01</code>配置</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
-upstream node &#123;
-        server 172.16.1.7:80 weight&#x3D;5;
-        server 172.16.1.8:80 weight&#x3D;1;
-&#125;
+<h3 id="2-2-新增lb02负载均衡服务器"><a href="#2-2-新增lb02负载均衡服务器" class="headerlink" title="2.2 新增lb02负载均衡服务器"></a>2.2 新增lb02负载均衡服务器</h3><p>1、准备<code>lb02</code>，安装Nginx服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb02 ~]# cat &#x2F;etc&#x2F;yum.repos.d&#x2F;nginx.repo 
+[nginx]
+name&#x3D;nginx repo
+baseurl&#x3D;http:&#x2F;&#x2F;nginx.org&#x2F;packages&#x2F;centos&#x2F;7&#x2F;$basearch&#x2F;
+gpgcheck&#x3D;0
+enabled&#x3D;1
+[root@lb02 ~]#  yum install nginx -y<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-server &#123;
-...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>2、拷贝<code>lb01</code>的 Nginx配置到<code>lb02</code></p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb02 ~]# scp -rp root@172.16.1.5:&#x2F;etc&#x2F;nginx &#x2F;etc&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
-<h3 id="1-2-ip-hash"><a href="#1-2-ip-hash" class="headerlink" title="1.2 ip_hash"></a>1.2 ip_hash</h3><blockquote>
-<p>PS：不能与weight一起使用</p>
+<p>3、启动Nginx</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb02 conf.d]# nginx -t
+[root@lb02 conf.d]# systemctl start nginx
+[root@lb02 conf.d]# systemctl enable nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>报错：</p>
+<p>[root@lb02 ~]# nginx -t<br>nginx: [emerg] unknown directive “check” in &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf:4<br>nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test failed<br>[root@lb02 ~]# vim &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf<br>[root@lb02 ~]# nginx -t<br>nginx: [emerg] unknown directive “check_status” in &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf:17<br>nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test failed</p>
+<p>解决方法：</p>
+<p>因为lb01安装过第三方健康检查工具，而lb02上没有，先将这些报错点注释掉</p>
 </blockquote>
-<p>根据请求的IP地址，固定访问到某一后端，除非已选择的后端down了，有点浪费资源</p>
-<p>在<code>lb01</code>配置</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
-upstream node &#123;
-        ip_hash;
-        server 172.16.1.7:80;
-        server 172.16.1.8:80;
+<p>4、测试lb02是否正常</p>
+<p>将hosts中的10.0.0.5换成10.0.0.6，phpadmin、wordpress网页可以正常访问,<br>但是wecenter异常502 Bad Gateway<br>解决方法: 将web01、02上的的php.ini中的session.auto_start改为0,不然会502</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 php]# vim &#x2F;etc&#x2F;php.ini
+session.auto_start &#x3D; 0
+[root@web01 php]# systemctl restart php-fpm.service<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>网上搜索的解释：<br>日常开发中，php.ini配置session.auto_start&#x3D;0默认关闭会话时如果想开启会话需要调用session_start：<br>session.auto_start 开启就自动完成了session_start()<br>区别就在于在用SESSION前是否需要session_start();<br>当session.auto_start &#x3D; on时，执行 session_start() 将产生新的 session_id<br>session.auto_start &#x3D; on 的优点在于，任何时候都不会因忘记执行 session_start() 或 session_start() 在程序里的位置不对，而导致错误<br>缺点在于，如果你使用的是第三方代码，则必须删去其中的全部 session_start() 。否则将不能得到正确的结果</p>
+</blockquote>
+<h3 id="2-3-配置四层负载均衡"><a href="#2-3-配置四层负载均衡" class="headerlink" title="2.3 配置四层负载均衡"></a>2.3 配置四层负载均衡</h3><p>1、新增<code>lb4-01</code>服务器，安装nginx</p>
+<blockquote>
+<p>nginx需要带–with-stream模块</p>
+</blockquote>
+<pre class="line-numbers language-she" data-language="she"><code class="language-she">[root@lb4-01 ~]# cat &#x2F;etc&#x2F;yum.repos.d&#x2F;nginx.repo 
+[nginx]
+name&#x3D;nginx repo
+baseurl&#x3D;http:&#x2F;&#x2F;nginx.org&#x2F;packages&#x2F;centos&#x2F;7&#x2F;$basearch&#x2F;
+gpgcheck&#x3D;0
+enabled&#x3D;1
+[root@lb4-01 ~]#  yum install nginx -y	
+[root@lb4-01 ~]# vim &#x2F;etc&#x2F;nginx&#x2F;nginx.conf
+events &#123;
+    ....
 &#125;
 
-server &#123; 
-...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+include &#x2F;etc&#x2F;nginx&#x2F;conf.c&#x2F;*.conf;
 
-<h2 id="二、Nginx负载均衡后端状态"><a href="#二、Nginx负载均衡后端状态" class="headerlink" title="二、Nginx负载均衡后端状态"></a>二、Nginx负载均衡后端状态</h2><table>
+http &#123;
+	.....
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>2、创建四层负载均衡配置的目录</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb4-01 conf.c]# rm -f &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;default.conf   #删除http的80端口
+[root@lb4-01 ~]# mkdir &#x2F;etc&#x2F;nginx&#x2F;conf.c
+[root@lb4-01 ~]# cd &#x2F;etc&#x2F;nginx&#x2F;conf.c
+[root@lb4-01 conf.c]# cat lb_domain.conf 
+stream &#123;
+    upstream lb &#123;
+        server 172.16.1.5:80 weight&#x3D;5 max_fails&#x3D;3 fail_timeout&#x3D;30s;
+        server 172.16.1.6:80 weight&#x3D;5 max_fails&#x3D;3 fail_timeout&#x3D;30s;
+    &#125;
+
+    server &#123;
+        listen 80;
+        proxy_connect_timeout 3s;
+        proxy_timeout 3s;
+        proxy_pass lb;
+    &#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>3、重载服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb4-01 conf.c]# nginx -t
+nginx: the configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf syntax is ok
+nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test is successful
+[root@lb4-01 conf.c]# systemctl restart nginx
+[root@lb4-01 conf.c]# systemctl enable nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>报错：<br>[root@lb4-01 nginx]# nginx  -t<br>nginx: [emerg] unknown directive “stream” in &#x2F;etc&#x2F;nginx&#x2F;conf.c&#x2F;lb_domain.conf:1<br>nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test failed<br>解决方法：<br>yum install nginx-mod-stream.x86_64 -y</p>
+</blockquote>
+<blockquote>
+<p>报错：<br>[root@lb4-01 nginx]# systemctl status nginx<br>nginx.service - The nginx HTTP and reverse proxy server<br>Loaded: loaded (&#x2F;usr&#x2F;lib&#x2F;systemd&#x2F;system&#x2F;nginx.service; enabled; vendor preset: disabled)<br>Active: failed (Result: exit-code) since Tue 2021-08-24 07:48:42 CST; 13s ago<br>Process: 2969 ExecStart&#x3D;&#x2F;usr&#x2F;sbin&#x2F;nginx (code&#x3D;exited, status&#x3D;1&#x2F;FAILURE)<br>Process: 2967 ExecStartPre&#x3D;&#x2F;usr&#x2F;sbin&#x2F;nginx -t (code&#x3D;exited, status&#x3D;0&#x2F;SUCCESS)<br>Process: 2965 ExecStartPre&#x3D;&#x2F;usr&#x2F;bin&#x2F;rm -f &#x2F;run&#x2F;nginx.pid (code&#x3D;exited, status&#x3D;0&#x2F;SUCCESS)<br>Main PID: 1959 (code&#x3D;exited, status&#x3D;0&#x2F;SUCCESS)</p>
+<p>Aug 24 07:48:40 lb4-01 nginx[2969]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)<br>Aug 24 07:48:40 lb4-01 nginx[2969]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)<br>Aug 24 07:48:41 lb4-01 nginx[2969]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)<br>Aug 24 07:48:41 lb4-01 nginx[2969]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)<br>Aug 24 07:48:42 lb4-01 nginx[2969]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)<br>Aug 24 07:48:42 lb4-01 nginx[2969]: nginx: [emerg] still could not bind()<br>解决方法：<br>需要将[root@lb4-01 nginx]# vim &#x2F;etc&#x2F;nginx&#x2F;nginx.conf<br>中默认的80端口改掉，比如改成81,这样才不冲突（奇怪。。）</p>
+</blockquote>
+<p>4、访问测试</p>
+<p>将Hosts中的对应网站地址的IP改成10.0.0.3，尝试访问，可以正常通过四层负载均衡来调度10.0.0.5和10.0.0.6七层负载均衡</p>
+<p><img src="/img/image-20210824001613717.png" alt="image-20210824001613717"></p>
+<p><img src="/img/image-20210824001638506.png" alt="image-20210824001638506"></p>
+<h2 id="三、四层负载均衡日志"><a href="#三、四层负载均衡日志" class="headerlink" title="三、四层负载均衡日志"></a>三、四层负载均衡日志</h2><h3 id="3-1-配置过程"><a href="#3-1-配置过程" class="headerlink" title="3.1 配置过程"></a>3.1 配置过程</h3><p>在四层负载均衡中配置Nginx</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb4-01 ~]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.c&#x2F;lb_domain.conf
+stream &#123;
+    log_format  proxy &#39;$remote_addr $remote_port - [$time_local] $status $protocol &#39;
+                  &#39;&quot;$upstream_addr&quot; &quot;$upstream_bytes_sent&quot; &quot;$upstream_connect_time&quot;&#39; ;
+    access_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;proxy.log proxy;
+
+    upstream lb &#123;
+....<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="3-2-查看日志"><a href="#3-2-查看日志" class="headerlink" title="3.2 查看日志"></a>3.2 查看日志</h3><p>网页访问后，可见产生的日志</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb4-01 ~]# tail -f &#x2F;var&#x2F;log&#x2F;nginx&#x2F;proxy.log
+10.0.0.1 56396 - [25&#x2F;Aug&#x2F;2021:19:25:33 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;15150&quot; &quot;0.000&quot;
+10.0.0.1 59800 - [25&#x2F;Aug&#x2F;2021:19:25:34 +0800] 200 TCP &quot;172.16.1.6:80&quot; &quot;8327&quot; &quot;0.000&quot;
+10.0.0.1 63468 - [25&#x2F;Aug&#x2F;2021:19:25:34 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;17882&quot; &quot;0.000&quot;
+10.0.0.1 50394 - [25&#x2F;Aug&#x2F;2021:19:25:35 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;24490&quot; &quot;0.000&quot;
+10.0.0.1 55549 - [25&#x2F;Aug&#x2F;2021:19:25:35 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;13201&quot; &quot;0.000&quot;
+10.0.0.1 64324 - [25&#x2F;Aug&#x2F;2021:19:25:42 +0800] 200 TCP &quot;172.16.1.6:80&quot; &quot;70995&quot; &quot;0.000&quot;
+10.0.0.1 64566 - [25&#x2F;Aug&#x2F;2021:19:25:42 +0800] 200 TCP &quot;172.16.1.6:80&quot; &quot;72650&quot; &quot;0.000&quot;
+10.0.0.1 65216 - [25&#x2F;Aug&#x2F;2021:19:25:42 +0800] 200 TCP &quot;172.16.1.6:80&quot; &quot;68171&quot; &quot;0.000&quot;
+10.0.0.1 49668 - [25&#x2F;Aug&#x2F;2021:19:25:42 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;82071&quot; &quot;0.004&quot;
+10.0.0.1 49745 - [25&#x2F;Aug&#x2F;2021:19:25:42 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;63941&quot; &quot;0.001&quot;
+10.0.0.1 50574 - [25&#x2F;Aug&#x2F;2021:19:25:42 +0800] 200 TCP &quot;172.16.1.6:80&quot; &quot;103581&quot; &quot;0.000&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="三、使用nginx四层负载均衡实现tcp的转发（跳板）"><a href="#三、使用nginx四层负载均衡实现tcp的转发（跳板）" class="headerlink" title="三、使用nginx四层负载均衡实现tcp的转发（跳板）"></a>三、使用nginx四层负载均衡实现tcp的转发（跳板）</h2><p>实现跳板机的功能，比如：</p>
+<pre><code>请求负载均衡 5555    ---&gt;     172.16.1.7:22;
+请求负载均衡 6666    ---&gt;     172.16.1.51:3306;
+</code></pre>
+<h3 id="3-1-配置过程-1"><a href="#3-1-配置过程-1" class="headerlink" title="3.1 配置过程"></a>3.1 配置过程</h3><p>配置Nginx</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb4-01 ~]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.c&#x2F;lb_domain.conf 
+stream &#123;
+log_format  proxy &#39;$remote_addr $remote_port - [$time_local] $status $protocol &#39;
+                  &#39;&quot;$upstream_addr&quot; &quot;$upstream_bytes_sent&quot; &quot;$upstream_connect_time&quot;&#39; ;
+    access_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;proxy.log proxy;
+
+#定义转发ssh的22端口
+	upstream ssh_7 &#123;
+		server 10.0.0.7:22;
+	&#125;
+#定义转发mysql的3306端口
+	upstream mysql_51 &#123;
+		server 10.0.0.51:3306;
+	&#125;
+    server &#123;
+        listen 5555;
+        proxy_connect_timeout 3s;
+        proxy_timeout 300s;
+        proxy_pass ssh_7;
+    &#125;
+
+    server &#123;
+        listen 6666;
+        proxy_connect_timeout 3s;
+        proxy_timeout 3s;
+        proxy_pass mysql_51;
+    &#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>测试访问</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 连接web01
+ssh root@10.0.0.3 -p 5555
+
+# 连接db01
+ssh root@10.0.0.3 -p 6666<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+
+
+
+
+
+
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/12-Nginx(%E5%85%AD)Nginx%E4%B8%83%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/12-Nginx(%E5%85%AD)Nginx%E4%B8%83%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/" class="post-title-link" itemprop="url">运维之综合架构--07--Nginx(六)七层负载均衡</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-11 13:54:22" itemprop="dateModified" datetime="2022-07-11T13:54:22+08:00">2022-07-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="一、七层负载均衡简介-需补充"><a href="#一、七层负载均衡简介-需补充" class="headerlink" title="一、七层负载均衡简介(需补充)"></a>一、七层负载均衡简介(需补充)</h2><h3 id="1-1-nginx代理的局限性"><a href="#1-1-nginx代理的局限性" class="headerlink" title="1.1 nginx代理的局限性"></a>1.1 nginx代理的局限性</h3><p>​	一个location仅能代理后端一台主机</p>
+<h3 id="1-2-七层负载均衡"><a href="#1-2-七层负载均衡" class="headerlink" title="1.2 七层负载均衡"></a>1.2 七层负载均衡</h3><p>Nginx负载均衡<br>    负载<br>    负载均衡<br>    调度<br>    load balance<br>    LB<br>公有云<br>    SLB		阿里云负载均衡<br>    QLB		青云负载均衡<br>    CLB		腾讯负载均衡<br>    ULB		ucloud的负载均衡</p>
+<h3 id="1-3-四层负载均衡和七层负载均衡的区别"><a href="#1-3-四层负载均衡和七层负载均衡的区别" class="headerlink" title="1.3 四层负载均衡和七层负载均衡的区别"></a>1.3 四层负载均衡和七层负载均衡的区别</h3><p>四层负载均衡数据包在底层就进行了分发，而七层负载均衡数据包则是在最顶层进行分发、由此可以看出，七层负载均衡效率没有四负载均衡高。<br>但七层负载均衡更贴近于服务，如:http协议就是七层协议，我们可以用Nginx可以作会话保持，URL路径规则匹配、head头改写等等，这些是四层负载均衡无法实现的。</p>
+<h2 id="二、配置实例"><a href="#二、配置实例" class="headerlink" title="二、配置实例"></a>二、配置实例</h2><h3 id="2-1-测试环境准备"><a href="#2-1-测试环境准备" class="headerlink" title="2.1 测试环境准备"></a>2.1 测试环境准备</h3><table>
 <thead>
 <tr>
-<th>状态</th>
-<th>概述</th>
+<th>主机名称</th>
+<th>应用环境</th>
+<th>外网地址</th>
+<th>内网地址</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>down</td>
-<td>当前的server暂时不参与负载均衡</td>
+<td>web01</td>
+<td>nginx + php（提供网页服务）</td>
+<td>10.0.0.7</td>
+<td>172.16.1.7</td>
 </tr>
 <tr>
-<td>backup</td>
-<td>预留的备份服务器</td>
+<td>web01</td>
+<td>nginx + php（提供网页服务）</td>
+<td>10.0.0.8</td>
+<td>172.16.1.8</td>
 </tr>
 <tr>
-<td>max_conns</td>
-<td>限制最大的接收连接数</td>
+<td>lb01</td>
+<td>nginx（提供代理服务）</td>
+<td>10.0.0.5</td>
+<td>172.16.1.5</td>
 </tr>
 <tr>
-<td>max_fails（健康检查）</td>
-<td>允许请求失败的次数（不够精准，作用不大，得知道，面试会问）</td>
-</tr>
-<tr>
-<td>fail_timeout（健康检查）</td>
-<td>经过max_fails失败后, 服务暂停时间</td>
+<td>db01</td>
+<td>mysql</td>
+<td>10.0.0.51</td>
+<td>172.16.1.51</td>
 </tr>
 </tbody></table>
-<h3 id="2-1-down状态"><a href="#2-1-down状态" class="headerlink" title="2.1 down状态"></a>2.1 down状态</h3><blockquote>
-<p>一般用于停机维护</p>
-</blockquote>
-<p>在<code>lb01</code>配置，可见当两台web的Nginx服务都正常时，只能访问web02，当web02的Nginx服务挂了，返回502</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
-upstream node &#123;
-        server 172.16.1.7:80 down;
-        server 172.16.1.8:80;
-&#125;
-
+<h3 id="2-2-配置步骤"><a href="#2-2-配置步骤" class="headerlink" title="2.2 配置步骤"></a>2.2 配置步骤</h3><p>1、web01&#x2F;02的网页服务搭建</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# cd &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;
+[root@web01 conf.d]# cat node.conf 
 server &#123;
-...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="2-2-backup状态"><a href="#2-2-backup状态" class="headerlink" title="2.2 backup状态"></a>2.2 backup状态</h3><p>在<code>lb01</code>配置，可见当两台web都正常时，只能访问web02，如果web02的服务挂了，会访问web01，当web02恢复后，再次访问到的是web02</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
-upstream node &#123;
-        server 172.16.1.7:80 backup;
-        server 172.16.1.8:80;
+    listen 80;
+    server_name node.oldboy.com;
+    location &#x2F; &#123;
+        root &#x2F;node;
+        index index.html;
+    &#125;
 &#125;
+[root@web01 conf.d]# mkdir &#x2F;node
+[root@web01 conf.d]# echo &quot;Web01...&quot; &gt; &#x2F;node&#x2F;index.html
+[root@web01 conf.d]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-server &#123;
-...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="2-3-健康检查"><a href="#2-3-健康检查" class="headerlink" title="2.3 健康检查"></a>2.3 健康检查</h3><blockquote>
-<p>自带的健康检查不够精准，且看不到信息，面试会问</p>
-</blockquote>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
+<p>2、配置nginx负载均衡</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 ~]# cd &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;
+[root@lb01 conf.d]# cat node_proxy.conf 
 upstream node &#123;
-        server 172.16.1.7:80 max_fails&#x3D;2 fail_timeout&#x3D;10s;
-        server 172.16.1.8:80 max_fails&#x3D;2 fail_timeout&#x3D;10s;
+    server 172.16.1.7:80;
+    server 172.16.1.8:80;
 &#125;
-
 server &#123;
-...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+    listen 80;
+    server_name node.oldboy.com;
 
-<h2 id="三、第三方健康检查模块check-upstream"><a href="#三、第三方健康检查模块check-upstream" class="headerlink" title="三、第三方健康检查模块check_upstream"></a>三、第三方健康检查模块check_upstream</h2><blockquote>
-<p>检测更精准，且有页面可以展示服务端的状态，需要编译安装</p>
+    location &#x2F; &#123;
+        proxy_pass http:&#x2F;&#x2F;node;
+        include proxy_params;
+    &#125;
+&#125;
+[root@lb01 conf.d]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>3、客户端网页测试访问，F5刷新，可见web01&#x2F;web02在循环</p>
+<p><img src="/img/image-20210820132420586.png" alt="image-20210820132420586"></p>
+<p><img src="/img/image-20210820132431971.png" alt="image-20210820132431971"></p>
+<h3 id="2-3-负载均衡也可以使用代理参数"><a href="#2-3-负载均衡也可以使用代理参数" class="headerlink" title="2.3 负载均衡也可以使用代理参数"></a>2.3 负载均衡也可以使用代理参数</h3><blockquote>
+<p>与之前部署的知乎wencenter、博客mywordpress结合</p>
 </blockquote>
-<h3 id="3-1-编译安装Nginx"><a href="#3-1-编译安装Nginx" class="headerlink" title="3.1 编译安装Nginx"></a>3.1 编译安装Nginx</h3><p>1、安装依赖包</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb02 ~]# yum install -y gcc glibc gcc-c++ pcre-devel openssl-devel  patch libxml2 -libxml2-devel libxslt libxslt-devel gd-devel perl-ExtUtils-Embed gperftools-devel.x86_64 gperftools-libs.x86_64 gperftools.x86_64<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>1、准备Nginx负载均衡调度使用的proxy_params</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@Nginx ~]# vim &#x2F;etc&#x2F;nginx&#x2F;proxy_params
+proxy_set_header Host $http_host;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 
-<p>2、下载Nginx源码及第三方模块源码</p>
-<blockquote>
-<p>PS：为保持一致，先通过yum源安装nginx，这是当前实验环境的Nginx版本</p>
-<p>[root@lb01 nginx]# nginx -version<br>nginx version: nginx&#x2F;1.20.1</p>
-</blockquote>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb02 ~]# wget http:&#x2F;&#x2F;nginx.org&#x2F;download&#x2F;nginx-1.20.1.tar.gz
-[root@lb02 ~]# wget https:&#x2F;&#x2F;github.com&#x2F;yaoweibin&#x2F;nginx_upstream_check_module&#x2F;archive&#x2F;master.zip<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+proxy_connect_timeout 30;
+proxy_send_timeout 60;
+proxy_read_timeout 60;
 
-<p>3、解压nginx源码包以及第三方模块</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 ~]# unzip master.zip
-[root@lb01 ~]# tar -vxf nginx-1.20.1.tar.gz<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+proxy_buffering on;
+proxy_buffer_size 32k;
+proxy_buffers 4 128k;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<p>4、打补丁</p>
-<blockquote>
-<p>打补丁(nginx的版本是1.20.1补丁就选择1.20.1的,p1代表在nginx目录，p0是不在nginx目录)</p>
-</blockquote>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx-1.20.1]# cd nginx-1.20.1&#x2F;
-[root@lb01 nginx-1.20.1]# patch -p1 &lt; ..&#x2F;nginx_upstream_check_module-master&#x2F;check_1.20.1+.patch<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>5、编译Nginx，附带模块参数</p>
-<blockquote>
-<p>通过nginx -V获取configure参数，尽量保持一致</p>
-</blockquote>
-<p>–add-module&#x3D;&#x2F;root&#x2F;nginx_upstream_check_module-master</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx-1.20.1]# .&#x2F;configure --prefix&#x3D;&#x2F;usr&#x2F;share&#x2F;nginx --sbin-path&#x3D;&#x2F;usr&#x2F;sbin&#x2F;nginx --modules-path&#x3D;&#x2F;usr&#x2F;lib64&#x2F;nginx&#x2F;modules --conf-path&#x3D;&#x2F;etc&#x2F;nginx&#x2F;nginx.conf --error-log-path&#x3D;&#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log --http-log-path&#x3D;&#x2F;var&#x2F;log&#x2F;nginx&#x2F;access.log --http-client-body-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;client_body --http-proxy-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;proxy --http-fastcgi-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;fastcgi --http-uwsgi-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;uwsgi --http-scgi-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;scgi --pid-path&#x3D;&#x2F;run&#x2F;nginx.pid --lock-path&#x3D;&#x2F;run&#x2F;lock&#x2F;subsys&#x2F;nginx --user&#x3D;nginx --group&#x3D;nginx --with-compat --with-debug --with-google_perftools_module --with-http_addition_module --with-http_auth_request_module --with-http_dav_module --with-http_degradation_module --with-http_flv_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_image_filter_module&#x3D;dynamic --with-http_mp4_module --with-http_perl_module&#x3D;dynamic --with-http_random_index_module --with-http_realip_module --with-http_secure_link_module --with-http_slice_module --with-http_ssl_module --with-http_stub_status_module --with-http_sub_module --with-http_v2_module --with-http_xslt_module&#x3D;dynamic --with-mail&#x3D;dynamic --with-mail_ssl_module --with-pcre --with-pcre-jit --with-stream&#x3D;dynamic --with-stream_ssl_module --with-stream_ssl_preread_module --with-threads --add-module&#x3D;&#x2F;root&#x2F;nginx_upstream_check_module-master<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>6、在已有的负载均衡上增加健康检查的功能</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx-1.20.1]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
+<p>2、负载均衡配置：</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 conf.d]# vim proxy_oldboy.com.conf
 upstream node &#123;
-        server 172.16.1.7:80;
-        server 172.16.1.8:80;
-        check interval&#x3D;3000 rise&#x3D;2 fall&#x3D;3 timeout&#x3D;1000 type&#x3D;tcp;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="3-2-功能测试"><a href="#3-2-功能测试" class="headerlink" title="3.2 功能测试"></a>3.2 功能测试</h3><p>1、正常情况下的检测数据</p>
-<p><img src="/img/image-20210821113447825.png" alt="image-20210821113447825"></p>
-<p>2、测试将web01的nginx服务关掉</p>
-<p><img src="/img/image-20210821114011230.png" alt="image-20210821114011230"></p>
-<p>3、日志分析</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx-1.20.1]# tail -f &#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log
-# 两web服务正常，能获取peer
-2021&#x2F;08&#x2F;21 02:42:11 [error] 50522#50522: enable check peer: 172.16.1.8:80
-2021&#x2F;08&#x2F;21 02:42:12 [error] 50522#50522: enable check peer: 172.16.1.7:80
-2021&#x2F;08&#x2F;21 02:46:17 [error] 50522#50522: *13 connect() failed (111: Connection refused) while connecting to upstream, client: 10.0.0.1, server: node.oldboy.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, upstream: &quot;http:&#x2F;&#x2F;172.16.1.7:80&#x2F;&quot;, host: &quot;node.oldboy.com&quot;
-# 停止web01的nginx服务
-2021&#x2F;08&#x2F;21 02:46:20 [error] 50522#50522: disable check peer: 172.16.1.7:80
-# 重新启动web01的nginx服务
-2021&#x2F;08&#x2F;21 02:47:59 [error] 50522#50522: enable check peer: 172.16.1.7:80<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="四、如何解决网站重复登录的问题"><a href="#四、如何解决网站重复登录的问题" class="headerlink" title="四、如何解决网站重复登录的问题"></a>四、如何解决网站重复登录的问题</h2><p>有三种方法解决：</p>
-<ol>
-<li>ip_hash – 会造成某一台主机的压力过大</li>
-<li>session复制</li>
-<li>session共享<ol>
-<li>本地文件 –&gt; nfs共享</li>
-<li>通过程序，写入redis数据库（常用）</li>
-<li>通过程序，写入mysql数据库</li>
-</ol>
-</li>
-</ol>
-<p>本案例，选用3.2配置，session共享，写入redis数据库</p>
-<h3 id="4-1-安装phpmyadmin重现问题"><a href="#4-1-安装phpmyadmin重现问题" class="headerlink" title="4.1 安装phpmyadmin重现问题"></a>4.1 安装phpmyadmin重现问题</h3><p><code>web01</code>和<code>web02</code>都需要安装</p>
-<p>1、配置Nginx</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cat php.conf
-server &#123;
-	listen 80;
-	server_name php.oldboy.com;
-	root &#x2F;code&#x2F;phpMyAdmin-4.8.4-all-languages;
-
-	location &#x2F; &#123;
-		index index.php index.html;
-	&#125;
-
-	location ~ \.php$ &#123;
-		fastcgi_pass 127.0.0.1:9000;
-		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-		include fastcgi_params;
-	&#125;
-&#125;
-[root@web01 conf.d]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>2、安装phpmyadmin</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cd &#x2F;code
-[root@web01 code]# wget https:&#x2F;&#x2F;files.phpmyadmin.net&#x2F;phpMyAdmin&#x2F;4.8.4&#x2F;phpMyAdmin-4.8.4-all-languages.zip
-[root@web01 code]# unzip phpMyAdmin-4.8.4-all-languages.zip<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<p>3、配置phpmyadmin连接远程数据库</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# cd phpMyAdmin-4.8.4-all-languages&#x2F;
-[root@web01 phpMyAdmin-4.8.4-all-languages]# cp config.sample.inc.php config.inc.php
-[root@web01 phpMyAdmin-4.8.4-all-languages]# vim config.inc.php
-&#x2F;* Server parameters *&#x2F;
-$cfg[&#39;Servers&#39;][$i][&#39;host&#39;] &#x3D; &#39;172.16.1.51&#39;;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>4、配置授权</p>
-<blockquote>
-<p>这个文件夹中会记录session，需要权限</p>
-<p>session_start(): Failed to read session data: files (path: &#x2F;var&#x2F;lib&#x2F;php&#x2F;session)</p>
-</blockquote>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# chown -R www.www &#x2F;var&#x2F;lib&#x2F;php&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>5、将web01上配置好的phpmyadmin以及nginx的配置文件推送到web02主机上</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# scp -rp  phpMyAdmin-4.8.4-all-languages root@172.16.1.8:&#x2F;code&#x2F;
-[root@web01 code]# scp &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;php.conf  root@172.16.1.8:&#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>6、重载Nginx服务，授权访问权限</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web02 code]# systemctl restart nginx
-[root@web02 code]# chown -R www.www &#x2F;var&#x2F;lib&#x2F;php&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>7、接入负载均衡，并重启nginx服务，<code>lb01</code>操作</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 conf.d]# vim proxy_php.com.conf 
-upstream php &#123;
         server 172.16.1.7:80;
         server 172.16.1.8:80;
 &#125;
 server &#123;
         listen 80;
-        server_name php.oldboy.com;
+        server_name blog.oldboy.com;
         location &#x2F; &#123;
-                proxy_pass http:&#x2F;&#x2F;php;
+                proxy_pass http:&#x2F;&#x2F;node;
                 include proxy_params;
         &#125;
 &#125;
 
-[root@lb01 conf.d]# nginx -t
-nginx: the configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf syntax is ok
-nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test is successful
-[root@lb01 conf.d]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+server &#123;
+        listen 80;
+        server_name zh.oldboy.com;
+        location &#x2F; &#123;
+                proxy_pass http:&#x2F;&#x2F;node;
+                include proxy_params;
+        &#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<p>9、测试访问</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">网页访问：
-	http:&#x2F;&#x2F;php.oldboy.com
-登录账户:
-	采用db01（172.16.1.51）的mysql远程账户oldboy&#x2F;Bgx123.com
-此时访问phpmyadmin登录将一直失败，因为轮询访问，session一直变：
-报错：
-Failed to set session cookie. Maybe you are using HTTP instead of HTTPS to access phpMyAdmin.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h3 id="2-4-负载均衡测试"><a href="#2-4-负载均衡测试" class="headerlink" title="2.4 负载均衡测试"></a>2.4 负载均衡测试</h3><p>正常情况下：</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1、两台web服务器的nginx服务均打开（模拟流量分摊）
+	可以负载均衡，轮流访问
+2、关掉一台web服务器的nginx服务（模拟容灾）
+	网页仍可以正常打开
+3、两台web服务器的Nginx服务均关闭
+	网页无法打开，502<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<h3 id="4-2-解决问题"><a href="#4-2-解决问题" class="headerlink" title="4.2 解决问题"></a>4.2 解决问题</h3><p>1、在<code>db01</code>安装redis数据库</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@db01 ~]# yum install redis -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>存在一种情况，两个web的nginx服务都没挂，但是其中一台的php-fpm服务挂了，模拟这种场景</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web02 ~]# systemctl stop php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
-<p>2、配置并启动redis</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@db01 ~]# sed  -i &#39;&#x2F;^bind&#x2F;c bind 127.0.0.1 172.16.1.51&#39; &#x2F;etc&#x2F;redis.conf
-[root@db01 ~]# systemctl start redis
-[root@db01 ~]# systemctl enable redis<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+<p>此时F5刷新wordpress的页面，将一会502，一会正常，体验不好，可通过添加nginx代理参数解决</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 conf.d]# cat &#x2F;etc&#x2F;nginx&#x2F;proxy_params
+proxy_set_header Host $http_host;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_next_upstream error timeout http_500 http_502 http_503 http_504; # 解决问题
 
-<p>3、<code>web01</code>的php配置session连接redis</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">#1.修改&#x2F;etc&#x2F;php.ini文件
-[root@web01 ~]# vim &#x2F;etc&#x2F;php.ini
-session.save_handler &#x3D; redis
-session.save_path &#x3D; &quot;tcp:&#x2F;&#x2F;172.16.1.51:6379&quot;
-;session.save_path &#x3D; &quot;tcp:&#x2F;&#x2F;172.16.1.51:6379?auth&#x3D;123&quot; #如果redis存在密码，则使用该方式
-session.auto_start &#x3D; 1<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+proxy_connect_timeout 30;
+proxy_send_timeout 60;
+proxy_read_timeout 60;
 
-<p>4、注释php-fpm.d&#x2F;<a target="_blank" rel="noopener" href="http://www.conf里面的两条内容,否则session内容会一直写入/var/lib/php/session%E7%9B%AE%E5%BD%95%E4%B8%AD">www.conf里面的两条内容，否则session内容会一直写入/var/lib/php/session目录中</a></p>
-<pre class="line-numbers language-she" data-language="she"><code class="language-she">;php_value[session.save_handler] &#x3D; files
-;php_value[session.save_path]    &#x3D; &#x2F;var&#x2F;lib&#x2F;php&#x2F;session<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+proxy_buffering on;
+proxy_buffer_size 32k;
+proxy_buffers 4 128k;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<p>5、重启php-fpm</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web02 code]# systemctl restart php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>6、将<code>web01</code>的配置文件推送到<code>web02</code>上</p>
-<pre class="line-numbers language-she" data-language="she"><code class="language-she">[root@web01 code]# scp &#x2F;etc&#x2F;php.ini root@172.16.1.8:&#x2F;etc&#x2F;php.ini  
-[root@web01 code]# scp &#x2F;etc&#x2F;php-fpm.d&#x2F;www.conf root@172.16.1.8:&#x2F;etc&#x2F;php-fpm.d&#x2F;www.conf <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>7、重启服务</p>
-<pre class="line-numbers language-she" data-language="she"><code class="language-she">[root@web02 code]# systemctl restart php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>8、再次测试访问网站</p>
-<p>可以登录，并且session的值将记录到redis数据库</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@db01 ~]# redis-cli -h 172.16.1.51
-172.16.1.51:6379&gt; KEYS *
-1) &quot;PHPREDIS_SESSION:716e61cabeb40f974fcbcdcac65f8607&quot;
-2) &quot;PHPREDIS_SESSION:42ca5a8ea9375a93a7974427b77b3dd7&quot;
-172.16.1.51:6379&gt;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>9、刷新页面的负载均衡效果展示</p>
-<p><img src="/img/image-20210823225246243.png" alt="image-20210823225246243"></p>
-<p><img src="/img/image-20210823225305632.png" alt="image-20210823225305632"></p>
-<p>10、cookie保存到redis展示</p>
-<p><img src="/img/image-20210823225412626.png" alt="image-20210823225412626"></p>
+<blockquote>
+<p>PS：问题原因</p>
+<p>使用nginx负载均衡时，如何将后端请求超时的服务器流量平滑的切换到另一台上。<br>Nginx是本身是有机制的，如果出现一个节点down掉的时候，Nginx会更据你具体负载均衡的设置，将请求转移到其他的节点上，但是，如果后台服务连接没有down掉，并且返回错误异常码了如：504、502、500，Nginx就会直接返回从后端获取的异常代码。</p>
+</blockquote>
 
       
     </div>
@@ -882,6 +996,99 @@ web02的Tomcat服务正常，关掉web01的nginx服务
 <td>提供PC访问页面</td>
 </tr>
 </tbody></table>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day01-%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AE%89%E8%A3%85/%E8%AF%BE%E5%A0%82%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day01-%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AE%89%E8%A3%85/%E8%AF%BE%E5%A0%82%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">运维之基础命令--虚拟机安装</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:08:58" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="day01-课堂笔记"><a href="#day01-课堂笔记" class="headerlink" title="day01 : 课堂笔记"></a>day01 : 课堂笔记</h1><h2 id="安装系统"><a href="#安装系统" class="headerlink" title="安装系统"></a>安装系统</h2><p><strong>1、安装虚拟机</strong></p>
+<p><img src="/.%5Cassets%5Cimage-20210302121236930.png" alt="image-20210302121236930"></p>
+<p>解压上述软件，创建vmware.exe快捷方式，然后用快捷方式打开。</p>
+<p><img src="/.%5Cassets%5Cimage-20210302121408360.png" alt="image-20210302121408360"></p>
+<p><strong>2、创建虚拟机</strong></p>
+<p><img src="/.%5Cassets%5Cimage-20210302121456338.png" alt="image-20210302121456338"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302121550128.png" alt="image-20210302121550128"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302121622000.png" alt="image-20210302121622000"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302121745568.png" alt="image-20210302121745568"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302122035359.png" alt="image-20210302122035359"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302122256831.png" alt="image-20210302122256831"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302122359568.png" alt="image-20210302122359568"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302122603313.png" alt="image-20210302122603313"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302122657199.png" alt="image-20210302122657199"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302123826623.png" alt="image-20210302123826623"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124229475.png" alt="image-20210302124229475"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124308081.png" alt="image-20210302124308081"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124327456.png" alt="image-20210302124327456"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124404318.png" alt="image-20210302124404318"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124713502.png" alt="image-20210302124713502"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302124741038.png" alt="image-20210302124741038"></p>
+<p><img src="/.%5Cassets%5Cimage-20210302125049653.png" alt="image-20210302125049653"></p>
 
       
     </div>
@@ -1451,7 +1658,7 @@ x		可执行		<span class="token number">1</span>
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day01-%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AE%89%E8%A3%85/%E8%AF%BE%E5%A0%82%E7%AC%94%E8%AE%B0/">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day09-%E7%94%A8%E6%88%B7%E7%BB%84%E7%AE%A1%E7%90%86/%E7%AC%94%E8%AE%B0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/myavatar.png">
@@ -1465,7 +1672,7 @@ x		可执行		<span class="token number">1</span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day01-%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AE%89%E8%A3%85/%E8%AF%BE%E5%A0%82%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">运维之基础命令--虚拟机安装</a>
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day09-%E7%94%A8%E6%88%B7%E7%BB%84%E7%AE%A1%E7%90%86/%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">运维之基础命令--用户组管理</a>
         </h2>
 
         <div class="post-meta">
@@ -1476,7 +1683,7 @@ x		可执行		<span class="token number">1</span>
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:08:58" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:13:11" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1503,28 +1710,32 @@ x		可执行		<span class="token number">1</span>
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="day01-课堂笔记"><a href="#day01-课堂笔记" class="headerlink" title="day01 : 课堂笔记"></a>day01 : 课堂笔记</h1><h2 id="安装系统"><a href="#安装系统" class="headerlink" title="安装系统"></a>安装系统</h2><p><strong>1、安装虚拟机</strong></p>
-<p><img src="/.%5Cassets%5Cimage-20210302121236930.png" alt="image-20210302121236930"></p>
-<p>解压上述软件，创建vmware.exe快捷方式，然后用快捷方式打开。</p>
-<p><img src="/.%5Cassets%5Cimage-20210302121408360.png" alt="image-20210302121408360"></p>
-<p><strong>2、创建虚拟机</strong></p>
-<p><img src="/.%5Cassets%5Cimage-20210302121456338.png" alt="image-20210302121456338"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302121550128.png" alt="image-20210302121550128"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302121622000.png" alt="image-20210302121622000"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302121745568.png" alt="image-20210302121745568"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302122035359.png" alt="image-20210302122035359"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302122256831.png" alt="image-20210302122256831"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302122359568.png" alt="image-20210302122359568"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302122603313.png" alt="image-20210302122603313"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302122657199.png" alt="image-20210302122657199"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302123826623.png" alt="image-20210302123826623"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302124229475.png" alt="image-20210302124229475"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302124308081.png" alt="image-20210302124308081"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302124327456.png" alt="image-20210302124327456"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302124404318.png" alt="image-20210302124404318"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302124713502.png" alt="image-20210302124713502"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302124741038.png" alt="image-20210302124741038"></p>
-<p><img src="/.%5Cassets%5Cimage-20210302125049653.png" alt="image-20210302125049653"></p>
+          <h1 id="用户管理"><a href="#用户管理" class="headerlink" title="用户管理"></a>用户管理</h1><h2 id="linux中用户介绍"><a href="#linux中用户介绍" class="headerlink" title="linux中用户介绍"></a>linux中用户介绍</h2><p>什么是用户？</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">用户其实就是相当于权限的化身，
+处于安全考虑
+所以，我们在进入系统之前都需要登录，根据用户给相应权限<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>Linux系统中用户角色</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">uid <span class="token builtin class-name">:</span> Linux系统当中用户ID（相当于身份证号）
+gid <span class="token builtin class-name">:</span> ANTA20163307
+
+用户组其实是统一某一类用户权限
+
+需求：
+	大项目 ： 
+		开发者：a b c d
+		运维 ： e f
+		测试：g
+	共同的权限：<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>超级用户</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">linux当中的老大（皇帝）: root
+Windows当中的老大：administrator<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<h2 id="用户与组相关的文件"><a href="#用户与组相关的文件" class="headerlink" title="用户与组相关的文件"></a>用户与组相关的文件</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># cat /etc/passwd</span>
+root:x:0:0:root:/root:/bin/bash
+用户名称   是否存在密码   uid  gid  组名称/注释信息 家目录  默认解析器 <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
 
       
     </div>
@@ -1822,103 +2033,6 @@ Last login: Mon Mar <span class="token number">15</span> <span class="token numb
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day09-%E7%94%A8%E6%88%B7%E7%BB%84%E7%AE%A1%E7%90%86/%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day09-%E7%94%A8%E6%88%B7%E7%BB%84%E7%AE%A1%E7%90%86/%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">运维之基础命令--用户组管理</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:13:11" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="用户管理"><a href="#用户管理" class="headerlink" title="用户管理"></a>用户管理</h1><h2 id="linux中用户介绍"><a href="#linux中用户介绍" class="headerlink" title="linux中用户介绍"></a>linux中用户介绍</h2><p>什么是用户？</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">用户其实就是相当于权限的化身，
-处于安全考虑
-所以，我们在进入系统之前都需要登录，根据用户给相应权限<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<p>Linux系统中用户角色</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">uid <span class="token builtin class-name">:</span> Linux系统当中用户ID（相当于身份证号）
-gid <span class="token builtin class-name">:</span> ANTA20163307
-
-用户组其实是统一某一类用户权限
-
-需求：
-	大项目 ： 
-		开发者：a b c d
-		运维 ： e f
-		测试：g
-	共同的权限：<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>超级用户</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">linux当中的老大（皇帝）: root
-Windows当中的老大：administrator<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<h2 id="用户与组相关的文件"><a href="#用户与组相关的文件" class="headerlink" title="用户与组相关的文件"></a>用户与组相关的文件</h2><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># cat /etc/passwd</span>
-root:x:0:0:root:/root:/bin/bash
-用户名称   是否存在密码   uid  gid  组名称/注释信息 家目录  默认解析器 <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day11-sudo%E4%B8%8Esu/facl/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2147,6 +2261,113 @@ other::r--
 
 
 
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day11-sudo%E4%B8%8Esu/sudo%20and%20su/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day11-sudo%E4%B8%8Esu/sudo%20and%20su/" class="post-title-link" itemprop="url">运维之基础命令--sudo和su</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:13:48" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="sudo"><a href="#sudo" class="headerlink" title="sudo"></a>sudo</h1><blockquote>
+<p>用于普通用提升权限的。</p>
+</blockquote>
+<ul>
+<li><p>相关的文件：<code>/etc/sudoers</code></p>
+</li>
+<li><p>检查<code>/etc/sudoers</code>是否修改正确：visudo -c</p>
+</li>
+<li><p>sudoers文件格式</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">tom       <span class="token assign-left variable">ALL</span><span class="token operator">=</span>           <span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>          ALL
+用户名称   所有机器可登陆    所有IP或主机名   所有的指令<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+</li>
+<li><p>指令编写格式</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 必须写全路径：which查看命令全路径</span>
+
+<span class="token comment">## 只支持vim命令提权</span>
+xianchen <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>  /usr/bin/vim
+
+<span class="token comment">## 支持所有的命令提权</span>
+tom <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>  ALL
+
+<span class="token comment">## 不支持某个命令提权</span>
+tom <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span> ALL, <span class="token operator">!</span>/usr/bin/vim
+
+<span class="token comment">## 不支持某个命令的部分功能</span>
+xiaochen <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>   ALL, <span class="token operator">!</span>/usr/bin/vim /root/123.txt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+<h1 id="su"><a href="#su" class="headerlink" title="su"></a>su</h1><ul>
+<li><p>su - xxx  和 su xxx之间区别</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>、su - xxx ：相当于切换一个窗口，su xxx 仅仅切换了用户
+
+<span class="token number">2</span>、su - xxx ： 切换用户执行的系统文件要多于 <span class="token function">su</span> xxx
+
+<span class="token number">3</span>、su - xxx 是登录
+   <span class="token function">su</span>  xxx  切换用户<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+</ul>
 
       
     </div>
@@ -2887,113 +3108,6 @@ SHR  ： 共享内存
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day11-sudo%E4%B8%8Esu/sudo%20and%20su/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day11-sudo%E4%B8%8Esu/sudo%20and%20su/" class="post-title-link" itemprop="url">运维之基础命令--sudo和su</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:13:48" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="sudo"><a href="#sudo" class="headerlink" title="sudo"></a>sudo</h1><blockquote>
-<p>用于普通用提升权限的。</p>
-</blockquote>
-<ul>
-<li><p>相关的文件：<code>/etc/sudoers</code></p>
-</li>
-<li><p>检查<code>/etc/sudoers</code>是否修改正确：visudo -c</p>
-</li>
-<li><p>sudoers文件格式</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">tom       <span class="token assign-left variable">ALL</span><span class="token operator">=</span>           <span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>          ALL
-用户名称   所有机器可登陆    所有IP或主机名   所有的指令<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-</li>
-<li><p>指令编写格式</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 必须写全路径：which查看命令全路径</span>
-
-<span class="token comment">## 只支持vim命令提权</span>
-xianchen <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>  /usr/bin/vim
-
-<span class="token comment">## 支持所有的命令提权</span>
-tom <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>  ALL
-
-<span class="token comment">## 不支持某个命令提权</span>
-tom <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span> ALL, <span class="token operator">!</span>/usr/bin/vim
-
-<span class="token comment">## 不支持某个命令的部分功能</span>
-xiaochen <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span>   ALL, <span class="token operator">!</span>/usr/bin/vim /root/123.txt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
-</ul>
-<h1 id="su"><a href="#su" class="headerlink" title="su"></a>su</h1><ul>
-<li><p>su - xxx  和 su xxx之间区别</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>、su - xxx ：相当于切换一个窗口，su xxx 仅仅切换了用户
-
-<span class="token number">2</span>、su - xxx ： 切换用户执行的系统文件要多于 <span class="token function">su</span> xxx
-
-<span class="token number">3</span>、su - xxx 是登录
-   <span class="token function">su</span>  xxx  切换用户<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day13-yum%E4%BB%93%E5%BA%93/yum%E4%BB%93%E5%BA%93/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -3265,145 +3379,6 @@ drwxr-xr-x <span class="token number">2</span> root root    <span class="token n
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day18-netstat%E4%BD%BF%E7%94%A8/%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/01-%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/day18-netstat%E4%BD%BF%E7%94%A8/%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">运维之基础命令--netstat使用</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:14:29" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%B8%80%EF%BC%89%E5%9F%BA%E7%A1%80%E5%91%BD%E4%BB%A4/" itemprop="url" rel="index"><span itemprop="name">（一）基础命令</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="笔记"><a href="#笔记" class="headerlink" title="笔记"></a>笔记</h1><p>1、netstat</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">netstat主要用来查询系统端口相关问题
-
-注：要使用netstat，需要安装yum <span class="token function">install</span> -y net-tools
-
-<span class="token comment"># netstat常用参数</span>
--t <span class="token builtin class-name">:</span> 打印tcp链接的进程
--u <span class="token builtin class-name">:</span> 打印UDP链接的进程
--l <span class="token builtin class-name">:</span> 监听
--p <span class="token builtin class-name">:</span> 打印进程的PID
--n <span class="token builtin class-name">:</span> 不反解，不将ip地址解析成域名同时不将端口解析成对应的协议名称
-
-<span class="token function">netstat</span> -nutlp<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>2、分区</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 查看系统磁盘</span>
-<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># lsblk </span>
-NAME            MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
-sda               <span class="token number">8</span>:0    <span class="token number">0</span>   20G  <span class="token number">0</span> disk 
-├─sda1            <span class="token number">8</span>:1    <span class="token number">0</span>    1G  <span class="token number">0</span> part /boot
-└─sda2            <span class="token number">8</span>:2    <span class="token number">0</span>   19G  <span class="token number">0</span> part 
-  ├─centos-root <span class="token number">253</span>:0    <span class="token number">0</span>   18G  <span class="token number">0</span> lvm  /
-  └─centos-swap <span class="token number">253</span>:1    <span class="token number">0</span>    1G  <span class="token number">0</span> lvm  <span class="token punctuation">[</span>SWAP<span class="token punctuation">]</span>
-sdb               <span class="token number">8</span>:16   <span class="token number">0</span>   40G  <span class="token number">0</span> disk 
-sdc               <span class="token number">8</span>:32   <span class="token number">0</span>  <span class="token number">3</span>.9T  <span class="token number">0</span> disk 
-
-<span class="token comment"># 分区</span>
-<span class="token punctuation">[</span>root@localhost ~<span class="token punctuation">]</span><span class="token comment"># fdisk /dev/sdb </span>
-
-n <span class="token builtin class-name">:</span> 新建一个分区
-p <span class="token builtin class-name">:</span> 查看分区情况
-m ：查看帮助
-d <span class="token builtin class-name">:</span> 删除分区
-w ；保存分区修改内容<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>3、使用文件系统的流程</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>、装硬盘
-
-<span class="token number">2</span>、查看当前系统硬盘
-<span class="token punctuation">[</span>root@localhost a<span class="token punctuation">]</span><span class="token comment"># lsblk </span>
-NAME            MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
-sda               <span class="token number">8</span>:0    <span class="token number">0</span>   20G  <span class="token number">0</span> disk 
-├─sda1            <span class="token number">8</span>:1    <span class="token number">0</span>    1G  <span class="token number">0</span> part /boot
-└─sda2            <span class="token number">8</span>:2    <span class="token number">0</span>   19G  <span class="token number">0</span> part 
-  ├─centos-root <span class="token number">253</span>:0    <span class="token number">0</span>   18G  <span class="token number">0</span> lvm  /
-  └─centos-swap <span class="token number">253</span>:1    <span class="token number">0</span>    1G  <span class="token number">0</span> lvm  <span class="token punctuation">[</span>SWAP<span class="token punctuation">]</span>
-sdb               <span class="token number">8</span>:16   <span class="token number">0</span>   40G  <span class="token number">0</span> disk 
-sdc               <span class="token number">8</span>:32   <span class="token number">0</span>  <span class="token number">3</span>.9T  <span class="token number">0</span> disk 
-sr0              <span class="token number">11</span>:0    <span class="token number">1</span>  <span class="token number">4</span>.3G  <span class="token number">0</span> rom  
-
-<span class="token number">3</span>、分区
-	2TB 以下的硬盘，使用MBR分区
-	2TB 以上的硬盘，使用GPT分区
-	
-	<span class="token function">fdisk</span> /dev/sdb
-
-<span class="token number">4</span>、格式化分区（将分区做成文件系统）
-	mkfs.xfs /dev/sdb1
-
-<span class="token number">5</span>、挂载分区
-	<span class="token function">mount</span> /dev/sdb1  /a
-
-<span class="token number">6</span>、检测
-	<span class="token function">df</span>
-		-h <span class="token builtin class-name">:</span> 显示硬盘大小单位
-
-<span class="token comment"># 注：挂载哪个硬盘则显示对应硬盘里面的内容</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -3475,7 +3450,7 @@ sr0              <span class="token number">11</span>:0    <span class="token nu
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">67</span>
+          <span class="site-state-item-count">68</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -3578,6 +3553,10 @@ sr0              <span class="token number">11</span>:0    <span class="token nu
   
 
   
+
+  
+
+  <script async src="/js/cursor/fireworks.js"></script>
 
 </body>
 </html>
