@@ -1978,191 +1978,6 @@ sed -i &#39;s#200#41#g&#39; &#x2F;etc&#x2F;sysconfig&#x2F;network-scripts&#x2F;i
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/03-NFS%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/03-NFS%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/" class="post-title-link" itemprop="url">运维之综合架构--03-NFS服务器搭建</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:15:48" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li>学习笔记</li>
-</ul>
-<hr>
-<h2 id="一、NFS简介"><a href="#一、NFS简介" class="headerlink" title="一、NFS简介"></a>一、NFS简介</h2><blockquote>
-<p>NFS是Network File System的缩写及网络文件系统。NFS主要功能是通过局域网络让不同的主机系统之间可以共享文件或目录。<br>NFS系统和Windows网络共享、网络驱动器类似, 只不过windows用于局域网, NFS用于企业集群架构中<br>如果是大型网站, 会用到更复杂的分布式文件系统FastDFS（音频、小说、视频）,glusterfs（iso镜像）,HDFS<br>NFS（图片、）解决共享前端web共享</p>
-</blockquote>
-<h3 id="1-1-NFS有什么用？"><a href="#1-1-NFS有什么用？" class="headerlink" title="1.1 NFS有什么用？"></a>1.1 NFS有什么用？</h3><p>解决前端web静态资源的共享<br>解决前端web静态资源一致性<br>解决前端web磁盘空间的浪费</p>
-<h3 id="1-2-NFS的文件操作方式"><a href="#1-2-NFS的文件操作方式" class="headerlink" title="1.2 NFS的文件操作方式"></a>1.2 NFS的文件操作方式</h3><p>1.当用户执行mkdir命令, 该命令会调用shell解释器翻译给内核。<br>2.内核解析完成后会驱动对应的硬件设备，完成相应的操作。</p>
-<h3 id="1-3-NFS的实现原理"><a href="#1-3-NFS的实现原理" class="headerlink" title="1.3 NFS的实现原理"></a>1.3 NFS的实现原理</h3><p>1.用户进程访问NFS客户端，使用不同的函数对数据进行处理<br>2.NFS客户端通过TCP&#x2F;IP的方式传递给NFS服务端。<br>3.NFS服务端接收到请求后，会先调用portmap进程进行端口映射。<br>4.nfsd进程用于判断NFS客户端是否拥有权限连接NFS服务端。<br>5.Rpc.mount进程判断客户端是否有对应的权限进行验证。<br>6.idmap进程实现用户映射和压缩<br>7.最后NFS服务端会将对应请求的函数转换为本地能识别的命令，传递至内核，由内核驱动硬件。<br>注意: rpc是一个远程过程调用，那么使用nfs必须有rpc服务</p>
-<h3 id="1-4-NFS的优缺点"><a href="#1-4-NFS的优缺点" class="headerlink" title="1.4 NFS的优缺点"></a>1.4 NFS的优缺点</h3><p>优点</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.NFS文件系统简单易用、方便部署、数据可靠、服务稳定、满足中小企业需求。
-2.NFS文件系统内存放的数据都在文件系统之上，所有数据都是能看得见。<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>缺点</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.存在单点故障, 如果构建高可用维护麻烦
-web-&gt;nfs(sersync)-&gt;backup
-2.NFS数据明文, 并不对数据做任何校验。
-3.客户端挂载NFS服务没有密码验证, 安全性一般(内网使用)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<blockquote>
-<p>3.NFS应用建议<br>1.生产场景应将静态数据尽可能往前端推, 减少后端存储压力<br>2.必须将存储里的静态资源通过CDN缓存jpg\png\mp4\avi\css\js<br>3.如果没有缓存或架构本身历史遗留问题太大, 在多存储也无用</p>
-</blockquote>
-<h2 id="二、NFS部署"><a href="#二、NFS部署" class="headerlink" title="二、NFS部署"></a>二、NFS部署</h2><h3 id="2-1-服务端"><a href="#2-1-服务端" class="headerlink" title="2.1 服务端"></a>2.1 服务端</h3><p>安装</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# yum install nfs-utils -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>配置</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# cat &#x2F;etc&#x2F;exports
-&#x2F;data 172.16.1.0&#x2F;24(rw,sync,all_squash)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>授权</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# mkdir &#x2F;data
-[root@nfs ~]# chown -R nfsnobody.nfsnobody &#x2F;data&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>启动服务</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# systemctl start nfs-server
-[root@nfs ~]# systemctl enable nfs-server<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>检查</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# cat &#x2F;var&#x2F;lib&#x2F;nfs&#x2F;etab 
-&#x2F;data	172.16.1.0&#x2F;24(rw,sync,wdelay,hide,nocrossmnt,secure,root_squash,all_squash,no_subtree_check,secure_locks,acl,no_pnfs,anonuid&#x3D;65534,anongid&#x3D;65534,sec&#x3D;sys,rw,secure,root_squash,all_squash)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<h3 id="2-2-客户端"><a href="#2-2-客户端" class="headerlink" title="2.2 客户端"></a>2.2 客户端</h3><p>安装</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# yum install nfs-utils -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>检查nfs是否有共享内容</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# showmount -e 172.16.1.31
-Export list for 172.16.1.31:	
-&#x2F;data 172.16.1.0&#x2F;24<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<p>挂载nfs目录（临时）</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# mount -t nfs 172.16.1.31:&#x2F;data &#x2F;opt
-[root@web01 ~]# df -h
-Filesystem         Size  Used Avail Use% Mounted on
-172.16.1.31:&#x2F;data   99G  1.8G   98G   2% &#x2F;opt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>挂载nfs目录（永久）</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# vim &#x2F;etc&#x2F;fstab 
-172.16.1.31:&#x2F;data  &#x2F;opt  nfs  defaults  0  0
-[root@web01 ~]# mount -a   #验证fstab开机启动是否填写错误。<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="2-3-NFS配置参数说明"><a href="#2-3-NFS配置参数说明" class="headerlink" title="2.3 NFS配置参数说明"></a>2.3 NFS配置参数说明</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">ro				只读权限
-root_squash		当NFS客户端以root管理员访问时，映射为NFS服务器的匿名用户(不常用)
-no_root_squash	当NFS客户端以root管理员访问时，映射为NFS服务器的root管理员(不常用)
-no_all_squash	无论NFS客户端使用什么账户访问，都不进行压缩
-async			优先将数据保存到内存，然后再写入硬盘；这样效率更高，但可能会丢失数据
-
-rw*				读写权限
-sync*			同时将数据写入到内存与硬盘中，保证不丢失数据
-all_squash*		无论NFS客户端使用什么账户访问，均映射为NFS服务器的匿名用户(常用)
-anonuid*		配置all_squash使用,指定NFS的用户UID,必须存在系统
-anongid*		配置all_squash使用,指定NFS的用户UID,必须存在系统<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="2-4-验证ro权限"><a href="#2-4-验证ro权限" class="headerlink" title="2.4 验证ro权限"></a>2.4 验证ro权限</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# cat &#x2F;etc&#x2F;exports
-&#x2F;data 172.16.1.0&#x2F;24(ro,sync,all_squash)
-[root@nfs ~]# systemctl restart nfs-server
-
-[root@web01 ~]# touch &#x2F;opt&#x2F;ttt
-touch: cannot touch ‘&#x2F;opt&#x2F;ttt’: Read-only file system		#通常这样的错误都是设定的ro权限导致<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="2-5-验证all-squash、anonuid、anongid权限"><a href="#2-5-验证all-squash、anonuid、anongid权限" class="headerlink" title="2.5 验证all_squash、anonuid、anongid权限"></a>2.5 验证all_squash、anonuid、anongid权限</h3><p>服务端</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# cat &#x2F;etc&#x2F;exports
-&#x2F;data 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
-创建用户
-[root@nfs ~]# groupadd -g 666 www
-[root@nfs ~]# useradd -u666 -g666 www
-[root@nfs ~]# id www
-uid&#x3D;666(www) gid&#x3D;666(www) groups&#x3D;666(www)
-授权
-[root@nfs ~]# chown -R www.www &#x2F;data&#x2F;
-重启
-[root@nfs ~]# systemctl restart nfs-server<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>客户端重新挂载验证</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 opt]# touch file
-[root@web01 opt]# touch test
-[root@web01 opt]# ll
-total 4
--rw-r--r-- 1 666 666 0 Jan  7 11:29 file
--rw-r--r-- 1 666 666 0 Jan  7 11:29 test<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<blockquote>
-<p>PS:由于客户端没有创建id为666的www用户，因此看到的属组和属主都是666</p>
-</blockquote>
-<p>客户端如果觉得666不好看，建议在客户端上创建同名的用户以及uid</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# groupadd -g 666 www
-[root@web01 ~]# useradd -u 666 -g 666 www
-[root@web01 ~]# id www
-uid&#x3D;666(www) gid&#x3D;666(www) groups&#x3D;666(www)
-[root@web01 ~]# ll &#x2F;opt&#x2F;
-total 4
--rw-r--r-- 1 www www 0 Jan  7 11:29 file
--rw-r--r-- 1 www www 0 Jan  7 11:29 test<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/02-Rsync%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2500,7 +2315,7 @@ find $SRC&#x2F; -type d -mtime +7|xargs rm -rf <span aria-hidden="true" class="l
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/05-ssh%E6%9C%8D%E5%8A%A1%E8%B7%B3%E6%9D%BF%E6%9C%BA%E6%90%AD%E5%BB%BA/">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/03-NFS%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/myavatar.png">
@@ -2514,7 +2329,7 @@ find $SRC&#x2F; -type d -mtime +7|xargs rm -rf <span aria-hidden="true" class="l
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/05-ssh%E6%9C%8D%E5%8A%A1%E8%B7%B3%E6%9D%BF%E6%9C%BA%E6%90%AD%E5%BB%BA/" class="post-title-link" itemprop="url">运维之综合架构--05--SSH服务器搭建</a>
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/03-NFS%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/" class="post-title-link" itemprop="url">运维之综合架构--03-NFS服务器搭建</a>
         </h2>
 
         <div class="post-meta">
@@ -2523,16 +2338,10 @@ find $SRC&#x2F; -type d -mtime +7|xargs rm -rf <span aria-hidden="true" class="l
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
+              
 
-              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:15:48" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
             </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-07-11 13:52:30" itemprop="dateModified" datetime="2022-07-11T13:52:30+08:00">2022-07-11</time>
-              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -2558,123 +2367,119 @@ find $SRC&#x2F; -type d -mtime +7|xargs rm -rf <span aria-hidden="true" class="l
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="一、SSH服务器介绍"><a href="#一、SSH服务器介绍" class="headerlink" title="一、SSH服务器介绍"></a>一、SSH服务器介绍</h2><blockquote>
-<p>SSH是一个安全协议，在进行数据传输时，会对数据包进行加密处理，加密后在进行数据传输。确保了数据传输安全。</p>
-</blockquote>
-<p><img src="/img/ssh%E5%85%8D%E5%AF%86%E7%99%BB%E5%BD%95.png" alt="ssh免密登录"></p>
-<h3 id="1-ssh的功能"><a href="#1-ssh的功能" class="headerlink" title="1 ssh的功能"></a>1 ssh的功能</h3><ol>
-<li>提供远程连接服务器的服务</li>
-<li>对传输的数据进行加密</li>
-</ol>
-<h3 id="2-常用服务的端口"><a href="#2-常用服务的端口" class="headerlink" title="2 常用服务的端口"></a>2 常用服务的端口</h3><ul>
-<li>ftp – tcp&#x2F;20  tcp&#x2F;21</li>
-<li>dns – tcp&#x2F;53  udp&#x2F;53</li>
-<li>ssh  –  tcp&#x2F;22</li>
-<li>telnet – tcp&#x2F;23 </li>
-<li>mysql – tcp&#x2F;3306</li>
-<li>http – tcp&#x2F;80</li>
-<li>https – tcp&#x2F;443</li>
+          <ul>
+<li>学习笔记</li>
 </ul>
-<h3 id="3-telnet服务搭建"><a href="#3-telnet服务搭建" class="headerlink" title="3 telnet服务搭建"></a>3 telnet服务搭建</h3><p>安装并启动telnet服务</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@backup ~]# yum install telnet-server -y
-[root@backup ~]# systemctl start telnet.socket 
-[root@backup ~]# useradd gs
-[root@backup ~]# echo &quot;1&quot; | passwd --stdin gs<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>使用终端软件通过telnet使用gs用户登录连接</p>
-<h3 id="4-telnet与ssh的对比"><a href="#4-telnet与ssh的对比" class="headerlink" title="4 telnet与ssh的对比"></a>4 telnet与ssh的对比</h3><table>
-<thead>
-<tr>
-<th>服务连接方式</th>
-<th>服务数据传输</th>
-<th>服务监听端口</th>
-<th>服务登陆用户</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>ssh</td>
-<td>加密</td>
-<td>tcp&#x2F;22</td>
-<td>默认支持root登录</td>
-</tr>
-<tr>
-<td>telnet</td>
-<td>明文</td>
-<td>tcp&#x2F;23</td>
-<td>不支持root登录</td>
-</tr>
-</tbody></table>
-<h2 id="二、ssh与scp的使用"><a href="#二、ssh与scp的使用" class="headerlink" title="二、ssh与scp的使用"></a>二、ssh与scp的使用</h2><h3 id="1-使用ssh"><a href="#1-使用ssh" class="headerlink" title="1 使用ssh"></a>1 使用ssh</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">ssh命令
-	ssh 172.16.1.31					#取决当前执行此命令的用户
-	ssh root@172.16.1.31			#标准的写法
-	ssh -p22 root@172.16.1.31		#带端口<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="2-使用scp"><a href="#2-使用scp" class="headerlink" title="2 使用scp"></a>2 使用scp</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">scp 
-# -P 指定端口，默认22端口可不写
-# -r 表示递归拷贝目录
-# -p 表示在拷贝文件前后保持文件或目录属性不变
-# -l 限制传输使用带宽(默认kb) &#x2F;8 -&gt;KB  &#x2F;1024  -&gt;MB <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="三、使用ssh密钥登录"><a href="#三、使用ssh密钥登录" class="headerlink" title="三、使用ssh密钥登录"></a>三、使用ssh密钥登录</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.生成密钥对    公钥  私钥
-[root@m01 ~]# ssh-keygen -C 7242xxxxx@qq.com
-	
-2.将公钥推送到你需要连接的主机，第一次需要输入对端主机的密码
-[root@m01 ~]# ssh-copy-id -i ~&#x2F;.ssh&#x2F;id_rsa.pub root@172.16.1.31
-root@172.16.1.31&#39;s password:
-	
-3.通过ssh命令测试连接是否需要密码
-[root@m01 ~]# ssh 172.16.1.31
-Last login: Wed Jan  9 10:39:16 2019 from 172.16.1.61<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="四、ssh安全"><a href="#四、ssh安全" class="headerlink" title="四、ssh安全"></a>四、ssh安全</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@jumpserver ~]# vim &#x2F;etc&#x2F;ssh&#x2F;sshd_config
-[root@jumpserver ~]# systemctl restart sshd<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>SSH作为远程连接服务，通常我们需要考虑到该服务的安全，所以需要对该服务进行安全方面的配置。<br>1.更改远程连接登陆的端口		6666<br>2.禁止ROOT管理员直接登录		<br>3.密码认证方式改为密钥认证<br>4.重要服务不使用公网IP地址<br>5.使用防火墙限制来源IP地址</p>
-<p>Port 6666                       # 变更SSH服务远程连接端口√<br>PermitRootLogin         no      # 禁止root用户直接远程登录√<br>PasswordAuthentication  no      # 禁止使用密码直接远程登录√<br>UseDNS                  no      # 禁止ssh进行dns反向解析，影响ssh连接效率参数√<br>GSSAPIAuthentication    no      # 禁止GSS认证，减少连接时产生的延迟√</p>
-<h2 id="五、防ssh暴力破解工具fail2ban"><a href="#五、防ssh暴力破解工具fail2ban" class="headerlink" title="五、防ssh暴力破解工具fail2ban"></a>五、防ssh暴力破解工具fail2ban</h2><blockquote>
-<p>fail2ban可以监控系统日志，并且根据一定规则匹配异常IP后使用Firewalld将其屏蔽，尤其是针对一些爆破&#x2F;扫描等非常有效。</p>
+<hr>
+<h2 id="一、NFS简介"><a href="#一、NFS简介" class="headerlink" title="一、NFS简介"></a>一、NFS简介</h2><blockquote>
+<p>NFS是Network File System的缩写及网络文件系统。NFS主要功能是通过局域网络让不同的主机系统之间可以共享文件或目录。<br>NFS系统和Windows网络共享、网络驱动器类似, 只不过windows用于局域网, NFS用于企业集群架构中<br>如果是大型网站, 会用到更复杂的分布式文件系统FastDFS（音频、小说、视频）,glusterfs（iso镜像）,HDFS<br>NFS（图片、）解决共享前端web共享</p>
 </blockquote>
-<p>部署流程</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.开启Firewalld防火墙
-[root@bgx ~]# systemctl start firewalld
-[root@bgx ~]# systemctl enable firewalld
-[root@bgx ~]# firewall-cmd --state
-running
+<h3 id="1-1-NFS有什么用？"><a href="#1-1-NFS有什么用？" class="headerlink" title="1.1 NFS有什么用？"></a>1.1 NFS有什么用？</h3><p>解决前端web静态资源的共享<br>解决前端web静态资源一致性<br>解决前端web磁盘空间的浪费</p>
+<h3 id="1-2-NFS的文件操作方式"><a href="#1-2-NFS的文件操作方式" class="headerlink" title="1.2 NFS的文件操作方式"></a>1.2 NFS的文件操作方式</h3><p>1.当用户执行mkdir命令, 该命令会调用shell解释器翻译给内核。<br>2.内核解析完成后会驱动对应的硬件设备，完成相应的操作。</p>
+<h3 id="1-3-NFS的实现原理"><a href="#1-3-NFS的实现原理" class="headerlink" title="1.3 NFS的实现原理"></a>1.3 NFS的实现原理</h3><p>1.用户进程访问NFS客户端，使用不同的函数对数据进行处理<br>2.NFS客户端通过TCP&#x2F;IP的方式传递给NFS服务端。<br>3.NFS服务端接收到请求后，会先调用portmap进程进行端口映射。<br>4.nfsd进程用于判断NFS客户端是否拥有权限连接NFS服务端。<br>5.Rpc.mount进程判断客户端是否有对应的权限进行验证。<br>6.idmap进程实现用户映射和压缩<br>7.最后NFS服务端会将对应请求的函数转换为本地能识别的命令，传递至内核，由内核驱动硬件。<br>注意: rpc是一个远程过程调用，那么使用nfs必须有rpc服务</p>
+<h3 id="1-4-NFS的优缺点"><a href="#1-4-NFS的优缺点" class="headerlink" title="1.4 NFS的优缺点"></a>1.4 NFS的优缺点</h3><p>优点</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.NFS文件系统简单易用、方便部署、数据可靠、服务稳定、满足中小企业需求。
+2.NFS文件系统内存放的数据都在文件系统之上，所有数据都是能看得见。<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
 
-2.修改firewalld规则，启用Firewalld后会禁止一些服务的传输，但默认会放行常用的22端口, 如果想添加更多，以下是放行SSH端口（22）示例，供参考：
-#放行SSHD服务端口
-[root@bgx ~]# firewall-cmd --permanent --add-service&#x3D;ssh --add-service&#x3D;http 
-#重载配
-[root@bgx ~]# firewall-cmd --reload
-#查看已放行端口
-[root@bgx ~]# firewall-cmd  --list-service
+<p>缺点</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.存在单点故障, 如果构建高可用维护麻烦
+web-&gt;nfs(sersync)-&gt;backup
+2.NFS数据明文, 并不对数据做任何校验。
+3.客户端挂载NFS服务没有密码验证, 安全性一般(内网使用)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
 
-3.安装fail2ban,需要有epel
-[root@bgx ~]# yum install fail2ban fail2ban-firewalld mailx -y
+<blockquote>
+<p>3.NFS应用建议<br>1.生产场景应将静态数据尽可能往前端推, 减少后端存储压力<br>2.必须将存储里的静态资源通过CDN缓存jpg\png\mp4\avi\css\js<br>3.如果没有缓存或架构本身历史遗留问题太大, 在多存储也无用</p>
+</blockquote>
+<h2 id="二、NFS部署"><a href="#二、NFS部署" class="headerlink" title="二、NFS部署"></a>二、NFS部署</h2><h3 id="2-1-服务端"><a href="#2-1-服务端" class="headerlink" title="2.1 服务端"></a>2.1 服务端</h3><p>安装</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# yum install nfs-utils -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
-4.配置fail2ban规则.local会覆盖.conf文件
-[root@bgx fail2ban]# cat &#x2F;etc&#x2F;fail2ban&#x2F;jail.local
-[DEFAULT]
-ignoreip &#x3D; 127.0.0.1&#x2F;8
-bantime  &#x3D; 86400
-findtime &#x3D; 600
-maxretry &#x3D; 5
-banaction &#x3D; firewallcmd-ipset
-action &#x3D; %(action_mwl)s
+<p>配置</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# cat &#x2F;etc&#x2F;exports
+&#x2F;data 172.16.1.0&#x2F;24(rw,sync,all_squash)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
 
-[sshd]
-enabled &#x3D; true
-filter  &#x3D; sshd
-port    &#x3D; 22
-action &#x3D; %(action_mwl)s
-logpath &#x3D; &#x2F;var&#x2F;log&#x2F;secure
+<p>授权</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# mkdir &#x2F;data
+[root@nfs ~]# chown -R nfsnobody.nfsnobody &#x2F;data&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
 
-5.启动服务，并检查状态
-[root@bgx ~]# systemctl start fail2ban.service
-[root@bgx ~]# fail2ban-client status sshd
+<p>启动服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# systemctl start nfs-server
+[root@nfs ~]# systemctl enable nfs-server<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
 
-6.清除被封掉的IP地址
-[root@bgx ~]# fail2ban-client set sshd unbanip 10.0.0.1<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>检查</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# cat &#x2F;var&#x2F;lib&#x2F;nfs&#x2F;etab 
+&#x2F;data	172.16.1.0&#x2F;24(rw,sync,wdelay,hide,nocrossmnt,secure,root_squash,all_squash,no_subtree_check,secure_locks,acl,no_pnfs,anonuid&#x3D;65534,anongid&#x3D;65534,sec&#x3D;sys,rw,secure,root_squash,all_squash)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<h3 id="2-2-客户端"><a href="#2-2-客户端" class="headerlink" title="2.2 客户端"></a>2.2 客户端</h3><p>安装</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# yum install nfs-utils -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>检查nfs是否有共享内容</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# showmount -e 172.16.1.31
+Export list for 172.16.1.31:	
+&#x2F;data 172.16.1.0&#x2F;24<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>挂载nfs目录（临时）</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# mount -t nfs 172.16.1.31:&#x2F;data &#x2F;opt
+[root@web01 ~]# df -h
+Filesystem         Size  Used Avail Use% Mounted on
+172.16.1.31:&#x2F;data   99G  1.8G   98G   2% &#x2F;opt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>挂载nfs目录（永久）</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# vim &#x2F;etc&#x2F;fstab 
+172.16.1.31:&#x2F;data  &#x2F;opt  nfs  defaults  0  0
+[root@web01 ~]# mount -a   #验证fstab开机启动是否填写错误。<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-3-NFS配置参数说明"><a href="#2-3-NFS配置参数说明" class="headerlink" title="2.3 NFS配置参数说明"></a>2.3 NFS配置参数说明</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">ro				只读权限
+root_squash		当NFS客户端以root管理员访问时，映射为NFS服务器的匿名用户(不常用)
+no_root_squash	当NFS客户端以root管理员访问时，映射为NFS服务器的root管理员(不常用)
+no_all_squash	无论NFS客户端使用什么账户访问，都不进行压缩
+async			优先将数据保存到内存，然后再写入硬盘；这样效率更高，但可能会丢失数据
+
+rw*				读写权限
+sync*			同时将数据写入到内存与硬盘中，保证不丢失数据
+all_squash*		无论NFS客户端使用什么账户访问，均映射为NFS服务器的匿名用户(常用)
+anonuid*		配置all_squash使用,指定NFS的用户UID,必须存在系统
+anongid*		配置all_squash使用,指定NFS的用户UID,必须存在系统<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-4-验证ro权限"><a href="#2-4-验证ro权限" class="headerlink" title="2.4 验证ro权限"></a>2.4 验证ro权限</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# cat &#x2F;etc&#x2F;exports
+&#x2F;data 172.16.1.0&#x2F;24(ro,sync,all_squash)
+[root@nfs ~]# systemctl restart nfs-server
+
+[root@web01 ~]# touch &#x2F;opt&#x2F;ttt
+touch: cannot touch ‘&#x2F;opt&#x2F;ttt’: Read-only file system		#通常这样的错误都是设定的ro权限导致<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-5-验证all-squash、anonuid、anongid权限"><a href="#2-5-验证all-squash、anonuid、anongid权限" class="headerlink" title="2.5 验证all_squash、anonuid、anongid权限"></a>2.5 验证all_squash、anonuid、anongid权限</h3><p>服务端</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# cat &#x2F;etc&#x2F;exports
+&#x2F;data 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
+创建用户
+[root@nfs ~]# groupadd -g 666 www
+[root@nfs ~]# useradd -u666 -g666 www
+[root@nfs ~]# id www
+uid&#x3D;666(www) gid&#x3D;666(www) groups&#x3D;666(www)
+授权
+[root@nfs ~]# chown -R www.www &#x2F;data&#x2F;
+重启
+[root@nfs ~]# systemctl restart nfs-server<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>客户端重新挂载验证</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 opt]# touch file
+[root@web01 opt]# touch test
+[root@web01 opt]# ll
+total 4
+-rw-r--r-- 1 666 666 0 Jan  7 11:29 file
+-rw-r--r-- 1 666 666 0 Jan  7 11:29 test<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>PS:由于客户端没有创建id为666的www用户，因此看到的属组和属主都是666</p>
+</blockquote>
+<p>客户端如果觉得666不好看，建议在客户端上创建同名的用户以及uid</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# groupadd -g 666 www
+[root@web01 ~]# useradd -u 666 -g 666 www
+[root@web01 ~]# id www
+uid&#x3D;666(www) gid&#x3D;666(www) groups&#x3D;666(www)
+[root@web01 ~]# ll &#x2F;opt&#x2F;
+total 4
+-rw-r--r-- 1 www www 0 Jan  7 11:29 file
+-rw-r--r-- 1 www www 0 Jan  7 11:29 test<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 
       
@@ -2997,6 +2802,201 @@ _______________________________________________________
 
 
 
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/05-ssh%E6%9C%8D%E5%8A%A1%E8%B7%B3%E6%9D%BF%E6%9C%BA%E6%90%AD%E5%BB%BA/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/05-ssh%E6%9C%8D%E5%8A%A1%E8%B7%B3%E6%9D%BF%E6%9C%BA%E6%90%AD%E5%BB%BA/" class="post-title-link" itemprop="url">运维之综合架构--05--SSH服务器搭建</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-11 13:52:30" itemprop="dateModified" datetime="2022-07-11T13:52:30+08:00">2022-07-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="一、SSH服务器介绍"><a href="#一、SSH服务器介绍" class="headerlink" title="一、SSH服务器介绍"></a>一、SSH服务器介绍</h2><blockquote>
+<p>SSH是一个安全协议，在进行数据传输时，会对数据包进行加密处理，加密后在进行数据传输。确保了数据传输安全。</p>
+</blockquote>
+<p><img src="/img/ssh%E5%85%8D%E5%AF%86%E7%99%BB%E5%BD%95.png" alt="ssh免密登录"></p>
+<h3 id="1-ssh的功能"><a href="#1-ssh的功能" class="headerlink" title="1 ssh的功能"></a>1 ssh的功能</h3><ol>
+<li>提供远程连接服务器的服务</li>
+<li>对传输的数据进行加密</li>
+</ol>
+<h3 id="2-常用服务的端口"><a href="#2-常用服务的端口" class="headerlink" title="2 常用服务的端口"></a>2 常用服务的端口</h3><ul>
+<li>ftp – tcp&#x2F;20  tcp&#x2F;21</li>
+<li>dns – tcp&#x2F;53  udp&#x2F;53</li>
+<li>ssh  –  tcp&#x2F;22</li>
+<li>telnet – tcp&#x2F;23 </li>
+<li>mysql – tcp&#x2F;3306</li>
+<li>http – tcp&#x2F;80</li>
+<li>https – tcp&#x2F;443</li>
+</ul>
+<h3 id="3-telnet服务搭建"><a href="#3-telnet服务搭建" class="headerlink" title="3 telnet服务搭建"></a>3 telnet服务搭建</h3><p>安装并启动telnet服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@backup ~]# yum install telnet-server -y
+[root@backup ~]# systemctl start telnet.socket 
+[root@backup ~]# useradd gs
+[root@backup ~]# echo &quot;1&quot; | passwd --stdin gs<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>使用终端软件通过telnet使用gs用户登录连接</p>
+<h3 id="4-telnet与ssh的对比"><a href="#4-telnet与ssh的对比" class="headerlink" title="4 telnet与ssh的对比"></a>4 telnet与ssh的对比</h3><table>
+<thead>
+<tr>
+<th>服务连接方式</th>
+<th>服务数据传输</th>
+<th>服务监听端口</th>
+<th>服务登陆用户</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ssh</td>
+<td>加密</td>
+<td>tcp&#x2F;22</td>
+<td>默认支持root登录</td>
+</tr>
+<tr>
+<td>telnet</td>
+<td>明文</td>
+<td>tcp&#x2F;23</td>
+<td>不支持root登录</td>
+</tr>
+</tbody></table>
+<h2 id="二、ssh与scp的使用"><a href="#二、ssh与scp的使用" class="headerlink" title="二、ssh与scp的使用"></a>二、ssh与scp的使用</h2><h3 id="1-使用ssh"><a href="#1-使用ssh" class="headerlink" title="1 使用ssh"></a>1 使用ssh</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">ssh命令
+	ssh 172.16.1.31					#取决当前执行此命令的用户
+	ssh root@172.16.1.31			#标准的写法
+	ssh -p22 root@172.16.1.31		#带端口<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-使用scp"><a href="#2-使用scp" class="headerlink" title="2 使用scp"></a>2 使用scp</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">scp 
+# -P 指定端口，默认22端口可不写
+# -r 表示递归拷贝目录
+# -p 表示在拷贝文件前后保持文件或目录属性不变
+# -l 限制传输使用带宽(默认kb) &#x2F;8 -&gt;KB  &#x2F;1024  -&gt;MB <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="三、使用ssh密钥登录"><a href="#三、使用ssh密钥登录" class="headerlink" title="三、使用ssh密钥登录"></a>三、使用ssh密钥登录</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.生成密钥对    公钥  私钥
+[root@m01 ~]# ssh-keygen -C 7242xxxxx@qq.com
+	
+2.将公钥推送到你需要连接的主机，第一次需要输入对端主机的密码
+[root@m01 ~]# ssh-copy-id -i ~&#x2F;.ssh&#x2F;id_rsa.pub root@172.16.1.31
+root@172.16.1.31&#39;s password:
+	
+3.通过ssh命令测试连接是否需要密码
+[root@m01 ~]# ssh 172.16.1.31
+Last login: Wed Jan  9 10:39:16 2019 from 172.16.1.61<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="四、ssh安全"><a href="#四、ssh安全" class="headerlink" title="四、ssh安全"></a>四、ssh安全</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@jumpserver ~]# vim &#x2F;etc&#x2F;ssh&#x2F;sshd_config
+[root@jumpserver ~]# systemctl restart sshd<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>SSH作为远程连接服务，通常我们需要考虑到该服务的安全，所以需要对该服务进行安全方面的配置。<br>1.更改远程连接登陆的端口		6666<br>2.禁止ROOT管理员直接登录		<br>3.密码认证方式改为密钥认证<br>4.重要服务不使用公网IP地址<br>5.使用防火墙限制来源IP地址</p>
+<p>Port 6666                       # 变更SSH服务远程连接端口√<br>PermitRootLogin         no      # 禁止root用户直接远程登录√<br>PasswordAuthentication  no      # 禁止使用密码直接远程登录√<br>UseDNS                  no      # 禁止ssh进行dns反向解析，影响ssh连接效率参数√<br>GSSAPIAuthentication    no      # 禁止GSS认证，减少连接时产生的延迟√</p>
+<h2 id="五、防ssh暴力破解工具fail2ban"><a href="#五、防ssh暴力破解工具fail2ban" class="headerlink" title="五、防ssh暴力破解工具fail2ban"></a>五、防ssh暴力破解工具fail2ban</h2><blockquote>
+<p>fail2ban可以监控系统日志，并且根据一定规则匹配异常IP后使用Firewalld将其屏蔽，尤其是针对一些爆破&#x2F;扫描等非常有效。</p>
+</blockquote>
+<p>部署流程</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.开启Firewalld防火墙
+[root@bgx ~]# systemctl start firewalld
+[root@bgx ~]# systemctl enable firewalld
+[root@bgx ~]# firewall-cmd --state
+running
+
+2.修改firewalld规则，启用Firewalld后会禁止一些服务的传输，但默认会放行常用的22端口, 如果想添加更多，以下是放行SSH端口（22）示例，供参考：
+#放行SSHD服务端口
+[root@bgx ~]# firewall-cmd --permanent --add-service&#x3D;ssh --add-service&#x3D;http 
+#重载配
+[root@bgx ~]# firewall-cmd --reload
+#查看已放行端口
+[root@bgx ~]# firewall-cmd  --list-service
+
+3.安装fail2ban,需要有epel
+[root@bgx ~]# yum install fail2ban fail2ban-firewalld mailx -y
+
+4.配置fail2ban规则.local会覆盖.conf文件
+[root@bgx fail2ban]# cat &#x2F;etc&#x2F;fail2ban&#x2F;jail.local
+[DEFAULT]
+ignoreip &#x3D; 127.0.0.1&#x2F;8
+bantime  &#x3D; 86400
+findtime &#x3D; 600
+maxretry &#x3D; 5
+banaction &#x3D; firewallcmd-ipset
+action &#x3D; %(action_mwl)s
+
+[sshd]
+enabled &#x3D; true
+filter  &#x3D; sshd
+port    &#x3D; 22
+action &#x3D; %(action_mwl)s
+logpath &#x3D; &#x2F;var&#x2F;log&#x2F;secure
+
+5.启动服务，并检查状态
+[root@bgx ~]# systemctl start fail2ban.service
+[root@bgx ~]# fail2ban-client status sshd
+
+6.清除被封掉的IP地址
+[root@bgx ~]# fail2ban-client set sshd unbanip 10.0.0.1<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 
       
@@ -4391,251 +4391,6 @@ upload_max_filesize &#x3D; 200M
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/11-Nginx(%E4%BA%94)Nginx%E4%BB%A3%E7%90%86/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/11-Nginx(%E4%BA%94)Nginx%E4%BB%A3%E7%90%86/" class="post-title-link" itemprop="url">运维之综合架构--07--Nginx(五)代理介绍</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-07-11 13:54:01" itemprop="dateModified" datetime="2022-07-11T13:54:01+08:00">2022-07-11</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="一、什么是代理"><a href="#一、什么是代理" class="headerlink" title="一、什么是代理"></a>一、什么是代理</h2><h3 id="1-1-正向代理和反向代理的区别"><a href="#1-1-正向代理和反向代理的区别" class="headerlink" title="1.1 正向代理和反向代理的区别"></a>1.1 正向代理和反向代理的区别</h3><p>区别在于形式上服务的”对象”不一样<br>    正向代理代理的对象是客户端，为客户端服务   PC电脑<br>    反向代理代理的对象是服务端，为服务端服务	服务器</p>
-<h3 id="1-2-Nginx反向代理模式配置模块"><a href="#1-2-Nginx反向代理模式配置模块" class="headerlink" title="1.2 Nginx反向代理模式配置模块"></a>1.2 Nginx反向代理模式配置模块</h3><p>反向代理模式				Nginx配置模块<br>http、websocket、https		ngx_http_proxy_module<br>fastcgi						ngx_http_fastcgi_module<br>uwsgi						ngx_http_uwsgi_module<br>grpc						ngx_http_v2_module</p>
-<h2 id="二、Nginx代理配置"><a href="#二、Nginx代理配置" class="headerlink" title="二、Nginx代理配置"></a>二、Nginx代理配置</h2><h3 id="2-1-测试环境准备"><a href="#2-1-测试环境准备" class="headerlink" title="2.1 测试环境准备"></a>2.1 测试环境准备</h3><table>
-<thead>
-<tr>
-<th>主机名称</th>
-<th>应用环境</th>
-<th>外网地址</th>
-<th>内网地址</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>web01</td>
-<td>nginx + php（提供网页服务）</td>
-<td>10.0.0.7</td>
-<td>172.16.1.7</td>
-</tr>
-<tr>
-<td>lb01</td>
-<td>nginx（提供代理服务）</td>
-<td>10.0.0.5</td>
-<td>172.16.1.5</td>
-</tr>
-<tr>
-<td>db01</td>
-<td>mysql</td>
-<td>10.0.0.51</td>
-<td>172.16.1.51</td>
-</tr>
-</tbody></table>
-<h3 id="2-2-Nginx代理配置步骤"><a href="#2-2-Nginx代理配置步骤" class="headerlink" title="2.2 Nginx代理配置步骤"></a>2.2 Nginx代理配置步骤</h3><p>1、<code>web01</code>-配置后端的web</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cat web.oldboy.com.conf 
-server &#123;
-	listen 80;
-	server_name web.oldboy.com;
-	root &#x2F;web;
-
-	location &#x2F; &#123;
-		index index.php index.html;
-	&#125;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>2、创建文件夹和网页文件</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# mkdir &#x2F;web
-[root@web01 conf.d]# echo &quot;Web01.....&quot; &gt; &#x2F;web&#x2F;index.html<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>3、重启nginx服务</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# nginx -t
-sysnginx: the configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf syntax is ok
-nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test is successful
-t[root@web01 conf.d]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>4、<code>lb01</code>-nginx代理配置</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 conf.d]# cat proxy_web.conf
-server &#123;
-	listen 80;
-	server_name web.oldboy.com;
-	location &#x2F; &#123;
-		proxy_pass http:&#x2F;&#x2F;10.0.0.7:80;
-		# 设置header将域名传过去
-		proxy_set_header Host $http_host; 
-	&#125;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>5、重启Nginx服务</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>6、客户机设置hosts，并测试访问网页，可以正常显示web01页面</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">10.0.0.5 web.oldboy.com<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p><img src="/img/image-20210820101740471.png" alt="image-20210820101740471"></p>
-<h2 id="三、代理流程分析"><a href="#三、代理流程分析" class="headerlink" title="三、代理流程分析"></a>三、代理流程分析</h2><p>1、走10网关，wireshark的抓包截图如下</p>
-<p><img src="/img/image-20210820102735419.png" alt="image-20210820102735419"></p>
-<p>2、流程图</p>
-<p><img src="/img/image-20210820103041679.png" alt="image-20210820103041679"></p>
-<p>3、测试，关掉web01的公网ip网口(10.0.0.7)，再尝试访问，也可以正常访问到web01的网页</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 conf.d]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_web.conf
-server &#123;
-        listen 80;
-        server_name  web.oldboy.com;
-        location &#x2F; &#123;
-                proxy_pass http:&#x2F;&#x2F;172.16.1.7:80;
-                include &#x2F;etc&#x2F;nginx&#x2F;proxy_params;
-        &#125;
-
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>4、抓包分析</p>
-<p>因为172网段走的虚拟机内部网络，抓不到</p>
-<p><img src="/img/image-20210820111454152.png" alt="image-20210820111454152"></p>
-<h2 id="三、Nginx代理常用参数"><a href="#三、Nginx代理常用参数" class="headerlink" title="三、Nginx代理常用参数"></a>三、Nginx代理常用参数</h2><h3 id="3-1-常用参数解释"><a href="#3-1-常用参数解释" class="headerlink" title="3.1 常用参数解释"></a>3.1 常用参数解释</h3><table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>proxy_pass <a target="_blank" rel="noopener" href="http://10.0.0.7/">http://10.0.0.7:80</a>;</td>
-<td></td>
-</tr>
-<tr>
-<td>proxy_http_version 1.1;</td>
-<td>代理向后端请求使用的版本</td>
-</tr>
-<tr>
-<td>proxy_set_header Host $http_host;</td>
-<td>代理向后端请求携带的域名</td>
-</tr>
-<tr>
-<td>proxy_set_header X-Real-IP $remote_addr;</td>
-<td><font color="blue">用于获取客户端真实IP（不如x-forward）</font></td>
-</tr>
-<tr>
-<td>proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;</td>
-<td><font color="blue">获取客户端真实IP及全链路IP</font></td>
-</tr>
-<tr>
-<td>proxy_connect_timeout 30;</td>
-<td>代理接连后端超时时间</td>
-</tr>
-<tr>
-<td>proxy_send_timeout 60;</td>
-<td>后端传递数据至代理的超时时间</td>
-</tr>
-<tr>
-<td>proxy_read_timeout 60;</td>
-<td>后端相应代理的超时时间</td>
-</tr>
-<tr>
-<td>proxy_buffering on;</td>
-<td>是否开启proxy的buffer功能</td>
-</tr>
-<tr>
-<td>proxy_buffer_size 32k;</td>
-<td>设置buffer大小</td>
-</tr>
-<tr>
-<td>proxy_buffers 4 128k;</td>
-<td>设置存储被代理服务器上的数据所占用的buffer的个数和每个buffer的大小</td>
-</tr>
-</tbody></table>
-<p>X-Forwarded-For可以nginx的日志查看到</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">tail -f &#x2F;var&#x2F;log&#x2F;nginx&#x2F;access.log<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<h3 id="3-2-参数多的时候如何配置"><a href="#3-2-参数多的时候如何配置" class="headerlink" title="3.2 参数多的时候如何配置"></a>3.2 参数多的时候如何配置</h3><blockquote>
-<p>可将参数写到一个文件中，然后在nginx配置文件里include包含进去</p>
-</blockquote>
-<p>1、创建包含参数的文件</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 conf.d]# cat &#x2F;etc&#x2F;nginx&#x2F;proxy_params
-proxy_set_header Host $http_host;
-proxy_set_header X-Real-IP $remote_addr;
-proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
-proxy_connect_timeout 30;
-proxy_send_timeout 60;
-proxy_read_timeout 60;
-
-proxy_buffering on;
-proxy_buffer_size 32k;
-proxy_buffers 4 128k;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>2、在配置文件中导入，方便后续多个location使用</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">location &#x2F; &#123;
-    proxy_pass http:&#x2F;&#x2F;127.0.0.1:8080;
-    include proxy_params;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/10-Nginx(%E5%9B%9B)LNMP%E6%9E%B6%E6%9E%84%E6%8B%86%E5%88%86/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -4863,6 +4618,251 @@ database_password: &#39;Bgx123.com&#39;
 
 3.web01和web02分别都进行挂载，此时图片进行实现了共享
     mount -t nfs 172.16.1.31:&#x2F;data&#x2F;blog  &#x2F;code&#x2F;wordpress&#x2F;wp-content&#x2F;uploads&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/11-Nginx(%E4%BA%94)Nginx%E4%BB%A3%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/11-Nginx(%E4%BA%94)Nginx%E4%BB%A3%E7%90%86/" class="post-title-link" itemprop="url">运维之综合架构--07--Nginx(五)代理介绍</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-11 13:54:01" itemprop="dateModified" datetime="2022-07-11T13:54:01+08:00">2022-07-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="一、什么是代理"><a href="#一、什么是代理" class="headerlink" title="一、什么是代理"></a>一、什么是代理</h2><h3 id="1-1-正向代理和反向代理的区别"><a href="#1-1-正向代理和反向代理的区别" class="headerlink" title="1.1 正向代理和反向代理的区别"></a>1.1 正向代理和反向代理的区别</h3><p>区别在于形式上服务的”对象”不一样<br>    正向代理代理的对象是客户端，为客户端服务   PC电脑<br>    反向代理代理的对象是服务端，为服务端服务	服务器</p>
+<h3 id="1-2-Nginx反向代理模式配置模块"><a href="#1-2-Nginx反向代理模式配置模块" class="headerlink" title="1.2 Nginx反向代理模式配置模块"></a>1.2 Nginx反向代理模式配置模块</h3><p>反向代理模式				Nginx配置模块<br>http、websocket、https		ngx_http_proxy_module<br>fastcgi						ngx_http_fastcgi_module<br>uwsgi						ngx_http_uwsgi_module<br>grpc						ngx_http_v2_module</p>
+<h2 id="二、Nginx代理配置"><a href="#二、Nginx代理配置" class="headerlink" title="二、Nginx代理配置"></a>二、Nginx代理配置</h2><h3 id="2-1-测试环境准备"><a href="#2-1-测试环境准备" class="headerlink" title="2.1 测试环境准备"></a>2.1 测试环境准备</h3><table>
+<thead>
+<tr>
+<th>主机名称</th>
+<th>应用环境</th>
+<th>外网地址</th>
+<th>内网地址</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>web01</td>
+<td>nginx + php（提供网页服务）</td>
+<td>10.0.0.7</td>
+<td>172.16.1.7</td>
+</tr>
+<tr>
+<td>lb01</td>
+<td>nginx（提供代理服务）</td>
+<td>10.0.0.5</td>
+<td>172.16.1.5</td>
+</tr>
+<tr>
+<td>db01</td>
+<td>mysql</td>
+<td>10.0.0.51</td>
+<td>172.16.1.51</td>
+</tr>
+</tbody></table>
+<h3 id="2-2-Nginx代理配置步骤"><a href="#2-2-Nginx代理配置步骤" class="headerlink" title="2.2 Nginx代理配置步骤"></a>2.2 Nginx代理配置步骤</h3><p>1、<code>web01</code>-配置后端的web</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cat web.oldboy.com.conf 
+server &#123;
+	listen 80;
+	server_name web.oldboy.com;
+	root &#x2F;web;
+
+	location &#x2F; &#123;
+		index index.php index.html;
+	&#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>2、创建文件夹和网页文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# mkdir &#x2F;web
+[root@web01 conf.d]# echo &quot;Web01.....&quot; &gt; &#x2F;web&#x2F;index.html<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>3、重启nginx服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# nginx -t
+sysnginx: the configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf syntax is ok
+nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test is successful
+t[root@web01 conf.d]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>4、<code>lb01</code>-nginx代理配置</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 conf.d]# cat proxy_web.conf
+server &#123;
+	listen 80;
+	server_name web.oldboy.com;
+	location &#x2F; &#123;
+		proxy_pass http:&#x2F;&#x2F;10.0.0.7:80;
+		# 设置header将域名传过去
+		proxy_set_header Host $http_host; 
+	&#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>5、重启Nginx服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>6、客户机设置hosts，并测试访问网页，可以正常显示web01页面</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">10.0.0.5 web.oldboy.com<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p><img src="/img/image-20210820101740471.png" alt="image-20210820101740471"></p>
+<h2 id="三、代理流程分析"><a href="#三、代理流程分析" class="headerlink" title="三、代理流程分析"></a>三、代理流程分析</h2><p>1、走10网关，wireshark的抓包截图如下</p>
+<p><img src="/img/image-20210820102735419.png" alt="image-20210820102735419"></p>
+<p>2、流程图</p>
+<p><img src="/img/image-20210820103041679.png" alt="image-20210820103041679"></p>
+<p>3、测试，关掉web01的公网ip网口(10.0.0.7)，再尝试访问，也可以正常访问到web01的网页</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 conf.d]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_web.conf
+server &#123;
+        listen 80;
+        server_name  web.oldboy.com;
+        location &#x2F; &#123;
+                proxy_pass http:&#x2F;&#x2F;172.16.1.7:80;
+                include &#x2F;etc&#x2F;nginx&#x2F;proxy_params;
+        &#125;
+
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>4、抓包分析</p>
+<p>因为172网段走的虚拟机内部网络，抓不到</p>
+<p><img src="/img/image-20210820111454152.png" alt="image-20210820111454152"></p>
+<h2 id="三、Nginx代理常用参数"><a href="#三、Nginx代理常用参数" class="headerlink" title="三、Nginx代理常用参数"></a>三、Nginx代理常用参数</h2><h3 id="3-1-常用参数解释"><a href="#3-1-常用参数解释" class="headerlink" title="3.1 常用参数解释"></a>3.1 常用参数解释</h3><table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>proxy_pass <a target="_blank" rel="noopener" href="http://10.0.0.7/">http://10.0.0.7:80</a>;</td>
+<td></td>
+</tr>
+<tr>
+<td>proxy_http_version 1.1;</td>
+<td>代理向后端请求使用的版本</td>
+</tr>
+<tr>
+<td>proxy_set_header Host $http_host;</td>
+<td>代理向后端请求携带的域名</td>
+</tr>
+<tr>
+<td>proxy_set_header X-Real-IP $remote_addr;</td>
+<td><font color="blue">用于获取客户端真实IP（不如x-forward）</font></td>
+</tr>
+<tr>
+<td>proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;</td>
+<td><font color="blue">获取客户端真实IP及全链路IP</font></td>
+</tr>
+<tr>
+<td>proxy_connect_timeout 30;</td>
+<td>代理接连后端超时时间</td>
+</tr>
+<tr>
+<td>proxy_send_timeout 60;</td>
+<td>后端传递数据至代理的超时时间</td>
+</tr>
+<tr>
+<td>proxy_read_timeout 60;</td>
+<td>后端相应代理的超时时间</td>
+</tr>
+<tr>
+<td>proxy_buffering on;</td>
+<td>是否开启proxy的buffer功能</td>
+</tr>
+<tr>
+<td>proxy_buffer_size 32k;</td>
+<td>设置buffer大小</td>
+</tr>
+<tr>
+<td>proxy_buffers 4 128k;</td>
+<td>设置存储被代理服务器上的数据所占用的buffer的个数和每个buffer的大小</td>
+</tr>
+</tbody></table>
+<p>X-Forwarded-For可以nginx的日志查看到</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">tail -f &#x2F;var&#x2F;log&#x2F;nginx&#x2F;access.log<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h3 id="3-2-参数多的时候如何配置"><a href="#3-2-参数多的时候如何配置" class="headerlink" title="3.2 参数多的时候如何配置"></a>3.2 参数多的时候如何配置</h3><blockquote>
+<p>可将参数写到一个文件中，然后在nginx配置文件里include包含进去</p>
+</blockquote>
+<p>1、创建包含参数的文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 conf.d]# cat &#x2F;etc&#x2F;nginx&#x2F;proxy_params
+proxy_set_header Host $http_host;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+proxy_connect_timeout 30;
+proxy_send_timeout 60;
+proxy_read_timeout 60;
+
+proxy_buffering on;
+proxy_buffer_size 32k;
+proxy_buffers 4 128k;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>2、在配置文件中导入，方便后续多个location使用</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">location &#x2F; &#123;
+    proxy_pass http:&#x2F;&#x2F;127.0.0.1:8080;
+    include proxy_params;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
 
 
       
