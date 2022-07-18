@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="一 生成器与yield 若函数体包含yield关键字，再调用函数，并不会执行函数体代码，得到的返回值即生成器对象 &gt;&gt;&gt; def my_range(start,stop,step&#x3D;1): ...     print(&#39;start...&#39;) ...     while start &lt; stop: ...         yield start ...         start+&#x3D;step .">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GongSheng Blog">
+<meta property="og:url" content="http://gsproj.github.io/2022/07/18/03_Python/01_Python%E5%9F%BA%E7%A1%80/17_%E7%94%9F%E6%88%90%E5%99%A8/index.html">
+<meta property="og:site_name" content="GongSheng Blog">
+<meta property="og:description" content="一 生成器与yield 若函数体包含yield关键字，再调用函数，并不会执行函数体代码，得到的返回值即生成器对象 &gt;&gt;&gt; def my_range(start,stop,step&#x3D;1): ...     print(&#39;start...&#39;) ...     while start &lt; stop: ...         yield start ...         start+&#x3D;step .">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://pic2.zhimg.com/80/v2-2c92ed3ae0da1fd192339be9abc973a1_720w.jpg">
+<meta property="og:image" content="https://pic2.zhimg.com/80/v2-31590362f23201814f45879db5dd6a51_720w.jpg">
+<meta property="og:image" content="https://pic2.zhimg.com/80/v2-fa04ec0eaa5bd7bb8804908ad7b88369_720w.jpg">
+<meta property="og:image" content="https://pic4.zhimg.com/80/v2-024f3ac36393f784226497828d53eebf_720w.jpg">
+<meta property="og:image" content="https://pic1.zhimg.com/80/v2-277c3fe7374520dba8973dea02474790_720w.jpg">
+<meta property="og:image" content="https://pic2.zhimg.com/80/v2-6b5e335f9c2baca1a9d076721c672b19_720w.jpg">
+<meta property="og:image" content="https://pic3.zhimg.com/80/v2-d9640f4c3f1c13bbd78e7cf6de6dc316_720w.jpg">
+<meta property="og:image" content="https://pic3.zhimg.com/80/v2-70257d333a3e9a49704c10982ce48856_720w.jpg">
+<meta property="og:image" content="https://pic1.zhimg.com/80/v2-f0a061871b663d857e13ada7c10b31ac_720w.jpg">
+<meta property="og:image" content="https://pic4.zhimg.com/v2-c64ada0dd06d0c57ed905be65d17acb7_180x120.jpg">
+<meta property="og:image" content="https://pic4.zhimg.com/v2-c64ada0dd06d0c57ed905be65d17acb7_180x120.jpg">
+<meta property="article:published_time" content="2022-07-18T01:24:49.687Z">
+<meta property="article:modified_time" content="2022-07-18T01:26:55.115Z">
+<meta property="article:author" content="GongSheng">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://pic2.zhimg.com/80/v2-2c92ed3ae0da1fd192339be9abc973a1_720w.jpg">
+
+<link rel="canonical" href="http://gsproj.github.io/2022/07/18/03_Python/01_Python%E5%9F%BA%E7%A1%80/17_%E7%94%9F%E6%88%90%E5%99%A8/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title> | GongSheng Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">GongSheng Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">山川異域，風月同天</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/18/03_Python/01_Python%E5%9F%BA%E7%A1%80/17_%E7%94%9F%E6%88%90%E5%99%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-18 09:24:49 / 修改时间：09:26:55" itemprop="dateCreated datePublished" datetime="2022-07-18T09:24:49+08:00">2022-07-18</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="一-生成器与yield"><a href="#一-生成器与yield" class="headerlink" title="一 生成器与yield"></a>一 生成器与yield</h2><p><img src="https://pic2.zhimg.com/80/v2-2c92ed3ae0da1fd192339be9abc973a1_720w.jpg" alt="img"></p>
+<p>若函数体包含yield关键字，再调用函数，并不会执行函数体代码，得到的返回值即生成器对象</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token operator">>></span><span class="token operator">></span> <span class="token keyword">def</span> <span class="token function">my_range</span><span class="token punctuation">(</span>start<span class="token punctuation">,</span>stop<span class="token punctuation">,</span>step<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>     <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'start...'</span><span class="token punctuation">)</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>     <span class="token keyword">while</span> start <span class="token operator">&lt;</span> stop<span class="token punctuation">:</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>         <span class="token keyword">yield</span> start
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>         start<span class="token operator">+=</span>step
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>     <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'end...'</span><span class="token punctuation">)</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> 
+<span class="token operator">>></span><span class="token operator">></span> g<span class="token operator">=</span>my_range<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">3</span><span class="token punctuation">)</span>
+<span class="token operator">>></span><span class="token operator">></span> g
+<span class="token operator">&lt;</span>generator <span class="token builtin">object</span> my_range at <span class="token number">0x104105678</span><span class="token operator">></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>生成器内置有__iter__和__next__方法，所以生成器本身就是一个迭代器</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token operator">>></span><span class="token operator">></span> g<span class="token punctuation">.</span>__iter__
+<span class="token operator">&lt;</span>method<span class="token operator">-</span>wrapper <span class="token string">'__iter__'</span> of generator <span class="token builtin">object</span> at <span class="token number">0x1037d2af0</span><span class="token operator">></span>
+<span class="token operator">>></span><span class="token operator">></span> g<span class="token punctuation">.</span>__next__
+<span class="token operator">&lt;</span>method<span class="token operator">-</span>wrapper <span class="token string">'__next__'</span> of generator <span class="token builtin">object</span> at <span class="token number">0x1037d2af0</span><span class="token operator">></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p><img src="https://pic2.zhimg.com/80/v2-31590362f23201814f45879db5dd6a51_720w.jpg" alt="img"></p>
+<p>因而我们可以用next(生成器)触发生成器所对应函数的执行，</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token operator">>></span><span class="token operator">></span> <span class="token builtin">next</span><span class="token punctuation">(</span>g<span class="token punctuation">)</span> <span class="token comment"># 触发函数执行直到遇到yield则停止,将yield后的值返回，并在当前位置挂起函数</span>
+start<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+<span class="token number">0</span>
+<span class="token operator">>></span><span class="token operator">></span> <span class="token builtin">next</span><span class="token punctuation">(</span>g<span class="token punctuation">)</span> <span class="token comment"># 再次调用next(g)，函数从上次暂停的位置继续执行，直到重新遇到yield...</span>
+<span class="token number">1</span>
+<span class="token operator">>></span><span class="token operator">></span> <span class="token builtin">next</span><span class="token punctuation">(</span>g<span class="token punctuation">)</span> <span class="token comment"># 周而复始...</span>
+<span class="token number">2</span>
+<span class="token operator">>></span><span class="token operator">></span> <span class="token builtin">next</span><span class="token punctuation">(</span>g<span class="token punctuation">)</span> <span class="token comment"># 触发函数执行没有遇到yield则无值返回，即取值完毕抛出异常结束迭代</span>
+end<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+Traceback <span class="token punctuation">(</span>most recent call last<span class="token punctuation">)</span><span class="token punctuation">:</span>
+  File <span class="token string">"&lt;stdin>"</span><span class="token punctuation">,</span> line <span class="token number">1</span><span class="token punctuation">,</span> <span class="token keyword">in</span> <span class="token operator">&lt;</span>module<span class="token operator">></span>
+StopIteration<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p><img src="https://pic2.zhimg.com/80/v2-fa04ec0eaa5bd7bb8804908ad7b88369_720w.jpg" alt="img"></p>
+<p>既然生成器对象属于迭代器，那么必然可以使用for循环迭代，如下：</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token operator">>></span><span class="token operator">></span> <span class="token keyword">for</span> i <span class="token keyword">in</span> countdown<span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>     <span class="token keyword">print</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> 
+countdown start
+<span class="token number">3</span>
+<span class="token number">2</span>
+<span class="token number">1</span>
+Done!<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>有了yield关键字，我们就有了一种自定义迭代器的实现方式。yield可以用于返回值，但不同于return，函数一旦遇到return就结束了，而yield可以保存函数的运行状态挂起函数，用来返回多次值</p>
+<p><img src="https://pic4.zhimg.com/80/v2-024f3ac36393f784226497828d53eebf_720w.jpg" alt="img"></p>
+<h2 id="二-yield表达式应用"><a href="#二-yield表达式应用" class="headerlink" title="二 yield表达式应用"></a>二 yield表达式应用</h2><p>在函数内可以采用表达式形式的yield</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token operator">>></span><span class="token operator">></span> <span class="token keyword">def</span> <span class="token function">eater</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>     <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Ready to eat'</span><span class="token punctuation">)</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>     <span class="token keyword">while</span> <span class="token boolean">True</span><span class="token punctuation">:</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>         food<span class="token operator">=</span><span class="token keyword">yield</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>         <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'get the food: %s, and start to eat'</span> <span class="token operator">%</span>food<span class="token punctuation">)</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>可以拿到函数的生成器对象持续为函数体send值，如下</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token operator">>></span><span class="token operator">></span> g<span class="token operator">=</span>eater<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token comment"># 得到生成器对象</span>
+<span class="token operator">>></span><span class="token operator">></span> g
+<span class="token operator">&lt;</span>generator <span class="token builtin">object</span> eater at <span class="token number">0x101b6e2b0</span><span class="token operator">></span>
+<span class="token operator">>></span><span class="token operator">></span> <span class="token builtin">next</span><span class="token punctuation">(</span>e<span class="token punctuation">)</span> <span class="token comment"># 需要事先”初始化”一次，让函数挂起在food=yield，等待调用g.send()方法为其传值</span>
+Ready to eat
+<span class="token operator">>></span><span class="token operator">></span> g<span class="token punctuation">.</span>send<span class="token punctuation">(</span><span class="token string">'包子'</span><span class="token punctuation">)</span>
+get the food<span class="token punctuation">:</span> 包子<span class="token punctuation">,</span> <span class="token keyword">and</span> start to eat
+<span class="token operator">>></span><span class="token operator">></span> g<span class="token punctuation">.</span>send<span class="token punctuation">(</span><span class="token string">'鸡腿'</span><span class="token punctuation">)</span>
+get the food<span class="token punctuation">:</span> 鸡腿<span class="token punctuation">,</span> <span class="token keyword">and</span> start to eat<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>针对表达式形式的yield，生成器对象必须事先被初始化一次，让函数挂起在food&#x3D;yield的位置，等待调用g.send()方法为函数体传值，g.send(None)等同于next(g)。</p>
+<p><img src="https://pic1.zhimg.com/80/v2-277c3fe7374520dba8973dea02474790_720w.jpg" alt="img"></p>
+<p> 我们可以编写装饰器来完成为所有表达式形式yield对应生成器的初始化操作，如下</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">init</span><span class="token punctuation">(</span>func<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">wrapper</span><span class="token punctuation">(</span><span class="token operator">*</span>args<span class="token punctuation">,</span><span class="token operator">**</span>kwargs<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        g<span class="token operator">=</span>func<span class="token punctuation">(</span><span class="token operator">*</span>args<span class="token punctuation">,</span><span class="token operator">**</span>kwargs<span class="token punctuation">)</span>
+        <span class="token builtin">next</span><span class="token punctuation">(</span>g<span class="token punctuation">)</span>
+        <span class="token keyword">return</span> g
+    <span class="token keyword">return</span> wrapper
+
+<span class="token decorator annotation punctuation">@init</span>
+<span class="token keyword">def</span> <span class="token function">eater</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Ready to eat'</span><span class="token punctuation">)</span>
+    <span class="token keyword">while</span> <span class="token boolean">True</span><span class="token punctuation">:</span>
+        food<span class="token operator">=</span><span class="token keyword">yield</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'get the food: %s, and start to eat'</span> <span class="token operator">%</span>food<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>表达式形式的yield也可以用于返回多次值，即<code>变量名=yield 值</code>的形式，如下</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token operator">>></span><span class="token operator">></span> <span class="token keyword">def</span> <span class="token function">eater</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>     <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Ready to eat'</span><span class="token punctuation">)</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>     food_list<span class="token operator">=</span><span class="token punctuation">[</span><span class="token punctuation">]</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>     <span class="token keyword">while</span> <span class="token boolean">True</span><span class="token punctuation">:</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>         food<span class="token operator">=</span><span class="token keyword">yield</span> food_list
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>         food_list<span class="token punctuation">.</span>append<span class="token punctuation">(</span>food<span class="token punctuation">)</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> 
+<span class="token operator">>></span><span class="token operator">></span> e<span class="token operator">=</span>eater<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token operator">>></span><span class="token operator">></span> <span class="token builtin">next</span><span class="token punctuation">(</span>e<span class="token punctuation">)</span>
+Ready to eat
+<span class="token punctuation">[</span><span class="token punctuation">]</span>
+<span class="token operator">>></span><span class="token operator">></span> e<span class="token punctuation">.</span>send<span class="token punctuation">(</span><span class="token string">'蒸羊羔'</span><span class="token punctuation">)</span>
+<span class="token punctuation">[</span><span class="token string">'蒸羊羔'</span><span class="token punctuation">]</span>
+<span class="token operator">>></span><span class="token operator">></span> e<span class="token punctuation">.</span>send<span class="token punctuation">(</span><span class="token string">'蒸熊掌'</span><span class="token punctuation">)</span>
+<span class="token punctuation">[</span><span class="token string">'蒸羊羔'</span><span class="token punctuation">,</span> <span class="token string">'蒸熊掌'</span><span class="token punctuation">]</span>
+<span class="token operator">>></span><span class="token operator">></span> e<span class="token punctuation">.</span>send<span class="token punctuation">(</span><span class="token string">'蒸鹿尾儿'</span><span class="token punctuation">)</span>
+<span class="token punctuation">[</span><span class="token string">'蒸羊羔'</span><span class="token punctuation">,</span> <span class="token string">'蒸熊掌'</span><span class="token punctuation">,</span> <span class="token string">'蒸鹿尾儿'</span><span class="token punctuation">]</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="三-三元表达式、列表生成式、生成器表达式"><a href="#三-三元表达式、列表生成式、生成器表达式" class="headerlink" title="三 三元表达式、列表生成式、生成器表达式"></a>三 三元表达式、列表生成式、生成器表达式</h2><h2 id="3-1-三元表达式"><a href="#3-1-三元表达式" class="headerlink" title="3.1 三元表达式"></a>3.1 三元表达式</h2><p>三元表达式是python为我们提供的一种简化代码的解决方案，语法如下</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python">res <span class="token operator">=</span> 条件成立时返回的值 <span class="token keyword">if</span> 条件 <span class="token keyword">else</span> 条件不成立时返回的值<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>针对下述场景</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">max2</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span>y<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> x <span class="token operator">></span> y<span class="token punctuation">:</span>
+        <span class="token keyword">return</span> x
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> y
+
+res <span class="token operator">=</span> max2<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">2</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>用三元表达式可以一行解决</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python">x<span class="token operator">=</span><span class="token number">1</span>
+y<span class="token operator">=</span><span class="token number">2</span>
+res <span class="token operator">=</span> x <span class="token keyword">if</span> x <span class="token operator">></span> y <span class="token keyword">else</span> y <span class="token comment"># 三元表达式</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p><img src="https://pic2.zhimg.com/80/v2-6b5e335f9c2baca1a9d076721c672b19_720w.jpg" alt="img"></p>
+<h2 id="3-2-列表生成式"><a href="#3-2-列表生成式" class="headerlink" title="3.2 列表生成式"></a>3.2 列表生成式</h2><p>列表生成式是python为我们提供的一种简化代码的解决方案，用来快速生成列表，语法如下</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token punctuation">[</span>expression <span class="token keyword">for</span> item1 <span class="token keyword">in</span> iterable1 <span class="token keyword">if</span> condition1
+<span class="token keyword">for</span> item2 <span class="token keyword">in</span> iterable2 <span class="token keyword">if</span> condition2
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+<span class="token keyword">for</span> itemN <span class="token keyword">in</span> iterableN <span class="token keyword">if</span> conditionN
+<span class="token punctuation">]</span>
+
+<span class="token comment">#类似于</span>
+res<span class="token operator">=</span><span class="token punctuation">[</span><span class="token punctuation">]</span>
+<span class="token keyword">for</span> item1 <span class="token keyword">in</span> iterable1<span class="token punctuation">:</span>
+    <span class="token keyword">if</span> condition1<span class="token punctuation">:</span>
+        <span class="token keyword">for</span> item2 <span class="token keyword">in</span> iterable2<span class="token punctuation">:</span>
+            <span class="token keyword">if</span> condition2
+                <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+                <span class="token keyword">for</span> itemN <span class="token keyword">in</span> iterableN<span class="token punctuation">:</span>
+                    <span class="token keyword">if</span> conditionN<span class="token punctuation">:</span>
+                        res<span class="token punctuation">.</span>append<span class="token punctuation">(</span>expression<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>针对下述场景</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python">egg_list<span class="token operator">=</span><span class="token punctuation">[</span><span class="token punctuation">]</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    egg_list<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token string">'鸡蛋%s'</span> <span class="token operator">%</span>i<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>用列表生成式可以一行解决</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python">egg_list<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">'鸡蛋%s'</span> <span class="token operator">%</span>i <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p><img src="https://pic3.zhimg.com/80/v2-d9640f4c3f1c13bbd78e7cf6de6dc316_720w.jpg" alt="img"></p>
+<h2 id="3-3-生成器表达式"><a href="#3-3-生成器表达式" class="headerlink" title="3.3 生成器表达式"></a>3.3 生成器表达式</h2><p>创建一个生成器对象有两种方式，一种是调用带yield关键字的函数，另一种就是生成器表达式，与列表生成式的语法格式相同，只需要将[]换成()，即：</p>
+<p><img src="https://pic3.zhimg.com/80/v2-70257d333a3e9a49704c10982ce48856_720w.jpg" alt="img"></p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python">（expression <span class="token keyword">for</span> item <span class="token keyword">in</span> iterable <span class="token keyword">if</span> condition）<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>对比列表生成式返回的是一个列表，生成器表达式返回的是一个生成器对象</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token operator">>></span><span class="token operator">></span> <span class="token punctuation">[</span>x<span class="token operator">*</span>x <span class="token keyword">for</span> x <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">]</span>
+<span class="token operator">>></span><span class="token operator">></span> g<span class="token operator">=</span><span class="token punctuation">(</span>x<span class="token operator">*</span>x <span class="token keyword">for</span> x <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token operator">>></span><span class="token operator">></span> g
+<span class="token operator">&lt;</span>generator <span class="token builtin">object</span> <span class="token operator">&lt;</span>genexpr<span class="token operator">></span> at <span class="token number">0x101be0ba0</span><span class="token operator">></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>对比列表生成式，生成器表达式的优点自然是节省内存（一次只产生一个值在内存中）</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token operator">>></span><span class="token operator">></span> <span class="token builtin">next</span><span class="token punctuation">(</span>g<span class="token punctuation">)</span>
+<span class="token number">0</span>
+<span class="token operator">>></span><span class="token operator">></span> <span class="token builtin">next</span><span class="token punctuation">(</span>g<span class="token punctuation">)</span>
+<span class="token number">1</span>
+<span class="token operator">>></span><span class="token operator">></span> <span class="token builtin">next</span><span class="token punctuation">(</span>g<span class="token punctuation">)</span>
+<span class="token number">4</span>
+<span class="token operator">>></span><span class="token operator">></span> <span class="token builtin">next</span><span class="token punctuation">(</span>g<span class="token punctuation">)</span> <span class="token comment">#抛出异常StopIteration</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>如果我们要读取一个大文件的字节数，应该基于生成器表达式的方式完成</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">with</span> <span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">'db.txt'</span><span class="token punctuation">,</span><span class="token string">'rb'</span><span class="token punctuation">)</span> <span class="token keyword">as</span> f<span class="token punctuation">:</span>
+    nums<span class="token operator">=</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span> <span class="token keyword">for</span> line <span class="token keyword">in</span> f<span class="token punctuation">)</span>
+    total_size<span class="token operator">=</span><span class="token builtin">sum</span><span class="token punctuation">(</span>nums<span class="token punctuation">)</span> <span class="token comment"># 依次执行next(nums)，然后累加到一起得到结果=</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p><img src="https://pic1.zhimg.com/80/v2-f0a061871b663d857e13ada7c10b31ac_720w.jpg" alt="img"></p>
+<h2 id="视频链接："><a href="#视频链接：" class="headerlink" title="视频链接："></a>视频链接：</h2><p><a href="https://link.zhihu.com/?target=https://www.bilibili.com/video/av73342471?p=52">python快速入门（一）_哔哩哔哩 (゜-゜)つロ 干杯~-bilibiliwww.bilibili.com/video/av73342471?p=52<img src="https://pic4.zhimg.com/v2-c64ada0dd06d0c57ed905be65d17acb7_180x120.jpg" alt="img"></a></p>
+<p><a href="https://link.zhihu.com/?target=https://www.bilibili.com/video/av73342471?p=53">python快速入门（一）_哔哩哔哩 (゜-゜)つロ 干杯~-bilibiliwww.bilibili.com/video/av73342471?p=53<img src="https://pic4.zhimg.com/v2-c64ada0dd06d0c57ed905be65d17acb7_180x120.jpg" alt="img"></a></p>
+<p><a href="https://link.zhihu.com/?target=https://www.bilibili.com/video/av73342471?p=54">https://www.bilibili.com/video/av73342471?p=54www.bilibili.com/video/av73342471?p=54</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/07/18/03_Python/01_Python%E5%9F%BA%E7%A1%80/12_%E5%87%BD%E6%95%B0%E7%9A%84%E5%8F%82%E6%95%B0/" rel="prev" title="">
+      <i class="fa fa-chevron-left"></i> 
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/07/18/03_Python/01_Python%E5%9F%BA%E7%A1%80/16_%E8%BF%AD%E4%BB%A3%E5%99%A8/" rel="next" title="">
+       <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80-%E7%94%9F%E6%88%90%E5%99%A8%E4%B8%8Eyield"><span class="nav-text">一 生成器与yield</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C-yield%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%BA%94%E7%94%A8"><span class="nav-text">二 yield表达式应用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89-%E4%B8%89%E5%85%83%E8%A1%A8%E8%BE%BE%E5%BC%8F%E3%80%81%E5%88%97%E8%A1%A8%E7%94%9F%E6%88%90%E5%BC%8F%E3%80%81%E7%94%9F%E6%88%90%E5%99%A8%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="nav-text">三 三元表达式、列表生成式、生成器表达式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1-%E4%B8%89%E5%85%83%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="nav-text">3.1 三元表达式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-2-%E5%88%97%E8%A1%A8%E7%94%9F%E6%88%90%E5%BC%8F"><span class="nav-text">3.2 列表生成式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-3-%E7%94%9F%E6%88%90%E5%99%A8%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="nav-text">3.3 生成器表达式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%86%E9%A2%91%E9%93%BE%E6%8E%A5%EF%BC%9A"><span class="nav-text">视频链接：</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="GongSheng"
+      src="/images/myavatar.png">
+  <p class="site-author-name" itemprop="name">GongSheng</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">67</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">GongSheng</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
