@@ -2315,6 +2315,328 @@ find $SRC&#x2F; -type d -mtime +7|xargs rm -rf <span aria-hidden="true" class="l
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/04-sersync%E5%AE%9E%E6%97%B6%E5%90%8C%E6%AD%A5%E5%A4%87%E4%BB%BD/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/04-sersync%E5%AE%9E%E6%97%B6%E5%90%8C%E6%AD%A5%E5%A4%87%E4%BB%BD/" class="post-title-link" itemprop="url">运维之综合架构--04--Sersync实时备份</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-11 13:52:13" itemprop="dateModified" datetime="2022-07-11T13:52:13+08:00">2022-07-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="一、Sersync服务介绍"><a href="#一、Sersync服务介绍" class="headerlink" title="一、Sersync服务介绍"></a>一、Sersync服务介绍</h2><blockquote>
+</blockquote>
+<h3 id="1-为什么要用sersync"><a href="#1-为什么要用sersync" class="headerlink" title="1 为什么要用sersync"></a>1 为什么要用sersync</h3><ul>
+<li>sersync是基于inotify开发的，类似于inotify-tools的工具</li>
+<li>sersync可以记录下被监听目录中发生变化的（包括增加、删除、修改）具体某一个文件或者某一个目录的名字，然后使用rsync同步的时候，只同步发生变化的文件或者目录</li>
+<li>因为服务异常导致的同步失败有记录，便于恢复，确保高可用！</li>
+</ul>
+<h3 id="2-rsync-inotify-tools与rsync-sersync架构的区别？"><a href="#2-rsync-inotify-tools与rsync-sersync架构的区别？" class="headerlink" title="2 rsync+inotify-tools与rsync+sersync架构的区别？"></a>2 rsync+inotify-tools与rsync+sersync架构的区别？</h3><ul>
+<li><p>rsync+inotify-tools</p>
+<p>a、inotify只能记录下被监听的目录发生了变化（增，删，改）并没有把具体是哪个文件或者哪个目录发生了变化记录下来；</p>
+<p>b、rsync在同步的时候，并不知道具体是哪个文件或目录发生了变化，每次都是对整个目录进行同步，当数据量很大时，整个目录同步非常耗时（rsync要对整个目录遍历查找对比文件），因此效率很低</p>
+</li>
+<li><p>rsync+sersync</p>
+<p>a、sersync可以记录被监听目录中发生变化的（增，删，改）具体某个文件或目录的名字；</p>
+<p>b、rsync在同步时，只同步发生变化的文件或目录（每次发生变化的数据相对整个同步目录数据来说很小，rsync在遍历查找对比文件时，速度很快），因此效率很高。</p>
+</li>
+</ul>
+<h2 id="二、同步过程和原理"><a href="#二、同步过程和原理" class="headerlink" title="二、同步过程和原理"></a>二、同步过程和原理</h2><h3 id="1-同步过程"><a href="#1-同步过程" class="headerlink" title="1 同步过程"></a>1 同步过程</h3><ol>
+<li>在同步服务器上开启sersync服务，sersync负责监控配置路径中的文件系统事件变化</li>
+<li>调用rsync命令把更新的文件同步到目标服务器；</li>
+<li>需要在主服务器配置sersync，在同步目标服务器配置rsync server（注意：是rsync服务</li>
+</ol>
+<h3 id="2-同步原理"><a href="#2-同步原理" class="headerlink" title="2 同步原理"></a>2 同步原理</h3><ol>
+<li>用户实时的往sersync服务器上写入更新文件数据；</li>
+<li>此时需要在同步主服务器上配置sersync服务；</li>
+<li>在另一台服务器开启rsync守护进程服务，以同步拉取来自sersync服务器上的数据；</li>
+</ol>
+<blockquote>
+<p>通过rsync的守护进程服务后可以发现，实际上sersync就是监控本地的数据写入或更新事件；然后，再调用rsync客户端的命令，将写入或更新事件对应的文件通过rsync推送到目标服务器。</p>
+</blockquote>
+<h2 id="三、案例"><a href="#三、案例" class="headerlink" title="三、案例"></a>三、案例</h2><blockquote>
+<p>案例: 实现web上传视频文件，实则是写入NFS至存储，当NFS存在新的数据则会实时的复制到备份服务器</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>内网IP(LAN)</th>
+<th>外网IP(NAT)</th>
+<th>安装工具</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>web01</td>
+<td>eth1:172.16.1.7</td>
+<td>eth0:10.0.0.7</td>
+<td>httpd php</td>
+</tr>
+<tr>
+<td>nfs-server</td>
+<td>eth1:172.16.1.31</td>
+<td>eth0:10.0.0.31</td>
+<td>nfsServer、rsync+inotify+sersync</td>
+</tr>
+<tr>
+<td>backup</td>
+<td>eth1:172.16.1.41</td>
+<td>eth0:10.0.0.41</td>
+<td>rsync-server</td>
+</tr>
+</tbody></table>
+<p><img src="/img/sersync%E6%B5%81%E7%A8%8B-1628145534424.png" alt="sersync流程"></p>
+<h3 id="1-web上传视频至nfs存储"><a href="#1-web上传视频至nfs存储" class="headerlink" title="1 web上传视频至nfs存储"></a>1 web上传视频至nfs存储</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">nfs存储服务  172.16.1.31
+	1.安装
+		[root@nfs ~]# yum install nfs-utils -y
+	2.配置
+		[root@nfs ~]# cat &#x2F;etc&#x2F;exports
+		&#x2F;data 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
+		
+		[root@nfs ~]# groupadd -g666 www
+		[root@nfs ~]# useradd -u666 -g666 www
+		
+		[root@nfs ~]# mkdir &#x2F;data
+		[root@nfs ~]# chown -R www.www &#x2F;data
+		
+	3.启动
+		[root@nfs ~]# systemctl restart nfs-server
+		[root@nfs ~]# sysytemctl enable nfs-server
+		
+web服务器操作：172.16.1.7
+	1.安装
+		[root@web01 ~]# yum install httpd php -y
+	2.配置
+		进程运行的身份（最好是和nfs的匿名用户保持一致）
+			# sed c 匹配到User开头的字段，替换为User www
+			[root@web01 html]# sed -i &#39;&#x2F;^User&#x2F;c User www&#39; &#x2F;etc&#x2F;httpd&#x2F;conf&#x2F;httpd.conf 	
+			[root@web01 html]# sed -i &#39;&#x2F;^Group&#x2F;c Group www&#39; &#x2F;etc&#x2F;httpd&#x2F;conf&#x2F;httpd.conf
+		挂载
+			[root@web01 ~]# mount -t nfs 172.16.1.31:&#x2F;data &#x2F;var&#x2F;www&#x2F;html		#核心
+		上传代码
+			[root@web01 ~]# cd &#x2F;var&#x2F;www&#x2F;html&#x2F;
+			[root@web01 html]# rz kaoshi.zip
+			[root@web01 html]# unzip kaoshi.zip
+	3.启动
+		[root@web01 ~]# systemctl start httpd
+
+	4.修改上传大小
+		[root@web01 ~]# vim &#x2F;etc&#x2F;php.ini中设置：
+		upload_max_filesize &#x3D; 200M;
+		post_max_size &#x3D; 200M;
+	
+	5.注意: 修改完配置记得重启服务
+	[root@web01 ~]#  systemctl restart httpd<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-web和nfs的数据都备份在备份服务器的-x2F-backup"><a href="#2-web和nfs的数据都备份在备份服务器的-x2F-backup" class="headerlink" title="2 web和nfs的数据都备份在备份服务器的&#x2F;backup"></a>2 web和nfs的数据都备份在备份服务器的&#x2F;backup</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">备份服务器操作如下：172.16.1.41
+	1.安装
+		[root@backup ~]# yum install rsync -y
+	2.配置
+		[root@backup ~]# cat &#x2F;etc&#x2F;rsyncd.conf
+		uid &#x3D; www
+		gid &#x3D; www
+		port &#x3D; 873
+		fake super &#x3D; yes
+		use chroot &#x3D; no
+		max connections &#x3D; 200
+		timeout &#x3D; 600
+		ignore errors
+		read only &#x3D; false
+		list &#x3D; true
+		auth users &#x3D; rsync_backup
+		secrets file &#x3D; &#x2F;etc&#x2F;rsync.passwd
+		log file &#x3D; &#x2F;var&#x2F;log&#x2F;rsyncd.log
+		#####################################
+		[backup]
+		path &#x3D; &#x2F;backup
+		
+		[data]
+		path &#x3D; &#x2F;data
+		
+		创建用户
+			[root@backup ~]# groupadd -g666 www
+			[root@backup ~]# useradd -u666 -g666 www
+		
+		准备虚拟连接用户账号和密码
+		[root@backup ~]# cat &#x2F;etc&#x2F;rsync.passwd 
+		rsync_backup:123456
+		[root@backup ~]# chmod 600 &#x2F;etc&#x2F;rsync.passwd
+		
+		创建数据存放的目录
+		[root@backup ~]# mkdir -p &#x2F;data &#x2F;backup
+		[root@backup ~]# chown -R www.www &#x2F;data&#x2F; &#x2F;backup&#x2F;
+
+	3.启动
+		[root@backup ~]# systemctl restart rsyncd
+
+	4.客户端执行脚本。测试rsync的备份是否ok   （客户端的数据都写入到&#x2F;backup目录中） 172.16.1.7 172.16.1.31
+	[root@web01 ~]# sh &#x2F;server&#x2F;scripts&#x2F;client_push_data.sh 
+	sending incremental file list
+	web01_172.16.1.7_2019-01-08&#x2F;
+	web01_172.16.1.7_2019-01-08&#x2F;flag_2019-01-08
+	web01_172.16.1.7_2019-01-08&#x2F;other.tar.gz
+	web01_172.16.1.7_2019-01-08&#x2F;sys.tar.gz<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="3-如何将nfs的数据实时的同步到备份服务器的-x2F-data目录"><a href="#3-如何将nfs的数据实时的同步到备份服务器的-x2F-data目录" class="headerlink" title="3 如何将nfs的数据实时的同步到备份服务器的&#x2F;data目录"></a>3 如何将nfs的数据实时的同步到备份服务器的&#x2F;data目录</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">监控nfs服务器上面的&#x2F;data目录，如果发生变化则触发动作，动作可以是执行一次同步。
+1.安装
+	[root@nfs ~]# yum install inotify-tools		监控工具
+	
+	[root@nfs ~]# rz -E sersync2.5.4_64bit_binary_stable_final.tar.gz	
+	[root@nfs ~]# tar xf sersync2.5.4_64bit_binary_stable_final.tar.gz
+	[root@nfs ~]# mv GNU-Linux-x86&#x2F; &#x2F;usr&#x2F;local&#x2F;sersync
+2.配置
+	[root@nfs sersync]# diff confxml.xml confxml.xml.bak
+       5c5
+       &lt;     &lt;fileSystem xfs&#x3D;&quot;true&quot;&#x2F;&gt;
+       ---
+       &gt;     &lt;fileSystem xfs&#x3D;&quot;false&quot;&#x2F;&gt;
+       15c15
+       &lt;       &lt;createFile start&#x3D;&quot;true&quot;&#x2F;&gt;
+       ---
+       &gt;       &lt;createFile start&#x3D;&quot;false&quot;&#x2F;&gt;
+       19,20c19,20
+       &lt;       &lt;attrib start&#x3D;&quot;true&quot;&#x2F;&gt;
+       &lt;       &lt;modify start&#x3D;&quot;true&quot;&#x2F;&gt;
+       ---
+       &gt;       &lt;attrib start&#x3D;&quot;false&quot;&#x2F;&gt;
+       &gt;       &lt;modify start&#x3D;&quot;false&quot;&#x2F;&gt;
+       24,25c24,25
+       &lt;       &lt;localpath watch&#x3D;&quot;&#x2F;data&quot;&gt;
+       &lt;           &lt;remote ip&#x3D;&quot;172.16.1.41&quot; name&#x3D;&quot;data&quot;&#x2F;&gt;
+       ---
+       &gt;       &lt;localpath watch&#x3D;&quot;&#x2F;opt&#x2F;tongbu&quot;&gt;
+       &gt;           &lt;remote ip&#x3D;&quot;127.0.0.1&quot; name&#x3D;&quot;tongbu1&quot;&#x2F;&gt;
+       30,31c30,31
+       &lt;           &lt;commonParams params&#x3D;&quot;-az&quot;&#x2F;&gt;
+       &lt;           &lt;auth start&#x3D;&quot;true&quot; users&#x3D;&quot;rsync_backup&quot; passwordfile&#x3D;&quot;&#x2F;etc&#x2F;rsync.pass&quot;&#x2F;&gt;
+       ---
+       &gt;           &lt;commonParams params&#x3D;&quot;-artuz&quot;&#x2F;&gt;
+       &gt;           &lt;auth start&#x3D;&quot;false&quot; users&#x3D;&quot;root&quot; passwordfile&#x3D;&quot;&#x2F;etc&#x2F;rsync.pas&quot;&#x2F;&gt;
+       33c33
+       &lt;           &lt;timeout start&#x3D;&quot;true&quot; time&#x3D;&quot;100&quot;&#x2F;&gt;&lt;!-- timeout&#x3D;100 --&gt;
+       ---
+       &gt;           &lt;timeout start&#x3D;&quot;false&quot; time&#x3D;&quot;100&quot;&#x2F;&gt;&lt;!-- timeout&#x3D;100 --&gt;
+
+	创建客户端密码文件
+	[root@nfs ~]# cat &#x2F;etc&#x2F;rsync.pass
+	123456
+	[root@nfs ~]# chmod 600 &#x2F;etc&#x2F;rsync.pass
+
+3.启动
+[root@nfs ~]# &#x2F;usr&#x2F;local&#x2F;sersync&#x2F;sersync2  -h
+set the system param
+execute：echo 50000000 &gt; &#x2F;proc&#x2F;sys&#x2F;fs&#x2F;inotify&#x2F;max_user_watches
+execute：echo 327679 &gt; &#x2F;proc&#x2F;sys&#x2F;fs&#x2F;inotify&#x2F;max_queued_events
+parse the command param
+_______________________________________________________
+参数-d:启用守护进程模式
+参数-r:在监控前，将监控目录与远程主机用rsync命令推送一遍
+参数-n: 指定开启守护线程的数量，默认为10个
+参数-o:指定配置文件，默认使用confxml.xml文件
+参数-m:单独启用其他模块，使用 -m refreshCDN 开启刷新CDN模块
+参数-m:单独启用其他模块，使用 -m socket 开启socket模块
+参数-m:单独启用其他模块，使用 -m http 开启http模块
+不加-m参数，则默认执行同步程序
+
+启动
+[root@nfs ~]#  &#x2F;usr&#x2F;local&#x2F;sersync&#x2F;sersync2 -dro &#x2F;usr&#x2F;local&#x2F;sersync&#x2F;confxml.xml
+
+#启动sersync后一定要提取同步的命令，手动运行一次，检查是否存在错误
+[root@nfs ~]#  cd &#x2F;data &amp;&amp; rsync -az -R --delete .&#x2F;  --timeout&#x3D;100 rsync_backup@172.16.1.41::data --password-file&#x3D;&#x2F;etc&#x2F;rsync.pass
+
+停止
+[root@nfs data]# pkill sersync<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="4-如何平滑的迁移nfs数据到backup服务器。并且让后续的上传都是上传至backup-（不能出现业务中断）"><a href="#4-如何平滑的迁移nfs数据到backup服务器。并且让后续的上传都是上传至backup-（不能出现业务中断）" class="headerlink" title="4 如何平滑的迁移nfs数据到backup服务器。并且让后续的上传都是上传至backup   （不能出现业务中断）"></a>4 如何平滑的迁移nfs数据到backup服务器。并且让后续的上传都是上传至backup   （不能出现业务中断）</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.backup服务器上需要运行和nfs服务器上一样的业务环境 
+	创建用户
+	[root@backup ~]# groupadd -g 666 www
+	[root@backup ~]# useradd -u666 -g666 www
+	配置
+	[root@backup ~]# yum install -y nfs-utils -y
+	[root@backup ~]# cat &#x2F;etc&#x2F;exports
+	&#x2F;data 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
+	启动
+	[root@backup ~]# systemctl restart nfs-server
+	
+2.先实现实时的同步 √
+
+3.在web上实现切换，卸载nfs的&#x2F;data目录，重新挂载backup服务的&#x2F;data目录
+	[root@web01 ~]# umount -lf &#x2F;var&#x2F;www&#x2F;html&#x2F; &amp;&amp; mount -t nfs 172.16.1.41:&#x2F;data &#x2F;var&#x2F;www&#x2F;html&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+
+
+
+
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/03-NFS%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2675,328 +2997,6 @@ logpath &#x3D; &#x2F;var&#x2F;log&#x2F;secure
 
 6.清除被封掉的IP地址
 [root@bgx ~]# fail2ban-client set sshd unbanip 10.0.0.1<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/04-sersync%E5%AE%9E%E6%97%B6%E5%90%8C%E6%AD%A5%E5%A4%87%E4%BB%BD/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/04-sersync%E5%AE%9E%E6%97%B6%E5%90%8C%E6%AD%A5%E5%A4%87%E4%BB%BD/" class="post-title-link" itemprop="url">运维之综合架构--04--Sersync实时备份</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-07-11 13:52:13" itemprop="dateModified" datetime="2022-07-11T13:52:13+08:00">2022-07-11</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="一、Sersync服务介绍"><a href="#一、Sersync服务介绍" class="headerlink" title="一、Sersync服务介绍"></a>一、Sersync服务介绍</h2><blockquote>
-</blockquote>
-<h3 id="1-为什么要用sersync"><a href="#1-为什么要用sersync" class="headerlink" title="1 为什么要用sersync"></a>1 为什么要用sersync</h3><ul>
-<li>sersync是基于inotify开发的，类似于inotify-tools的工具</li>
-<li>sersync可以记录下被监听目录中发生变化的（包括增加、删除、修改）具体某一个文件或者某一个目录的名字，然后使用rsync同步的时候，只同步发生变化的文件或者目录</li>
-<li>因为服务异常导致的同步失败有记录，便于恢复，确保高可用！</li>
-</ul>
-<h3 id="2-rsync-inotify-tools与rsync-sersync架构的区别？"><a href="#2-rsync-inotify-tools与rsync-sersync架构的区别？" class="headerlink" title="2 rsync+inotify-tools与rsync+sersync架构的区别？"></a>2 rsync+inotify-tools与rsync+sersync架构的区别？</h3><ul>
-<li><p>rsync+inotify-tools</p>
-<p>a、inotify只能记录下被监听的目录发生了变化（增，删，改）并没有把具体是哪个文件或者哪个目录发生了变化记录下来；</p>
-<p>b、rsync在同步的时候，并不知道具体是哪个文件或目录发生了变化，每次都是对整个目录进行同步，当数据量很大时，整个目录同步非常耗时（rsync要对整个目录遍历查找对比文件），因此效率很低</p>
-</li>
-<li><p>rsync+sersync</p>
-<p>a、sersync可以记录被监听目录中发生变化的（增，删，改）具体某个文件或目录的名字；</p>
-<p>b、rsync在同步时，只同步发生变化的文件或目录（每次发生变化的数据相对整个同步目录数据来说很小，rsync在遍历查找对比文件时，速度很快），因此效率很高。</p>
-</li>
-</ul>
-<h2 id="二、同步过程和原理"><a href="#二、同步过程和原理" class="headerlink" title="二、同步过程和原理"></a>二、同步过程和原理</h2><h3 id="1-同步过程"><a href="#1-同步过程" class="headerlink" title="1 同步过程"></a>1 同步过程</h3><ol>
-<li>在同步服务器上开启sersync服务，sersync负责监控配置路径中的文件系统事件变化</li>
-<li>调用rsync命令把更新的文件同步到目标服务器；</li>
-<li>需要在主服务器配置sersync，在同步目标服务器配置rsync server（注意：是rsync服务</li>
-</ol>
-<h3 id="2-同步原理"><a href="#2-同步原理" class="headerlink" title="2 同步原理"></a>2 同步原理</h3><ol>
-<li>用户实时的往sersync服务器上写入更新文件数据；</li>
-<li>此时需要在同步主服务器上配置sersync服务；</li>
-<li>在另一台服务器开启rsync守护进程服务，以同步拉取来自sersync服务器上的数据；</li>
-</ol>
-<blockquote>
-<p>通过rsync的守护进程服务后可以发现，实际上sersync就是监控本地的数据写入或更新事件；然后，再调用rsync客户端的命令，将写入或更新事件对应的文件通过rsync推送到目标服务器。</p>
-</blockquote>
-<h2 id="三、案例"><a href="#三、案例" class="headerlink" title="三、案例"></a>三、案例</h2><blockquote>
-<p>案例: 实现web上传视频文件，实则是写入NFS至存储，当NFS存在新的数据则会实时的复制到备份服务器</p>
-</blockquote>
-<table>
-<thead>
-<tr>
-<th>角色</th>
-<th>内网IP(LAN)</th>
-<th>外网IP(NAT)</th>
-<th>安装工具</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>web01</td>
-<td>eth1:172.16.1.7</td>
-<td>eth0:10.0.0.7</td>
-<td>httpd php</td>
-</tr>
-<tr>
-<td>nfs-server</td>
-<td>eth1:172.16.1.31</td>
-<td>eth0:10.0.0.31</td>
-<td>nfsServer、rsync+inotify+sersync</td>
-</tr>
-<tr>
-<td>backup</td>
-<td>eth1:172.16.1.41</td>
-<td>eth0:10.0.0.41</td>
-<td>rsync-server</td>
-</tr>
-</tbody></table>
-<p><img src="/img/sersync%E6%B5%81%E7%A8%8B-1628145534424.png" alt="sersync流程"></p>
-<h3 id="1-web上传视频至nfs存储"><a href="#1-web上传视频至nfs存储" class="headerlink" title="1 web上传视频至nfs存储"></a>1 web上传视频至nfs存储</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">nfs存储服务  172.16.1.31
-	1.安装
-		[root@nfs ~]# yum install nfs-utils -y
-	2.配置
-		[root@nfs ~]# cat &#x2F;etc&#x2F;exports
-		&#x2F;data 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
-		
-		[root@nfs ~]# groupadd -g666 www
-		[root@nfs ~]# useradd -u666 -g666 www
-		
-		[root@nfs ~]# mkdir &#x2F;data
-		[root@nfs ~]# chown -R www.www &#x2F;data
-		
-	3.启动
-		[root@nfs ~]# systemctl restart nfs-server
-		[root@nfs ~]# sysytemctl enable nfs-server
-		
-web服务器操作：172.16.1.7
-	1.安装
-		[root@web01 ~]# yum install httpd php -y
-	2.配置
-		进程运行的身份（最好是和nfs的匿名用户保持一致）
-			# sed c 匹配到User开头的字段，替换为User www
-			[root@web01 html]# sed -i &#39;&#x2F;^User&#x2F;c User www&#39; &#x2F;etc&#x2F;httpd&#x2F;conf&#x2F;httpd.conf 	
-			[root@web01 html]# sed -i &#39;&#x2F;^Group&#x2F;c Group www&#39; &#x2F;etc&#x2F;httpd&#x2F;conf&#x2F;httpd.conf
-		挂载
-			[root@web01 ~]# mount -t nfs 172.16.1.31:&#x2F;data &#x2F;var&#x2F;www&#x2F;html		#核心
-		上传代码
-			[root@web01 ~]# cd &#x2F;var&#x2F;www&#x2F;html&#x2F;
-			[root@web01 html]# rz kaoshi.zip
-			[root@web01 html]# unzip kaoshi.zip
-	3.启动
-		[root@web01 ~]# systemctl start httpd
-
-	4.修改上传大小
-		[root@web01 ~]# vim &#x2F;etc&#x2F;php.ini中设置：
-		upload_max_filesize &#x3D; 200M;
-		post_max_size &#x3D; 200M;
-	
-	5.注意: 修改完配置记得重启服务
-	[root@web01 ~]#  systemctl restart httpd<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="2-web和nfs的数据都备份在备份服务器的-x2F-backup"><a href="#2-web和nfs的数据都备份在备份服务器的-x2F-backup" class="headerlink" title="2 web和nfs的数据都备份在备份服务器的&#x2F;backup"></a>2 web和nfs的数据都备份在备份服务器的&#x2F;backup</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">备份服务器操作如下：172.16.1.41
-	1.安装
-		[root@backup ~]# yum install rsync -y
-	2.配置
-		[root@backup ~]# cat &#x2F;etc&#x2F;rsyncd.conf
-		uid &#x3D; www
-		gid &#x3D; www
-		port &#x3D; 873
-		fake super &#x3D; yes
-		use chroot &#x3D; no
-		max connections &#x3D; 200
-		timeout &#x3D; 600
-		ignore errors
-		read only &#x3D; false
-		list &#x3D; true
-		auth users &#x3D; rsync_backup
-		secrets file &#x3D; &#x2F;etc&#x2F;rsync.passwd
-		log file &#x3D; &#x2F;var&#x2F;log&#x2F;rsyncd.log
-		#####################################
-		[backup]
-		path &#x3D; &#x2F;backup
-		
-		[data]
-		path &#x3D; &#x2F;data
-		
-		创建用户
-			[root@backup ~]# groupadd -g666 www
-			[root@backup ~]# useradd -u666 -g666 www
-		
-		准备虚拟连接用户账号和密码
-		[root@backup ~]# cat &#x2F;etc&#x2F;rsync.passwd 
-		rsync_backup:123456
-		[root@backup ~]# chmod 600 &#x2F;etc&#x2F;rsync.passwd
-		
-		创建数据存放的目录
-		[root@backup ~]# mkdir -p &#x2F;data &#x2F;backup
-		[root@backup ~]# chown -R www.www &#x2F;data&#x2F; &#x2F;backup&#x2F;
-
-	3.启动
-		[root@backup ~]# systemctl restart rsyncd
-
-	4.客户端执行脚本。测试rsync的备份是否ok   （客户端的数据都写入到&#x2F;backup目录中） 172.16.1.7 172.16.1.31
-	[root@web01 ~]# sh &#x2F;server&#x2F;scripts&#x2F;client_push_data.sh 
-	sending incremental file list
-	web01_172.16.1.7_2019-01-08&#x2F;
-	web01_172.16.1.7_2019-01-08&#x2F;flag_2019-01-08
-	web01_172.16.1.7_2019-01-08&#x2F;other.tar.gz
-	web01_172.16.1.7_2019-01-08&#x2F;sys.tar.gz<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="3-如何将nfs的数据实时的同步到备份服务器的-x2F-data目录"><a href="#3-如何将nfs的数据实时的同步到备份服务器的-x2F-data目录" class="headerlink" title="3 如何将nfs的数据实时的同步到备份服务器的&#x2F;data目录"></a>3 如何将nfs的数据实时的同步到备份服务器的&#x2F;data目录</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">监控nfs服务器上面的&#x2F;data目录，如果发生变化则触发动作，动作可以是执行一次同步。
-1.安装
-	[root@nfs ~]# yum install inotify-tools		监控工具
-	
-	[root@nfs ~]# rz -E sersync2.5.4_64bit_binary_stable_final.tar.gz	
-	[root@nfs ~]# tar xf sersync2.5.4_64bit_binary_stable_final.tar.gz
-	[root@nfs ~]# mv GNU-Linux-x86&#x2F; &#x2F;usr&#x2F;local&#x2F;sersync
-2.配置
-	[root@nfs sersync]# diff confxml.xml confxml.xml.bak
-       5c5
-       &lt;     &lt;fileSystem xfs&#x3D;&quot;true&quot;&#x2F;&gt;
-       ---
-       &gt;     &lt;fileSystem xfs&#x3D;&quot;false&quot;&#x2F;&gt;
-       15c15
-       &lt;       &lt;createFile start&#x3D;&quot;true&quot;&#x2F;&gt;
-       ---
-       &gt;       &lt;createFile start&#x3D;&quot;false&quot;&#x2F;&gt;
-       19,20c19,20
-       &lt;       &lt;attrib start&#x3D;&quot;true&quot;&#x2F;&gt;
-       &lt;       &lt;modify start&#x3D;&quot;true&quot;&#x2F;&gt;
-       ---
-       &gt;       &lt;attrib start&#x3D;&quot;false&quot;&#x2F;&gt;
-       &gt;       &lt;modify start&#x3D;&quot;false&quot;&#x2F;&gt;
-       24,25c24,25
-       &lt;       &lt;localpath watch&#x3D;&quot;&#x2F;data&quot;&gt;
-       &lt;           &lt;remote ip&#x3D;&quot;172.16.1.41&quot; name&#x3D;&quot;data&quot;&#x2F;&gt;
-       ---
-       &gt;       &lt;localpath watch&#x3D;&quot;&#x2F;opt&#x2F;tongbu&quot;&gt;
-       &gt;           &lt;remote ip&#x3D;&quot;127.0.0.1&quot; name&#x3D;&quot;tongbu1&quot;&#x2F;&gt;
-       30,31c30,31
-       &lt;           &lt;commonParams params&#x3D;&quot;-az&quot;&#x2F;&gt;
-       &lt;           &lt;auth start&#x3D;&quot;true&quot; users&#x3D;&quot;rsync_backup&quot; passwordfile&#x3D;&quot;&#x2F;etc&#x2F;rsync.pass&quot;&#x2F;&gt;
-       ---
-       &gt;           &lt;commonParams params&#x3D;&quot;-artuz&quot;&#x2F;&gt;
-       &gt;           &lt;auth start&#x3D;&quot;false&quot; users&#x3D;&quot;root&quot; passwordfile&#x3D;&quot;&#x2F;etc&#x2F;rsync.pas&quot;&#x2F;&gt;
-       33c33
-       &lt;           &lt;timeout start&#x3D;&quot;true&quot; time&#x3D;&quot;100&quot;&#x2F;&gt;&lt;!-- timeout&#x3D;100 --&gt;
-       ---
-       &gt;           &lt;timeout start&#x3D;&quot;false&quot; time&#x3D;&quot;100&quot;&#x2F;&gt;&lt;!-- timeout&#x3D;100 --&gt;
-
-	创建客户端密码文件
-	[root@nfs ~]# cat &#x2F;etc&#x2F;rsync.pass
-	123456
-	[root@nfs ~]# chmod 600 &#x2F;etc&#x2F;rsync.pass
-
-3.启动
-[root@nfs ~]# &#x2F;usr&#x2F;local&#x2F;sersync&#x2F;sersync2  -h
-set the system param
-execute：echo 50000000 &gt; &#x2F;proc&#x2F;sys&#x2F;fs&#x2F;inotify&#x2F;max_user_watches
-execute：echo 327679 &gt; &#x2F;proc&#x2F;sys&#x2F;fs&#x2F;inotify&#x2F;max_queued_events
-parse the command param
-_______________________________________________________
-参数-d:启用守护进程模式
-参数-r:在监控前，将监控目录与远程主机用rsync命令推送一遍
-参数-n: 指定开启守护线程的数量，默认为10个
-参数-o:指定配置文件，默认使用confxml.xml文件
-参数-m:单独启用其他模块，使用 -m refreshCDN 开启刷新CDN模块
-参数-m:单独启用其他模块，使用 -m socket 开启socket模块
-参数-m:单独启用其他模块，使用 -m http 开启http模块
-不加-m参数，则默认执行同步程序
-
-启动
-[root@nfs ~]#  &#x2F;usr&#x2F;local&#x2F;sersync&#x2F;sersync2 -dro &#x2F;usr&#x2F;local&#x2F;sersync&#x2F;confxml.xml
-
-#启动sersync后一定要提取同步的命令，手动运行一次，检查是否存在错误
-[root@nfs ~]#  cd &#x2F;data &amp;&amp; rsync -az -R --delete .&#x2F;  --timeout&#x3D;100 rsync_backup@172.16.1.41::data --password-file&#x3D;&#x2F;etc&#x2F;rsync.pass
-
-停止
-[root@nfs data]# pkill sersync<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="4-如何平滑的迁移nfs数据到backup服务器。并且让后续的上传都是上传至backup-（不能出现业务中断）"><a href="#4-如何平滑的迁移nfs数据到backup服务器。并且让后续的上传都是上传至backup-（不能出现业务中断）" class="headerlink" title="4 如何平滑的迁移nfs数据到backup服务器。并且让后续的上传都是上传至backup   （不能出现业务中断）"></a>4 如何平滑的迁移nfs数据到backup服务器。并且让后续的上传都是上传至backup   （不能出现业务中断）</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.backup服务器上需要运行和nfs服务器上一样的业务环境 
-	创建用户
-	[root@backup ~]# groupadd -g 666 www
-	[root@backup ~]# useradd -u666 -g666 www
-	配置
-	[root@backup ~]# yum install -y nfs-utils -y
-	[root@backup ~]# cat &#x2F;etc&#x2F;exports
-	&#x2F;data 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
-	启动
-	[root@backup ~]# systemctl restart nfs-server
-	
-2.先实现实时的同步 √
-
-3.在web上实现切换，卸载nfs的&#x2F;data目录，重新挂载backup服务的&#x2F;data目录
-	[root@web01 ~]# umount -lf &#x2F;var&#x2F;www&#x2F;html&#x2F; &amp;&amp; mount -t nfs 172.16.1.41:&#x2F;data &#x2F;var&#x2F;www&#x2F;html&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-
-
-
-
-
 
 
       
@@ -3665,363 +3665,6 @@ server &#123;
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/08-Nginx(%E4%BA%8C)%E5%B8%B8%E7%94%A8%E5%AE%98%E6%96%B9%E6%A8%A1%E5%9D%97/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/08-Nginx(%E4%BA%8C)%E5%B8%B8%E7%94%A8%E5%AE%98%E6%96%B9%E6%A8%A1%E5%9D%97/" class="post-title-link" itemprop="url">运维之综合架构--07--Nginx(二)常用官方模块</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:16:20" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <blockquote>
-<blockquote>
-<blockquote>
-<blockquote>
-<p>本篇主要介绍Nginx的常用官方模块</p>
-</blockquote>
-</blockquote>
-</blockquote>
-</blockquote>
-<h2 id="一、目录索引-autoindex"><a href="#一、目录索引-autoindex" class="headerlink" title="一、目录索引-autoindex"></a>一、目录索引-autoindex</h2><h3 id="1-1-使用方法1"><a href="#1-1-使用方法1" class="headerlink" title="1.1 使用方法1"></a>1.1 使用方法1</h3><p>按此方法设置后，访问网页<a target="_blank" rel="noopener" href="http://module.test.com将显示文件目录/">http://module.test.com将显示文件目录</a></p>
-<p>实际目录位于: &#x2F;module</p>
-<p>a.准备配置文件</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 module]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;autoindex.conf
-server &#123;
-	listen 80;
-	server_name module.test.com;
-	charset utf-8,gbk; # 解决中文乱码
-
-	location &#x2F; &#123;
-		root &#x2F;module;
-		autoindex on;	# 开启目录索引
-		autoindex_exact_size off;	# 显示文件大小，默认为on显示字节，off显示大概单位
-		autoindex_localtime on;	# 默认off显示UTC时间，on显示本地时间
-	&#125;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>b.准备对应的目录，并往目录中添加文件</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">mkdir &#x2F;module&#x2F;&#123;centos,ubuntu,redhat&#125;&#x2F; -p<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>c.检查语法并重新加载nginx</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">nginx -t 
-systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<h3 id="1-2-使用方法2（推荐）"><a href="#1-2-使用方法2（推荐）" class="headerlink" title="1.2 使用方法2（推荐）"></a>1.2 使用方法2（推荐）</h3><p>按此方法设置后，访问网页<a target="_blank" rel="noopener" href="http://www.module.test.com/download%E5%B0%86%E6%98%BE%E7%A4%BA%E6%96%87%E4%BB%B6%E7%9B%AE%E5%BD%95,%E4%B8%BB%E9%A1%B5%E5%8F%AF%E6%AD%A3%E5%B8%B8%E8%AE%BF%E9%97%AE">http://www.module.test.com/download将显示文件目录,主页可正常访问</a></p>
-<p>实际目录位于：&#x2F;module&#x2F;download</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 module]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;autoindex.conf 
-server &#123;
-	listen 80;
-	server_name module.oldboy.com;
-	charset utf-8,gbk;
-
-	location &#x2F; &#123;	# 主页可以正常访问
-		root &#x2F;code;
-		index index.html index.htm;
-	&#125;
-
-	location &#x2F;download &#123;	# 当访问http:&#x2F;&#x2F;xxxx&#x2F;download则访问&#x2F;module&#x2F;download文件夹，显示目录索引
-		root &#x2F;module; # 此时，访问的文件夹是&#x2F;module&#x2F;download
-		autoindex on;
-		autoindex_exact_size off;
-		autoindex_localtime on;
-	&#125;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="二、-状态监控页面-stub-status"><a href="#二、-状态监控页面-stub-status" class="headerlink" title="二、 状态监控页面-stub_status"></a>二、 状态监控页面-stub_status</h2><blockquote>
-<p>需要nginx附带–with-http_stub_status_module模块才能使用</p>
-</blockquote>
-<h3 id="2-1-使用方法"><a href="#2-1-使用方法" class="headerlink" title="2.1 使用方法"></a>2.1 使用方法</h3><p>a.设置配置文件</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">在&#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;autoindex.conf里面附加内容
-location &#x2F;nginx_status &#123;
-	stub_status;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>b.重启Nginx服务</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">重启nginx服务
-systemctl reload nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>c.网页访问测试</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">访问:
-http:&#x2F;&#x2F;module.test.com&#x2F;nginx_status
-网页显示：
-Active connections: 2 
-server accepts handled requests
-		3 			3 	33 
-Reading: 0 Writing: 1 Waiting: 1 <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>d.通过选项关闭长连接</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 注意, 一次TCP的连接，可以发起多次http的请求, 如下参数可配置进行验证
-keepalive_timeout  0;   # 类似于关闭长连接
-keepalive_timeout  65;  # 65s没有活动则断开连接<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">在&#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;autoindex.conf里面的附加内容修改为
-location &#x2F;nginx_status &#123;
-	stub_status;
-	keepalive_timeout  0; 
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>e.再次测试网页访问</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">关闭长连接后的显示：
-Active connections: 2 
-server accepts handled requests
- 21 21 20 
-Reading: 0 Writing: 1 Waiting: 1 
-# 可见每次HTTP请求都要重新发起TCP连接<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="2-2-监控页面内容解释"><a href="#2-2-监控页面内容解释" class="headerlink" title="2.2 监控页面内容解释"></a>2.2 监控页面内容解释</h3><table>
-<thead>
-<tr>
-<th>参数项</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>Active connections</td>
-<td>当前活动客户端连接数，包括Waiting等待连接数</td>
-</tr>
-<tr>
-<td>accepts</td>
-<td>已接受总的TCP连接数</td>
-</tr>
-<tr>
-<td>handled</td>
-<td>已处理总的TCP连接数</td>
-</tr>
-<tr>
-<td>requests</td>
-<td>客户端总的http请求数</td>
-</tr>
-<tr>
-<td>Reading</td>
-<td>当前nginx读取请求头的连接数</td>
-</tr>
-<tr>
-<td>Writing</td>
-<td>当前nginx将响应写回客户端的连接数</td>
-</tr>
-<tr>
-<td>Waiting</td>
-<td>当前等待请求的空闲客户端连接数</td>
-</tr>
-</tbody></table>
-<h2 id="三、基于IP的访问控制"><a href="#三、基于IP的访问控制" class="headerlink" title="三、基于IP的访问控制"></a>三、基于IP的访问控制</h2><blockquote>
-<p>某网页内的数据比较重要，怎么控制那些人可以访问，那些人不能访问呢？</p>
-</blockquote>
-<p>可以来源的IP地址做限制，常用的三种控制方法：</p>
-<ul>
-<li><p>拒绝10.0.0.1来源IP访问，其他人允许</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">location &#x2F;nginx_status &#123;
-    stub_status;
-    deny 10.0.0.1&#x2F;32;
-    allow all;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>允许10.0.0.1来源IP访问，其他人全部拒绝</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">location &#x2F;nginx_status &#123;
-    stub_status;
-    allow 10.0.0.1&#x2F;32;
-    deny all;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>实际配置监控Nginx状态时，仅允许该服务器的回环地址访问127.0.0.1</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 最安全
-location &#x2F;nginx_status &#123;
-    stub_status;
-    allow 127.0.0.1;
-    deny all;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
-</ul>
-<h2 id="四、基于密码的身份验证"><a href="#四、基于密码的身份验证" class="headerlink" title="四、基于密码的身份验证"></a>四、基于密码的身份验证</h2><blockquote>
-<p>重要数据网站，要实现需要用户名密码认证，怎么做呢？</p>
-</blockquote>
-<ol>
-<li><p>生成一个密码文件，密码文件的格式  name:password(加密)  （建议使用htpasswd）  openssl password</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# yum install httpd-tools -y
-[root@web01 conf.d]# htpasswd -c -b &#x2F;etc&#x2F;nginx&#x2F;auth_conf oldboy oldboy
-[root@web01 conf.d]# cat &#x2F;etc&#x2F;nginx&#x2F;auth_conf
-oldboy:$apr1$Kp87VSae$658Nt5bm4iiblQkUvP7u61<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>配置Nginx，限制对应的资源</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">location &#x2F;download &#123;
-	root &#x2F;module;
-	autoindex on;
-	autoindex_exact_size off;
-	autoindex_localtime on;
-	
-	auth_basic &quot;Please Password!!!&quot;;
-	auth_basic_user_file &#x2F;etc&#x2F;nginx&#x2F;auth_conf; 
-	# 注意认证文件路径，否则网页认证后会403，可是为什么放其他目录就不行？
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
-</ol>
-<h2 id="五、Nginx连接限制"><a href="#五、Nginx连接限制" class="headerlink" title="五、Nginx连接限制"></a>五、Nginx连接限制</h2><blockquote>
-<p>网站请求数太多，不堪重负了，怎么保障部分用户能够正常访问</p>
-</blockquote>
-<h3 id="5-1-限制连接数"><a href="#5-1-限制连接数" class="headerlink" title="5.1 限制连接数"></a>5.1 限制连接数</h3><p><code>设置共享内存区域和给定键值的最大允许连接数。超过此限制时，服务器将返回错误以回复请求</code></p>
-<ul>
-<li><p>编辑配置文件</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># http标签段定义连接限制
-http&#123;
-    limit_conn_zone $binary_remote_addr zone&#x3D;conn_zone:10m;
-&#125;
-server &#123;
-    # 同一时刻只允许一个客户端连接
-    limit_conn conn_zone 1; 
-
-    location &#x2F; &#123;
-        root &#x2F;code;
-        index index.html;
-    &#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>使用ab工具进行压力测试</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 使用ab工具进行压力测试
-[root@xuliangwei ~]# yum install -y httpd-tools
-[root@xuliangwei ~]# ab -n 500 -c 2  http:&#x2F;&#x2F;127.0.0.1&#x2F;index.html
-# 可见500次中有失败的请求<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>查看拦截日志</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">tail -f &#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log
-类似于
-2019&#x2F;01&#x2F;14 11:11:22 [error] 29962#29962: *19 limiting connections by zone &quot;conn_zone&quot;, client: 47.110.176.164, server: www.xuliangwei.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;www.xuliangwei.com&quot;
-2019&#x2F;01&#x2F;14 11:11:23 [error] 29962#29962: *19 limiting connections by zone &quot;conn_zone&quot;, client: 47.110.176.164, server: www.xuliangwei.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;www.xuliangwei.com&quot;
-2019&#x2F;01&#x2F;14 11:11:25 [error] 29962#29962: *19 limiting connections by zone &quot;conn_zone&quot;, client: 47.110.176.164, server: www.xuliangwei.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;www.xuliangwei.com&quot;
-2019&#x2F;01&#x2F;14 11:11:25 [error] 29962#29962: *19 limiting connections by zone &quot;conn_zone&quot;, client: 47.110.176.164, server: www.xuliangwei.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;www.xuliangwei.com&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
-</ul>
-<h3 id="5-2-限制请求数（更精准）"><a href="#5-2-限制请求数（更精准）" class="headerlink" title="5.2 限制请求数（更精准）"></a>5.2 限制请求数（更精准）</h3><p><code>设置共享内存区域和请求的最大突发大小。过多的请求被延迟，直到它们的数量超过最大突发大小，在这种情况下请求以错误终止。默认情况下，最大突发大小等于零。</code></p>
-<ul>
-<li><p>定义限制的Key</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cat test1.oldboy.com.conf 
-limit_req_zone $binary_remote_addr zone&#x3D;req_zone:10m rate&#x3D;1r&#x2F;s;
-server &#123;
-	listen 80;
-	server_name test1.oldboy.com;
-	
-	limit_req zone&#x3D;req_zone burst&#x3D;5 nodelay;
-	limit_req_status 412;
-	error_page 412 &#x2F;err.html;    #这个文件必须存在&#x2F;code&#x2F;test1&#x2F;err.html
-
-	location &#x2F; &#123;
-		root &#x2F;code&#x2F;test1;
-		index index.html;
-	&#125;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>填写hosts域名解析 （测试：域名访问才有效果，直接访问没效果）</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">echo &quot;10.0.0.7 test1.oldboy.com&quot; &gt;&gt; &#x2F;etc&#x2F;hosts<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-</li>
-<li><p>压力测试</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">ab -n 50 -c 20 http:&#x2F;&#x2F;test1.oldboy.com&#x2F;index.html<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-</li>
-<li><p>查看错误日志</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">2019&#x2F;01&#x2F;14 11:28:22 [error] 2073#2073: *3 limiting requests, excess: 5.737 by zone &quot;req_zone&quot;, client: 10.0.0.1, server: test1.oldboy.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;test1.oldboy.com&quot;
-2019&#x2F;01&#x2F;14 11:28:22 [error] 2073#2073: *3 limiting requests, excess: 5.611 by zone &quot;req_zone&quot;, client: 10.0.0.1, server: test1.oldboy.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;test1.oldboy.com&quot;
-2019&#x2F;01&#x2F;14 11:28:22 [error] 2073#2073: *3 limiting requests, excess: 5.450 by zone &quot;req_zone&quot;, client: 10.0.0.1, server: test1.oldboy.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;test1.oldboy.com&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></li>
-</ul>
-<h2 id="六、Nginx匹配符和优先级"><a href="#六、Nginx匹配符和优先级" class="headerlink" title="六、Nginx匹配符和优先级"></a>六、Nginx匹配符和优先级</h2><p>Location语法示例</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">location [&#x3D;|^~|~|~*|!~|!~*|&#x2F;] &#x2F;uri&#x2F; &#123; ...
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>匹配优先级</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">匹配符	匹配规则						优先级
-&#x3D;		精确匹配						1 	用到
-^~		以某个字符串开头				2
-~		区分大小写的正则匹配			3	常用
-~*		不区分大小写的正则匹配			4
-!~		区分大小写不匹配的正则			5
-!~*		不区分大小写不匹配的正则		6
-&#x2F;		通用匹配，任何请求都会匹配到	7	常用<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="6-1-匹配案例"><a href="#6-1-匹配案例" class="headerlink" title="6.1 匹配案例"></a>6.1 匹配案例</h3><blockquote>
-<p>参考网站：<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_41980405/article/details/111402208">https://blog.csdn.net/qq_41980405/article/details/111402208</a></p>
-</blockquote>
-<ul>
-<li><p>通用匹配，任何请求都会匹配到</p>
-<pre class="line-numbers language-nginx" data-language="nginx"><code class="language-nginx"><span class="token directive"><span class="token keyword">location</span> /</span> <span class="token punctuation">&#123;</span>
-    ...
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>严格区分大小写，匹配以.php结尾的都走这个location    </p>
-<pre class="line-numbers language-nginx" data-language="nginx"><code class="language-nginx"><span class="token directive"><span class="token keyword">location</span> ~ \.php$</span> <span class="token punctuation">&#123;</span>
-    ...
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>严格区分大小写，匹配以.jsp结尾的都走这个location </p>
-<pre class="line-numbers language-nginx" data-language="nginx"><code class="language-nginx"><span class="token directive"><span class="token keyword">location</span> ~ \.jsp$</span> <span class="token punctuation">&#123;</span>
-    ...
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>不区分大小写匹配，只要用户访问.jpg,gif,png,js,css 都走这条location</p>
-<pre class="line-numbers language-nginx" data-language="nginx"><code class="language-nginx"><span class="token directive"><span class="token keyword">location</span> ~* .*\.(jpg|gif|png|js|css|mp4)$</span> <span class="token punctuation">&#123;</span>
-    ...
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-</li>
-<li><p>不区分大小写匹配</p>
-<pre class="line-numbers language-nginx" data-language="nginx"><code class="language-nginx"><span class="token directive"><span class="token keyword">location</span> ~* <span class="token string">"\.(sql|bak|tgz|tar.gz|.git)$"</span></span> <span class="token punctuation">&#123;</span>
-    ...
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/09-Nginx(%E4%B8%89)LNMP%E6%9E%B6%E6%9E%84%E5%AE%89%E8%A3%85/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -4391,7 +4034,7 @@ upload_max_filesize &#x3D; 200M
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/10-Nginx(%E5%9B%9B)LNMP%E6%9E%B6%E6%9E%84%E6%8B%86%E5%88%86/">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/08-Nginx(%E4%BA%8C)%E5%B8%B8%E7%94%A8%E5%AE%98%E6%96%B9%E6%A8%A1%E5%9D%97/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/myavatar.png">
@@ -4405,7 +4048,7 @@ upload_max_filesize &#x3D; 200M
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/10-Nginx(%E5%9B%9B)LNMP%E6%9E%B6%E6%9E%84%E6%8B%86%E5%88%86/" class="post-title-link" itemprop="url">运维之综合架构--07--Nginx(四)LNMP架构拆分</a>
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/08-Nginx(%E4%BA%8C)%E5%B8%B8%E7%94%A8%E5%AE%98%E6%96%B9%E6%A8%A1%E5%9D%97/" class="post-title-link" itemprop="url">运维之综合架构--07--Nginx(二)常用官方模块</a>
         </h2>
 
         <div class="post-meta">
@@ -4416,7 +4059,7 @@ upload_max_filesize &#x3D; 200M
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:16:31" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:16:20" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -4443,182 +4086,292 @@ upload_max_filesize &#x3D; 200M
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="一、拆分数据库"><a href="#一、拆分数据库" class="headerlink" title="一、拆分数据库"></a>一、拆分数据库</h2><blockquote>
-<p>为什么要拆分数据库?</p>
-<p>mysql内存占用大，容易引起网页访问速度变慢，甚至oom(out of memory)被系统自动kill掉，不安全</p>
+          <blockquote>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>本篇主要介绍Nginx的常用官方模块</p>
 </blockquote>
-<h3 id="1-2-环境准备"><a href="#1-2-环境准备" class="headerlink" title="1.2 环境准备"></a>1.2 环境准备</h3><table>
+</blockquote>
+</blockquote>
+</blockquote>
+<h2 id="一、目录索引-autoindex"><a href="#一、目录索引-autoindex" class="headerlink" title="一、目录索引-autoindex"></a>一、目录索引-autoindex</h2><h3 id="1-1-使用方法1"><a href="#1-1-使用方法1" class="headerlink" title="1.1 使用方法1"></a>1.1 使用方法1</h3><p>按此方法设置后，访问网页<a target="_blank" rel="noopener" href="http://module.test.com将显示文件目录/">http://module.test.com将显示文件目录</a></p>
+<p>实际目录位于: &#x2F;module</p>
+<p>a.准备配置文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 module]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;autoindex.conf
+server &#123;
+	listen 80;
+	server_name module.test.com;
+	charset utf-8,gbk; # 解决中文乱码
+
+	location &#x2F; &#123;
+		root &#x2F;module;
+		autoindex on;	# 开启目录索引
+		autoindex_exact_size off;	# 显示文件大小，默认为on显示字节，off显示大概单位
+		autoindex_localtime on;	# 默认off显示UTC时间，on显示本地时间
+	&#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>b.准备对应的目录，并往目录中添加文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">mkdir &#x2F;module&#x2F;&#123;centos,ubuntu,redhat&#125;&#x2F; -p<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>c.检查语法并重新加载nginx</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">nginx -t 
+systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<h3 id="1-2-使用方法2（推荐）"><a href="#1-2-使用方法2（推荐）" class="headerlink" title="1.2 使用方法2（推荐）"></a>1.2 使用方法2（推荐）</h3><p>按此方法设置后，访问网页<a target="_blank" rel="noopener" href="http://www.module.test.com/download%E5%B0%86%E6%98%BE%E7%A4%BA%E6%96%87%E4%BB%B6%E7%9B%AE%E5%BD%95,%E4%B8%BB%E9%A1%B5%E5%8F%AF%E6%AD%A3%E5%B8%B8%E8%AE%BF%E9%97%AE">http://www.module.test.com/download将显示文件目录,主页可正常访问</a></p>
+<p>实际目录位于：&#x2F;module&#x2F;download</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 module]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;autoindex.conf 
+server &#123;
+	listen 80;
+	server_name module.oldboy.com;
+	charset utf-8,gbk;
+
+	location &#x2F; &#123;	# 主页可以正常访问
+		root &#x2F;code;
+		index index.html index.htm;
+	&#125;
+
+	location &#x2F;download &#123;	# 当访问http:&#x2F;&#x2F;xxxx&#x2F;download则访问&#x2F;module&#x2F;download文件夹，显示目录索引
+		root &#x2F;module; # 此时，访问的文件夹是&#x2F;module&#x2F;download
+		autoindex on;
+		autoindex_exact_size off;
+		autoindex_localtime on;
+	&#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="二、-状态监控页面-stub-status"><a href="#二、-状态监控页面-stub-status" class="headerlink" title="二、 状态监控页面-stub_status"></a>二、 状态监控页面-stub_status</h2><blockquote>
+<p>需要nginx附带–with-http_stub_status_module模块才能使用</p>
+</blockquote>
+<h3 id="2-1-使用方法"><a href="#2-1-使用方法" class="headerlink" title="2.1 使用方法"></a>2.1 使用方法</h3><p>a.设置配置文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">在&#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;autoindex.conf里面附加内容
+location &#x2F;nginx_status &#123;
+	stub_status;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>b.重启Nginx服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">重启nginx服务
+systemctl reload nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>c.网页访问测试</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">访问:
+http:&#x2F;&#x2F;module.test.com&#x2F;nginx_status
+网页显示：
+Active connections: 2 
+server accepts handled requests
+		3 			3 	33 
+Reading: 0 Writing: 1 Waiting: 1 <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>d.通过选项关闭长连接</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 注意, 一次TCP的连接，可以发起多次http的请求, 如下参数可配置进行验证
+keepalive_timeout  0;   # 类似于关闭长连接
+keepalive_timeout  65;  # 65s没有活动则断开连接<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">在&#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;autoindex.conf里面的附加内容修改为
+location &#x2F;nginx_status &#123;
+	stub_status;
+	keepalive_timeout  0; 
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>e.再次测试网页访问</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">关闭长连接后的显示：
+Active connections: 2 
+server accepts handled requests
+ 21 21 20 
+Reading: 0 Writing: 1 Waiting: 1 
+# 可见每次HTTP请求都要重新发起TCP连接<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-2-监控页面内容解释"><a href="#2-2-监控页面内容解释" class="headerlink" title="2.2 监控页面内容解释"></a>2.2 监控页面内容解释</h3><table>
 <thead>
 <tr>
-<th>主机名称</th>
-<th>应用环境</th>
-<th>外网地址</th>
-<th>内网地址</th>
+<th>参数项</th>
+<th>作用</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>web01</td>
-<td>nginx+php</td>
-<td>10.0.0.7</td>
-<td>172.16.1.7</td>
+<td>Active connections</td>
+<td>当前活动客户端连接数，包括Waiting等待连接数</td>
 </tr>
 <tr>
-<td>db01</td>
-<td>mysql</td>
-<td></td>
-<td>172.16.1.51</td>
+<td>accepts</td>
+<td>已接受总的TCP连接数</td>
+</tr>
+<tr>
+<td>handled</td>
+<td>已处理总的TCP连接数</td>
+</tr>
+<tr>
+<td>requests</td>
+<td>客户端总的http请求数</td>
+</tr>
+<tr>
+<td>Reading</td>
+<td>当前nginx读取请求头的连接数</td>
+</tr>
+<tr>
+<td>Writing</td>
+<td>当前nginx将响应写回客户端的连接数</td>
+</tr>
+<tr>
+<td>Waiting</td>
+<td>当前等待请求的空闲客户端连接数</td>
 </tr>
 </tbody></table>
-<h3 id="1-2-拆分过程"><a href="#1-2-拆分过程" class="headerlink" title="1.2 拆分过程"></a>1.2 拆分过程</h3><p>1、备份172.16.1.7服务器上mysql的数据</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# mysqldump -uroot -p&#39;Bgx123.com&#39; --all-databases --single-transaction &gt; mysql-all.sql<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<h2 id="三、基于IP的访问控制"><a href="#三、基于IP的访问控制" class="headerlink" title="三、基于IP的访问控制"></a>三、基于IP的访问控制</h2><blockquote>
+<p>某网页内的数据比较重要，怎么控制那些人可以访问，那些人不能访问呢？</p>
+</blockquote>
+<p>可以来源的IP地址做限制，常用的三种控制方法：</p>
+<ul>
+<li><p>拒绝10.0.0.1来源IP访问，其他人允许</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">location &#x2F;nginx_status &#123;
+    stub_status;
+    deny 10.0.0.1&#x2F;32;
+    allow all;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>允许10.0.0.1来源IP访问，其他人全部拒绝</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">location &#x2F;nginx_status &#123;
+    stub_status;
+    allow 10.0.0.1&#x2F;32;
+    deny all;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>实际配置监控Nginx状态时，仅允许该服务器的回环地址访问127.0.0.1</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 最安全
+location &#x2F;nginx_status &#123;
+    stub_status;
+    allow 127.0.0.1;
+    deny all;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+<h2 id="四、基于密码的身份验证"><a href="#四、基于密码的身份验证" class="headerlink" title="四、基于密码的身份验证"></a>四、基于密码的身份验证</h2><blockquote>
+<p>重要数据网站，要实现需要用户名密码认证，怎么做呢？</p>
+</blockquote>
+<ol>
+<li><p>生成一个密码文件，密码文件的格式  name:password(加密)  （建议使用htpasswd）  openssl password</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# yum install httpd-tools -y
+[root@web01 conf.d]# htpasswd -c -b &#x2F;etc&#x2F;nginx&#x2F;auth_conf oldboy oldboy
+[root@web01 conf.d]# cat &#x2F;etc&#x2F;nginx&#x2F;auth_conf
+oldboy:$apr1$Kp87VSae$658Nt5bm4iiblQkUvP7u61<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>配置Nginx，限制对应的资源</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">location &#x2F;download &#123;
+	root &#x2F;module;
+	autoindex on;
+	autoindex_exact_size off;
+	autoindex_localtime on;
+	
+	auth_basic &quot;Please Password!!!&quot;;
+	auth_basic_user_file &#x2F;etc&#x2F;nginx&#x2F;auth_conf; 
+	# 注意认证文件路径，否则网页认证后会403，可是为什么放其他目录就不行？
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+</ol>
+<h2 id="五、Nginx连接限制"><a href="#五、Nginx连接限制" class="headerlink" title="五、Nginx连接限制"></a>五、Nginx连接限制</h2><blockquote>
+<p>网站请求数太多，不堪重负了，怎么保障部分用户能够正常访问</p>
+</blockquote>
+<h3 id="5-1-限制连接数"><a href="#5-1-限制连接数" class="headerlink" title="5.1 限制连接数"></a>5.1 限制连接数</h3><p><code>设置共享内存区域和给定键值的最大允许连接数。超过此限制时，服务器将返回错误以回复请求</code></p>
+<ul>
+<li><p>编辑配置文件</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># http标签段定义连接限制
+http&#123;
+    limit_conn_zone $binary_remote_addr zone&#x3D;conn_zone:10m;
+&#125;
+server &#123;
+    # 同一时刻只允许一个客户端连接
+    limit_conn conn_zone 1; 
 
-<p>2、传输172.16.1.7的备份数据至172.16.1.51的服务器上</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# scp mysql-all.sql root@172.16.1.51:&#x2F;tmp<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+    location &#x2F; &#123;
+        root &#x2F;code;
+        index index.html;
+    &#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>使用ab工具进行压力测试</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 使用ab工具进行压力测试
+[root@xuliangwei ~]# yum install -y httpd-tools
+[root@xuliangwei ~]# ab -n 500 -c 2  http:&#x2F;&#x2F;127.0.0.1&#x2F;index.html
+# 可见500次中有失败的请求<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>查看拦截日志</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">tail -f &#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log
+类似于
+2019&#x2F;01&#x2F;14 11:11:22 [error] 29962#29962: *19 limiting connections by zone &quot;conn_zone&quot;, client: 47.110.176.164, server: www.xuliangwei.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;www.xuliangwei.com&quot;
+2019&#x2F;01&#x2F;14 11:11:23 [error] 29962#29962: *19 limiting connections by zone &quot;conn_zone&quot;, client: 47.110.176.164, server: www.xuliangwei.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;www.xuliangwei.com&quot;
+2019&#x2F;01&#x2F;14 11:11:25 [error] 29962#29962: *19 limiting connections by zone &quot;conn_zone&quot;, client: 47.110.176.164, server: www.xuliangwei.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;www.xuliangwei.com&quot;
+2019&#x2F;01&#x2F;14 11:11:25 [error] 29962#29962: *19 limiting connections by zone &quot;conn_zone&quot;, client: 47.110.176.164, server: www.xuliangwei.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;www.xuliangwei.com&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+<h3 id="5-2-限制请求数（更精准）"><a href="#5-2-限制请求数（更精准）" class="headerlink" title="5.2 限制请求数（更精准）"></a>5.2 限制请求数（更精准）</h3><p><code>设置共享内存区域和请求的最大突发大小。过多的请求被延迟，直到它们的数量超过最大突发大小，在这种情况下请求以错误终止。默认情况下，最大突发大小等于零。</code></p>
+<ul>
+<li><p>定义限制的Key</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cat test1.oldboy.com.conf 
+limit_req_zone $binary_remote_addr zone&#x3D;req_zone:10m rate&#x3D;1r&#x2F;s;
+server &#123;
+	listen 80;
+	server_name test1.oldboy.com;
+	
+	limit_req zone&#x3D;req_zone burst&#x3D;5 nodelay;
+	limit_req_status 412;
+	error_page 412 &#x2F;err.html;    #这个文件必须存在&#x2F;code&#x2F;test1&#x2F;err.html
 
-<p>3、需要先在172.16.1.51服务器上安装mysql服务，然后使用mysql命令进行还原。</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@db01 ~]# yum install mariadb-server mariadb -y
-[root@db01 ~]# systemctl enable mariadb
-[root@db01 ~]# systemctl start mariadb
-[root@db01 ~]# mysql &lt;&#x2F;tmp&#x2F;mysql-all.sql
-[root@db01 ~]# systemctl restart mariadb
-[root@db01 ~]# mysql -uroot -pBgx123.com
-MariaDB [(none)]&gt; show databases;
-+--------------------+
-| Database           |
-+--------------------+
-| information_schema |
-| edusoho            |
-| mysql              |
-| performance_schema |
-| test               |
-| wordpress          |
-| zh                 |
-+--------------------+
-7 rows in set (0.00 sec)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+	location &#x2F; &#123;
+		root &#x2F;code&#x2F;test1;
+		index index.html;
+	&#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>填写hosts域名解析 （测试：域名访问才有效果，直接访问没效果）</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">echo &quot;10.0.0.7 test1.oldboy.com&quot; &gt;&gt; &#x2F;etc&#x2F;hosts<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+</li>
+<li><p>压力测试</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">ab -n 50 -c 20 http:&#x2F;&#x2F;test1.oldboy.com&#x2F;index.html<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+</li>
+<li><p>查看错误日志</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">2019&#x2F;01&#x2F;14 11:28:22 [error] 2073#2073: *3 limiting requests, excess: 5.737 by zone &quot;req_zone&quot;, client: 10.0.0.1, server: test1.oldboy.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;test1.oldboy.com&quot;
+2019&#x2F;01&#x2F;14 11:28:22 [error] 2073#2073: *3 limiting requests, excess: 5.611 by zone &quot;req_zone&quot;, client: 10.0.0.1, server: test1.oldboy.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;test1.oldboy.com&quot;
+2019&#x2F;01&#x2F;14 11:28:22 [error] 2073#2073: *3 limiting requests, excess: 5.450 by zone &quot;req_zone&quot;, client: 10.0.0.1, server: test1.oldboy.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, host: &quot;test1.oldboy.com&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+<h2 id="六、Nginx匹配符和优先级"><a href="#六、Nginx匹配符和优先级" class="headerlink" title="六、Nginx匹配符和优先级"></a>六、Nginx匹配符和优先级</h2><p>Location语法示例</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">location [&#x3D;|^~|~|~*|!~|!~*|&#x2F;] &#x2F;uri&#x2F; &#123; ...
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
 
-<p>4、将web程序连接的本地数据库修改到远程数据库上。</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1）先在本地172.16.1.7服务器上停止本地的数据库
-[root@web01 ~]# systemctl disable mariadb
-[root@web01 ~]# systemctl stop mariadb
+<p>匹配优先级</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">匹配符	匹配规则						优先级
+&#x3D;		精确匹配						1 	用到
+^~		以某个字符串开头				2
+~		区分大小写的正则匹配			3	常用
+~*		不区分大小写的正则匹配			4
+!~		区分大小写不匹配的正则			5
+!~*		不区分大小写不匹配的正则		6
+&#x2F;		通用匹配，任何请求都会匹配到	7	常用<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-2）在172.16.1.51的服务器上授权远程主机能够能连接mysql数据库
-[root@db01 ~]# mysql -uroot -pBgx123.com
-MariaDB [(none)]&gt; grant all privileges on *.* to oldboy@&#39;%&#39; identified by &#39;Bgx123.com&#39;;
-解释：
-*.*: 所有数据库下的所有表
-oldboy@&#39;%&#39;: 允许所有网段的oldboy用户访问
-identify: 设置密码
-
-3）在172.16.1.7服务器上测试远程账户能否连接172.16.1.51的数据库
-[root@web01 wordpress]# yum install mariadb -y
-[root@web01 wordpress]# mysql -h 172.16.1.51 -uoldboy -pBgx123.com
-MariaDB [(none)]&gt; 
-
-4）在172.16.1.7服务器上修改web程序连接数据库的配置文件
-[root@web01 wordpress]# vim &#x2F;code&#x2F;wordpress&#x2F;wp-config.php
-&#x2F;&#x2F; ** MySQL 设置 - 具体信息来自您正在使用的主机 ** &#x2F;&#x2F;
-&#x2F;** WordPress数据库的名称 *&#x2F;
-define(&#39;DB_NAME&#39;, &#39;wordpress&#39;);
-
-&#x2F;** MySQL数据库用户名 *&#x2F;
-define(&#39;DB_USER&#39;, &#39;oldboy&#39;);
-
-&#x2F;** MySQL数据库密码 *&#x2F;
-define(&#39;DB_PASSWORD&#39;, &#39;Bgx123.com&#39;);
-
-&#x2F;** MySQL主机 *&#x2F;
-define(&#39;DB_HOST&#39;, &#39;172.16.1.51&#39;);<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>5、拆分172.16.1.7wecenter连接远程172.16.1.51数据库信息</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 zh]# grep -R &quot;Bgx123.com&quot; *
-	system&#x2F;config&#x2F;database.php:  &#39;password&#39; &#x3D;&gt; &#39;Bgx123.com&#39;,
-[root@web01 zh]# vim &#x2F;code&#x2F;zh&#x2F;system&#x2F;config&#x2F;database.php 
-	$config[&#39;driver&#39;] &#x3D; &#39;MySQLi&#39;;^M
-	$config[&#39;master&#39;] &#x3D; array (
-	  &#39;charset&#39; &#x3D;&gt; &#39;utf8&#39;,
-	  &#39;host&#39; &#x3D;&gt; &#39;172.16.1.51&#39;,
-	  &#39;username&#39; &#x3D;&gt; &#39;oldboy&#39;,
-	  &#39;password&#39; &#x3D;&gt; &#39;Bgx123.com&#39;,
-	  &#39;dbname&#39; &#x3D;&gt; &#39;zh&#39;,
-	);^M<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>6、拆分172.16.1.7 edusoho连接远程172.16.1.51数据库信息</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 edusoho]# vim &#x2F;code&#x2F;edusoho&#x2F;app&#x2F;config&#x2F;parameters.yml
-database_driver: pdo_mysql
-database_host: 172.16.1.51
-database_port: 3306
-database_name: edusoho
-database_user: oldboy
-database_password: &#39;Bgx123.com&#39;
-
-必须清理缓存
-[root@web01 edusoho]# rm -rf &#x2F;code&#x2F;edusoho&#x2F;app&#x2F;cache&#x2F;*<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="二、扩展多台web服务器"><a href="#二、扩展多台web服务器" class="headerlink" title="二、扩展多台web服务器"></a>二、扩展多台web服务器</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.统一环境
-    0）准备对应的www用户
-    [root@web02 ~]# groupadd -g666 www
-    [root@web02 ~]# useradd -u666 -g666 www
-
-    1）拷贝web01上面的yum仓库
-    [root@web02 ~]# scp root@172.16.1.7:&#x2F;etc&#x2F;yum.repos.d&#x2F;*.repo &#x2F;etc&#x2F;yum.repos.d&#x2F;
-
-    2）安装nginx和php
-    [root@web02 ~]# yum -y install nginx php71w php71w-cli php71w-common php71w-devel php71w-embedded php71w-gd php71w-mcrypt php71w-mbstring php71w-pdo php71w-xml php71w-fpm php71w-mysqlnd php71w-opcache php71w-pecl-memcached php71w-pecl-redis php71w-pecl-mongodb
-
-2.统一配置（同步web01上面的配置到web02）
-    1）同步nginx
-    [root@web02 ~]# rsync  -avz --delete root@172.16.1.7:&#x2F;etc&#x2F;nginx&#x2F; &#x2F;etc&#x2F;nginx&#x2F;
-    [root@web02 ~]# nginx -t
-    [root@web02 ~]# systemctl enable nginx
-    [root@web02 ~]# systemctl start nginx
-
-    2）同步php（&#x2F;etc&#x2F;php-fpm.conf &#x2F;etc&#x2F;php-fpm.d  &#x2F;etc&#x2F;php.ini）
-    [root@web02 ~]# rsync  -avz --delete root@172.16.1.7:&#x2F;etc&#x2F;php* &#x2F;etc&#x2F;
-    [root@web02 ~]# systemctl enable php-fpm
-    [root@web02 ~]# systemctl start php-fpm
-
-3.统一代码
-    [root@web01 ~]# tar czf code.tar.gz &#x2F;code				#在web01上打包站点
-    [root@web01 ~]# scp code.tar.gz root@172.16.1.8:&#x2F;tmp	#在web01上将打包好的代码发送给web02
-    [root@web02 ~]# tar xf &#x2F;tmp&#x2F;code.tar.gz -C &#x2F;			#在web02上进行解压，并解压到&#x2F;目录下
-
-4.配置解析，进行访问<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="三、NFS共享多台web的静态资源"><a href="#三、NFS共享多台web的静态资源" class="headerlink" title="三、NFS共享多台web的静态资源"></a>三、NFS共享多台web的静态资源</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.准备172.16.1.31共享存储服务器，规划目录，配置好权限
-    0）创建用户
-    [root@nfs ~]# groupadd -g666 www
-    [root@nfs ~]# useradd -u666 -g666 www	
-
-    1）安装
-    [root@nfs ~]# yum install nfs-utils -y
-
-    2）配置
-    [root@nfs ~]# cat &#x2F;etc&#x2F;exports
-    &#x2F;data&#x2F;blog 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
-    &#x2F;data&#x2F;zh 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
-    &#x2F;data&#x2F;edu 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
-
-    3）根据配置，创建目录，准备用户，授权等等
-    [root@nfs ~]# rm -rf &#x2F;data&#x2F;
-    [root@nfs ~]# mkdir &#x2F;data&#x2F;&#123;blog,zh,edu&#125; -p
-    [root@nfs ~]# chown -R www.www &#x2F;data&#x2F;
-
-    4）启动
-    [root@nfs ~]# systemctl enable nfs-utils 
-    [root@nfs ~]# systemctl restart nfs-utils
-
-2.将图片较多的web02服务器，推送到nfs共享存储上
-    http:&#x2F;&#x2F;blog.oldboy.com&#x2F;wp-content&#x2F;uploads&#x2F;2019&#x2F;01&#x2F;timg.jpg
-
-    [root@web02 ~]# cd &#x2F;code&#x2F;wordpress&#x2F;wp-content
-    [root@web02 wp-content]# scp -r uploads&#x2F;* root@172.16.1.31:&#x2F;data&#x2F;blog&#x2F;
-
-    注意：需要上nfs服务器上进行重新的递归授权，否则会出现无法上传文件的错误
-    [root@nfs ~]# chown -R www.www &#x2F;data&#x2F;
-
-3.web01和web02分别都进行挂载，此时图片进行实现了共享
-    mount -t nfs 172.16.1.31:&#x2F;data&#x2F;blog  &#x2F;code&#x2F;wordpress&#x2F;wp-content&#x2F;uploads&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
+<h3 id="6-1-匹配案例"><a href="#6-1-匹配案例" class="headerlink" title="6.1 匹配案例"></a>6.1 匹配案例</h3><blockquote>
+<p>参考网站：<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_41980405/article/details/111402208">https://blog.csdn.net/qq_41980405/article/details/111402208</a></p>
+</blockquote>
+<ul>
+<li><p>通用匹配，任何请求都会匹配到</p>
+<pre class="line-numbers language-nginx" data-language="nginx"><code class="language-nginx"><span class="token directive"><span class="token keyword">location</span> /</span> <span class="token punctuation">&#123;</span>
+    ...
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>严格区分大小写，匹配以.php结尾的都走这个location    </p>
+<pre class="line-numbers language-nginx" data-language="nginx"><code class="language-nginx"><span class="token directive"><span class="token keyword">location</span> ~ \.php$</span> <span class="token punctuation">&#123;</span>
+    ...
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>严格区分大小写，匹配以.jsp结尾的都走这个location </p>
+<pre class="line-numbers language-nginx" data-language="nginx"><code class="language-nginx"><span class="token directive"><span class="token keyword">location</span> ~ \.jsp$</span> <span class="token punctuation">&#123;</span>
+    ...
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>不区分大小写匹配，只要用户访问.jpg,gif,png,js,css 都走这条location</p>
+<pre class="line-numbers language-nginx" data-language="nginx"><code class="language-nginx"><span class="token directive"><span class="token keyword">location</span> ~* .*\.(jpg|gif|png|js|css|mp4)$</span> <span class="token punctuation">&#123;</span>
+    ...
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>不区分大小写匹配</p>
+<pre class="line-numbers language-nginx" data-language="nginx"><code class="language-nginx"><span class="token directive"><span class="token keyword">location</span> ~* <span class="token string">"\.(sql|bak|tgz|tar.gz|.git)$"</span></span> <span class="token punctuation">&#123;</span>
+    ...
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></li>
+</ul>
 
       
     </div>
@@ -4863,6 +4616,253 @@ proxy_buffers 4 128k;<span aria-hidden="true" class="line-numbers-rows"><span></
     proxy_pass http:&#x2F;&#x2F;127.0.0.1:8080;
     include proxy_params;
 &#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/10-Nginx(%E5%9B%9B)LNMP%E6%9E%B6%E6%9E%84%E6%8B%86%E5%88%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/10-Nginx(%E5%9B%9B)LNMP%E6%9E%B6%E6%9E%84%E6%8B%86%E5%88%86/" class="post-title-link" itemprop="url">运维之综合架构--07--Nginx(四)LNMP架构拆分</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:16:31" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="一、拆分数据库"><a href="#一、拆分数据库" class="headerlink" title="一、拆分数据库"></a>一、拆分数据库</h2><blockquote>
+<p>为什么要拆分数据库?</p>
+<p>mysql内存占用大，容易引起网页访问速度变慢，甚至oom(out of memory)被系统自动kill掉，不安全</p>
+</blockquote>
+<h3 id="1-2-环境准备"><a href="#1-2-环境准备" class="headerlink" title="1.2 环境准备"></a>1.2 环境准备</h3><table>
+<thead>
+<tr>
+<th>主机名称</th>
+<th>应用环境</th>
+<th>外网地址</th>
+<th>内网地址</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>web01</td>
+<td>nginx+php</td>
+<td>10.0.0.7</td>
+<td>172.16.1.7</td>
+</tr>
+<tr>
+<td>db01</td>
+<td>mysql</td>
+<td></td>
+<td>172.16.1.51</td>
+</tr>
+</tbody></table>
+<h3 id="1-2-拆分过程"><a href="#1-2-拆分过程" class="headerlink" title="1.2 拆分过程"></a>1.2 拆分过程</h3><p>1、备份172.16.1.7服务器上mysql的数据</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# mysqldump -uroot -p&#39;Bgx123.com&#39; --all-databases --single-transaction &gt; mysql-all.sql<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>2、传输172.16.1.7的备份数据至172.16.1.51的服务器上</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# scp mysql-all.sql root@172.16.1.51:&#x2F;tmp<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>3、需要先在172.16.1.51服务器上安装mysql服务，然后使用mysql命令进行还原。</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@db01 ~]# yum install mariadb-server mariadb -y
+[root@db01 ~]# systemctl enable mariadb
+[root@db01 ~]# systemctl start mariadb
+[root@db01 ~]# mysql &lt;&#x2F;tmp&#x2F;mysql-all.sql
+[root@db01 ~]# systemctl restart mariadb
+[root@db01 ~]# mysql -uroot -pBgx123.com
+MariaDB [(none)]&gt; show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| edusoho            |
+| mysql              |
+| performance_schema |
+| test               |
+| wordpress          |
+| zh                 |
++--------------------+
+7 rows in set (0.00 sec)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>4、将web程序连接的本地数据库修改到远程数据库上。</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1）先在本地172.16.1.7服务器上停止本地的数据库
+[root@web01 ~]# systemctl disable mariadb
+[root@web01 ~]# systemctl stop mariadb
+
+2）在172.16.1.51的服务器上授权远程主机能够能连接mysql数据库
+[root@db01 ~]# mysql -uroot -pBgx123.com
+MariaDB [(none)]&gt; grant all privileges on *.* to oldboy@&#39;%&#39; identified by &#39;Bgx123.com&#39;;
+解释：
+*.*: 所有数据库下的所有表
+oldboy@&#39;%&#39;: 允许所有网段的oldboy用户访问
+identify: 设置密码
+
+3）在172.16.1.7服务器上测试远程账户能否连接172.16.1.51的数据库
+[root@web01 wordpress]# yum install mariadb -y
+[root@web01 wordpress]# mysql -h 172.16.1.51 -uoldboy -pBgx123.com
+MariaDB [(none)]&gt; 
+
+4）在172.16.1.7服务器上修改web程序连接数据库的配置文件
+[root@web01 wordpress]# vim &#x2F;code&#x2F;wordpress&#x2F;wp-config.php
+&#x2F;&#x2F; ** MySQL 设置 - 具体信息来自您正在使用的主机 ** &#x2F;&#x2F;
+&#x2F;** WordPress数据库的名称 *&#x2F;
+define(&#39;DB_NAME&#39;, &#39;wordpress&#39;);
+
+&#x2F;** MySQL数据库用户名 *&#x2F;
+define(&#39;DB_USER&#39;, &#39;oldboy&#39;);
+
+&#x2F;** MySQL数据库密码 *&#x2F;
+define(&#39;DB_PASSWORD&#39;, &#39;Bgx123.com&#39;);
+
+&#x2F;** MySQL主机 *&#x2F;
+define(&#39;DB_HOST&#39;, &#39;172.16.1.51&#39;);<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>5、拆分172.16.1.7wecenter连接远程172.16.1.51数据库信息</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 zh]# grep -R &quot;Bgx123.com&quot; *
+	system&#x2F;config&#x2F;database.php:  &#39;password&#39; &#x3D;&gt; &#39;Bgx123.com&#39;,
+[root@web01 zh]# vim &#x2F;code&#x2F;zh&#x2F;system&#x2F;config&#x2F;database.php 
+	$config[&#39;driver&#39;] &#x3D; &#39;MySQLi&#39;;^M
+	$config[&#39;master&#39;] &#x3D; array (
+	  &#39;charset&#39; &#x3D;&gt; &#39;utf8&#39;,
+	  &#39;host&#39; &#x3D;&gt; &#39;172.16.1.51&#39;,
+	  &#39;username&#39; &#x3D;&gt; &#39;oldboy&#39;,
+	  &#39;password&#39; &#x3D;&gt; &#39;Bgx123.com&#39;,
+	  &#39;dbname&#39; &#x3D;&gt; &#39;zh&#39;,
+	);^M<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>6、拆分172.16.1.7 edusoho连接远程172.16.1.51数据库信息</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 edusoho]# vim &#x2F;code&#x2F;edusoho&#x2F;app&#x2F;config&#x2F;parameters.yml
+database_driver: pdo_mysql
+database_host: 172.16.1.51
+database_port: 3306
+database_name: edusoho
+database_user: oldboy
+database_password: &#39;Bgx123.com&#39;
+
+必须清理缓存
+[root@web01 edusoho]# rm -rf &#x2F;code&#x2F;edusoho&#x2F;app&#x2F;cache&#x2F;*<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="二、扩展多台web服务器"><a href="#二、扩展多台web服务器" class="headerlink" title="二、扩展多台web服务器"></a>二、扩展多台web服务器</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.统一环境
+    0）准备对应的www用户
+    [root@web02 ~]# groupadd -g666 www
+    [root@web02 ~]# useradd -u666 -g666 www
+
+    1）拷贝web01上面的yum仓库
+    [root@web02 ~]# scp root@172.16.1.7:&#x2F;etc&#x2F;yum.repos.d&#x2F;*.repo &#x2F;etc&#x2F;yum.repos.d&#x2F;
+
+    2）安装nginx和php
+    [root@web02 ~]# yum -y install nginx php71w php71w-cli php71w-common php71w-devel php71w-embedded php71w-gd php71w-mcrypt php71w-mbstring php71w-pdo php71w-xml php71w-fpm php71w-mysqlnd php71w-opcache php71w-pecl-memcached php71w-pecl-redis php71w-pecl-mongodb
+
+2.统一配置（同步web01上面的配置到web02）
+    1）同步nginx
+    [root@web02 ~]# rsync  -avz --delete root@172.16.1.7:&#x2F;etc&#x2F;nginx&#x2F; &#x2F;etc&#x2F;nginx&#x2F;
+    [root@web02 ~]# nginx -t
+    [root@web02 ~]# systemctl enable nginx
+    [root@web02 ~]# systemctl start nginx
+
+    2）同步php（&#x2F;etc&#x2F;php-fpm.conf &#x2F;etc&#x2F;php-fpm.d  &#x2F;etc&#x2F;php.ini）
+    [root@web02 ~]# rsync  -avz --delete root@172.16.1.7:&#x2F;etc&#x2F;php* &#x2F;etc&#x2F;
+    [root@web02 ~]# systemctl enable php-fpm
+    [root@web02 ~]# systemctl start php-fpm
+
+3.统一代码
+    [root@web01 ~]# tar czf code.tar.gz &#x2F;code				#在web01上打包站点
+    [root@web01 ~]# scp code.tar.gz root@172.16.1.8:&#x2F;tmp	#在web01上将打包好的代码发送给web02
+    [root@web02 ~]# tar xf &#x2F;tmp&#x2F;code.tar.gz -C &#x2F;			#在web02上进行解压，并解压到&#x2F;目录下
+
+4.配置解析，进行访问<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="三、NFS共享多台web的静态资源"><a href="#三、NFS共享多台web的静态资源" class="headerlink" title="三、NFS共享多台web的静态资源"></a>三、NFS共享多台web的静态资源</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.准备172.16.1.31共享存储服务器，规划目录，配置好权限
+    0）创建用户
+    [root@nfs ~]# groupadd -g666 www
+    [root@nfs ~]# useradd -u666 -g666 www	
+
+    1）安装
+    [root@nfs ~]# yum install nfs-utils -y
+
+    2）配置
+    [root@nfs ~]# cat &#x2F;etc&#x2F;exports
+    &#x2F;data&#x2F;blog 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
+    &#x2F;data&#x2F;zh 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
+    &#x2F;data&#x2F;edu 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
+
+    3）根据配置，创建目录，准备用户，授权等等
+    [root@nfs ~]# rm -rf &#x2F;data&#x2F;
+    [root@nfs ~]# mkdir &#x2F;data&#x2F;&#123;blog,zh,edu&#125; -p
+    [root@nfs ~]# chown -R www.www &#x2F;data&#x2F;
+
+    4）启动
+    [root@nfs ~]# systemctl enable nfs-utils 
+    [root@nfs ~]# systemctl restart nfs-utils
+
+2.将图片较多的web02服务器，推送到nfs共享存储上
+    http:&#x2F;&#x2F;blog.oldboy.com&#x2F;wp-content&#x2F;uploads&#x2F;2019&#x2F;01&#x2F;timg.jpg
+
+    [root@web02 ~]# cd &#x2F;code&#x2F;wordpress&#x2F;wp-content
+    [root@web02 wp-content]# scp -r uploads&#x2F;* root@172.16.1.31:&#x2F;data&#x2F;blog&#x2F;
+
+    注意：需要上nfs服务器上进行重新的递归授权，否则会出现无法上传文件的错误
+    [root@nfs ~]# chown -R www.www &#x2F;data&#x2F;
+
+3.web01和web02分别都进行挂载，此时图片进行实现了共享
+    mount -t nfs 172.16.1.31:&#x2F;data&#x2F;blog  &#x2F;code&#x2F;wordpress&#x2F;wp-content&#x2F;uploads&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 
       
