@@ -185,6 +185,152 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/01-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E8%A7%84%E5%88%92/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/01-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E8%A7%84%E5%88%92/" class="post-title-link" itemprop="url">运维之综合架构--01-整体架构规划</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-11 13:42:39" itemprop="dateModified" datetime="2022-07-11T13:42:39+08:00">2022-07-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="一-、综合架构规划"><a href="#一-、综合架构规划" class="headerlink" title="一 、综合架构规划"></a>一 、综合架构规划</h2><blockquote>
+<p>项目中涵盖了架构，架构中又涵盖了不同的角色（高可用、负载均衡、web集群）<br>五层架构模型–&gt; 负载均衡 web服务 存储服务 缓存服务 数据库服务（通过tcp连接）</p>
+</blockquote>
+<p><img src="/img/%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84%E5%9B%BE.png" alt="综合架构图"></p>
+<h3 id="1-架构访问流程"><a href="#1-架构访问流程" class="headerlink" title="1 架构访问流程"></a>1 架构访问流程</h3><h4 id="1-1-用户视角"><a href="#1-1-用户视角" class="headerlink" title="1.1 用户视角"></a>1.1 用户视角</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.用户通过浏览器输入oldboyedu.com-&gt;回车
+2.浏览器会发生一次跳转，分析URL-&gt;然后进行DNS解析-&gt;获取真实的公网IP地址
+3.用户通过tcp的三次握手发起连接-&gt;真实的公网IP
+4.连接会通过公网-&gt;路由器-&gt;交换机-&gt;抵达前端的硬件防火墙
+5.防火墙根据自身访问规则，进行匹配-&gt;如果恶意的连接则拒绝-&gt;如果是正常的连接则放行
+6.防火墙会将连接转发给负载均衡器-&gt;查看用户请求的内容-&gt;根据内容进行任务下发-&gt;下发给web服务器
+7.web服务接收请求后会根据请求进行判断
+如果是请求图片或者附件-&gt;查找存储服务器存储的静态资源
+如果请求的网站上的内容-&gt;缓存服务器-&gt;如果缓存服务器没有-&gt;数据库
+数据库查询完数据之后会返回数据给web服务器-&gt;同时也会返回一份给缓存服务器
+8.数据库返回内容-&gt;web服务器-&gt;负载均衡-&gt;用户<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="1-2-运维视角"><a href="#1-2-运维视角" class="headerlink" title="1.2 运维视角"></a>1.2 运维视角</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.用户通过公网连接（隧道）VPN服务器，这样方便管理内部主机，
+2.自动化配置管理，节省人力成本，便于后期维护。统一环境，标准化
+3.自动化监控服务，监控系统的运行状态，事前预警，事后追溯。<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-架构环境规划"><a href="#2-架构环境规划" class="headerlink" title="2 架构环境规划"></a>2 架构环境规划</h3><h4 id="2-1-IP分配"><a href="#2-1-IP分配" class="headerlink" title="2.1 IP分配"></a>2.1 IP分配</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"> wanip         lanip       hostname
+10.0.0.5     172.16.1.5     lb01
+10.0.0.6     172.16.1.6     lb02
+10.0.0.7     172.16.1.7     web01
+10.0.0.8     172.16.1.8     web02
+10.0.0.9     172.16.1.9     web03
+10.0.0.31    172.16.1.31    nfs
+10.0.0.41    172.16.1.41    backup
+10.0.0.51    172.16.1.51    db01
+10.0.0.61    172.16.1.61    m01
+10.0.0.71    172.16.1.71    zabbix<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="2-2-基础环境准备"><a href="#2-2-基础环境准备" class="headerlink" title="2.2 基础环境准备"></a>2.2 基础环境准备</h4><h5 id="2-2-1-虚拟机系统和网卡准备"><a href="#2-2-1-虚拟机系统和网卡准备" class="headerlink" title="2.2.1 虚拟机系统和网卡准备"></a>2.2.1 虚拟机系统和网卡准备</h5><blockquote>
+<p>安装全新Centos7系统，配置网卡为eth0及eth1命名模式<br>1.第一块网卡为NAT模式[公网环境]，配置的网段为10.0.0.0网段<br>2.第二块网卡为LAN模式[私网环境]，配置的网段为172.16.1.0网段<br>3.优化安装好的Centos7虚拟机，安装常用软件、关闭防火墙等等</p>
+</blockquote>
+<p>优化步骤</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 1.配置yum仓库
+rm -f &#x2F;etc&#x2F;yum.repos.d&#x2F;*
+curl -o &#x2F;etc&#x2F;yum.repos.d&#x2F;CentOS-Base.repo http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;repo&#x2F;Centos-7.repo
+curl -o &#x2F;etc&#x2F;yum.repos.d&#x2F;epel.repo http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;repo&#x2F;epel-7.repo
+
+# 2.安装基础软件包
+yum install net-tools vim tree htop iftop \
+iotop lrzsz sl wget unzip telnet nmap nc psmisc \
+dos2unix bash-completion bash-completion-extra sysstat \
+rsync nfs-utils httpd-tools -y
+
+# 3.关闭防火墙firewalld
+systemctl disable firewalld
+systemctl stop firewalld
+
+# 4.关闭selinux
+sed -i &#39;&#x2F;^SELINUX&#x3D;&#x2F;c SELINUX&#x3D;disabled&#39; &#x2F;etc&#x2F;selinux&#x2F;config
+
+# 5.调整单个进程最大能打开文件的数量
+echo &#39;* - nofile 65535&#39; &gt;&gt; &#x2F;etc&#x2F;security&#x2F;limits.conf<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>基于优化后的虚拟机进行克隆</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.连接克隆（需要依赖于母体）
+2.完整克隆（完完全全的复制一份，占用磁盘空间）<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>对新克隆的主机进行如下操作：</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 1.修改主机名  
+hostnamectl set-hostname backup
+
+# 2.修改IP地址  
+sed -i &#39;s#200#41#g&#39; &#x2F;etc&#x2F;sysconfig&#x2F;network-scripts&#x2F;ifcfg-eth[01]
+
+# 3.重启服务器<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/02-Rsync%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -502,1653 +648,6 @@ find $SRC&#x2F; -type d -mtime +7|xargs rm -rf <span aria-hidden="true" class="l
 *&#x2F;3 * * * * sh &#x2F;server&#x2F;scripts&#x2F;check_client_data.sh<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
 
 <h4 id="3-1-5-增加客户端数量"><a href="#3-1-5-增加客户端数量" class="headerlink" title="3.1.5 增加客户端数量"></a>3.1.5 增加客户端数量</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">多创建几台客户端服务器，测试<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/02_%E6%B5%8B%E8%AF%95/02_%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E-%E5%AE%8C%E5%96%84%E4%B8%AD/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/02_%E6%B5%8B%E8%AF%95/02_%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E-%E5%AE%8C%E5%96%84%E4%B8%AD/" class="post-title-link" itemprop="url">测试工具使用说明-完善中</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-07-07 10:30:03" itemprop="dateModified" datetime="2022-07-07T10:30:03+08:00">2022-07-07</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%B5%8B%E8%AF%95/" itemprop="url" rel="index"><span itemprop="name">测试</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%B5%8B%E8%AF%95/%E4%BF%A1%E5%88%9BPOC%E6%B5%8B%E8%AF%95/" itemprop="url" rel="index"><span itemprop="name">信创POC测试</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="测试工具使用说明-汇总"><a href="#测试工具使用说明-汇总" class="headerlink" title="测试工具使用说明-汇总"></a>测试工具使用说明-汇总</h1><h1 id="一、SPEC-CPU-2017-测试"><a href="#一、SPEC-CPU-2017-测试" class="headerlink" title="一、SPEC CPU 2017 测试"></a>一、SPEC CPU 2017 测试</h1><h2 id="1-1-概述"><a href="#1-1-概述" class="headerlink" title="1.1 概述"></a>1.1 概述</h2><p>​	标准性能评测机构（SPEC）开发的用于评测CPU性能的基准程序测试组，是一套CPU子系统测试工具。处理器、内存和编译都会影响最终的测试结果，目前SPEC CPU是业界首选的CPU评测工具。 </p>
-<h2 id="1-2-工具安装"><a href="#1-2-工具安装" class="headerlink" title="1.2 工具安装"></a>1.2 工具安装</h2><p>获取镜像包：</p>
-<p>​	cpu2017-1_0_5.iso</p>
-<p>挂载IOS</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">mount -o loop -t iso9660 cpu2017-1_0_5.iso &#x2F;xxx&#x2F;cpu2017CD<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>安装工具</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">cd &#x2F;xxx&#x2F;cpu2017CD
-.&#x2F;install.sh<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<h2 id="1-3-测试步骤"><a href="#1-3-测试步骤" class="headerlink" title="1.3 测试步骤"></a>1.3 测试步骤</h2><p>spec2017主要分为四项测试：</p>
-<ul>
-<li>​	intrate</li>
-<li>​	fprate</li>
-<li>​	intspeed</li>
-<li>​	fpspeed</li>
-</ul>
-<p>​	根据需要测试的cpu型号，可以到官网下载相应的cfg文件，修改icc、Jemalloc库、qkmalloc库的路径，放入config文件夹中。</p>
-<p>测试命令如下：</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">source shrc
-ulimit -s unlimited
-# speed 测试
-runcpu --config&#x3D;icc-speed-official.cfg --threads&#x3D;48 --define cores&#x3D;48 -n 3 -i ref fpspeed intspeed
-
-# rate 测试
-runcpu --config&#x3D;icc-rate-official.cfg -copies&#x3D;48 -n 3 -i ref intrate fprate
-
------------------------------------------------------------------------
-
-# 仅编译不跑测试
---action&#x3D;build
-# 重新编译
---rebuild
-# 绑核跑
-taskset -c <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="1-4-测试优化"><a href="#1-4-测试优化" class="headerlink" title="1.4 测试优化"></a>1.4 测试优化</h2><blockquote>
-<p>Bios设置：</p>
-<p>​	开启超线程</p>
-<p>​	 尝试开启LLC-PREFETCH</p>
-</blockquote>
-<h2 id="1-5-其他事项："><a href="#1-5-其他事项：" class="headerlink" title="1.5 其他事项："></a>1.5 其他事项：</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">cfg文件中的submit可以设置绑核选项<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<h1 id="二、SPEC-CPU-2006-测试"><a href="#二、SPEC-CPU-2006-测试" class="headerlink" title="二、SPEC CPU 2006 测试"></a>二、SPEC CPU 2006 测试</h1><h2 id="2-1-概述"><a href="#2-1-概述" class="headerlink" title="2.1 概述"></a>2.1 概述</h2><p>​	作用同Spec CPU 2017, 近年来逐渐被淘汰</p>
-<h2 id="2-2-测试步骤"><a href="#2-2-测试步骤" class="headerlink" title="2.2 测试步骤"></a>2.2 测试步骤</h2><p>1、spec2006.tgz 解压，使用install.sh安装</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">SPEC CPU2006 Installation
-Top of the CPU2006 tree is &#39;&#x2F;vol8&#x2F;tarball&#x2F;cpu2006&#39;
-These appear to be valid toolsets:
-ft-spec2006-tool
-aarch64-linux
-Enter the architecture you are using:
-&gt;&gt; aarch64-linux<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">source shrc
-# 单核测试
-runspec -c linux64-arm64-gcc52.cfg -i ref -n 3 -I all 
-# 多核测试（16）
-runspec -c linux64-arm64-gcc52.cfg -r 16 -n 3 -i ref -I all<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h1 id="三、-SPEC-OMP-2012-测试"><a href="#三、-SPEC-OMP-2012-测试" class="headerlink" title="三、 SPEC OMP 2012 测试"></a>三、 SPEC OMP 2012 测试</h1><h2 id="3-1-概述"><a href="#3-1-概述" class="headerlink" title="3.1 概述"></a>3.1 概述</h2><p>​	基于SPEC测试套件的OpenMP评测工具，其中包含15个基于OpenMP的并行程序。</p>
-<h2 id="3-2-工具安装"><a href="#3-2-工具安装" class="headerlink" title="3.2 工具安装"></a>3.2 工具安装</h2><p>​	获取源包：</p>
-<p>​		omp2012-1.1.zip</p>
-<p>​	解压后使用install.sh安装</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 安装
-.&#x2F;install.sh -d &#x2F;home&#x2F;xx
-# 仅编译
-runspec --action&#x3D;build --config&#x3D;gcc.cfg -i ref -I all<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="3-3-测试步骤"><a href="#3-3-测试步骤" class="headerlink" title="3.3 测试步骤"></a>3.3 测试步骤</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">source shrc
-ulimit -s unlimited
-export OMP_NUM_THREADS&#x3D;48
-runspec --config&#x3D;gcc.cfg --threads 48 -n 3 -i ref -I all<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h1 id="四、NPB-测试"><a href="#四、NPB-测试" class="headerlink" title="四、NPB 测试"></a>四、NPB 测试</h1><h2 id="4-1-概述"><a href="#4-1-概述" class="headerlink" title="4.1 概述"></a>4.1 概述</h2><p>​	NAS并行基准测试程序（NPB），是由美国航空航天局开发的一套代表流体动力学计算的应用程序集，它已经成为公认的用于测评大规模并行机和超级计算机的标准测试程序。NPB可用于常用的编程模型，如MPI和OpenMP。</p>
-<h2 id="4-2-工具安装"><a href="#4-2-工具安装" class="headerlink" title="4.2 工具安装"></a>4.2 工具安装</h2><p>源包获取：</p>
-<p>​	NPB3.4.tar.gz         OpenMP || MPICH</p>
-<p>​	NPB3.4-MZ.tar.gz  OpenMP &amp;&amp; MPICH</p>
-<p>解压即可。</p>
-<h2 id="4-3-测试步骤"><a href="#4-3-测试步骤" class="headerlink" title="4.3 测试步骤"></a>4.3 测试步骤</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">make suite
-cd bin
-mpirun -np 4 .&#x2F;xxx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<h1 id="五、Stream-测试"><a href="#五、Stream-测试" class="headerlink" title="五、Stream 测试"></a>五、Stream 测试</h1><h2 id="5-1-概述"><a href="#5-1-概述" class="headerlink" title="5.1 概述"></a>5.1 概述</h2><p>​	STREAM是一套综合性能测试程序集，通过fortran和C两种高级且高效的语言编写完成，由于这两种语言在数学计算方面的高效率， 使得 STREAM 测试例程可以充分发挥出内存的能力。Stream测试是内存测试中业界公认的内存带宽性能测试基准工具。</p>
-<h2 id="5-2-工具安装"><a href="#5-2-工具安装" class="headerlink" title="5.2 工具安装"></a>5.2 工具安装</h2><p>源包获取：</p>
-<p>​	stream.tgz  刘新娃修改过</p>
-<p>​	<font color='red'>Intel平台请用ICC</font></p>
-<p>解压后编译stream.c, 生成可执行文件</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">icc -O3 -fopenmp -DNTIMES&#x3D;10 -mcmodel&#x3D;large -o stream_c stream.c<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>没有修改过的怎么编译呢？</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">icc -mtune&#x3D;native -march&#x3D;native -O3 -mcmodel&#x3D;large -fopenmp -DSTREAM_ARRAY_SIZE&#x3D;100000000 -DNTIMES&#x3D;30 -DOFFSET&#x3D;512 stream.c -o stream-gs<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<h2 id="5-3-测试步骤"><a href="#5-3-测试步骤" class="headerlink" title="5.3 测试步骤"></a>5.3 测试步骤</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">export OMP_NUM_THREADS&#x3D;48&#x2F;32&#x2F;16&#x2F;8&#x2F;4  # 设置每个进程的线程数
-.&#x2F;stream_c 200000 # 使用200G内存<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<h2 id="5-4-其他事项"><a href="#5-4-其他事项" class="headerlink" title="5.4 其他事项"></a>5.4 其他事项</h2><blockquote>
-<p><code>STREAM_ARRAY_SIZE</code>即<code>N</code>指定计算中a[],b[],c[]三个数组的大小，且数组的值采用了双精度（8个字节）。数组的维数 N定义时需要注意以下几点：</p>
-<p>一、要充分考虑内存容量的需求，粗略估计是 N× 8（双精度浮点类型） × 3 （三个数组）&lt;&#x3D; 0.6*M；M 是用户的可用内存。</p>
-<p>二、要保证测试过程中，使用到的内存容量要大于处理器内的缓存，只有这样才会有内存的操作，而不仅仅是对处理器内缓存的操作。</p>
-<p>三、为了保证测试可以持续一段时间，测试过程中内存带宽可以达到一定的最大值， 从而避免得不到实际最大峰值的情况，如果四项测试中有完成时间小于20微秒的情况，就需要适当的增大测试数组的维度 N。</p>
-</blockquote>
-<h1 id="六、Linpack-测试"><a href="#六、Linpack-测试" class="headerlink" title="六、Linpack 测试"></a>六、Linpack 测试</h1><h2 id="6-1-概述"><a href="#6-1-概述" class="headerlink" title="6.1 概述"></a>6.1 概述</h2><p>​	Linpack是国际上使用最广泛的测试高性能计算机系统浮点性能的基准测试。通过对高性能计算机采用高斯消元法求解一元 N次稠密线性代数方程组的测试，评价高性能计算机的浮点计算性能。Linpack的结果按每秒浮点运算次数（flops）表示。</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">N ^ 2 * 8 &#x3D; 总内存<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<h2 id="6-2-工具安装"><a href="#6-2-工具安装" class="headerlink" title="6.2 工具安装"></a>6.2 工具安装</h2><p>源包获取：</p>
-<p>​	linpack.tgz</p>
-<p>解压即可。</p>
-<h2 id="6-3-测试步骤"><a href="#6-3-测试步骤" class="headerlink" title="6.3 测试步骤"></a>6.3 测试步骤</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 1进48线100G内存
-.&#x2F;xhpl -n 1 -b 384 -p 1 -q 1 -m 100000
-# 1进48线200G内存
-.&#x2F;xhpl -n 1 -b 384 -p 1 -q 1 -m 200000
-# 2进24线共100G内存
-mpirun -n 2 .&#x2F;xhpl -b 384 -p 1 -q 2 -m 50000
-# 2进24线共200G内存
-mpirun -n 2 .&#x2F;xhpl -b 384 -p 1 -q 2 -m 100000<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>用mpirun提交xhplrun.sh效果更好</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">PRO_SIZE&#x3D;$&#123;PMI_SIZE&#125;
-threads&#x3D;&#96;echo $&#123;Cores&#125;&#x2F;$&#123;PMI_SIZE&#125; | bc&#96;
-PMI_RANK_my&#x3D;$&#123;PMI_RANK&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="6-4-测试优化（重点）"><a href="#6-4-测试优化（重点）" class="headerlink" title="6.4 测试优化（重点）"></a>6.4 测试优化（重点）</h2><blockquote>
-<p>一、计算理论内存总带宽</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">&gt;计算方法：
-&gt;查看内存带宽：
-&gt;dmidecode | grep -A 16 &quot;Memory Device&quot;
-&gt;例如内存信息为：
-&gt;三星 DDR4 
-&gt;16G 每根
-&gt;2666 MT&#x2F;s（Mhz）
-&gt;查看cpu支持的通道数，例如intel 6252N支持6通道，两个CPU支持12通道
-&gt;理论带宽计算DDR4：
-&gt;单条内存带宽 &#x3D; 内存核心频率 x 内存总线位数 x 倍增系数
- &#x3D; 2666 * 64 &#x2F; 8 &#x3D; 21328 MB&#x2F;s &#x3D; 21.3G&#x2F;s
-&gt;12通道总内存带宽 &#x3D; 21328 * 12 &#x3D; 255936 &#x3D; 250G&#x2F;s<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>二、使用stream测试实际内存总带宽</p>
-<p>​	如果可以达到90%或以上，说明内存带宽正常, 继续Linpack测试</p>
-<p>三、计算CPU理论峰值</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">&gt;计算方法：
-Mhz * 每个时钟周期执行浮点运算的次数 * CPU数目
-&gt;&#x3D;
-2.3 x ( 8 x 2 x 2 ) x 48 &#x3D; 3532.8 Gflops
-&gt;说明：
-峰值计算分为单精度和双精度浮点运算
-&gt;单精度：
-32bit的指令长度的运算，对应32位操作系统
-&gt;双精度：
-64bit的指令长度的运算，对应64位操作系统
-&gt;查找CPU可以处理什么样的指令集：
-例如Intel官网查到Intel Xeon 6252N
-支持AVX-512，
-# of AVX-512 FMA Units &#x3D; 2
-(Fused Multiply Add instructions) 融合了 乘法 和 加法
-即可以单个周期同时执行2条512bit的加法和2条512bit的乘法
-&gt;理解上述两个概念，可以开始计算（CPU单周期浮点计算能力）
-&gt;Intel 6252N (支持avx512，有512位)
-&gt;单精度：
-2.3 x 512&#x2F;32 x 2 x 2 &#x3D; 147.2Gflops 
-&gt;双精度
-2.3 x 512&#x2F;64 x 2 x 2 &#x3D; 73.6Gflops
-&gt;双精度共48核
-74.6 x 48 &#x3D; 3580
-
-&gt;FT2000+ 和 FT1500A (只有128位)，FT3000加入sve指令集(128-256位)
-&gt;单精度： 
-2.2 x 128&#x2F;32 * 2 &#x3D; 4.4
-&gt;双精度:
-2.2 x 128&#x2F;64 * 2 &#x3D; 8.8
-&gt;双精度共64核
-8.8 x 64 &#x3D; 563.2<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>四、使用Linapack测试CPU实际峰值</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">&gt;如果性能达到理论峰值的70%说明正常，如果未达到尝试以下优化<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">&gt;1、使用mpirun运行xhpl, 按&#96;lscpu&#96; 中的NUMA分组绑定,&#96;比如48核，分为两个Numa Node&#96;, 则用mpirun&#96;跑两个xhpl进程&#96;，每个进程使用 OMP_NUM_THREADS&#x3D;24, 跑24线程，这样可以将核用满。
-&gt;在&#96;Intel&#96;平台，两个进程分别使用 HPL_HOST_CORE&#x3D;&#39;0-23&#39; 以及 HPL_HOST_CORE&#x3D;&#39;24-47&#39; 绑定核
-&gt;在&#96;Arm64&#96;平台，则使用 GOMP_CPU_AFFINITY&#x3D;&#39;0-23&#39; 以及 GOMP_CPU_AFFINITY&#x3D;&#39;24-47&#39; 绑定
-&gt;2、内存不用分配太大，根据stream测试结果分配，从小开始测
-&gt;3、Intel平台编译器使用ICC，测试linpack使用icc自带的linpack，mpi使用icc自带的
-&gt;4、Bios中关闭超线程，开启超频(turbo&#x2F;P-state)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p><strong><font color="blue">先测stream,判断带宽是否正常，再测linpack，然后再测Spec Cpu</font></strong></p>
-</blockquote>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># Intel平台可以使用的控制频率的命令
-cpupower -c all frequency-set -g performance
-cpupower -c 0-95 frequency-set -g userspace
-cpupower -c 0-95 frequency-set -f 2700000
-
-# 查看当前频率控制是否为perfomance？
-cat &#x2F;sys&#x2F;devices&#x2F;system&#x2F;cpu&#x2F;cpu0&#x2F;cpufreq&#x2F;scaling_governor
-
-# 跑xhpl之前设置指令集，或许有用
-export MKL_ENABLE_INSTRUCTIONS&#x3D;AVX512<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p><img src="G:\工作\2020年3月\CN9性能测试\测试组合.png" alt="image-20200415171716940"></p>
-<h2 id="6-5-HPL-dat修改"><a href="#6-5-HPL-dat修改" class="headerlink" title="6.5 HPL.dat修改"></a>6.5 HPL.dat修改</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 第1-2行，注释说明行
-HPLinpack benchmark input file   
-Innovative Computing Laboratory, University of Tennessee  
-
-# 第 3-4 行，输出结果文件的形式
-HPL.out      output file name (if any)  
-6            device out (6&#x3D;stdout,7&#x3D;stderr,file) 
-
-# 5-6行，求解矩阵的大小
-1            # of problems sizes (N)  
-1000         Ns   
-
-# 7-8行 求解矩阵分块的大小
-1            # of NBs
-192 256      NBs
-
-# 9行 处理器阵列的排列方式，行还是列
-0：适用于节点较少，单个节点CPU较多的胖系统
-1：适用于节点较多，单个节点CPU较少的瘦系统（机群上远好于按行排列）
-1            PMAP process mapping (0&#x3D;Row-,1&#x3D;Column-major) 
-
-# 10-12行 定义二维处理网格P&#x2F;Q
-# P X Q &#x3D; 进程数，P尽量小于Q
-# P&#x3D;2^n,P最好选择2的幂
-1            # of process grids (P x Q) 
-1 2          Ps
-1 2          Qs
-
-# 13行 设置阀值，不用修改
-16.0         threshold
-
-# 14-21行 设置L的分解方式
-1            # of panel fact
-2 1 0        PFACTs (0&#x3D;left, 1&#x3D;Crout, 2&#x3D;Right) # 对性能影响不大
-1            # of recursive stopping criterium
-4 8          NBMINs (&gt;&#x3D; 1)   # 4或8都不错
-1            # of panels in recursion
-2            NDIVs  # 选2比较理想
-1            # of recursive panel fact.
-1 0 2        RFACTs (0&#x3D;left, 1&#x3D;Crout, 2&#x3D;Right) # 对性能影响不大
-
-# 22-23行 设置L的横向广播方式
-# 前四种，适用于快速网络，后两种适用于速度较慢的网络
-# 小规模系统，选择0&#x2F;1，大规模系统选择3
-1            # of broadcast
-0            BCASTs (0&#x3D;1rg,1&#x3D;1rM,2&#x3D;2rg,3&#x3D;2rM,4&#x3D;Lng,5&#x3D;LnM)
-
-# 24-25行 设置横向通信的通信深度
-# 小规模系统选择1&#x2F;2，大规模系统2-5之间
-1            # of lookahead depth
-1            DEPTHs (&gt;&#x3D;0)
-
-# 26-27 设置U的广播算法
-# 小规模系统，使用缺省值即可
-0            SWAP (0&#x3D;bin-exch,1&#x3D;long,2&#x3D;mix)
-1            swapping threshold
-
-# 28-29行 L和U的数据存放格式
-0：按列存放
-1：按行存放
-0            L1 in (0&#x3D;transposed,1&#x3D;no-transposed) form
-0            U  in (0&#x3D;transposed,1&#x3D;no-transposed) form
-
-# 30-31 缺省值即可
-0            Equilibration (0&#x3D;no,1&#x3D;yes)
-8            memory alignment in double (&gt; 0)
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="6-6-测试脚本编写"><a href="#6-6-测试脚本编写" class="headerlink" title="6.6 测试脚本编写"></a>6.6 测试脚本编写</h2><h3 id="6-6-1-本地mpirun测试脚本（Intel版本）"><a href="#6-6-1-本地mpirun测试脚本（Intel版本）" class="headerlink" title="6.6.1 本地mpirun测试脚本（Intel版本）"></a>6.6.1 本地mpirun测试脚本（Intel版本）</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 本地单节点测试，需要根据&#96;lscpu&#96;中numa分区情况(node)的使用mpirun测试xhpl
-# eg:在未开超线程的情况下，分为两个node，每个node中有12个核，则最佳测试方法为mpirun -np 2 .&#x2F;myrun.sh
-# 以下为myrun.sh的具体实现
-
-#!&#x2F;bin&#x2F;bash
-ulimit -s unlimited
-Cores&#x3D;48
-ThreadsNum&#x3D;&#96;echo &quot;$&#123;Cores&#125;&#x2F;$&#123;PMI_SIZE&#125;&quot; | bc&#96; # 计算每个进程跑的线程数
-case $&#123;PMI_SIZE&#125; in
-2)
-        case $&#123;PMI_RANK&#125; in
-        0)
-        export OMP_NUM_THREADS&#x3D;$&#123;ThreadsNum&#125;
-        export HPL_HOST_CORE&#x3D;&#39;0-23&#39;
-        .&#x2F;xhpl -n 1 -b 384 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-        ;;
-        1)
-        export OMP_NUM_THREADS&#x3D;$&#123;ThreadsNum&#125;
-        export HPL_HOST_CORE&#x3D;&#39;24-47&#39;
-        .&#x2F;xhpl -n 1 -b 384 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-        ;;
-        esac
-;;
-esac
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="6-6-2-Slurm-srun测试脚本-FT版本"><a href="#6-6-2-Slurm-srun测试脚本-FT版本" class="headerlink" title="6.6.2 Slurm srun测试脚本(FT版本)"></a>6.6.2 Slurm srun测试脚本(FT版本)</h2><p>xhplrun.sh</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">#!&#x2F;bin&#x2F;bash
-ulimit -s unlimited
-Cores&#x3D;48
-
-
-&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;
-PMI_SIZE&#x3D;$SLURM_NPROCS
-PMI_RANK&#x3D;$SLURM_PROCID
-MPI_NUM_NODE&#x3D;$SLURM_NNODES
-MPI_PER_NODE&#x3D;$((PMI_SIZE &#x2F; MPI_NUM_NODES))
-MPI_RANK_FOR_NODE&#x3D;$((PMI_RANK % MPI_PER_NODE))
-
-PRO_SIZE&#x3D;$&#123;MPI_PER_NODE&#125;
-PMI_RANK_my&#x3D;$&#123;MPI_RANK_FOR_NODE&#125;
-&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;
-
-echo $&#123;PRO_SIZE&#125; $&#123;PMI_RANK_my&#125; $&#123;threads&#125; $&#123;PMI_SIZE&#125; $&#123;PMI_RANK&#125; $&#123;MPI_NUM_NODES&#125; $&#123;MPI_PER_NODE&#125; $&#123;MPI_RANK_FOR_NODE&#125;
-
-export HPL_CMDLINE&#x3D;1
-case $&#123;PRO_SIZE&#125; in
-1)
-#numactl -i 0-1 -N 0-1 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#numactl -i 0,4 -N 0-7 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#numactl -i 0-7 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;0-63&#39;
-numactl -i 0-7 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#.&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-2)
-case $&#123;PMI_RANK_my&#125; in
-0)
-#numactl -i 0-3 -N 0-3 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#numactl -m 3 -N 0-3 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;0-31&#39;
-numactl -i 4-7 -N 0-3 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-1)
-#numactl -i 4-7 -N 4-7 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#numactl -m 7 -N 4-7 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;32-63&#39;
-numactl -i 0-3 -N 4-7 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-esac
-#mpirun -n 1 numactl -i 0-3 -N 0-3 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125; : -n 1 numactl -i 4-7 -N 4-7 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-esac<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>yhrun 提交作业 runpro.sh</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">#duqi
-
-if [ $# -ne 5 ]
-then
-        echo Usage: .&#x2F;runpro.sh nodes_list nodes_num proc_per_node mem_per_proc logdir
-        exit 0
-fi
-
-export HPL_CMDLINE&#x3D;1
-
-export LD_LIBRARY_PATH&#x3D;&#x2F;usr&#x2F;local&#x2F;mpi3&#x2F;lib:$LD_LIBRARY_PATH
-
-nodes&#x3D;$&#123;1&#125;
-nnodes&#x3D;$&#123;2&#125;
-nprocs&#x3D;$&#123;3&#125;
-nmem&#x3D;$&#123;4&#125;
-logdir&#x3D;$&#123;5&#125;
-
-
-mkdir -p $&#123;logdir&#125;
-
-tnprocs&#x3D;$(($&#123;nnodes&#125;*$&#123;nprocs&#125;))
-P&#x3D;1
-Q&#x3D;1
-for i in &#96;seq 1 $&#123;tnprocs&#125;&#96;
-do
-        for j in &#96;seq 1 $&#123;tnprocs&#125;&#96;
-        do
-                PQ&#x3D;$(($&#123;i&#125;*$&#123;j&#125;))
-                if [ $&#123;PQ&#125; -eq $&#123;tnprocs&#125; ] &amp;&amp; [ $&#123;i&#125; -le $&#123;j&#125; ]
-                then
-                        P&#x3D;$&#123;i&#125;
-                        Q&#x3D;$&#123;j&#125;
-                fi
-        done
-done
-
-for i in &#96;yhcontrol show hostname $&#123;nodes&#125;&#96;
-do
-        scp HPL.dat $i:&#x2F;root&#x2F;linpack &amp;
-done
-wait
-sleep 1
-
-j&#x3D;0
-runnodes&#x3D;&#39;&#39;
-
-for i in &#96;yhcontrol show hostname $&#123;nodes&#125;&#96;
-do
-        runnodes+&#x3D;$&#123;i&#125;,
-        let j++
-        if [ $&#123;j&#125; -eq $&#123;nnodes&#125; ]
-        then
-                echo &quot;yhrun -p all -N $&#123;nnodes&#125; -n $&#123;tnprocs&#125; -w $&#123;runnodes&#125; -D &#x2F;root&#x2F;linpack &#x2F;root&#x2F;linpack&#x2F;xhplrun.sh $&#123;P&#125; $&#123;Q&#125; $&#123;nmem&#125; &amp;&gt;&gt; $&#123;logdir&#125;&#x2F;$&#123;i&#125;.log &amp;&quot;
-                echo $&#123;runnodes&#125; &amp;&gt;&gt; $&#123;logdir&#125;&#x2F;$&#123;i&#125;.log
-                yhrun -p all -N $&#123;nnodes&#125; -n $&#123;tnprocs&#125; -w $&#123;runnodes&#125; -D &#x2F;root&#x2F;linpack &#x2F;root&#x2F;linpack&#x2F;xhplrun.sh $&#123;P&#125; $&#123;Q&#125; $&#123;nmem&#125; &amp;&gt;&gt; $&#123;logdir&#125;&#x2F;$&#123;i&#125;.log &amp;
-                j&#x3D;0
-                runnodes&#x3D;&#39;&#39;
-        fi
-done<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="6-7-Bios设置"><a href="#6-7-Bios设置" class="headerlink" title="6.7 Bios设置"></a>6.7 Bios设置</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">琦哥的：
-    UPI Configuration
-        Link Lop -&gt; disable
-        Link L1  -&gt; disable 
-        IO Directory Cache -&gt; enable
-        Isoc Mode -&gt; enable
-
-    Memory Configuration
-        Eufsrce POR -&gt; enable
-        PPR Type -&gt; Soft PPR
-        Memory Frequency -&gt; 2666
-        Data Scrambling for NVMDIMM -&gt; enable
-        Data Scrambling for DDR4 -&gt; enable
-        Enable AOR -&gt; enable
-        Refresh Option -&gt; enable
-        Memory RAS
-            Memory Rank Sparing -&gt; enable
-
-    IIO Configuration
-        PCI-E Port Max Payload Size -&gt; 256B
-
-    CPU P-State
-        SpeedStep -&gt; disable&#x2F;enable?
-        PBF 
-        Hardware P-State -&gt; enable
-        Package c state -&gt; No limit 
-	
-网上找的系统Bios设置优化
-    关闭超线程
-    打开EIST
-    打开Turbo Mode
-    Boot Performance mode设置为max performance
-    Energy Performance BIAS设置为Performance
-    打开Monitor&#x2F;Mwait
-    Package C stat limit设置为C0&#x2F;C1 state
-    关闭CPU C3 report
-    关闭CPU C6 report
-    关闭Enhanced Halt State
-    关闭Intel VT for Directed I&#x2F;O
-    Linux OS下CPU Power Management设置为max performance
-    QPI及Memory Frequency保持为Max Frequency
-    关闭NUMA功能 <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="6-8-结果反馈"><a href="#6-8-结果反馈" class="headerlink" title="6.8 结果反馈"></a>6.8 <span id="jump">结果反馈</span></h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">#linpack测试以我们为主导
-
-1、grep FAILED 关键字,查看是否有节点计算错误
-2、grep WR 查看节点性能是否正常
-3、统计跑死的点
-
-# 如何反馈？
-一轮Linpack40分钟测试完成
-	一、6个点本是drain*状态
-	二、3个点跑死，cn[1,2,3]
-	三、5个点Linpack计算FAILED
-	四、其他点linpakc性能正常
-可以考虑更换下一批<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="6-9-风冷系统linpack测试全过程记录"><a href="#6-9-风冷系统linpack测试全过程记录" class="headerlink" title="6.9 风冷系统linpack测试全过程记录"></a>6.9 风冷系统linpack测试全过程记录</h2><blockquote>
-<h5 id="1、了解风冷系统的架构"><a href="#1、了解风冷系统的架构" class="headerlink" title="1、了解风冷系统的架构"></a>1、了解风冷系统的架构</h5><p>按批次测试，测完一批换下一批</p>
-<p>一批为192个节点，每个框32个节点，共6个框</p>
-<p>每个节点128G内存，芯片为FT2000+, 通过mhz获取频率为2000（降频），64物理核</p>
-<p>系统版本： 4.19.46-cn+</p>
-<h5 id="2、计算每个节点的理论峰值"><a href="#2、计算每个节点的理论峰值" class="headerlink" title="2、计算每个节点的理论峰值"></a>2、计算每个节点的理论峰值</h5><p>2000 * 128 &#x2F; 64 * 2 * 64&#x3D; 512000</p>
-<h5 id="3、开始测试"><a href="#3、开始测试" class="headerlink" title="3、开始测试"></a>3、开始测试</h5><p>runpro.sh脚本参数说明:</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">&gt;.&#x2F;runpro.sh NodeList NodeBind ProcessesPerNode MemSize
-&gt;NodeList 节点列表,例如cn[0-8]
-&gt;NodeBind 几个节点绑定运行，例如2，则计算效率时，需要将结果得到的效率&#x2F;2&#x2F;512
-&gt;ProcessesPerNode 每给节点运行几个xhpl进程，根据numa node来，FT一般是8
-&gt;MemSize 每个节点中，每个进程分配的内存，一般使用到约总内存的80%，例如单节点128G，填写12000（单位为Mb），则总使用96G内存<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>单节点测试：</p>
-<p>​	不需要互联测试网络联通性，仅对单节点进行压力测试</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">&gt;.&#x2F;runpro.sh cn0 1 8 12000 logdir<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>多节点测试：</p>
-<p>​	需要互联测试网络联通性， 2，4， 8， 16， 32， 64， 128，如果要求测多节点稳定性，测试的8点8进8线，结果按<a href="#jump">章节6.8</a>反馈</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">&gt;.&#x2F;runpro.sh cn0 1 8 12000 logdir<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>问题解决一：</p>
-<p>​	测试到128节点，性能异常，效率仅有43%</p>
-<p>互联那边回应：</p>
-<p>​	节点数超过64，通信就跨框</p>
-<p>琦哥建议的做法：</p>
-<p>​	把128个节点分到4个框，测试一下，看是不是带宽的原因</p>
-<p>最后的解决方法：</p>
-<p>​	网络拓扑更换，矩阵值不能相等，使用原本32 x 32，改为16 x 64，但是换成160节点后还是有问题</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">&gt;.&#x2F;runpro.sh cn[xx-xx] 128 8 12000 dir
-&gt;其中执行的xhplrun.sh的参数为
-&gt;xhplrun.sh 32 32 12000<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-
-</blockquote>
-<h1 id="七、Lmbench-测试"><a href="#七、Lmbench-测试" class="headerlink" title="七、Lmbench 测试"></a>七、Lmbench 测试</h1><h2 id="7-1-概述"><a href="#7-1-概述" class="headerlink" title="7.1 概述"></a>7.1 概述</h2><p>​	Lmbench是一套简易，可移植的，符合ANSI&#x2F;C标准为UNIX&#x2F;POSIX而制定的微型测评工具。一般来说，它衡量两个关键特征：反应时间和带宽。LmBench旨在使系统开发者深入了解关键操作的基础成本。</p>
-<h2 id="7-2-工具安装"><a href="#7-2-工具安装" class="headerlink" title="7.2 工具安装"></a>7.2 工具安装</h2><p>获取源包：</p>
-<p>​	lmbench3.tar.gz</p>
-<p>gcc编译安装</p>
-<h2 id="7-3-测试步骤"><a href="#7-3-测试步骤" class="headerlink" title="7.3 测试步骤"></a>7.3 测试步骤</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">cd src
-make results
-make see
-内存10G。<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">错误处理：
-[root@cn9 lmbench3]# cd src&#x2F;
-[root@cn9 src]# make results
-gmake[1]: Entering directory &#96;&#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;tools&#x2F;lmbench3&#x2F;src&#39;
-gmake[1]: *** No rule to make target &#96;..&#x2F;SCCS&#x2F;s.ChangeSet&#39;, needed by &#96;bk.ver&#39;.  Stop.
-gmake[1]: Leaving directory &#96;&#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;tools&#x2F;lmbench3&#x2F;src&#39;
-解决方法：
-	vim Makefile
-	231行修改：
-	$O&#x2F;lmbench : ..&#x2F;scripts&#x2F;lmbench bk.ver
-	改为
-	$O&#x2F;lmbench : ..&#x2F;scripts&#x2F;lmbench<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h1 id="八、IOR-测试（暂无）"><a href="#八、IOR-测试（暂无）" class="headerlink" title="八、IOR 测试（暂无）"></a>八、IOR 测试（暂无）</h1><h1 id="九、alltoall测试"><a href="#九、alltoall测试" class="headerlink" title="九、alltoall测试"></a>九、alltoall测试</h1><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">yhrun -n 128 -N 8 -w cn34,cn35,cn36,cn37,cn38,cn39,cn40,cn41, &#x2F;root&#x2F;xm_alltoall 102400 1000<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<h1 id="附录：常用工具链编译方法"><a href="#附录：常用工具链编译方法" class="headerlink" title="附录：常用工具链编译方法"></a>附录：常用工具链编译方法</h1><h2 id="一、GCC编译"><a href="#一、GCC编译" class="headerlink" title="一、GCC编译"></a>一、GCC编译</h2><p>需要依次编译依赖软件，然后在编译gcc中使用</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 设置isl的库路径
-export LD_LIBRARY_PATH&#x3D;&#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;tools&#x2F;gcc830&#x2F;lib:$LD_LIBRARY_PATH
-# 编译GCC
-..&#x2F;configure --prefix&#x3D;&#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;tools&#x2F;gcc830 --enable-lto --disable-bootstrap --enable-languages&#x3D;c,c++,fortran --with-gmp&#x3D;&#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;tools&#x2F;gcc830 --with-mpfr&#x3D;&#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;tools&#x2F;gcc830 --with-mpc&#x3D;&#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;tools&#x2F;gcc830 --with-isl&#x3D;&#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;tools&#x2F;gcc830<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="1-1-依赖软件编译"><a href="#1-1-依赖软件编译" class="headerlink" title="1.1 依赖软件编译"></a>1.1 依赖软件编译</h3><h4 id="1-1-2-编译安装gmp"><a href="#1-1-2-编译安装gmp" class="headerlink" title="1.1.2 编译安装gmp"></a>1.1.2 编译安装gmp</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">.&#x2F;configure --prefix&#x3D;&#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;tools&#x2F;gcc830
-make 
-make install
-
-.&#x2F;configure --with-gmp&#x3D;&#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;tools&#x2F;gcc83 --with-mpfr&#x3D;&#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;tools&#x2F;gcc83  --prefix&#x3D;&#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;tools&#x2F;gcc83<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h4 id="1-1-3-编译安装mpfr"><a href="#1-1-3-编译安装mpfr" class="headerlink" title="1.1.3 编译安装mpfr"></a>1.1.3 编译安装mpfr</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">.&#x2F;configure --prefix&#x3D;&#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;tools&#x2F;gcc830 --with-gmp&#x3D;&#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;tools&#x2F;gcc830
-make 
-make install<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<h4 id="1-1-4-编译安装mpc"><a href="#1-1-4-编译安装mpc" class="headerlink" title="1.1.4 编译安装mpc"></a>1.1.4 编译安装mpc</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">.&#x2F;configure --prefix&#x3D;&#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;tools&#x2F;gcc830 --with-gmp&#x3D;&#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;tools&#x2F;gcc830 --with-mpfr&#x3D;&#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;tools&#x2F;gcc830
-make
-make install<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<h4 id="1-1-5-编译安装isl"><a href="#1-1-5-编译安装isl" class="headerlink" title="1.1.5 编译安装isl"></a>1.1.5 编译安装isl</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">.&#x2F;configure --prefix&#x3D;&#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;tools&#x2F;gcc830 --with-gmp-prefix&#x3D;&#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;tools&#x2F;gcc830<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"> yum install gcc-* gtk2 gtk3 x11 libX11.x86_64 libX11-devel.x86_64 libXorg libXss libXScrnSaver.x86_64 xorg-x11-server-Xorg.x86_64 xulrunner.x86_64 xulrunner.i686 libstdc++.i686 libstdc++-devel.i686
-glibc.i686 glibc-devel.i686 libgcc* xulrunner.x86_64 xulrunner.i686 glibc-devel.x86_64 glibc.x86_64 autoconf-archive.noarch gtk2 gtk3 pango libXScrnSaver libX11.x86_64 libX11-devel.x86_64 libX11-common.noarch libxkbcommon-x11.x86_64 xorg-x11-server-common.x86_64 libstdc++* -y<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">#!&#x2F;bin&#x2F;bash
-mount -o loop -t iso9660 &#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;images&#x2F;rhel-server-7.6-x86_64-dvd.iso &#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;mnt&#x2F;CDROM
-
-
-yum install gcc-* gtk2 gtk3 glibc-devel.i686 x11 libX11.x86_64 libX11-devel.x86_64 libXorg libXss libXScrnSaver.x86_64 xorg-x11-server-Xorg.x86_64 xulrunner.x86_64 xulrunner.i686 libstdc++.i686 libstdc++-devel.i686 glibc* libgcc* xulrunner* autoconf-archive.noarch gtk2 gtk3 pango libXScrnSaver libX11.x86_64 libX11-devel.x86_64 libX11-common.noarch libxkbcommon-x11.x86_64 xorg-x11-server-common.x86_64 libstdc++* -y
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="二、MPICH3编译"><a href="#二、MPICH3编译" class="headerlink" title="二、MPICH3编译"></a>二、MPICH3编译</h2><p>设置gcc830的环境变量</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">export PATH&#x3D;&#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;tools&#x2F;gcc830&#x2F;bin:$PATH
-export LD_LIBRARY_PATH&#x3D;&#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;tools&#x2F;gcc830&#x2F;lib:$LD_LIBRARY_PATH
-export LD_INCLUDE_PATH&#x3D;&#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;tools&#x2F;gcc830&#x2F;include:$LD_INCLUDE_PATH
-export CPATH&#x3D;&#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;tools&#x2F;gcc830&#x2F;include:$CPATH
-export LD_LIBRARY_PATH&#x3D;&#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;tools&#x2F;gcc830&#x2F;lib64:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH&#x3D;&#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;tools&#x2F;gcc830&#x2F;libexec:$LD_LIBRARY_PATH<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>再编译</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">.&#x2F;configure --prefix&#x3D;&#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;tools&#x2F;mpi3-gcc830 --enable-fast --enable-shared&#x3D;yes --enable-threads&#x3D;runtime --with-ch3-rank-bits&#x3D;32 --enable-romio --with-file-system&#x3D;ufs+nfs --with-mpe
-make 
-make install<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<p>设置环境变量使用</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">export PATH&#x3D;&#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;tools&#x2F;mpi3-gcc830&#x2F;bin:$PATH
-export LD_LIBRARY_PATH&#x3D;&#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;tools&#x2F;mpi3-gcc830&#x2F;lib:$LD_LIBRARY_PATH
-export LD_INCLUDE_PATH&#x3D;&#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;tools&#x2F;mpi3-gcc830&#x2F;include:$LD_INCLUDE_PATH<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-
-
-<h3 id="三、Redhat设置本地镜像源"><a href="#三、Redhat设置本地镜像源" class="headerlink" title="三、Redhat设置本地镜像源"></a>三、Redhat设置本地镜像源</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">mount -o loop -t iso9660 &#x2F;home&#x2F;IOSYS&#x2F;test652&#x2F;images&#x2F;rhel-server-7.6-x86_64-dvd.iso &#x2F;home&#x2F;IOSYS&#x2F;test652&#x2F;mnt&#x2F;CDROM<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;yum.repos.d&#x2F;redhat.repo
-
-[rhel7.6]
-name&#x3D;rhel7.6
-baseurl&#x3D;file:&#x2F;&#x2F;&#x2F;home&#x2F;testcpu&#x2F;test652&#x2F;mnt&#x2F;CDROM
-enabled&#x3D;1
-gpgcheck&#x3D;0
-priority&#x3D;1
-
-yum clean
-yum update
-yum repolist<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="四、找不到so库的解决方法"><a href="#四、找不到so库的解决方法" class="headerlink" title="四、找不到so库的解决方法"></a>四、找不到so库的解决方法</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 方法一：
-	设置LD_LIBRARY_PATH
-# 方法二：
- 	vim &#x2F;etc&#x2F;ld.so.conf
- 	----------------------------------------------------
- 	include ld.so.conf.d&#x2F;*.conf
-	&#x2F;opt&#x2F;intel&#x2F;compilers_and_libraries&#x2F;linux&#x2F;lib&#x2F;intel64
-	ldconfig 更新<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="五、复制以及查看端口占用"><a href="#五、复制以及查看端口占用" class="headerlink" title="五、复制以及查看端口占用"></a>五、复制以及查看端口占用</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 查看端口占用
-netstat -nultp | grep 8080
-netstat -anp  | grep 80
-netstat -ano | grep 18130
-lsof -i:18130
-
-# 复制
-rsync -chavP &#x2F;var&#x2F;opt&#x2F;gitlab&#x2F;postgresql .
-rsync -avzP 复制显示进度
-
-# 查看Bios版本
-dmidecode<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">
-mpiicc -DAdd__ -DF77_INTEGER&#x3D;int -DStringSunStyle -DHPL_DETAILED_TIMING -DHPL_PROGRESS_REPORT -I&#x2F;root&#x2F;hpl&#x2F;include -I&#x2F;root&#x2F;hpl&#x2F;include&#x2F;Linux_Intel64 -I&#x2F;opt&#x2F;intel&#x2F;compilers_and_libraries_2019.4.243&#x2F;linux&#x2F;mkl&#x2F;mkl&#x2F;include  -O3 -w -ansi-alias -i-static -z noexecstack -z relro -z now -nocompchk -Wall -qopenmp -mt_mpi -o &#x2F;root&#x2F;hpl&#x2F;bin&#x2F;Linux_Intel64&#x2F;xhpl HPL_pddriver.o         HPL_pdinfo.o           HPL_pdtest.o &#x2F;root&#x2F;hpl&#x2F;lib&#x2F;Linux_Intel64&#x2F;libhpl.a  -L&#x2F;opt&#x2F;intel&#x2F;compilers_and_libraries_2019.4.243&#x2F;linux&#x2F;mkl&#x2F;mkl&#x2F;lib&#x2F;intel64 -Wl,--start-group &#x2F;opt&#x2F;intel&#x2F;compilers_and_libraries_2019.4.243&#x2F;linux&#x2F;mkl&#x2F;lib&#x2F;intel64&#x2F;libmkl_intel_lp64.a &#x2F;opt&#x2F;intel&#x2F;compilers_and_libraries_2019.4.243&#x2F;linux&#x2F;mkl&#x2F;lib&#x2F;intel64&#x2F;libmkl_intel_thread.a &#x2F;opt&#x2F;intel&#x2F;compilers_and_libraries_2019.4.243&#x2F;linux&#x2F;mkl&#x2F;lib&#x2F;intel64&#x2F;libmkl_core.a -Wl,--end-group -lpthread -ldl<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<h2 id="六、查看cpu主频率-和-内存信息"><a href="#六、查看cpu主频率-和-内存信息" class="headerlink" title="六、查看cpu主频率 和 内存信息"></a>六、查看cpu主频率 和 内存信息</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 查看CPU信息
-lscpu 其中 sockets个数代表物理核个数
-cat &#x2F;proc&#x2F;cpuinfo
-lmbench的mhz
-&#x2F;usr&#x2F;bin&#x2F;turbostat
-
-# 查看内存信息
-cat &#x2F;proc&#x2F;meminfo
-dmidecode | grep -A 16 &quot;Memory Device&quot;、<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="七、GLSL-1-50-is-not-supported"><a href="#七、GLSL-1-50-is-not-supported" class="headerlink" title="七、GLSL 1.50 is not supported"></a>七、GLSL 1.50 is not supported</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 报错：
-ERROR: In &#x2F;home&#x2F;gs&#x2F;src&#x2F;VTK8.2&#x2F;VTK-8.2.0&#x2F;Rendering&#x2F;OpenGL2&#x2F;vtkShaderProgram.cxx, line 447
-vtkShaderProgram (0x2b87270): 0:1(10): error: GLSL 1.50 is not supported. Supported versions are: 1.10, 1.20, 1.30, 1.00 ES, and 3.00 ES
-
-# 解决方法
-export MESA_GL_VERSION_OVERRIDE&#x3D;3.2<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">cn[16-19,24-27,144-147,152-155]<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<h2 id="八、附录"><a href="#八、附录" class="headerlink" title="八、附录"></a>八、附录</h2><h3 id="8-1-Linpack脚本"><a href="#8-1-Linpack脚本" class="headerlink" title="8.1 Linpack脚本"></a>8.1 Linpack脚本</h3><blockquote>
-<p>runpro.sh</p>
-<p>.&#x2F;runpro.sh nodes_list nodes_num proc_per_node mem_per_proc logdir</p>
-<p>node_list 节点列表</p>
-<p>nodes_num 几个点连在一起跑，单点 双点 多点</p>
-<p> proc_per_node 每个节点跑几个进程，看node分为几个，FT一般是8</p>
-<p> mem 12000 每个进程分配的内存，*8 大概&#x3D; 总内存的80%</p>
-<p> logdir 日志文件</p>
-<p> 单点8进程，一轮≈35分钟</p>
-</blockquote>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">#! &#x2F;bin&#x2F;bash
-
-#duqi
-
-if [ $# -ne 5 ]
-then
-        echo Usage: .&#x2F;runpro.sh nodes_list nodes_num proc_per_node mem_per_proc logdir
-        exit 0
-fi
-
-export HPL_CMDLINE&#x3D;1
-export LD_LIBRARY_PATH&#x3D;&#x2F;usr&#x2F;local&#x2F;mpi3&#x2F;lib:LD_LIBRARY_PATH
-
-nodes&#x3D;$&#123;1&#125;
-nnodes&#x3D;$&#123;2&#125;
-nprocs&#x3D;$&#123;3&#125;
-nmem&#x3D;$&#123;4&#125;
-logdir&#x3D;$&#123;5&#125;
-
-
-mkdir -p $&#123;logdir&#125;
-
-tnprocs&#x3D;$(($&#123;nnodes&#125;*$&#123;nprocs&#125;))
-P&#x3D;1
-Q&#x3D;1
-
-
-num_max&#x3D;1
-for i in &#96;seq 1 $&#123;tnprocs&#125;&#96;
-do
-        j&#x3D;$(($&#123;i&#125;*$&#123;i&#125;))
-        if [ $&#123;tnprocs&#125; -le $&#123;j&#125; ]; then
-                num_max&#x3D;$&#123;i&#125;
-                break
-        fi
-done
-for i in &#96;seq 1 $&#123;num_max&#125;&#96;
-do
-        for j in &#96;seq $&#123;num_max&#125; $&#123;tnprocs&#125;&#96;
-        do
-                PQ&#x3D;$(($&#123;i&#125;*$&#123;j&#125;))
-                if [ $&#123;PQ&#125; -eq $&#123;tnprocs&#125; ]
-                then
-                        P&#x3D;$&#123;i&#125;
-                        Q&#x3D;$&#123;j&#125;
-                fi
-        done
-done
-
-
-for i in &#96;yhcontrol show hostname $&#123;nodes&#125;&#96;
-do
-        scp HPL.dat $i:&#x2F;root&#x2F;linpack &amp;
-done
-sleep 1
-
-j&#x3D;0
-runnodes&#x3D;&#39;&#39;
-
-for i in &#96;yhcontrol show hostname $&#123;nodes&#125;&#96;
-do
-        runnodes+&#x3D;$&#123;i&#125;,
-        let j++
-        if [ $&#123;j&#125; -eq $&#123;nnodes&#125; ]
-        then
-                echo &quot;yhrun -p All -N $&#123;nnodes&#125; -n $&#123;tnprocs&#125; -w $&#123;runnodes&#125; -D &#x2F;root&#x2F;linpack &#x2F;root&#x2F;linpack&#x2F;xhplrun.sh $&#123;P&#125; $&#123;Q&#125; $&#123;nmem&#125; &amp;&gt;&gt; $&#123;logdir&#125;&#x2F;$&#123;i&#125;.log &amp;&quot;
-                echo $&#123;runnodes&#125; &amp;&gt;&gt; $&#123;logdir&#125;&#x2F;$&#123;i&#125;.log &amp;
-                echo &quot;yhrun -p All -N $&#123;nnodes&#125; -n $&#123;tnprocs&#125; -w $&#123;runnodes&#125; -D &#x2F;root&#x2F;linpack &#x2F;root&#x2F;linpack&#x2F;xhplrun.sh $&#123;P&#125; $&#123;Q&#125; $&#123;nmem&#125;&quot; &amp;&gt;&gt; $&#123;logdir&#125;&#x2F;list.log
-                yhrun -p All -N $&#123;nnodes&#125; -n $&#123;tnprocs&#125; -w $&#123;runnodes&#125; -D &#x2F;root&#x2F;linpack &#x2F;root&#x2F;linpack&#x2F;xhplrun.sh $&#123;P&#125; $&#123;Q&#125; $&#123;nmem&#125; &amp;&gt;&gt; $&#123;logdir&#125;&#x2F;$&#123;i&#125;.log &amp;
-                j&#x3D;0
-                runnodes&#x3D;&#39;&#39;
-        fi
-done
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<blockquote>
-<p>xhplrun.sh</p>
-</blockquote>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">#! &#x2F;bin&#x2F;bash
-
-#duqi
-
-ulimit -s unlimited
-
-Cores&#x3D;64
-#&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;
-PMI_SIZE&#x3D;$SLURM_NPROCS
-
-PMI_RANK&#x3D;$SLURM_PROCID
-
-MPI_NUM_NODES&#x3D;$SLURM_NNODES
-
-MPI_PER_NODE&#x3D;$((PMI_SIZE &#x2F; MPI_NUM_NODES))
-
-MPI_RANK_FOR_NODE&#x3D;$((PMI_RANK % MPI_PER_NODE))
-#&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;
-
-
-threads&#x3D;&#96;echo $&#123;Cores&#125;*$&#123;SLURM_NNODES&#125;&#x2F;$&#123;PMI_SIZE&#125; | bc&#96;
-
-PRO_SIZE&#x3D;$&#123;MPI_PER_NODE&#125;
-PMI_RANK_my&#x3D;$&#123;MPI_RANK_FOR_NODE&#125;
-
-echo $&#123;PRO_SIZE&#125; $&#123;PMI_RANK_my&#125; $&#123;threads&#125; $&#123;PMI_SIZE&#125; $&#123;PMI_RANK&#125; $&#123;MPI_NUM_NODES&#125; $&#123;MPI_PER_NODE&#125; $&#123;MPI_RANK_FOR_NODE&#125;
-
-export HPL_CMDLINE&#x3D;1
-case $&#123;PRO_SIZE&#125; in
-1)
-#numactl -i 0-1 -N 0-1 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#numactl -i 0,4 -N 0-7 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#numactl -i 0-7 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;0-63&#39;
-numactl -i 0-7 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#.&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-2)
-case $&#123;PMI_RANK_my&#125; in
-0)
-#numactl -i 0-3 -N 0-3 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#numactl -m 3 -N 0-3 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;0-31&#39;
-numactl -i 4-7 -N 0-3 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-1)
-#numactl -i 4-7 -N 4-7 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#numactl -m 7 -N 4-7 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;32-63&#39;
-numactl -i 0-3 -N 4-7 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-esac
-#mpirun -n 1 numactl -i 0-3 -N 0-3 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125; : -n 1 numactl -i 4-7 -N 4-7 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-4)
-case $&#123;PMI_RANK_my&#125; in
-0)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;0-15&#39;
-numactl -i 0-7 -N 0-1 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#numactl -i 2-3 -N 0-1 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-1)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;16-31&#39;
-numactl -i 0-7 -N 2-3 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#numactl -i 4-5 -N 2-3 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-2)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;32-47&#39;
-numactl -i 0-7 -N 4-5 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#numactl -i 6-7 -N 4-5 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-3)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;48-63&#39;
-numactl -i 0-7 -N 6-7 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#numactl -i 0-1 -N 6-7 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-esac
-;;
-8)
-case $&#123;PMI_RANK_my&#125; in
-0)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;0-7&#39;
-numactl -i 0-7 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#numactl -i 4 -N 0 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#.&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-1)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;8-15&#39;
-numactl -i 0-7 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#numactl -i 2 -N 1 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#.&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-2)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;16-23&#39;
-numactl -i 0-7 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#numactl -i 6 -N 2 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#.&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-3)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;24-31&#39;
-numactl -i 0-7 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#numactl -i 1 -N 3 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#.&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-4)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;32-39&#39;
-numactl -i 0-7 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#numactl -i 0 -N 4 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#.&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-5)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;40-47&#39;
-numactl -i 0-7 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#numactl -i 7 -N 5 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#.&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-6)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;48-55&#39;
-numactl -i 0-7 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#numactl -i 5 -N 6 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#.&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-7)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;56-63&#39;
-numactl -i 0-7 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#numactl -i 3 -N 7 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#.&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-esac
-;;
-16)
-case $&#123;PMI_RANK_my&#125; in
-0)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;0-3&#39;
-numactl -i 0-7 -C 0-3 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-1)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;4-7&#39;
-numactl -i 0-7 -C 4-7 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-2)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;8-11&#39;
-numactl -i 0-7 -C 8-11 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-3)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;12-15&#39;
-numactl -i 0-7 -C 12-15 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-4)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;16-19&#39;
-numactl -i 0-7 -C 16-19 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-5)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;20-23&#39;
-numactl -i 0-7 -C 20-23 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-6)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;24-27&#39;
-numactl -i 0-7 -C 24-27 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-7)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;28-31&#39;
-numactl -i 0-7 -C 28-31 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-8)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;32-35&#39;
-numactl -i 0-7 -C 32-35 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-9)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;36-39&#39;
-numactl -i 0-7 -C 36-39 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-10)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;40-43&#39;
-numactl -i 0-7 -C 40-43 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-11)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;44-47&#39;
-numactl -i 0-7 -C 44-47 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-12)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;48-51&#39;
-numactl -i 0-7 -C 48-51 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-13)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;52-55&#39;
-numactl -i 0-7 -C 52-55 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-14)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;56-59&#39;
-numactl -i 0-7 -C 56-59 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-15)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;60-63&#39;
-numactl -i 0-7 -C 60-63 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-esac
-;;
-32)
-#export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-#numactl -i 0-7 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#;;
-case $&#123;PMI_RANK_my&#125; in
-0)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;0-1&#39;
-numactl -i 0-7 -C 0-1 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-1)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;2-3&#39;
-numactl -i 0-7 -C 2-3 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-2)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;4-5&#39;
-numactl -i 0-7 -C 4-5 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-3)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;6-7&#39;
-numactl -i 0-7 -C 6-7 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-4)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;8-9&#39;
-numactl -i 0-7 -C 8-9 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-5)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;10-11&#39;
-numactl -i 0-7 -C 10-11 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-6)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;12-13&#39;
-numactl -i 0-7 -C 12-13 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-7)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;14-15&#39;
-numactl -i 0-7 -C 14-15 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-8)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;16-17&#39;
-numactl -i 0-7 -C 16-17 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-9)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;18-19&#39;
-numactl -i 0-7 -C 18-19 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-10)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;20-21&#39;
-numactl -i 0-7 -C 20-21 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-11)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;22-23&#39;
-numactl -i 0-7 -C 22-23 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-12)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;24-25&#39;
-numactl -i 0-7 -C 24-25 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-13)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;26-27&#39;
-numactl -i 0-7 -C 26-27 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-14)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;28-29&#39;
-numactl -i 0-7 -C 28-29 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-15)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;30-31&#39;
-numactl -i 0-7 -C 30-31 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-16)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;32-33&#39;
-numactl -i 0-7 -C 32-33 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-17)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;34-35&#39;
-numactl -i 0-7 -C 34-35 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-18)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;36-37&#39;
-numactl -i 0-7 -C 36-37 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-19)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;38-39&#39;
-numactl -i 0-7 -C 38-39 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-20)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;40-41&#39;
-numactl -i 0-7 -C 40-41 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-21)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;42-43&#39;
-numactl -i 0-7 -C 42-43 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-22)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;44-45&#39;
-numactl -i 0-7 -C 44-45 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-23)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;46-47&#39;
-numactl -i 0-7 -C 46-47 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-24)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;48-49&#39;
-numactl -i 0-7 -C 48-49 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-25)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;50-51&#39;
-numactl -i 0-7 -C 50-51 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-26)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;52-53&#39;
-numactl -i 0-7 -C 52-53 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-27)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;54-55&#39;
-numactl -i 0-7 -C 54-55 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-28)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;56-57&#39;
-numactl -i 0-7 -C 56-57 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-29)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;58-59&#39;
-numactl -i 0-7 -C 58-59 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-30)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;60-61&#39;
-numactl -i 0-7 -C 60-61 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-31)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;62-63&#39;
-numactl -i 0-7 -C 62-63 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-esac
-;;
-64)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-#export GOMP_CPU_AFFINITY&#x3D;&#39;0-63&#39;
-#numactl -i 0-7 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-#;;
-case $&#123;PMI_RANK_my&#125; in
-0)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;0&#39;
-numactl -i 0-7 -C 0 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-1)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;1&#39;
-numactl -i 0-7 -C 1 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-2)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;2&#39;
-numactl -i 0-7 -C 2 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-3)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;3&#39;
-numactl -i 0-7 -C 3 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-4)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;4&#39;
-numactl -i 0-7 -C 4 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-5)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;5&#39;
-numactl -i 0-7 -C 5 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-6)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;6&#39;
-numactl -i 0-7 -C 6 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-7)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;7&#39;
-numactl -i 0-7 -C 7 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-8)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;8&#39;
-numactl -i 0-7 -C 8 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-9)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;9&#39;
-numactl -i 0-7 -C 9 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-10)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;10&#39;
-numactl -i 0-7 -C 10 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-11)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;11&#39;
-numactl -i 0-7 -C 11 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-12)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;12&#39;
-numactl -i 0-7 -C 12 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-13)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;13&#39;
-numactl -i 0-7 -C 13 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-14)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;14&#39;
-numactl -i 0-7 -C 14 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-15)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;15&#39;
-numactl -i 0-7 -C 15 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-16)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;16&#39;
-numactl -i 0-7 -C 16 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-17)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;17&#39;
-numactl -i 0-7 -C 17 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-18)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;18&#39;
-numactl -i 0-7 -C 18 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-19)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;19&#39;
-numactl -i 0-7 -C 19 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-20)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;20&#39;
-numactl -i 0-7 -C 20 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-21)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;21&#39;
-numactl -i 0-7 -C 21 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-22)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;22&#39;
-numactl -i 0-7 -C 22 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-23)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;23&#39;
-numactl -i 0-7 -C 23 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-24)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;24&#39;
-numactl -i 0-7 -C 24 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-25)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;25&#39;
-numactl -i 0-7 -C 25 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-26)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;26&#39;
-numactl -i 0-7 -C 26 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-27)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;27&#39;
-numactl -i 0-7 -C 27 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-28)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;28&#39;
-numactl -i 0-7 -C 28 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-29)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;29&#39;
-numactl -i 0-7 -C 29 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-30)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;30&#39;
-numactl -i 0-7 -C 30 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-31)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;31&#39;
-numactl -i 0-7 -C 31 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-32)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;32&#39;
-numactl -i 0-7 -C 32 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-33)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;33&#39;
-numactl -i 0-7 -C 33 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-34)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;34&#39;
-numactl -i 0-7 -C 34 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-35)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;35&#39;
-numactl -i 0-7 -C 35 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-36)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;36&#39;
-numactl -i 0-7 -C 36 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-37)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;37&#39;
-numactl -i 0-7 -C 37 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-38)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;38&#39;
-numactl -i 0-7 -C 38 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-39)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;39&#39;
-numactl -i 0-7 -C 39 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-40)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;40&#39;
-numactl -i 0-7 -C 40 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-41)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;41&#39;
-numactl -i 0-7 -C 41 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-42)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;42&#39;
-numactl -i 0-7 -C 42 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-43)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;43&#39;
-numactl -i 0-7 -C 43 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-44)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;44&#39;
-numactl -i 0-7 -C 44 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-45)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;45&#39;
-numactl -i 0-7 -C 45 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-46)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;46&#39;
-numactl -i 0-7 -C 46 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-47)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;47&#39;
-numactl -i 0-7 -C 47 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-48)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;48&#39;
-numactl -i 0-7 -C 48 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-49)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;49&#39;
-numactl -i 0-7 -C 49 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-50)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;50&#39;
-numactl -i 0-7 -C 50 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-51)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;51&#39;
-numactl -i 0-7 -C 51 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-52)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;52&#39;
-numactl -i 0-7 -C 52 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-53)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;53&#39;
-numactl -i 0-7 -C 53 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-54)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;54&#39;
-numactl -i 0-7 -C 54 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-55)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;55&#39;
-numactl -i 0-7 -C 55 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-56)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;56&#39;
-numactl -i 0-7 -C 56 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-57)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;57&#39;
-numactl -i 0-7 -C 57 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-58)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;58&#39;
-numactl -i 0-7 -C 58 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-59)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;59&#39;
-numactl -i 0-7 -C 59 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-60)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;60&#39;
-numactl -i 0-7 -C 60 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-61)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;61&#39;
-numactl -i 0-7 -C 61 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-62)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;62&#39;
-numactl -i 0-7 -C 62 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-63)
-export OMP_NUM_THREADS&#x3D;$&#123;threads&#125;
-export GOMP_CPU_AFFINITY&#x3D;&#39;63&#39;
-numactl -i 0-7 -C 63 .&#x2F;xhpl -n 1 -b 192 -p $&#123;1&#125; -q $&#123;2&#125; -m $&#123;3&#125;
-;;
-esac
-;;
-esac<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="8-2-编译问题"><a href="#8-2-编译问题" class="headerlink" title="8.2 编译问题"></a>8.2 编译问题</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">-lc 
-	解决找不到memcpy问题 
--lstdc++
-	解决vtable for xxxx 问题
--lgcc_s
-	undefined reference to &#96;_Unwind_Resume&#39;
-	undefined reference to &#96;__popcountdi2&#39;
-	
-#include &lt;sys&#x2F;types.h&gt;
-#include &lt;sys&#x2F;types.h&gt;
-	 implicit declaration of function ‘fstat’
-
-#include &lt;sys&#x2F;sysmacros.h&gt;
-	implicit declaration of function ‘major’<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h1 id="十、Linux操作"><a href="#十、Linux操作" class="headerlink" title="十、Linux操作"></a>十、Linux操作</h1><h2 id="10-1-ncat端口转发"><a href="#10-1-ncat端口转发" class="headerlink" title="10.1 ncat端口转发"></a>10.1 ncat端口转发</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">ncat --sh-exec &quot;ncat 25.8.27.6 15929&quot; -l 15929 --keep-open<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<h1 id="十一、DDT安装"><a href="#十一、DDT安装" class="headerlink" title="十一、DDT安装"></a>十一、DDT安装</h1><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># cp Licence &#x2F;home&#x2F;gs&#x2F;tools&#x2F;arm&#x2F;forge&#x2F;licences&#x2F;
-# cp Licence.14713 &#x2F;home&#x2F;gs&#x2F;tools&#x2F;arm&#x2F;licenceserver&#x2F;licences&#x2F;
-
-export PATH&#x3D;&#x2F;opt&#x2F;mpi3.3&#x2F;bin:&#x2F;home&#x2F;gs&#x2F;tools&#x2F;arm&#x2F;forge&#x2F;bin:&#x2F;home&#x2F;gs&#x2F;tools&#x2F;arm&#x2F;licenceserver&#x2F;bin:$PATH
-export LD_LIBRARY_PATH&#x3D;&#x2F;opt&#x2F;mpi3.3&#x2F;lib:$LD_LIBRARY_PATH
-ifconfig eth3 hw ether 00:1b:21:14:15:60<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">#glex高速网版本的MPI改为本地调试用
-export MPICH_NO_LOCAL&#x3D;0 &#x2F;&#x2F;？不一定需要
-export MPICH_NEMESIS_NETMOD&#x3D;tcp
-export PATH&#x3D;&#x2F;usr&#x2F;local&#x2F;mpi3&#x2F;bin:$PATH
-export LD_LIBRARY_PATH&#x3D;&#x2F;usr&#x2F;local&#x2F;mpi3&#x2F;lib:$LD_LIBRARY_PATH<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-
-
-<h1 id="十二、SPEC使用"><a href="#十二、SPEC使用" class="headerlink" title="十二、SPEC使用"></a>十二、SPEC使用</h1><h2 id="12-1-SPEC使用系统工具"><a href="#12-1-SPEC使用系统工具" class="headerlink" title="12.1 SPEC使用系统工具"></a>12.1 SPEC使用系统工具</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># SEPC设置使用系统的工具
-vim &#x2F;home&#x2F;gs&#x2F;tools&#x2F;spack-v5&#x2F;etc&#x2F;spack&#x2F;defaults&#x2F;packages.yaml
-# 参考：
-..&#x2F;..&#x2F;..&#x2F;lib&#x2F;spack&#x2F;docs&#x2F;build_settings.rst<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h1 id="十三、mi协议"><a href="#十三、mi协议" class="headerlink" title="十三、mi协议"></a>十三、mi协议</h1><h2 id="13-1-使用mi启动调试"><a href="#13-1-使用mi启动调试" class="headerlink" title="13.1 使用mi启动调试"></a>13.1 使用mi启动调试</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">gs@ft-svr:~&#x2F;matrix$ gdb --interpreter mi test
-&#x3D;thread-group-added,id&#x3D;&quot;i1&quot;
-~&quot;GNU gdb (Ubuntu 8.2.91.20190405-0ubuntu3) 8.2.91.20190405-git\n&quot;
-~&quot;Copyright (C) 2019 Free Software Foundation, Inc.\n&quot;
-~&quot;License GPLv3+: GNU GPL version 3 or later &lt;http:&#x2F;&#x2F;gnu.org&#x2F;licenses&#x2F;gpl.html&gt;\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.&quot;
-~&quot;\nType \&quot;show copying\&quot; and \&quot;show warranty\&quot; for details.\n&quot;
-~&quot;This GDB was configured as \&quot;aarch64-linux-gnu\&quot;.\n&quot;
-~&quot;Type \&quot;show configuration\&quot; for configuration details.\n&quot;
-~&quot;For bug reporting instructions, please see:\n&quot;
-~&quot;&lt;http:&#x2F;&#x2F;www.gnu.org&#x2F;software&#x2F;gdb&#x2F;bugs&#x2F;&gt;.\n&quot;
-~&quot;Find the GDB manual and other documentation resources online at:\n    &lt;http:&#x2F;&#x2F;www.gnu.org&#x2F;software&#x2F;gdb&#x2F;documentation&#x2F;&gt;.&quot;
-~&quot;\n\n&quot;
-~&quot;For help, type \&quot;help\&quot;.\n&quot;
-~&quot;Type \&quot;apropos word\&quot; to search for commands related to \&quot;word\&quot;...\n&quot;
-~&quot;Reading symbols from test...\n&quot;
-(gdb)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="13-2-断点命令（BreakPoint）"><a href="#13-2-断点命令（BreakPoint）" class="headerlink" title="13.2 断点命令（BreakPoint）"></a>13.2 断点命令（BreakPoint）</h2><h3 id="13-2-1-break-after"><a href="#13-2-1-break-after" class="headerlink" title="13.2.1 -break-after"></a>13.2.1 -break-after</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">-break-after number count
-第number个断点在执行count次后有效<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<h3 id="13-2-2-break-condition"><a href="#13-2-2-break-condition" class="headerlink" title="13.2.2 -break-condition"></a>13.2.2 -break-condition</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">-break-condition number expr
-第number个断点在表达式expr为true时有效<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<h3 id="13-2-3-break-delete"><a href="#13-2-3-break-delete" class="headerlink" title="13.2.3 -break-delete"></a>13.2.3 -break-delete</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">-break-delete(breakpoint number)+
-删除指定number的多个断点<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<h3 id="13-2-4-break-disable"><a href="#13-2-4-break-disable" class="headerlink" title="13.2.4 -break-disable"></a>13.2.4 -break-disable</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">-break-disable(breakpoint number)+
-使用指定Number的多个断点失效<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<h3 id="13-2-5-break-enable"><a href="#13-2-5-break-enable" class="headerlink" title="13.2.5 -break-enable"></a>13.2.5 -break-enable</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">-break-enable(breakpoint number)+
-使用指定Number的多个断点生效<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<h3 id="13-2-6-break-info"><a href="#13-2-6-break-info" class="headerlink" title="13.2.6 -break-info"></a>13.2.6 -break-info</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">-break-info breakpoint
-得到指定断点的信息<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<h3 id="13-2-7-break-insert"><a href="#13-2-7-break-insert" class="headerlink" title="13.2.7 -break-insert"></a>13.2.7 -break-insert</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">-break-insert
-	-t				插入临时断点
-	-h				插入硬件断点
-	-r				插入正则断点，当函数名匹配正则表达式时生效
-	-c condition    插入条件断点
-	-i ignore-count 插入一个指定无效次数的断点
-	-p thread  		
-	line | addr(func) <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="13-2-8-break-list"><a href="#13-2-8-break-list" class="headerlink" title="13.2.8. -break-list"></a>13.2.8. -break-list</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">-break-list
-显示已插入的断点列表<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<h3 id="13-2-9-break-watch"><a href="#13-2-9-break-watch" class="headerlink" title="13.2.9 -break-watch"></a>13.2.9 -break-watch</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">-break-watch [-a|-r] variable
-创建一个观察点，-a标识对variable读写时有效，-r标识只读时有效<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<h2 id="13-3-程序环境命令-Program-Context"><a href="#13-3-程序环境命令-Program-Context" class="headerlink" title="13.3 程序环境命令(Program Context)"></a>13.3 程序环境命令(Program Context)</h2><h2 id="13-4-线程-thread"><a href="#13-4-线程-thread" class="headerlink" title="13.4 线程(thread)"></a>13.4 线程(thread)</h2><h2 id="13-5-程序执行-Program-Execution"><a href="#13-5-程序执行-Program-Execution" class="headerlink" title="13.5 程序执行(Program Execution)"></a>13.5 程序执行(Program Execution)</h2><h2 id="13-6-栈-Stack"><a href="#13-6-栈-Stack" class="headerlink" title="13.6 栈(Stack)"></a>13.6 栈(Stack)</h2><h2 id="13-7-变量-Variable"><a href="#13-7-变量-Variable" class="headerlink" title="13.7 变量(Variable)"></a>13.7 变量(Variable)</h2><h2 id="13-8-数据-Data"><a href="#13-8-数据-Data" class="headerlink" title="13.8 数据(Data)"></a>13.8 数据(Data)</h2><h2 id="13-9-跟踪点-TracePoint"><a href="#13-9-跟踪点-TracePoint" class="headerlink" title="13.9 跟踪点(TracePoint)"></a>13.9 跟踪点(TracePoint)</h2><h2 id="13-10-符号-Symbol"><a href="#13-10-符号-Symbol" class="headerlink" title="13.10 符号(Symbol)"></a>13.10 符号(Symbol)</h2><h2 id="13-11-文件-File"><a href="#13-11-文件-File" class="headerlink" title="13.11 文件(File)"></a>13.11 文件(File)</h2><h2 id="13-12-目标数据-Target-Manipulation"><a href="#13-12-目标数据-Target-Manipulation" class="headerlink" title="13.12 目标数据(Target Manipulation)"></a>13.12 目标数据(Target Manipulation)</h2><h2 id="13-13-其他"><a href="#13-13-其他" class="headerlink" title="13.13 其他"></a>13.13 其他</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">-enable-pretty-printing
--var-create - * map
--var-list-children --all-values var1 0 10
-
--data-evaluate-expression map
-^done,value&#x3D;&quot;std::map with 140737353945088 elements&lt;error reading variable: Cannot access memory at address 0x1f0fc35f415e51&gt;&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-
-
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">&#x2F;&#x2F;    &#x2F;&#x2F; 设置标记类型与颜色
-&#x2F;&#x2F;    this-&gt;markerDefine(QsciScintilla::Circle, 0);
-&#x2F;&#x2F;    this-&gt;setMarkerBackgroundColor(QColor(&quot;#ee6666&quot;), 0);
-&#x2F;&#x2F;    this-&gt;markerDefine(QsciScintilla::Circle, 1);
-&#x2F;&#x2F;    this-&gt;setMarkerBackgroundColor(QColor(&quot;#aaaaaa&quot;), 1);
-&#x2F;&#x2F;    this-&gt;markerDefine(QsciScintilla::RightArrow, 2);
-&#x2F;&#x2F;    this-&gt;setMarkerBackgroundColor(QColor(&quot;#eaf593&quot;), 2);<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h1 id="十四、Git改密码"><a href="#十四、Git改密码" class="headerlink" title="十四、Git改密码"></a>十四、Git改密码</h1><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">gitlab-rails console production
-
-irb(main):002:0&gt; user&#x3D;User.where(email:&#39;cuiyingbomail@163.com&#39;).first
-&#x3D;&gt; #&lt;User id:30 @cyb&gt;
-irb(main):003:0&gt; user.password&#x3D;12345678
-&#x3D;&gt; 12345678
-irb(main):004:0&gt; user.password_confirmation&#x3D;12345678
-&#x3D;&gt; 12345678
-irb(main):005:0&gt; user.save!
-Enqueued ActionMailer::DeliveryJob (Job ID: 540244db-c6ec-44f9-880e-72338b955aa5) to Sidekiq(mailers) with arguments: &quot;DeviseMailer&quot;, &quot;password_change&quot;, &quot;deliver_now&quot;, #&lt;GlobalID:0x00007f57f5da3208 @uri&#x3D;#&lt;URI::GID gid:&#x2F;&#x2F;gitlab&#x2F;User&#x2F;30&gt;&gt;
-&#x3D;&gt; true
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h1 id="十五、YHPDE（eclipse）FT部署"><a href="#十五、YHPDE（eclipse）FT部署" class="headerlink" title="十五、YHPDE（eclipse）FT部署"></a>十五、YHPDE（eclipse）FT部署</h1><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1、安装eclipse:
-	gitlab
-2、插件安装，参考手册
-2、新版SLURM需要
-vim org.eclipse.ptp.rm.slurm.proxy_4.0.7.201104291906&#x2F;src&#x2F;ptp_slurm_proxy.c
-1625行：slurm_allocation_lookup_lite -&gt; slurm_allocation_lookup
-2942行: primary &#x3D; 1; -&gt;  primary &#x3D; 0;
-2943行：secondary &#x3D; 2; -&gt; secondary &#x3D; 1;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 
       
@@ -4492,227 +2991,6 @@ database_password: &#39;Bgx123.com&#39;
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/12-Nginx(%E5%85%AD)Nginx%E4%B8%83%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/12-Nginx(%E5%85%AD)Nginx%E4%B8%83%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/" class="post-title-link" itemprop="url">运维之综合架构--07--Nginx(六)七层负载均衡</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-07-11 13:54:22" itemprop="dateModified" datetime="2022-07-11T13:54:22+08:00">2022-07-11</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="一、七层负载均衡简介-需补充"><a href="#一、七层负载均衡简介-需补充" class="headerlink" title="一、七层负载均衡简介(需补充)"></a>一、七层负载均衡简介(需补充)</h2><h3 id="1-1-nginx代理的局限性"><a href="#1-1-nginx代理的局限性" class="headerlink" title="1.1 nginx代理的局限性"></a>1.1 nginx代理的局限性</h3><p>​	一个location仅能代理后端一台主机</p>
-<h3 id="1-2-七层负载均衡"><a href="#1-2-七层负载均衡" class="headerlink" title="1.2 七层负载均衡"></a>1.2 七层负载均衡</h3><p>Nginx负载均衡<br>    负载<br>    负载均衡<br>    调度<br>    load balance<br>    LB<br>公有云<br>    SLB		阿里云负载均衡<br>    QLB		青云负载均衡<br>    CLB		腾讯负载均衡<br>    ULB		ucloud的负载均衡</p>
-<h3 id="1-3-四层负载均衡和七层负载均衡的区别"><a href="#1-3-四层负载均衡和七层负载均衡的区别" class="headerlink" title="1.3 四层负载均衡和七层负载均衡的区别"></a>1.3 四层负载均衡和七层负载均衡的区别</h3><p>四层负载均衡数据包在底层就进行了分发，而七层负载均衡数据包则是在最顶层进行分发、由此可以看出，七层负载均衡效率没有四负载均衡高。<br>但七层负载均衡更贴近于服务，如:http协议就是七层协议，我们可以用Nginx可以作会话保持，URL路径规则匹配、head头改写等等，这些是四层负载均衡无法实现的。</p>
-<h2 id="二、配置实例"><a href="#二、配置实例" class="headerlink" title="二、配置实例"></a>二、配置实例</h2><h3 id="2-1-测试环境准备"><a href="#2-1-测试环境准备" class="headerlink" title="2.1 测试环境准备"></a>2.1 测试环境准备</h3><table>
-<thead>
-<tr>
-<th>主机名称</th>
-<th>应用环境</th>
-<th>外网地址</th>
-<th>内网地址</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>web01</td>
-<td>nginx + php（提供网页服务）</td>
-<td>10.0.0.7</td>
-<td>172.16.1.7</td>
-</tr>
-<tr>
-<td>web01</td>
-<td>nginx + php（提供网页服务）</td>
-<td>10.0.0.8</td>
-<td>172.16.1.8</td>
-</tr>
-<tr>
-<td>lb01</td>
-<td>nginx（提供代理服务）</td>
-<td>10.0.0.5</td>
-<td>172.16.1.5</td>
-</tr>
-<tr>
-<td>db01</td>
-<td>mysql</td>
-<td>10.0.0.51</td>
-<td>172.16.1.51</td>
-</tr>
-</tbody></table>
-<h3 id="2-2-配置步骤"><a href="#2-2-配置步骤" class="headerlink" title="2.2 配置步骤"></a>2.2 配置步骤</h3><p>1、web01&#x2F;02的网页服务搭建</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# cd &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;
-[root@web01 conf.d]# cat node.conf 
-server &#123;
-    listen 80;
-    server_name node.oldboy.com;
-    location &#x2F; &#123;
-        root &#x2F;node;
-        index index.html;
-    &#125;
-&#125;
-[root@web01 conf.d]# mkdir &#x2F;node
-[root@web01 conf.d]# echo &quot;Web01...&quot; &gt; &#x2F;node&#x2F;index.html
-[root@web01 conf.d]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>2、配置nginx负载均衡</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 ~]# cd &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;
-[root@lb01 conf.d]# cat node_proxy.conf 
-upstream node &#123;
-    server 172.16.1.7:80;
-    server 172.16.1.8:80;
-&#125;
-server &#123;
-    listen 80;
-    server_name node.oldboy.com;
-
-    location &#x2F; &#123;
-        proxy_pass http:&#x2F;&#x2F;node;
-        include proxy_params;
-    &#125;
-&#125;
-[root@lb01 conf.d]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>3、客户端网页测试访问，F5刷新，可见web01&#x2F;web02在循环</p>
-<p><img src="/img/image-20210820132420586.png" alt="image-20210820132420586"></p>
-<p><img src="/img/image-20210820132431971.png" alt="image-20210820132431971"></p>
-<h3 id="2-3-负载均衡也可以使用代理参数"><a href="#2-3-负载均衡也可以使用代理参数" class="headerlink" title="2.3 负载均衡也可以使用代理参数"></a>2.3 负载均衡也可以使用代理参数</h3><blockquote>
-<p>与之前部署的知乎wencenter、博客mywordpress结合</p>
-</blockquote>
-<p>1、准备Nginx负载均衡调度使用的proxy_params</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@Nginx ~]# vim &#x2F;etc&#x2F;nginx&#x2F;proxy_params
-proxy_set_header Host $http_host;
-proxy_set_header X-Real-IP $remote_addr;
-proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
-proxy_connect_timeout 30;
-proxy_send_timeout 60;
-proxy_read_timeout 60;
-
-proxy_buffering on;
-proxy_buffer_size 32k;
-proxy_buffers 4 128k;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>2、负载均衡配置：</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 conf.d]# vim proxy_oldboy.com.conf
-upstream node &#123;
-        server 172.16.1.7:80;
-        server 172.16.1.8:80;
-&#125;
-server &#123;
-        listen 80;
-        server_name blog.oldboy.com;
-        location &#x2F; &#123;
-                proxy_pass http:&#x2F;&#x2F;node;
-                include proxy_params;
-        &#125;
-&#125;
-
-server &#123;
-        listen 80;
-        server_name zh.oldboy.com;
-        location &#x2F; &#123;
-                proxy_pass http:&#x2F;&#x2F;node;
-                include proxy_params;
-        &#125;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="2-4-负载均衡测试"><a href="#2-4-负载均衡测试" class="headerlink" title="2.4 负载均衡测试"></a>2.4 负载均衡测试</h3><p>正常情况下：</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1、两台web服务器的nginx服务均打开（模拟流量分摊）
-	可以负载均衡，轮流访问
-2、关掉一台web服务器的nginx服务（模拟容灾）
-	网页仍可以正常打开
-3、两台web服务器的Nginx服务均关闭
-	网页无法打开，502<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>存在一种情况，两个web的nginx服务都没挂，但是其中一台的php-fpm服务挂了，模拟这种场景</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web02 ~]# systemctl stop php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>此时F5刷新wordpress的页面，将一会502，一会正常，体验不好，可通过添加nginx代理参数解决</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 conf.d]# cat &#x2F;etc&#x2F;nginx&#x2F;proxy_params
-proxy_set_header Host $http_host;
-proxy_set_header X-Real-IP $remote_addr;
-proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-proxy_next_upstream error timeout http_500 http_502 http_503 http_504; # 解决问题
-
-proxy_connect_timeout 30;
-proxy_send_timeout 60;
-proxy_read_timeout 60;
-
-proxy_buffering on;
-proxy_buffer_size 32k;
-proxy_buffers 4 128k;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<blockquote>
-<p>PS：问题原因</p>
-<p>使用nginx负载均衡时，如何将后端请求超时的服务器流量平滑的切换到另一台上。<br>Nginx是本身是有机制的，如果出现一个节点down掉的时候，Nginx会更据你具体负载均衡的设置，将请求转移到其他的节点上，但是，如果后台服务连接没有down掉，并且返回错误异常码了如：504、502、500，Nginx就会直接返回从后端获取的异常代码。</p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/11-Nginx(%E4%BA%94)Nginx%E4%BB%A3%E7%90%86/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -4939,6 +3217,388 @@ proxy_buffers 4 128k;<span aria-hidden="true" class="line-numbers-rows"><span></
     include proxy_params;
 &#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
 
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/13-Nginx(%E4%B8%83)Nginx%E4%B8%83%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/13-Nginx(%E4%B8%83)Nginx%E4%B8%83%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5/" class="post-title-link" itemprop="url">运维之综合架构--07--Nginx(七)均衡调度</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-07-06 11:19:52" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-11 13:55:06" itemprop="dateModified" datetime="2022-07-11T13:55:06+08:00">2022-07-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="一、Nginx均衡调度算法"><a href="#一、Nginx均衡调度算法" class="headerlink" title="一、Nginx均衡调度算法"></a>一、Nginx均衡调度算法</h2><p>Nginx七层负载均衡分为5种调度算法</p>
+<table>
+<thead>
+<tr>
+<th>调度算法</th>
+<th>概述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>轮询（常用）</td>
+<td>按时间顺序逐一分配到不同的后端服务器(默认)</td>
+</tr>
+<tr>
+<td>weight（面试点）</td>
+<td>加权轮询,weight值越大,分配到的访问几率越高</td>
+</tr>
+<tr>
+<td>ip_hash（面试点）</td>
+<td>每个请求按访问IP的hash结果分配,这样来自同一IP的固定访问一个后端服务器</td>
+</tr>
+<tr>
+<td>url_hash</td>
+<td>按照访问URL的hash结果来分配请求,是每个URL定向到同一个后端服务器</td>
+</tr>
+<tr>
+<td>least_hash</td>
+<td>最少链接数,那个机器链接数少就分发</td>
+</tr>
+</tbody></table>
+<h3 id="1-1-加权轮询"><a href="#1-1-加权轮询" class="headerlink" title="1.1 加权轮询"></a>1.1 加权轮询</h3><p>比如实现访问5次web01，1次web02</p>
+<p>当web服务器配置不相同，有差距时，可以用此方法</p>
+<p>在<code>lb01</code>配置</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
+upstream node &#123;
+        server 172.16.1.7:80 weight&#x3D;5;
+        server 172.16.1.8:80 weight&#x3D;1;
+&#125;
+
+server &#123;
+...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="1-2-ip-hash"><a href="#1-2-ip-hash" class="headerlink" title="1.2 ip_hash"></a>1.2 ip_hash</h3><blockquote>
+<p>PS：不能与weight一起使用</p>
+</blockquote>
+<p>根据请求的IP地址，固定访问到某一后端，除非已选择的后端down了，有点浪费资源</p>
+<p>在<code>lb01</code>配置</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
+upstream node &#123;
+        ip_hash;
+        server 172.16.1.7:80;
+        server 172.16.1.8:80;
+&#125;
+
+server &#123; 
+...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="二、Nginx负载均衡后端状态"><a href="#二、Nginx负载均衡后端状态" class="headerlink" title="二、Nginx负载均衡后端状态"></a>二、Nginx负载均衡后端状态</h2><table>
+<thead>
+<tr>
+<th>状态</th>
+<th>概述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>down</td>
+<td>当前的server暂时不参与负载均衡</td>
+</tr>
+<tr>
+<td>backup</td>
+<td>预留的备份服务器</td>
+</tr>
+<tr>
+<td>max_conns</td>
+<td>限制最大的接收连接数</td>
+</tr>
+<tr>
+<td>max_fails（健康检查）</td>
+<td>允许请求失败的次数（不够精准，作用不大，得知道，面试会问）</td>
+</tr>
+<tr>
+<td>fail_timeout（健康检查）</td>
+<td>经过max_fails失败后, 服务暂停时间</td>
+</tr>
+</tbody></table>
+<h3 id="2-1-down状态"><a href="#2-1-down状态" class="headerlink" title="2.1 down状态"></a>2.1 down状态</h3><blockquote>
+<p>一般用于停机维护</p>
+</blockquote>
+<p>在<code>lb01</code>配置，可见当两台web的Nginx服务都正常时，只能访问web02，当web02的Nginx服务挂了，返回502</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
+upstream node &#123;
+        server 172.16.1.7:80 down;
+        server 172.16.1.8:80;
+&#125;
+
+server &#123;
+...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-2-backup状态"><a href="#2-2-backup状态" class="headerlink" title="2.2 backup状态"></a>2.2 backup状态</h3><p>在<code>lb01</code>配置，可见当两台web都正常时，只能访问web02，如果web02的服务挂了，会访问web01，当web02恢复后，再次访问到的是web02</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
+upstream node &#123;
+        server 172.16.1.7:80 backup;
+        server 172.16.1.8:80;
+&#125;
+
+server &#123;
+...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-3-健康检查"><a href="#2-3-健康检查" class="headerlink" title="2.3 健康检查"></a>2.3 健康检查</h3><blockquote>
+<p>自带的健康检查不够精准，且看不到信息，面试会问</p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
+upstream node &#123;
+        server 172.16.1.7:80 max_fails&#x3D;2 fail_timeout&#x3D;10s;
+        server 172.16.1.8:80 max_fails&#x3D;2 fail_timeout&#x3D;10s;
+&#125;
+
+server &#123;
+...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="三、第三方健康检查模块check-upstream"><a href="#三、第三方健康检查模块check-upstream" class="headerlink" title="三、第三方健康检查模块check_upstream"></a>三、第三方健康检查模块check_upstream</h2><blockquote>
+<p>检测更精准，且有页面可以展示服务端的状态，需要编译安装</p>
+</blockquote>
+<h3 id="3-1-编译安装Nginx"><a href="#3-1-编译安装Nginx" class="headerlink" title="3.1 编译安装Nginx"></a>3.1 编译安装Nginx</h3><p>1、安装依赖包</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb02 ~]# yum install -y gcc glibc gcc-c++ pcre-devel openssl-devel  patch libxml2 -libxml2-devel libxslt libxslt-devel gd-devel perl-ExtUtils-Embed gperftools-devel.x86_64 gperftools-libs.x86_64 gperftools.x86_64<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>2、下载Nginx源码及第三方模块源码</p>
+<blockquote>
+<p>PS：为保持一致，先通过yum源安装nginx，这是当前实验环境的Nginx版本</p>
+<p>[root@lb01 nginx]# nginx -version<br>nginx version: nginx&#x2F;1.20.1</p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb02 ~]# wget http:&#x2F;&#x2F;nginx.org&#x2F;download&#x2F;nginx-1.20.1.tar.gz
+[root@lb02 ~]# wget https:&#x2F;&#x2F;github.com&#x2F;yaoweibin&#x2F;nginx_upstream_check_module&#x2F;archive&#x2F;master.zip<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>3、解压nginx源码包以及第三方模块</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 ~]# unzip master.zip
+[root@lb01 ~]# tar -vxf nginx-1.20.1.tar.gz<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>4、打补丁</p>
+<blockquote>
+<p>打补丁(nginx的版本是1.20.1补丁就选择1.20.1的,p1代表在nginx目录，p0是不在nginx目录)</p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx-1.20.1]# cd nginx-1.20.1&#x2F;
+[root@lb01 nginx-1.20.1]# patch -p1 &lt; ..&#x2F;nginx_upstream_check_module-master&#x2F;check_1.20.1+.patch<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>5、编译Nginx，附带模块参数</p>
+<blockquote>
+<p>通过nginx -V获取configure参数，尽量保持一致</p>
+</blockquote>
+<p>–add-module&#x3D;&#x2F;root&#x2F;nginx_upstream_check_module-master</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx-1.20.1]# .&#x2F;configure --prefix&#x3D;&#x2F;usr&#x2F;share&#x2F;nginx --sbin-path&#x3D;&#x2F;usr&#x2F;sbin&#x2F;nginx --modules-path&#x3D;&#x2F;usr&#x2F;lib64&#x2F;nginx&#x2F;modules --conf-path&#x3D;&#x2F;etc&#x2F;nginx&#x2F;nginx.conf --error-log-path&#x3D;&#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log --http-log-path&#x3D;&#x2F;var&#x2F;log&#x2F;nginx&#x2F;access.log --http-client-body-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;client_body --http-proxy-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;proxy --http-fastcgi-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;fastcgi --http-uwsgi-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;uwsgi --http-scgi-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;scgi --pid-path&#x3D;&#x2F;run&#x2F;nginx.pid --lock-path&#x3D;&#x2F;run&#x2F;lock&#x2F;subsys&#x2F;nginx --user&#x3D;nginx --group&#x3D;nginx --with-compat --with-debug --with-google_perftools_module --with-http_addition_module --with-http_auth_request_module --with-http_dav_module --with-http_degradation_module --with-http_flv_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_image_filter_module&#x3D;dynamic --with-http_mp4_module --with-http_perl_module&#x3D;dynamic --with-http_random_index_module --with-http_realip_module --with-http_secure_link_module --with-http_slice_module --with-http_ssl_module --with-http_stub_status_module --with-http_sub_module --with-http_v2_module --with-http_xslt_module&#x3D;dynamic --with-mail&#x3D;dynamic --with-mail_ssl_module --with-pcre --with-pcre-jit --with-stream&#x3D;dynamic --with-stream_ssl_module --with-stream_ssl_preread_module --with-threads --add-module&#x3D;&#x2F;root&#x2F;nginx_upstream_check_module-master<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>6、在已有的负载均衡上增加健康检查的功能</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx-1.20.1]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
+upstream node &#123;
+        server 172.16.1.7:80;
+        server 172.16.1.8:80;
+        check interval&#x3D;3000 rise&#x3D;2 fall&#x3D;3 timeout&#x3D;1000 type&#x3D;tcp;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="3-2-功能测试"><a href="#3-2-功能测试" class="headerlink" title="3.2 功能测试"></a>3.2 功能测试</h3><p>1、正常情况下的检测数据</p>
+<p><img src="/img/image-20210821113447825.png" alt="image-20210821113447825"></p>
+<p>2、测试将web01的nginx服务关掉</p>
+<p><img src="/img/image-20210821114011230.png" alt="image-20210821114011230"></p>
+<p>3、日志分析</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx-1.20.1]# tail -f &#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log
+# 两web服务正常，能获取peer
+2021&#x2F;08&#x2F;21 02:42:11 [error] 50522#50522: enable check peer: 172.16.1.8:80
+2021&#x2F;08&#x2F;21 02:42:12 [error] 50522#50522: enable check peer: 172.16.1.7:80
+2021&#x2F;08&#x2F;21 02:46:17 [error] 50522#50522: *13 connect() failed (111: Connection refused) while connecting to upstream, client: 10.0.0.1, server: node.oldboy.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, upstream: &quot;http:&#x2F;&#x2F;172.16.1.7:80&#x2F;&quot;, host: &quot;node.oldboy.com&quot;
+# 停止web01的nginx服务
+2021&#x2F;08&#x2F;21 02:46:20 [error] 50522#50522: disable check peer: 172.16.1.7:80
+# 重新启动web01的nginx服务
+2021&#x2F;08&#x2F;21 02:47:59 [error] 50522#50522: enable check peer: 172.16.1.7:80<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="四、如何解决网站重复登录的问题"><a href="#四、如何解决网站重复登录的问题" class="headerlink" title="四、如何解决网站重复登录的问题"></a>四、如何解决网站重复登录的问题</h2><p>有三种方法解决：</p>
+<ol>
+<li>ip_hash – 会造成某一台主机的压力过大</li>
+<li>session复制</li>
+<li>session共享<ol>
+<li>本地文件 –&gt; nfs共享</li>
+<li>通过程序，写入redis数据库（常用）</li>
+<li>通过程序，写入mysql数据库</li>
+</ol>
+</li>
+</ol>
+<p>本案例，选用3.2配置，session共享，写入redis数据库</p>
+<h3 id="4-1-安装phpmyadmin重现问题"><a href="#4-1-安装phpmyadmin重现问题" class="headerlink" title="4.1 安装phpmyadmin重现问题"></a>4.1 安装phpmyadmin重现问题</h3><p><code>web01</code>和<code>web02</code>都需要安装</p>
+<p>1、配置Nginx</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cat php.conf
+server &#123;
+	listen 80;
+	server_name php.oldboy.com;
+	root &#x2F;code&#x2F;phpMyAdmin-4.8.4-all-languages;
+
+	location &#x2F; &#123;
+		index index.php index.html;
+	&#125;
+
+	location ~ \.php$ &#123;
+		fastcgi_pass 127.0.0.1:9000;
+		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+		include fastcgi_params;
+	&#125;
+&#125;
+[root@web01 conf.d]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>2、安装phpmyadmin</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cd &#x2F;code
+[root@web01 code]# wget https:&#x2F;&#x2F;files.phpmyadmin.net&#x2F;phpMyAdmin&#x2F;4.8.4&#x2F;phpMyAdmin-4.8.4-all-languages.zip
+[root@web01 code]# unzip phpMyAdmin-4.8.4-all-languages.zip<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>3、配置phpmyadmin连接远程数据库</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# cd phpMyAdmin-4.8.4-all-languages&#x2F;
+[root@web01 phpMyAdmin-4.8.4-all-languages]# cp config.sample.inc.php config.inc.php
+[root@web01 phpMyAdmin-4.8.4-all-languages]# vim config.inc.php
+&#x2F;* Server parameters *&#x2F;
+$cfg[&#39;Servers&#39;][$i][&#39;host&#39;] &#x3D; &#39;172.16.1.51&#39;;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>4、配置授权</p>
+<blockquote>
+<p>这个文件夹中会记录session，需要权限</p>
+<p>session_start(): Failed to read session data: files (path: &#x2F;var&#x2F;lib&#x2F;php&#x2F;session)</p>
+</blockquote>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# chown -R www.www &#x2F;var&#x2F;lib&#x2F;php&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>5、将web01上配置好的phpmyadmin以及nginx的配置文件推送到web02主机上</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# scp -rp  phpMyAdmin-4.8.4-all-languages root@172.16.1.8:&#x2F;code&#x2F;
+[root@web01 code]# scp &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;php.conf  root@172.16.1.8:&#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>6、重载Nginx服务，授权访问权限</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web02 code]# systemctl restart nginx
+[root@web02 code]# chown -R www.www &#x2F;var&#x2F;lib&#x2F;php&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>7、接入负载均衡，并重启nginx服务，<code>lb01</code>操作</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 conf.d]# vim proxy_php.com.conf 
+upstream php &#123;
+        server 172.16.1.7:80;
+        server 172.16.1.8:80;
+&#125;
+server &#123;
+        listen 80;
+        server_name php.oldboy.com;
+        location &#x2F; &#123;
+                proxy_pass http:&#x2F;&#x2F;php;
+                include proxy_params;
+        &#125;
+&#125;
+
+[root@lb01 conf.d]# nginx -t
+nginx: the configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf syntax is ok
+nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test is successful
+[root@lb01 conf.d]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>9、测试访问</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">网页访问：
+	http:&#x2F;&#x2F;php.oldboy.com
+登录账户:
+	采用db01（172.16.1.51）的mysql远程账户oldboy&#x2F;Bgx123.com
+此时访问phpmyadmin登录将一直失败，因为轮询访问，session一直变：
+报错：
+Failed to set session cookie. Maybe you are using HTTP instead of HTTPS to access phpMyAdmin.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="4-2-解决问题"><a href="#4-2-解决问题" class="headerlink" title="4.2 解决问题"></a>4.2 解决问题</h3><p>1、在<code>db01</code>安装redis数据库</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@db01 ~]# yum install redis -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>2、配置并启动redis</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@db01 ~]# sed  -i &#39;&#x2F;^bind&#x2F;c bind 127.0.0.1 172.16.1.51&#39; &#x2F;etc&#x2F;redis.conf
+[root@db01 ~]# systemctl start redis
+[root@db01 ~]# systemctl enable redis<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>3、<code>web01</code>的php配置session连接redis</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">#1.修改&#x2F;etc&#x2F;php.ini文件
+[root@web01 ~]# vim &#x2F;etc&#x2F;php.ini
+session.save_handler &#x3D; redis
+session.save_path &#x3D; &quot;tcp:&#x2F;&#x2F;172.16.1.51:6379&quot;
+;session.save_path &#x3D; &quot;tcp:&#x2F;&#x2F;172.16.1.51:6379?auth&#x3D;123&quot; #如果redis存在密码，则使用该方式
+session.auto_start &#x3D; 1<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>4、注释php-fpm.d&#x2F;<a target="_blank" rel="noopener" href="http://www.conf里面的两条内容,否则session内容会一直写入/var/lib/php/session%E7%9B%AE%E5%BD%95%E4%B8%AD">www.conf里面的两条内容，否则session内容会一直写入/var/lib/php/session目录中</a></p>
+<pre class="line-numbers language-she" data-language="she"><code class="language-she">;php_value[session.save_handler] &#x3D; files
+;php_value[session.save_path]    &#x3D; &#x2F;var&#x2F;lib&#x2F;php&#x2F;session<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>5、重启php-fpm</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web02 code]# systemctl restart php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>6、将<code>web01</code>的配置文件推送到<code>web02</code>上</p>
+<pre class="line-numbers language-she" data-language="she"><code class="language-she">[root@web01 code]# scp &#x2F;etc&#x2F;php.ini root@172.16.1.8:&#x2F;etc&#x2F;php.ini  
+[root@web01 code]# scp &#x2F;etc&#x2F;php-fpm.d&#x2F;www.conf root@172.16.1.8:&#x2F;etc&#x2F;php-fpm.d&#x2F;www.conf <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>7、重启服务</p>
+<pre class="line-numbers language-she" data-language="she"><code class="language-she">[root@web02 code]# systemctl restart php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>8、再次测试访问网站</p>
+<p>可以登录，并且session的值将记录到redis数据库</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@db01 ~]# redis-cli -h 172.16.1.51
+172.16.1.51:6379&gt; KEYS *
+1) &quot;PHPREDIS_SESSION:716e61cabeb40f974fcbcdcac65f8607&quot;
+2) &quot;PHPREDIS_SESSION:42ca5a8ea9375a93a7974427b77b3dd7&quot;
+172.16.1.51:6379&gt;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>9、刷新页面的负载均衡效果展示</p>
+<p><img src="/img/image-20210823225246243.png" alt="image-20210823225246243"></p>
+<p><img src="/img/image-20210823225305632.png" alt="image-20210823225305632"></p>
+<p>10、cookie保存到redis展示</p>
+<p><img src="/img/image-20210823225412626.png" alt="image-20210823225412626"></p>
 
       
     </div>
