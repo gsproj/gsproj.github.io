@@ -1978,6 +1978,191 @@ sed -i &#39;s#200#41#g&#39; &#x2F;etc&#x2F;sysconfig&#x2F;network-scripts&#x2F;i
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/03-NFS%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/03-NFS%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/" class="post-title-link" itemprop="url">运维之综合架构--03-NFS服务器搭建</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:15:48" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li>学习笔记</li>
+</ul>
+<hr>
+<h2 id="一、NFS简介"><a href="#一、NFS简介" class="headerlink" title="一、NFS简介"></a>一、NFS简介</h2><blockquote>
+<p>NFS是Network File System的缩写及网络文件系统。NFS主要功能是通过局域网络让不同的主机系统之间可以共享文件或目录。<br>NFS系统和Windows网络共享、网络驱动器类似, 只不过windows用于局域网, NFS用于企业集群架构中<br>如果是大型网站, 会用到更复杂的分布式文件系统FastDFS（音频、小说、视频）,glusterfs（iso镜像）,HDFS<br>NFS（图片、）解决共享前端web共享</p>
+</blockquote>
+<h3 id="1-1-NFS有什么用？"><a href="#1-1-NFS有什么用？" class="headerlink" title="1.1 NFS有什么用？"></a>1.1 NFS有什么用？</h3><p>解决前端web静态资源的共享<br>解决前端web静态资源一致性<br>解决前端web磁盘空间的浪费</p>
+<h3 id="1-2-NFS的文件操作方式"><a href="#1-2-NFS的文件操作方式" class="headerlink" title="1.2 NFS的文件操作方式"></a>1.2 NFS的文件操作方式</h3><p>1.当用户执行mkdir命令, 该命令会调用shell解释器翻译给内核。<br>2.内核解析完成后会驱动对应的硬件设备，完成相应的操作。</p>
+<h3 id="1-3-NFS的实现原理"><a href="#1-3-NFS的实现原理" class="headerlink" title="1.3 NFS的实现原理"></a>1.3 NFS的实现原理</h3><p>1.用户进程访问NFS客户端，使用不同的函数对数据进行处理<br>2.NFS客户端通过TCP&#x2F;IP的方式传递给NFS服务端。<br>3.NFS服务端接收到请求后，会先调用portmap进程进行端口映射。<br>4.nfsd进程用于判断NFS客户端是否拥有权限连接NFS服务端。<br>5.Rpc.mount进程判断客户端是否有对应的权限进行验证。<br>6.idmap进程实现用户映射和压缩<br>7.最后NFS服务端会将对应请求的函数转换为本地能识别的命令，传递至内核，由内核驱动硬件。<br>注意: rpc是一个远程过程调用，那么使用nfs必须有rpc服务</p>
+<h3 id="1-4-NFS的优缺点"><a href="#1-4-NFS的优缺点" class="headerlink" title="1.4 NFS的优缺点"></a>1.4 NFS的优缺点</h3><p>优点</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.NFS文件系统简单易用、方便部署、数据可靠、服务稳定、满足中小企业需求。
+2.NFS文件系统内存放的数据都在文件系统之上，所有数据都是能看得见。<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>缺点</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.存在单点故障, 如果构建高可用维护麻烦
+web-&gt;nfs(sersync)-&gt;backup
+2.NFS数据明文, 并不对数据做任何校验。
+3.客户端挂载NFS服务没有密码验证, 安全性一般(内网使用)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>3.NFS应用建议<br>1.生产场景应将静态数据尽可能往前端推, 减少后端存储压力<br>2.必须将存储里的静态资源通过CDN缓存jpg\png\mp4\avi\css\js<br>3.如果没有缓存或架构本身历史遗留问题太大, 在多存储也无用</p>
+</blockquote>
+<h2 id="二、NFS部署"><a href="#二、NFS部署" class="headerlink" title="二、NFS部署"></a>二、NFS部署</h2><h3 id="2-1-服务端"><a href="#2-1-服务端" class="headerlink" title="2.1 服务端"></a>2.1 服务端</h3><p>安装</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# yum install nfs-utils -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>配置</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# cat &#x2F;etc&#x2F;exports
+&#x2F;data 172.16.1.0&#x2F;24(rw,sync,all_squash)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>授权</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# mkdir &#x2F;data
+[root@nfs ~]# chown -R nfsnobody.nfsnobody &#x2F;data&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>启动服务</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# systemctl start nfs-server
+[root@nfs ~]# systemctl enable nfs-server<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>检查</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# cat &#x2F;var&#x2F;lib&#x2F;nfs&#x2F;etab 
+&#x2F;data	172.16.1.0&#x2F;24(rw,sync,wdelay,hide,nocrossmnt,secure,root_squash,all_squash,no_subtree_check,secure_locks,acl,no_pnfs,anonuid&#x3D;65534,anongid&#x3D;65534,sec&#x3D;sys,rw,secure,root_squash,all_squash)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<h3 id="2-2-客户端"><a href="#2-2-客户端" class="headerlink" title="2.2 客户端"></a>2.2 客户端</h3><p>安装</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# yum install nfs-utils -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>检查nfs是否有共享内容</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# showmount -e 172.16.1.31
+Export list for 172.16.1.31:	
+&#x2F;data 172.16.1.0&#x2F;24<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>挂载nfs目录（临时）</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# mount -t nfs 172.16.1.31:&#x2F;data &#x2F;opt
+[root@web01 ~]# df -h
+Filesystem         Size  Used Avail Use% Mounted on
+172.16.1.31:&#x2F;data   99G  1.8G   98G   2% &#x2F;opt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>挂载nfs目录（永久）</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# vim &#x2F;etc&#x2F;fstab 
+172.16.1.31:&#x2F;data  &#x2F;opt  nfs  defaults  0  0
+[root@web01 ~]# mount -a   #验证fstab开机启动是否填写错误。<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-3-NFS配置参数说明"><a href="#2-3-NFS配置参数说明" class="headerlink" title="2.3 NFS配置参数说明"></a>2.3 NFS配置参数说明</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">ro				只读权限
+root_squash		当NFS客户端以root管理员访问时，映射为NFS服务器的匿名用户(不常用)
+no_root_squash	当NFS客户端以root管理员访问时，映射为NFS服务器的root管理员(不常用)
+no_all_squash	无论NFS客户端使用什么账户访问，都不进行压缩
+async			优先将数据保存到内存，然后再写入硬盘；这样效率更高，但可能会丢失数据
+
+rw*				读写权限
+sync*			同时将数据写入到内存与硬盘中，保证不丢失数据
+all_squash*		无论NFS客户端使用什么账户访问，均映射为NFS服务器的匿名用户(常用)
+anonuid*		配置all_squash使用,指定NFS的用户UID,必须存在系统
+anongid*		配置all_squash使用,指定NFS的用户UID,必须存在系统<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-4-验证ro权限"><a href="#2-4-验证ro权限" class="headerlink" title="2.4 验证ro权限"></a>2.4 验证ro权限</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# cat &#x2F;etc&#x2F;exports
+&#x2F;data 172.16.1.0&#x2F;24(ro,sync,all_squash)
+[root@nfs ~]# systemctl restart nfs-server
+
+[root@web01 ~]# touch &#x2F;opt&#x2F;ttt
+touch: cannot touch ‘&#x2F;opt&#x2F;ttt’: Read-only file system		#通常这样的错误都是设定的ro权限导致<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="2-5-验证all-squash、anonuid、anongid权限"><a href="#2-5-验证all-squash、anonuid、anongid权限" class="headerlink" title="2.5 验证all_squash、anonuid、anongid权限"></a>2.5 验证all_squash、anonuid、anongid权限</h3><p>服务端</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# cat &#x2F;etc&#x2F;exports
+&#x2F;data 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
+创建用户
+[root@nfs ~]# groupadd -g 666 www
+[root@nfs ~]# useradd -u666 -g666 www
+[root@nfs ~]# id www
+uid&#x3D;666(www) gid&#x3D;666(www) groups&#x3D;666(www)
+授权
+[root@nfs ~]# chown -R www.www &#x2F;data&#x2F;
+重启
+[root@nfs ~]# systemctl restart nfs-server<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>客户端重新挂载验证</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 opt]# touch file
+[root@web01 opt]# touch test
+[root@web01 opt]# ll
+total 4
+-rw-r--r-- 1 666 666 0 Jan  7 11:29 file
+-rw-r--r-- 1 666 666 0 Jan  7 11:29 test<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>PS:由于客户端没有创建id为666的www用户，因此看到的属组和属主都是666</p>
+</blockquote>
+<p>客户端如果觉得666不好看，建议在客户端上创建同名的用户以及uid</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# groupadd -g 666 www
+[root@web01 ~]# useradd -u 666 -g 666 www
+[root@web01 ~]# id www
+uid&#x3D;666(www) gid&#x3D;666(www) groups&#x3D;666(www)
+[root@web01 ~]# ll &#x2F;opt&#x2F;
+total 4
+-rw-r--r-- 1 www www 0 Jan  7 11:29 file
+-rw-r--r-- 1 www www 0 Jan  7 11:29 test<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/02-Rsync%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2295,191 +2480,6 @@ find $SRC&#x2F; -type d -mtime +7|xargs rm -rf <span aria-hidden="true" class="l
 *&#x2F;3 * * * * sh &#x2F;server&#x2F;scripts&#x2F;check_client_data.sh<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
 
 <h4 id="3-1-5-增加客户端数量"><a href="#3-1-5-增加客户端数量" class="headerlink" title="3.1.5 增加客户端数量"></a>3.1.5 增加客户端数量</h4><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">多创建几台客户端服务器，测试<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/03-NFS%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/03-NFS%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/" class="post-title-link" itemprop="url">运维之综合架构--03-NFS服务器搭建</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:15:48" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <ul>
-<li>学习笔记</li>
-</ul>
-<hr>
-<h2 id="一、NFS简介"><a href="#一、NFS简介" class="headerlink" title="一、NFS简介"></a>一、NFS简介</h2><blockquote>
-<p>NFS是Network File System的缩写及网络文件系统。NFS主要功能是通过局域网络让不同的主机系统之间可以共享文件或目录。<br>NFS系统和Windows网络共享、网络驱动器类似, 只不过windows用于局域网, NFS用于企业集群架构中<br>如果是大型网站, 会用到更复杂的分布式文件系统FastDFS（音频、小说、视频）,glusterfs（iso镜像）,HDFS<br>NFS（图片、）解决共享前端web共享</p>
-</blockquote>
-<h3 id="1-1-NFS有什么用？"><a href="#1-1-NFS有什么用？" class="headerlink" title="1.1 NFS有什么用？"></a>1.1 NFS有什么用？</h3><p>解决前端web静态资源的共享<br>解决前端web静态资源一致性<br>解决前端web磁盘空间的浪费</p>
-<h3 id="1-2-NFS的文件操作方式"><a href="#1-2-NFS的文件操作方式" class="headerlink" title="1.2 NFS的文件操作方式"></a>1.2 NFS的文件操作方式</h3><p>1.当用户执行mkdir命令, 该命令会调用shell解释器翻译给内核。<br>2.内核解析完成后会驱动对应的硬件设备，完成相应的操作。</p>
-<h3 id="1-3-NFS的实现原理"><a href="#1-3-NFS的实现原理" class="headerlink" title="1.3 NFS的实现原理"></a>1.3 NFS的实现原理</h3><p>1.用户进程访问NFS客户端，使用不同的函数对数据进行处理<br>2.NFS客户端通过TCP&#x2F;IP的方式传递给NFS服务端。<br>3.NFS服务端接收到请求后，会先调用portmap进程进行端口映射。<br>4.nfsd进程用于判断NFS客户端是否拥有权限连接NFS服务端。<br>5.Rpc.mount进程判断客户端是否有对应的权限进行验证。<br>6.idmap进程实现用户映射和压缩<br>7.最后NFS服务端会将对应请求的函数转换为本地能识别的命令，传递至内核，由内核驱动硬件。<br>注意: rpc是一个远程过程调用，那么使用nfs必须有rpc服务</p>
-<h3 id="1-4-NFS的优缺点"><a href="#1-4-NFS的优缺点" class="headerlink" title="1.4 NFS的优缺点"></a>1.4 NFS的优缺点</h3><p>优点</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.NFS文件系统简单易用、方便部署、数据可靠、服务稳定、满足中小企业需求。
-2.NFS文件系统内存放的数据都在文件系统之上，所有数据都是能看得见。<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>缺点</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.存在单点故障, 如果构建高可用维护麻烦
-web-&gt;nfs(sersync)-&gt;backup
-2.NFS数据明文, 并不对数据做任何校验。
-3.客户端挂载NFS服务没有密码验证, 安全性一般(内网使用)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<blockquote>
-<p>3.NFS应用建议<br>1.生产场景应将静态数据尽可能往前端推, 减少后端存储压力<br>2.必须将存储里的静态资源通过CDN缓存jpg\png\mp4\avi\css\js<br>3.如果没有缓存或架构本身历史遗留问题太大, 在多存储也无用</p>
-</blockquote>
-<h2 id="二、NFS部署"><a href="#二、NFS部署" class="headerlink" title="二、NFS部署"></a>二、NFS部署</h2><h3 id="2-1-服务端"><a href="#2-1-服务端" class="headerlink" title="2.1 服务端"></a>2.1 服务端</h3><p>安装</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# yum install nfs-utils -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>配置</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# cat &#x2F;etc&#x2F;exports
-&#x2F;data 172.16.1.0&#x2F;24(rw,sync,all_squash)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>授权</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# mkdir &#x2F;data
-[root@nfs ~]# chown -R nfsnobody.nfsnobody &#x2F;data&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>启动服务</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# systemctl start nfs-server
-[root@nfs ~]# systemctl enable nfs-server<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>检查</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# cat &#x2F;var&#x2F;lib&#x2F;nfs&#x2F;etab 
-&#x2F;data	172.16.1.0&#x2F;24(rw,sync,wdelay,hide,nocrossmnt,secure,root_squash,all_squash,no_subtree_check,secure_locks,acl,no_pnfs,anonuid&#x3D;65534,anongid&#x3D;65534,sec&#x3D;sys,rw,secure,root_squash,all_squash)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<h3 id="2-2-客户端"><a href="#2-2-客户端" class="headerlink" title="2.2 客户端"></a>2.2 客户端</h3><p>安装</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# yum install nfs-utils -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>检查nfs是否有共享内容</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# showmount -e 172.16.1.31
-Export list for 172.16.1.31:	
-&#x2F;data 172.16.1.0&#x2F;24<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<p>挂载nfs目录（临时）</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# mount -t nfs 172.16.1.31:&#x2F;data &#x2F;opt
-[root@web01 ~]# df -h
-Filesystem         Size  Used Avail Use% Mounted on
-172.16.1.31:&#x2F;data   99G  1.8G   98G   2% &#x2F;opt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>挂载nfs目录（永久）</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# vim &#x2F;etc&#x2F;fstab 
-172.16.1.31:&#x2F;data  &#x2F;opt  nfs  defaults  0  0
-[root@web01 ~]# mount -a   #验证fstab开机启动是否填写错误。<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="2-3-NFS配置参数说明"><a href="#2-3-NFS配置参数说明" class="headerlink" title="2.3 NFS配置参数说明"></a>2.3 NFS配置参数说明</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">ro				只读权限
-root_squash		当NFS客户端以root管理员访问时，映射为NFS服务器的匿名用户(不常用)
-no_root_squash	当NFS客户端以root管理员访问时，映射为NFS服务器的root管理员(不常用)
-no_all_squash	无论NFS客户端使用什么账户访问，都不进行压缩
-async			优先将数据保存到内存，然后再写入硬盘；这样效率更高，但可能会丢失数据
-
-rw*				读写权限
-sync*			同时将数据写入到内存与硬盘中，保证不丢失数据
-all_squash*		无论NFS客户端使用什么账户访问，均映射为NFS服务器的匿名用户(常用)
-anonuid*		配置all_squash使用,指定NFS的用户UID,必须存在系统
-anongid*		配置all_squash使用,指定NFS的用户UID,必须存在系统<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="2-4-验证ro权限"><a href="#2-4-验证ro权限" class="headerlink" title="2.4 验证ro权限"></a>2.4 验证ro权限</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# cat &#x2F;etc&#x2F;exports
-&#x2F;data 172.16.1.0&#x2F;24(ro,sync,all_squash)
-[root@nfs ~]# systemctl restart nfs-server
-
-[root@web01 ~]# touch &#x2F;opt&#x2F;ttt
-touch: cannot touch ‘&#x2F;opt&#x2F;ttt’: Read-only file system		#通常这样的错误都是设定的ro权限导致<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h3 id="2-5-验证all-squash、anonuid、anongid权限"><a href="#2-5-验证all-squash、anonuid、anongid权限" class="headerlink" title="2.5 验证all_squash、anonuid、anongid权限"></a>2.5 验证all_squash、anonuid、anongid权限</h3><p>服务端</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@nfs ~]# cat &#x2F;etc&#x2F;exports
-&#x2F;data 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
-创建用户
-[root@nfs ~]# groupadd -g 666 www
-[root@nfs ~]# useradd -u666 -g666 www
-[root@nfs ~]# id www
-uid&#x3D;666(www) gid&#x3D;666(www) groups&#x3D;666(www)
-授权
-[root@nfs ~]# chown -R www.www &#x2F;data&#x2F;
-重启
-[root@nfs ~]# systemctl restart nfs-server<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>客户端重新挂载验证</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 opt]# touch file
-[root@web01 opt]# touch test
-[root@web01 opt]# ll
-total 4
--rw-r--r-- 1 666 666 0 Jan  7 11:29 file
--rw-r--r-- 1 666 666 0 Jan  7 11:29 test<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<blockquote>
-<p>PS:由于客户端没有创建id为666的www用户，因此看到的属组和属主都是666</p>
-</blockquote>
-<p>客户端如果觉得666不好看，建议在客户端上创建同名的用户以及uid</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# groupadd -g 666 www
-[root@web01 ~]# useradd -u 666 -g 666 www
-[root@web01 ~]# id www
-uid&#x3D;666(www) gid&#x3D;666(www) groups&#x3D;666(www)
-[root@web01 ~]# ll &#x2F;opt&#x2F;
-total 4
--rw-r--r-- 1 www www 0 Jan  7 11:29 file
--rw-r--r-- 1 www www 0 Jan  7 11:29 test<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 
       
@@ -4022,253 +4022,6 @@ server &#123;
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/10-Nginx(%E5%9B%9B)LNMP%E6%9E%B6%E6%9E%84%E6%8B%86%E5%88%86/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="GongSheng">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="GongSheng Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/10-Nginx(%E5%9B%9B)LNMP%E6%9E%B6%E6%9E%84%E6%8B%86%E5%88%86/" class="post-title-link" itemprop="url">运维之综合架构--07--Nginx(四)LNMP架构拆分</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:16:31" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="一、拆分数据库"><a href="#一、拆分数据库" class="headerlink" title="一、拆分数据库"></a>一、拆分数据库</h2><blockquote>
-<p>为什么要拆分数据库?</p>
-<p>mysql内存占用大，容易引起网页访问速度变慢，甚至oom(out of memory)被系统自动kill掉，不安全</p>
-</blockquote>
-<h3 id="1-2-环境准备"><a href="#1-2-环境准备" class="headerlink" title="1.2 环境准备"></a>1.2 环境准备</h3><table>
-<thead>
-<tr>
-<th>主机名称</th>
-<th>应用环境</th>
-<th>外网地址</th>
-<th>内网地址</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>web01</td>
-<td>nginx+php</td>
-<td>10.0.0.7</td>
-<td>172.16.1.7</td>
-</tr>
-<tr>
-<td>db01</td>
-<td>mysql</td>
-<td></td>
-<td>172.16.1.51</td>
-</tr>
-</tbody></table>
-<h3 id="1-2-拆分过程"><a href="#1-2-拆分过程" class="headerlink" title="1.2 拆分过程"></a>1.2 拆分过程</h3><p>1、备份172.16.1.7服务器上mysql的数据</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# mysqldump -uroot -p&#39;Bgx123.com&#39; --all-databases --single-transaction &gt; mysql-all.sql<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>2、传输172.16.1.7的备份数据至172.16.1.51的服务器上</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# scp mysql-all.sql root@172.16.1.51:&#x2F;tmp<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<p>3、需要先在172.16.1.51服务器上安装mysql服务，然后使用mysql命令进行还原。</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@db01 ~]# yum install mariadb-server mariadb -y
-[root@db01 ~]# systemctl enable mariadb
-[root@db01 ~]# systemctl start mariadb
-[root@db01 ~]# mysql &lt;&#x2F;tmp&#x2F;mysql-all.sql
-[root@db01 ~]# systemctl restart mariadb
-[root@db01 ~]# mysql -uroot -pBgx123.com
-MariaDB [(none)]&gt; show databases;
-+--------------------+
-| Database           |
-+--------------------+
-| information_schema |
-| edusoho            |
-| mysql              |
-| performance_schema |
-| test               |
-| wordpress          |
-| zh                 |
-+--------------------+
-7 rows in set (0.00 sec)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>4、将web程序连接的本地数据库修改到远程数据库上。</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1）先在本地172.16.1.7服务器上停止本地的数据库
-[root@web01 ~]# systemctl disable mariadb
-[root@web01 ~]# systemctl stop mariadb
-
-2）在172.16.1.51的服务器上授权远程主机能够能连接mysql数据库
-[root@db01 ~]# mysql -uroot -pBgx123.com
-MariaDB [(none)]&gt; grant all privileges on *.* to oldboy@&#39;%&#39; identified by &#39;Bgx123.com&#39;;
-解释：
-*.*: 所有数据库下的所有表
-oldboy@&#39;%&#39;: 允许所有网段的oldboy用户访问
-identify: 设置密码
-
-3）在172.16.1.7服务器上测试远程账户能否连接172.16.1.51的数据库
-[root@web01 wordpress]# yum install mariadb -y
-[root@web01 wordpress]# mysql -h 172.16.1.51 -uoldboy -pBgx123.com
-MariaDB [(none)]&gt; 
-
-4）在172.16.1.7服务器上修改web程序连接数据库的配置文件
-[root@web01 wordpress]# vim &#x2F;code&#x2F;wordpress&#x2F;wp-config.php
-&#x2F;&#x2F; ** MySQL 设置 - 具体信息来自您正在使用的主机 ** &#x2F;&#x2F;
-&#x2F;** WordPress数据库的名称 *&#x2F;
-define(&#39;DB_NAME&#39;, &#39;wordpress&#39;);
-
-&#x2F;** MySQL数据库用户名 *&#x2F;
-define(&#39;DB_USER&#39;, &#39;oldboy&#39;);
-
-&#x2F;** MySQL数据库密码 *&#x2F;
-define(&#39;DB_PASSWORD&#39;, &#39;Bgx123.com&#39;);
-
-&#x2F;** MySQL主机 *&#x2F;
-define(&#39;DB_HOST&#39;, &#39;172.16.1.51&#39;);<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>5、拆分172.16.1.7wecenter连接远程172.16.1.51数据库信息</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 zh]# grep -R &quot;Bgx123.com&quot; *
-	system&#x2F;config&#x2F;database.php:  &#39;password&#39; &#x3D;&gt; &#39;Bgx123.com&#39;,
-[root@web01 zh]# vim &#x2F;code&#x2F;zh&#x2F;system&#x2F;config&#x2F;database.php 
-	$config[&#39;driver&#39;] &#x3D; &#39;MySQLi&#39;;^M
-	$config[&#39;master&#39;] &#x3D; array (
-	  &#39;charset&#39; &#x3D;&gt; &#39;utf8&#39;,
-	  &#39;host&#39; &#x3D;&gt; &#39;172.16.1.51&#39;,
-	  &#39;username&#39; &#x3D;&gt; &#39;oldboy&#39;,
-	  &#39;password&#39; &#x3D;&gt; &#39;Bgx123.com&#39;,
-	  &#39;dbname&#39; &#x3D;&gt; &#39;zh&#39;,
-	);^M<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<p>6、拆分172.16.1.7 edusoho连接远程172.16.1.51数据库信息</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 edusoho]# vim &#x2F;code&#x2F;edusoho&#x2F;app&#x2F;config&#x2F;parameters.yml
-database_driver: pdo_mysql
-database_host: 172.16.1.51
-database_port: 3306
-database_name: edusoho
-database_user: oldboy
-database_password: &#39;Bgx123.com&#39;
-
-必须清理缓存
-[root@web01 edusoho]# rm -rf &#x2F;code&#x2F;edusoho&#x2F;app&#x2F;cache&#x2F;*<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="二、扩展多台web服务器"><a href="#二、扩展多台web服务器" class="headerlink" title="二、扩展多台web服务器"></a>二、扩展多台web服务器</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.统一环境
-    0）准备对应的www用户
-    [root@web02 ~]# groupadd -g666 www
-    [root@web02 ~]# useradd -u666 -g666 www
-
-    1）拷贝web01上面的yum仓库
-    [root@web02 ~]# scp root@172.16.1.7:&#x2F;etc&#x2F;yum.repos.d&#x2F;*.repo &#x2F;etc&#x2F;yum.repos.d&#x2F;
-
-    2）安装nginx和php
-    [root@web02 ~]# yum -y install nginx php71w php71w-cli php71w-common php71w-devel php71w-embedded php71w-gd php71w-mcrypt php71w-mbstring php71w-pdo php71w-xml php71w-fpm php71w-mysqlnd php71w-opcache php71w-pecl-memcached php71w-pecl-redis php71w-pecl-mongodb
-
-2.统一配置（同步web01上面的配置到web02）
-    1）同步nginx
-    [root@web02 ~]# rsync  -avz --delete root@172.16.1.7:&#x2F;etc&#x2F;nginx&#x2F; &#x2F;etc&#x2F;nginx&#x2F;
-    [root@web02 ~]# nginx -t
-    [root@web02 ~]# systemctl enable nginx
-    [root@web02 ~]# systemctl start nginx
-
-    2）同步php（&#x2F;etc&#x2F;php-fpm.conf &#x2F;etc&#x2F;php-fpm.d  &#x2F;etc&#x2F;php.ini）
-    [root@web02 ~]# rsync  -avz --delete root@172.16.1.7:&#x2F;etc&#x2F;php* &#x2F;etc&#x2F;
-    [root@web02 ~]# systemctl enable php-fpm
-    [root@web02 ~]# systemctl start php-fpm
-
-3.统一代码
-    [root@web01 ~]# tar czf code.tar.gz &#x2F;code				#在web01上打包站点
-    [root@web01 ~]# scp code.tar.gz root@172.16.1.8:&#x2F;tmp	#在web01上将打包好的代码发送给web02
-    [root@web02 ~]# tar xf &#x2F;tmp&#x2F;code.tar.gz -C &#x2F;			#在web02上进行解压，并解压到&#x2F;目录下
-
-4.配置解析，进行访问<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-<h2 id="三、NFS共享多台web的静态资源"><a href="#三、NFS共享多台web的静态资源" class="headerlink" title="三、NFS共享多台web的静态资源"></a>三、NFS共享多台web的静态资源</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.准备172.16.1.31共享存储服务器，规划目录，配置好权限
-    0）创建用户
-    [root@nfs ~]# groupadd -g666 www
-    [root@nfs ~]# useradd -u666 -g666 www	
-
-    1）安装
-    [root@nfs ~]# yum install nfs-utils -y
-
-    2）配置
-    [root@nfs ~]# cat &#x2F;etc&#x2F;exports
-    &#x2F;data&#x2F;blog 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
-    &#x2F;data&#x2F;zh 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
-    &#x2F;data&#x2F;edu 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
-
-    3）根据配置，创建目录，准备用户，授权等等
-    [root@nfs ~]# rm -rf &#x2F;data&#x2F;
-    [root@nfs ~]# mkdir &#x2F;data&#x2F;&#123;blog,zh,edu&#125; -p
-    [root@nfs ~]# chown -R www.www &#x2F;data&#x2F;
-
-    4）启动
-    [root@nfs ~]# systemctl enable nfs-utils 
-    [root@nfs ~]# systemctl restart nfs-utils
-
-2.将图片较多的web02服务器，推送到nfs共享存储上
-    http:&#x2F;&#x2F;blog.oldboy.com&#x2F;wp-content&#x2F;uploads&#x2F;2019&#x2F;01&#x2F;timg.jpg
-
-    [root@web02 ~]# cd &#x2F;code&#x2F;wordpress&#x2F;wp-content
-    [root@web02 wp-content]# scp -r uploads&#x2F;* root@172.16.1.31:&#x2F;data&#x2F;blog&#x2F;
-
-    注意：需要上nfs服务器上进行重新的递归授权，否则会出现无法上传文件的错误
-    [root@nfs ~]# chown -R www.www &#x2F;data&#x2F;
-
-3.web01和web02分别都进行挂载，此时图片进行实现了共享
-    mount -t nfs 172.16.1.31:&#x2F;data&#x2F;blog  &#x2F;code&#x2F;wordpress&#x2F;wp-content&#x2F;uploads&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/09-Nginx(%E4%B8%89)LNMP%E6%9E%B6%E6%9E%84%E5%AE%89%E8%A3%85/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -4619,6 +4372,253 @@ upload_max_filesize &#x3D; 200M
 [root@web01 code]# systemctl restart php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
 
 <h2 id="六、各开源项目网站"><a href="#六、各开源项目网站" class="headerlink" title="六、各开源项目网站"></a>六、各开源项目网站</h2><p>phpmyadmin	<a target="_blank" rel="noopener" href="https://www.phpmyadmin.net/">https://www.phpmyadmin.net/</a><br>zblog	<a target="_blank" rel="noopener" href="https://www.zblogcn.com/">https://www.zblogcn.com/</a><br>wordpress	<a target="_blank" rel="noopener" href="https://cn.wordpress.org/">https://cn.wordpress.org/</a><br>wecenter	<a target="_blank" rel="noopener" href="http://www.wecenter.com/downloads/">http://www.wecenter.com/downloads/</a><br>edusohu	<a target="_blank" rel="noopener" href="http://www.edusoho.com/open/show">http://www.edusoho.com/open/show</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/10-Nginx(%E5%9B%9B)LNMP%E6%9E%B6%E6%9E%84%E6%8B%86%E5%88%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="GongSheng">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="GongSheng Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/10-Nginx(%E5%9B%9B)LNMP%E6%9E%B6%E6%9E%84%E6%8B%86%E5%88%86/" class="post-title-link" itemprop="url">运维之综合架构--07--Nginx(四)LNMP架构拆分</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-06 11:19:52 / 修改时间：15:16:31" itemprop="dateCreated datePublished" datetime="2022-07-06T11:19:52+08:00">2022-07-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/" itemprop="url" rel="index"><span itemprop="name">运维</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">（二）综合架构</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="一、拆分数据库"><a href="#一、拆分数据库" class="headerlink" title="一、拆分数据库"></a>一、拆分数据库</h2><blockquote>
+<p>为什么要拆分数据库?</p>
+<p>mysql内存占用大，容易引起网页访问速度变慢，甚至oom(out of memory)被系统自动kill掉，不安全</p>
+</blockquote>
+<h3 id="1-2-环境准备"><a href="#1-2-环境准备" class="headerlink" title="1.2 环境准备"></a>1.2 环境准备</h3><table>
+<thead>
+<tr>
+<th>主机名称</th>
+<th>应用环境</th>
+<th>外网地址</th>
+<th>内网地址</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>web01</td>
+<td>nginx+php</td>
+<td>10.0.0.7</td>
+<td>172.16.1.7</td>
+</tr>
+<tr>
+<td>db01</td>
+<td>mysql</td>
+<td></td>
+<td>172.16.1.51</td>
+</tr>
+</tbody></table>
+<h3 id="1-2-拆分过程"><a href="#1-2-拆分过程" class="headerlink" title="1.2 拆分过程"></a>1.2 拆分过程</h3><p>1、备份172.16.1.7服务器上mysql的数据</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# mysqldump -uroot -p&#39;Bgx123.com&#39; --all-databases --single-transaction &gt; mysql-all.sql<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>2、传输172.16.1.7的备份数据至172.16.1.51的服务器上</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 ~]# scp mysql-all.sql root@172.16.1.51:&#x2F;tmp<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>3、需要先在172.16.1.51服务器上安装mysql服务，然后使用mysql命令进行还原。</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@db01 ~]# yum install mariadb-server mariadb -y
+[root@db01 ~]# systemctl enable mariadb
+[root@db01 ~]# systemctl start mariadb
+[root@db01 ~]# mysql &lt;&#x2F;tmp&#x2F;mysql-all.sql
+[root@db01 ~]# systemctl restart mariadb
+[root@db01 ~]# mysql -uroot -pBgx123.com
+MariaDB [(none)]&gt; show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| edusoho            |
+| mysql              |
+| performance_schema |
+| test               |
+| wordpress          |
+| zh                 |
++--------------------+
+7 rows in set (0.00 sec)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>4、将web程序连接的本地数据库修改到远程数据库上。</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1）先在本地172.16.1.7服务器上停止本地的数据库
+[root@web01 ~]# systemctl disable mariadb
+[root@web01 ~]# systemctl stop mariadb
+
+2）在172.16.1.51的服务器上授权远程主机能够能连接mysql数据库
+[root@db01 ~]# mysql -uroot -pBgx123.com
+MariaDB [(none)]&gt; grant all privileges on *.* to oldboy@&#39;%&#39; identified by &#39;Bgx123.com&#39;;
+解释：
+*.*: 所有数据库下的所有表
+oldboy@&#39;%&#39;: 允许所有网段的oldboy用户访问
+identify: 设置密码
+
+3）在172.16.1.7服务器上测试远程账户能否连接172.16.1.51的数据库
+[root@web01 wordpress]# yum install mariadb -y
+[root@web01 wordpress]# mysql -h 172.16.1.51 -uoldboy -pBgx123.com
+MariaDB [(none)]&gt; 
+
+4）在172.16.1.7服务器上修改web程序连接数据库的配置文件
+[root@web01 wordpress]# vim &#x2F;code&#x2F;wordpress&#x2F;wp-config.php
+&#x2F;&#x2F; ** MySQL 设置 - 具体信息来自您正在使用的主机 ** &#x2F;&#x2F;
+&#x2F;** WordPress数据库的名称 *&#x2F;
+define(&#39;DB_NAME&#39;, &#39;wordpress&#39;);
+
+&#x2F;** MySQL数据库用户名 *&#x2F;
+define(&#39;DB_USER&#39;, &#39;oldboy&#39;);
+
+&#x2F;** MySQL数据库密码 *&#x2F;
+define(&#39;DB_PASSWORD&#39;, &#39;Bgx123.com&#39;);
+
+&#x2F;** MySQL主机 *&#x2F;
+define(&#39;DB_HOST&#39;, &#39;172.16.1.51&#39;);<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>5、拆分172.16.1.7wecenter连接远程172.16.1.51数据库信息</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 zh]# grep -R &quot;Bgx123.com&quot; *
+	system&#x2F;config&#x2F;database.php:  &#39;password&#39; &#x3D;&gt; &#39;Bgx123.com&#39;,
+[root@web01 zh]# vim &#x2F;code&#x2F;zh&#x2F;system&#x2F;config&#x2F;database.php 
+	$config[&#39;driver&#39;] &#x3D; &#39;MySQLi&#39;;^M
+	$config[&#39;master&#39;] &#x3D; array (
+	  &#39;charset&#39; &#x3D;&gt; &#39;utf8&#39;,
+	  &#39;host&#39; &#x3D;&gt; &#39;172.16.1.51&#39;,
+	  &#39;username&#39; &#x3D;&gt; &#39;oldboy&#39;,
+	  &#39;password&#39; &#x3D;&gt; &#39;Bgx123.com&#39;,
+	  &#39;dbname&#39; &#x3D;&gt; &#39;zh&#39;,
+	);^M<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>6、拆分172.16.1.7 edusoho连接远程172.16.1.51数据库信息</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 edusoho]# vim &#x2F;code&#x2F;edusoho&#x2F;app&#x2F;config&#x2F;parameters.yml
+database_driver: pdo_mysql
+database_host: 172.16.1.51
+database_port: 3306
+database_name: edusoho
+database_user: oldboy
+database_password: &#39;Bgx123.com&#39;
+
+必须清理缓存
+[root@web01 edusoho]# rm -rf &#x2F;code&#x2F;edusoho&#x2F;app&#x2F;cache&#x2F;*<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="二、扩展多台web服务器"><a href="#二、扩展多台web服务器" class="headerlink" title="二、扩展多台web服务器"></a>二、扩展多台web服务器</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.统一环境
+    0）准备对应的www用户
+    [root@web02 ~]# groupadd -g666 www
+    [root@web02 ~]# useradd -u666 -g666 www
+
+    1）拷贝web01上面的yum仓库
+    [root@web02 ~]# scp root@172.16.1.7:&#x2F;etc&#x2F;yum.repos.d&#x2F;*.repo &#x2F;etc&#x2F;yum.repos.d&#x2F;
+
+    2）安装nginx和php
+    [root@web02 ~]# yum -y install nginx php71w php71w-cli php71w-common php71w-devel php71w-embedded php71w-gd php71w-mcrypt php71w-mbstring php71w-pdo php71w-xml php71w-fpm php71w-mysqlnd php71w-opcache php71w-pecl-memcached php71w-pecl-redis php71w-pecl-mongodb
+
+2.统一配置（同步web01上面的配置到web02）
+    1）同步nginx
+    [root@web02 ~]# rsync  -avz --delete root@172.16.1.7:&#x2F;etc&#x2F;nginx&#x2F; &#x2F;etc&#x2F;nginx&#x2F;
+    [root@web02 ~]# nginx -t
+    [root@web02 ~]# systemctl enable nginx
+    [root@web02 ~]# systemctl start nginx
+
+    2）同步php（&#x2F;etc&#x2F;php-fpm.conf &#x2F;etc&#x2F;php-fpm.d  &#x2F;etc&#x2F;php.ini）
+    [root@web02 ~]# rsync  -avz --delete root@172.16.1.7:&#x2F;etc&#x2F;php* &#x2F;etc&#x2F;
+    [root@web02 ~]# systemctl enable php-fpm
+    [root@web02 ~]# systemctl start php-fpm
+
+3.统一代码
+    [root@web01 ~]# tar czf code.tar.gz &#x2F;code				#在web01上打包站点
+    [root@web01 ~]# scp code.tar.gz root@172.16.1.8:&#x2F;tmp	#在web01上将打包好的代码发送给web02
+    [root@web02 ~]# tar xf &#x2F;tmp&#x2F;code.tar.gz -C &#x2F;			#在web02上进行解压，并解压到&#x2F;目录下
+
+4.配置解析，进行访问<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="三、NFS共享多台web的静态资源"><a href="#三、NFS共享多台web的静态资源" class="headerlink" title="三、NFS共享多台web的静态资源"></a>三、NFS共享多台web的静态资源</h2><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">1.准备172.16.1.31共享存储服务器，规划目录，配置好权限
+    0）创建用户
+    [root@nfs ~]# groupadd -g666 www
+    [root@nfs ~]# useradd -u666 -g666 www	
+
+    1）安装
+    [root@nfs ~]# yum install nfs-utils -y
+
+    2）配置
+    [root@nfs ~]# cat &#x2F;etc&#x2F;exports
+    &#x2F;data&#x2F;blog 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
+    &#x2F;data&#x2F;zh 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
+    &#x2F;data&#x2F;edu 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
+
+    3）根据配置，创建目录，准备用户，授权等等
+    [root@nfs ~]# rm -rf &#x2F;data&#x2F;
+    [root@nfs ~]# mkdir &#x2F;data&#x2F;&#123;blog,zh,edu&#125; -p
+    [root@nfs ~]# chown -R www.www &#x2F;data&#x2F;
+
+    4）启动
+    [root@nfs ~]# systemctl enable nfs-utils 
+    [root@nfs ~]# systemctl restart nfs-utils
+
+2.将图片较多的web02服务器，推送到nfs共享存储上
+    http:&#x2F;&#x2F;blog.oldboy.com&#x2F;wp-content&#x2F;uploads&#x2F;2019&#x2F;01&#x2F;timg.jpg
+
+    [root@web02 ~]# cd &#x2F;code&#x2F;wordpress&#x2F;wp-content
+    [root@web02 wp-content]# scp -r uploads&#x2F;* root@172.16.1.31:&#x2F;data&#x2F;blog&#x2F;
+
+    注意：需要上nfs服务器上进行重新的递归授权，否则会出现无法上传文件的错误
+    [root@nfs ~]# chown -R www.www &#x2F;data&#x2F;
+
+3.web01和web02分别都进行挂载，此时图片进行实现了共享
+    mount -t nfs 172.16.1.31:&#x2F;data&#x2F;blog  &#x2F;code&#x2F;wordpress&#x2F;wp-content&#x2F;uploads&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
 
       
     </div>
