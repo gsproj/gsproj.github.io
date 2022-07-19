@@ -241,5 +241,39 @@ custom_file_path:
   style: source/_data/styles.styl
 ```
 
+### 2.7 修改为圆角
+
+根据当前使用的主题，编辑主题对应的style文件，如`\themes\next\source\css\_variables\Gemini.styl`
+
+在里面添加：
+
+```css
+// 圆角设置
+$border-radius-inner     = 20px;
+$border-radius           = 20px;
+```
+
+### 2.8 加载动画速度调整
+
+页面加载会有段动画，默认比较慢，可以调整
+
+编辑文件`themes\next\source\js\motion.js`，调整`duration`的值，默认200，越大越慢，可以调小一些
+
+```css
+bootstrap: function() {
+    if (!CONFIG.motion.async) this.queue = [this.queue];
+    this.queue.forEach(sequence => {
+        const timeline = window.anime.timeline({
+            duration: 100,	# 调整为100
+                easing  : 'linear'
+        });
+        sequence.forEach(item => {
+            if (item.deltaT) timeline.add(item, item.deltaT);
+            else timeline.add(item);
+        });
+    });
+}
+```
+
 
 
