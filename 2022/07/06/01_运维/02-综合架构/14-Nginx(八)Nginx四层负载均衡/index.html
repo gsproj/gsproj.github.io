@@ -310,21 +310,13 @@
 </tr>
 </tbody></table>
 <h3 id="2-2-新增lb02负载均衡服务器"><a href="#2-2-新增lb02负载均衡服务器" class="headerlink" title="2.2 新增lb02负载均衡服务器"></a>2.2 新增lb02负载均衡服务器</h3><p>1、准备<code>lb02</code>，安装Nginx服务</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb02 ~]# cat &#x2F;etc&#x2F;yum.repos.d&#x2F;nginx.repo 
-[nginx]
-name&#x3D;nginx repo
-baseurl&#x3D;http:&#x2F;&#x2F;nginx.org&#x2F;packages&#x2F;centos&#x2F;7&#x2F;$basearch&#x2F;
-gpgcheck&#x3D;0
-enabled&#x3D;1
-[root@lb02 ~]#  yum install nginx -y<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@lb02 ~]# cat /etc/yum.repos.d/nginx.repo </span><br><span class="line">[nginx]</span><br><span class="line">name=nginx repo</span><br><span class="line">baseurl=http://nginx.org/packages/centos/7/$basearch/</span><br><span class="line">gpgcheck=0</span><br><span class="line">enabled=1</span><br><span class="line">[root@lb02 ~]#  yum install nginx -y</span><br></pre></td></tr></table></figure>
 
 <p>2、拷贝<code>lb01</code>的 Nginx配置到<code>lb02</code></p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb02 ~]# scp -rp root@172.16.1.5:&#x2F;etc&#x2F;nginx &#x2F;etc&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@lb02 ~]# scp -rp root@172.16.1.5:/etc/nginx /etc/</span><br></pre></td></tr></table></figure>
 
 <p>3、启动Nginx</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb02 conf.d]# nginx -t
-[root@lb02 conf.d]# systemctl start nginx
-[root@lb02 conf.d]# systemctl enable nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@lb02 conf.d]# nginx -t</span><br><span class="line">[root@lb02 conf.d]# systemctl start nginx</span><br><span class="line">[root@lb02 conf.d]# systemctl enable nginx</span><br></pre></td></tr></table></figure>
 
 <blockquote>
 <p>报错：</p>
@@ -334,9 +326,7 @@ enabled&#x3D;1
 </blockquote>
 <p>4、测试lb02是否正常</p>
 <p>将hosts中的10.0.0.5换成10.0.0.6，phpadmin、wordpress网页可以正常访问,<br>但是wecenter异常502 Bad Gateway<br>解决方法: 将web01、02上的的php.ini中的session.auto_start改为0,不然会502</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 php]# vim &#x2F;etc&#x2F;php.ini
-session.auto_start &#x3D; 0
-[root@web01 php]# systemctl restart php-fpm.service<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@web01 php]# vim /etc/php.ini</span><br><span class="line">session.auto_start = 0</span><br><span class="line">[root@web01 php]# systemctl restart php-fpm.service</span><br></pre></td></tr></table></figure>
 
 <blockquote>
 <p>网上搜索的解释：<br>日常开发中，php.ini配置session.auto_start&#x3D;0默认关闭会话时如果想开启会话需要调用session_start：<br>session.auto_start 开启就自动完成了session_start()<br>区别就在于在用SESSION前是否需要session_start();<br>当session.auto_start &#x3D; on时，执行 session_start() 将产生新的 session_id<br>session.auto_start &#x3D; on 的优点在于，任何时候都不会因忘记执行 session_start() 或 session_start() 在程序里的位置不对，而导致错误<br>缺点在于，如果你使用的是第三方代码，则必须删去其中的全部 session_start() 。否则将不能得到正确的结果</p>
@@ -345,49 +335,13 @@ session.auto_start &#x3D; 0
 <blockquote>
 <p>nginx需要带–with-stream模块</p>
 </blockquote>
-<pre class="line-numbers language-she" data-language="she"><code class="language-she">[root@lb4-01 ~]# cat &#x2F;etc&#x2F;yum.repos.d&#x2F;nginx.repo 
-[nginx]
-name&#x3D;nginx repo
-baseurl&#x3D;http:&#x2F;&#x2F;nginx.org&#x2F;packages&#x2F;centos&#x2F;7&#x2F;$basearch&#x2F;
-gpgcheck&#x3D;0
-enabled&#x3D;1
-[root@lb4-01 ~]#  yum install nginx -y	
-[root@lb4-01 ~]# vim &#x2F;etc&#x2F;nginx&#x2F;nginx.conf
-events &#123;
-    ....
-&#125;
-
-include &#x2F;etc&#x2F;nginx&#x2F;conf.c&#x2F;*.conf;
-
-http &#123;
-	.....
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">[root@lb4-01 ~]# cat /etc/yum.repos.d/nginx.repo </span><br><span class="line">[nginx]</span><br><span class="line">name=nginx repo</span><br><span class="line">baseurl=http://nginx.org/packages/centos/7/$basearch/</span><br><span class="line">gpgcheck=0</span><br><span class="line">enabled=1</span><br><span class="line">[root@lb4-01 ~]#  yum install nginx -y	</span><br><span class="line">[root@lb4-01 ~]# vim /etc/nginx/nginx.conf</span><br><span class="line">events &#123;</span><br><span class="line">    ....</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">include /etc/nginx/conf.c/*.conf;</span><br><span class="line"></span><br><span class="line">http &#123;</span><br><span class="line">	.....</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>2、创建四层负载均衡配置的目录</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb4-01 conf.c]# rm -f &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;default.conf   #删除http的80端口
-[root@lb4-01 ~]# mkdir &#x2F;etc&#x2F;nginx&#x2F;conf.c
-[root@lb4-01 ~]# cd &#x2F;etc&#x2F;nginx&#x2F;conf.c
-[root@lb4-01 conf.c]# cat lb_domain.conf 
-stream &#123;
-    upstream lb &#123;
-        server 172.16.1.5:80 weight&#x3D;5 max_fails&#x3D;3 fail_timeout&#x3D;30s;
-        server 172.16.1.6:80 weight&#x3D;5 max_fails&#x3D;3 fail_timeout&#x3D;30s;
-    &#125;
-
-    server &#123;
-        listen 80;
-        proxy_connect_timeout 3s;
-        proxy_timeout 3s;
-        proxy_pass lb;
-    &#125;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">[root@lb4-01 conf.c]# rm -f /etc/nginx/conf.d/default.conf   #删除http的80端口</span><br><span class="line">[root@lb4-01 ~]# mkdir /etc/nginx/conf.c</span><br><span class="line">[root@lb4-01 ~]# cd /etc/nginx/conf.c</span><br><span class="line">[root@lb4-01 conf.c]# cat lb_domain.conf </span><br><span class="line">stream &#123;</span><br><span class="line">    upstream lb &#123;</span><br><span class="line">        server 172.16.1.5:80 weight=5 max_fails=3 fail_timeout=30s;</span><br><span class="line">        server 172.16.1.6:80 weight=5 max_fails=3 fail_timeout=30s;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    server &#123;</span><br><span class="line">        listen 80;</span><br><span class="line">        proxy_connect_timeout 3s;</span><br><span class="line">        proxy_timeout 3s;</span><br><span class="line">        proxy_pass lb;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>3、重载服务</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb4-01 conf.c]# nginx -t
-nginx: the configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf syntax is ok
-nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test is successful
-[root@lb4-01 conf.c]# systemctl restart nginx
-[root@lb4-01 conf.c]# systemctl enable nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@lb4-01 conf.c]# nginx -t</span><br><span class="line">nginx: the configuration file /etc/nginx/nginx.conf syntax is ok</span><br><span class="line">nginx: configuration file /etc/nginx/nginx.conf test is successful</span><br><span class="line">[root@lb4-01 conf.c]# systemctl restart nginx</span><br><span class="line">[root@lb4-01 conf.c]# systemctl enable nginx</span><br></pre></td></tr></table></figure>
 
 <blockquote>
 <p>报错：<br>[root@lb4-01 nginx]# nginx  -t<br>nginx: [emerg] unknown directive “stream” in &#x2F;etc&#x2F;nginx&#x2F;conf.c&#x2F;lb_domain.conf:1<br>nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test failed<br>解决方法：<br>yum install nginx-mod-stream.x86_64 -y</p>
@@ -401,69 +355,20 @@ nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test is successfu
 <p><img src="/img/image-20210824001613717.png" alt="image-20210824001613717"></p>
 <p><img src="/img/image-20210824001638506.png" alt="image-20210824001638506"></p>
 <h2 id="三、四层负载均衡日志"><a href="#三、四层负载均衡日志" class="headerlink" title="三、四层负载均衡日志"></a>三、四层负载均衡日志</h2><h3 id="3-1-配置过程"><a href="#3-1-配置过程" class="headerlink" title="3.1 配置过程"></a>3.1 配置过程</h3><p>在四层负载均衡中配置Nginx</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb4-01 ~]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.c&#x2F;lb_domain.conf
-stream &#123;
-    log_format  proxy &#39;$remote_addr $remote_port - [$time_local] $status $protocol &#39;
-                  &#39;&quot;$upstream_addr&quot; &quot;$upstream_bytes_sent&quot; &quot;$upstream_connect_time&quot;&#39; ;
-    access_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;proxy.log proxy;
-
-    upstream lb &#123;
-....<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@lb4-01 ~]# cat /etc/nginx/conf.c/lb_domain.conf</span><br><span class="line">stream &#123;</span><br><span class="line">    log_format  proxy &#x27;$remote_addr $remote_port - [$time_local] $status $protocol &#x27;</span><br><span class="line">                  &#x27;&quot;$upstream_addr&quot; &quot;$upstream_bytes_sent&quot; &quot;$upstream_connect_time&quot;&#x27; ;</span><br><span class="line">    access_log /var/log/nginx/proxy.log proxy;</span><br><span class="line"></span><br><span class="line">    upstream lb &#123;</span><br><span class="line">....</span><br></pre></td></tr></table></figure>
 
 <h3 id="3-2-查看日志"><a href="#3-2-查看日志" class="headerlink" title="3.2 查看日志"></a>3.2 查看日志</h3><p>网页访问后，可见产生的日志</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb4-01 ~]# tail -f &#x2F;var&#x2F;log&#x2F;nginx&#x2F;proxy.log
-10.0.0.1 56396 - [25&#x2F;Aug&#x2F;2021:19:25:33 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;15150&quot; &quot;0.000&quot;
-10.0.0.1 59800 - [25&#x2F;Aug&#x2F;2021:19:25:34 +0800] 200 TCP &quot;172.16.1.6:80&quot; &quot;8327&quot; &quot;0.000&quot;
-10.0.0.1 63468 - [25&#x2F;Aug&#x2F;2021:19:25:34 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;17882&quot; &quot;0.000&quot;
-10.0.0.1 50394 - [25&#x2F;Aug&#x2F;2021:19:25:35 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;24490&quot; &quot;0.000&quot;
-10.0.0.1 55549 - [25&#x2F;Aug&#x2F;2021:19:25:35 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;13201&quot; &quot;0.000&quot;
-10.0.0.1 64324 - [25&#x2F;Aug&#x2F;2021:19:25:42 +0800] 200 TCP &quot;172.16.1.6:80&quot; &quot;70995&quot; &quot;0.000&quot;
-10.0.0.1 64566 - [25&#x2F;Aug&#x2F;2021:19:25:42 +0800] 200 TCP &quot;172.16.1.6:80&quot; &quot;72650&quot; &quot;0.000&quot;
-10.0.0.1 65216 - [25&#x2F;Aug&#x2F;2021:19:25:42 +0800] 200 TCP &quot;172.16.1.6:80&quot; &quot;68171&quot; &quot;0.000&quot;
-10.0.0.1 49668 - [25&#x2F;Aug&#x2F;2021:19:25:42 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;82071&quot; &quot;0.004&quot;
-10.0.0.1 49745 - [25&#x2F;Aug&#x2F;2021:19:25:42 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;63941&quot; &quot;0.001&quot;
-10.0.0.1 50574 - [25&#x2F;Aug&#x2F;2021:19:25:42 +0800] 200 TCP &quot;172.16.1.6:80&quot; &quot;103581&quot; &quot;0.000&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@lb4-01 ~]# tail -f /var/log/nginx/proxy.log</span><br><span class="line">10.0.0.1 56396 - [25/Aug/2021:19:25:33 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;15150&quot; &quot;0.000&quot;</span><br><span class="line">10.0.0.1 59800 - [25/Aug/2021:19:25:34 +0800] 200 TCP &quot;172.16.1.6:80&quot; &quot;8327&quot; &quot;0.000&quot;</span><br><span class="line">10.0.0.1 63468 - [25/Aug/2021:19:25:34 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;17882&quot; &quot;0.000&quot;</span><br><span class="line">10.0.0.1 50394 - [25/Aug/2021:19:25:35 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;24490&quot; &quot;0.000&quot;</span><br><span class="line">10.0.0.1 55549 - [25/Aug/2021:19:25:35 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;13201&quot; &quot;0.000&quot;</span><br><span class="line">10.0.0.1 64324 - [25/Aug/2021:19:25:42 +0800] 200 TCP &quot;172.16.1.6:80&quot; &quot;70995&quot; &quot;0.000&quot;</span><br><span class="line">10.0.0.1 64566 - [25/Aug/2021:19:25:42 +0800] 200 TCP &quot;172.16.1.6:80&quot; &quot;72650&quot; &quot;0.000&quot;</span><br><span class="line">10.0.0.1 65216 - [25/Aug/2021:19:25:42 +0800] 200 TCP &quot;172.16.1.6:80&quot; &quot;68171&quot; &quot;0.000&quot;</span><br><span class="line">10.0.0.1 49668 - [25/Aug/2021:19:25:42 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;82071&quot; &quot;0.004&quot;</span><br><span class="line">10.0.0.1 49745 - [25/Aug/2021:19:25:42 +0800] 200 TCP &quot;172.16.1.5:80&quot; &quot;63941&quot; &quot;0.001&quot;</span><br><span class="line">10.0.0.1 50574 - [25/Aug/2021:19:25:42 +0800] 200 TCP &quot;172.16.1.6:80&quot; &quot;103581&quot; &quot;0.000&quot;</span><br></pre></td></tr></table></figure>
 
 <h2 id="三、使用nginx四层负载均衡实现tcp的转发（跳板）"><a href="#三、使用nginx四层负载均衡实现tcp的转发（跳板）" class="headerlink" title="三、使用nginx四层负载均衡实现tcp的转发（跳板）"></a>三、使用nginx四层负载均衡实现tcp的转发（跳板）</h2><p>实现跳板机的功能，比如：</p>
 <pre><code>请求负载均衡 5555    ---&gt;     172.16.1.7:22;
 请求负载均衡 6666    ---&gt;     172.16.1.51:3306;
 </code></pre>
 <h3 id="3-1-配置过程-1"><a href="#3-1-配置过程-1" class="headerlink" title="3.1 配置过程"></a>3.1 配置过程</h3><p>配置Nginx</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb4-01 ~]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.c&#x2F;lb_domain.conf 
-stream &#123;
-log_format  proxy &#39;$remote_addr $remote_port - [$time_local] $status $protocol &#39;
-                  &#39;&quot;$upstream_addr&quot; &quot;$upstream_bytes_sent&quot; &quot;$upstream_connect_time&quot;&#39; ;
-    access_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;proxy.log proxy;
-
-#定义转发ssh的22端口
-	upstream ssh_7 &#123;
-		server 10.0.0.7:22;
-	&#125;
-#定义转发mysql的3306端口
-	upstream mysql_51 &#123;
-		server 10.0.0.51:3306;
-	&#125;
-    server &#123;
-        listen 5555;
-        proxy_connect_timeout 3s;
-        proxy_timeout 300s;
-        proxy_pass ssh_7;
-    &#125;
-
-    server &#123;
-        listen 6666;
-        proxy_connect_timeout 3s;
-        proxy_timeout 3s;
-        proxy_pass mysql_51;
-    &#125;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">[root@lb4-01 ~]# cat /etc/nginx/conf.c/lb_domain.conf </span><br><span class="line">stream &#123;</span><br><span class="line">log_format  proxy &#x27;$remote_addr $remote_port - [$time_local] $status $protocol &#x27;</span><br><span class="line">                  &#x27;&quot;$upstream_addr&quot; &quot;$upstream_bytes_sent&quot; &quot;$upstream_connect_time&quot;&#x27; ;</span><br><span class="line">    access_log /var/log/nginx/proxy.log proxy;</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">定义转发ssh的22端口</span></span><br><span class="line">	upstream ssh_7 &#123;</span><br><span class="line">		server 10.0.0.7:22;</span><br><span class="line">	&#125;</span><br><span class="line"><span class="meta">#</span><span class="bash">定义转发mysql的3306端口</span></span><br><span class="line">	upstream mysql_51 &#123;</span><br><span class="line">		server 10.0.0.51:3306;</span><br><span class="line">	&#125;</span><br><span class="line">    server &#123;</span><br><span class="line">        listen 5555;</span><br><span class="line">        proxy_connect_timeout 3s;</span><br><span class="line">        proxy_timeout 300s;</span><br><span class="line">        proxy_pass ssh_7;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    server &#123;</span><br><span class="line">        listen 6666;</span><br><span class="line">        proxy_connect_timeout 3s;</span><br><span class="line">        proxy_timeout 3s;</span><br><span class="line">        proxy_pass mysql_51;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>测试访问</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 连接web01
-ssh root@10.0.0.3 -p 5555
-
-# 连接db01
-ssh root@10.0.0.3 -p 6666<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 连接web01</span></span><br><span class="line">ssh root@10.0.0.3 -p 5555</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 连接db01</span></span><br><span class="line">ssh root@10.0.0.3 -p 6666</span><br></pre></td></tr></table></figure>
 
 
 

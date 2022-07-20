@@ -332,56 +332,38 @@
 <p>参考网站：<a target="_blank" rel="noopener" href="https://mirrors.tuna.tsinghua.edu.cn/help/docker-ce/">https://mirrors.tuna.tsinghua.edu.cn/help/docker-ce/</a></p>
 </blockquote>
 <h3 id="1-联网在线安装"><a href="#1-联网在线安装" class="headerlink" title="1 联网在线安装"></a>1 联网在线安装</h3><p>开启rpm包缓存，方便制作离线安装包</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">vim &#x2F;etc&#x2F;yum.conf
-keepcache&#x3D;1 <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/yum.conf</span><br><span class="line">keepcache=1 </span><br></pre></td></tr></table></figure>
 
 <p>如果你之前安装过 docker，请先删掉</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">sudo yum remove docker docker-common docker-selinux docker-engine<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo yum remove docker docker-common docker-selinux docker-engine</span><br></pre></td></tr></table></figure>
 
 <p>安装一些依赖</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">sudo yum install -y yum-utils device-mapper-persistent-data lvm2<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo yum install -y yum-utils device-mapper-persistent-data lvm2</span><br></pre></td></tr></table></figure>
 
 <p>根据你的发行版下载repo文件（Centos）</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">wget -O &#x2F;etc&#x2F;yum.repos.d&#x2F;docker-ce.repo https:&#x2F;&#x2F;download.docker.com&#x2F;linux&#x2F;centos&#x2F;docker-ce.repo<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget -O /etc/yum.repos.d/docker-ce.repo https://download.docker.com/linux/centos/docker-ce.repo</span><br></pre></td></tr></table></figure>
 
 <p>把软件仓库替换为TUNA：</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">sudo sed -i &#39;s+download.docker.com+mirrors.tuna.tsinghua.edu.cn&#x2F;docker-ce+&#39; &#x2F;etc&#x2F;yum.repos.d&#x2F;docker-ce.repo<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo sed -i &#x27;s+download.docker.com+mirrors.tuna.tsinghua.edu.cn/docker-ce+&#x27; /etc/yum.repos.d/docker-ce.repo</span><br></pre></td></tr></table></figure>
 
 <p>最后安装:</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">sudo yum makecache fast
-    sudo yum install docker-ce<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo yum makecache fast</span><br><span class="line">    sudo yum install docker-ce</span><br></pre></td></tr></table></figure>
 
 <h3 id="2-无网环境下离线安装"><a href="#2-无网环境下离线安装" class="headerlink" title="2 无网环境下离线安装"></a>2 无网环境下离线安装</h3><p>搜集联网环境下下载的rpm包</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">find &#x2F;var&#x2F;cache&#x2F;yum&#x2F;x86_64&#x2F;7&#x2F; -name &quot;*.rpm&quot; | xargs -i mv &#123;&#125; docker_rpm&#x2F;
-tar -zvcf docker_rpm.tgz docker_rpm&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">find /var/cache/yum/x86_64/7/ -name &quot;*.rpm&quot; | xargs -i mv &#123;&#125; docker_rpm/</span><br><span class="line">tar -zvcf docker_rpm.tgz docker_rpm/</span><br></pre></td></tr></table></figure>
 
 <p>拷贝到无网环境的服务器中安装</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">tar -vxf docker_rpm.tgz # 解压
-cd docker_rpm	
-rpm -Uvh .&#x2F;*.rpm # 安装<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">tar -vxf docker_rpm.tgz # 解压</span><br><span class="line">cd docker_rpm	</span><br><span class="line">rpm -Uvh ./*.rpm # 安装</span><br></pre></td></tr></table></figure>
 
-<h3 id="3-启动服务并验证安装是否成功"><a href="#3-启动服务并验证安装是否成功" class="headerlink" title="3 启动服务并验证安装是否成功"></a>3 启动服务并验证安装是否成功</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 启动服务
-systemctl enable docker
-systemctl start docker
-
-# 验证是否安装成功
-docker version
-docker info<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h3 id="3-启动服务并验证安装是否成功"><a href="#3-启动服务并验证安装是否成功" class="headerlink" title="3 启动服务并验证安装是否成功"></a>3 启动服务并验证安装是否成功</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 启动服务</span></span><br><span class="line">systemctl enable docker</span><br><span class="line">systemctl start docker</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 验证是否安装成功</span></span><br><span class="line">docker version</span><br><span class="line">docker info</span><br></pre></td></tr></table></figure>
 
 <h3 id="4-Docker镜像下载加速"><a href="#4-Docker镜像下载加速" class="headerlink" title="4 Docker镜像下载加速"></a>4 Docker镜像下载加速</h3><ul>
 <li>阿里云docker镜像加速器服务</li>
 <li>配置docker镜像加速(推荐)</li>
 </ul>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 创建文件
-vi &#x2F;etc&#x2F;docker&#x2F;daemon.json
-&#123;    
-	&quot;registry-mirrors&quot;:[&quot;https:&#x2F;&#x2F;registry.docker-cn.com&quot;]
-&#125; 
-# 重新加载
-systemctl daemon-reload
-systemctl restart docker<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 创建文件</span></span><br><span class="line">vi /etc/docker/daemon.json</span><br><span class="line">&#123;    </span><br><span class="line">	&quot;registry-mirrors&quot;:[&quot;https://registry.docker-cn.com&quot;]</span><br><span class="line">&#125; </span><br><span class="line"><span class="meta">#</span><span class="bash"> 重新加载</span></span><br><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl restart docker</span><br></pre></td></tr></table></figure>
 
-<h3 id="5-创建并运行一个nginx容器"><a href="#5-创建并运行一个nginx容器" class="headerlink" title="5 创建并运行一个nginx容器"></a>5 创建并运行一个nginx容器</h3><pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">docker run -d -p 80:80 nginx<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<h3 id="5-创建并运行一个nginx容器"><a href="#5-创建并运行一个nginx容器" class="headerlink" title="5 创建并运行一个nginx容器"></a>5 创建并运行一个nginx容器</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -d -p 80:80 nginx</span><br></pre></td></tr></table></figure>
 
 
     </div>
