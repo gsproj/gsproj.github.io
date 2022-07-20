@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 5.4.2">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" integrity="sha256-DfWjNxDkM94fVBWx1H5BMMp0Zq7luBlV8QRcSES7s+0=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"gsproj.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.12.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":"mac"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="collections之OrderedDict 如果想让字典有序，可以使用collections.OrderedDict，它现在在C中实现，这使其快4到100倍。 ##1、collections.OrderedDict的基本使用  将类OrderedDict实例化会得到一个dict子类的实例，支持通常的dict方法。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="KungSing&#39;s Blog">
+<meta property="og:url" content="http://gsproj.github.io/2022/07/18/03_Python/01_Python%E5%9F%BA%E7%A1%80/52_%E9%99%84%E5%BD%95%E4%B8%83%EF%BC%9Acollections%E4%B9%8BOrderedDict/index.html">
+<meta property="og:site_name" content="KungSing&#39;s Blog">
+<meta property="og:description" content="collections之OrderedDict 如果想让字典有序，可以使用collections.OrderedDict，它现在在C中实现，这使其快4到100倍。 ##1、collections.OrderedDict的基本使用  将类OrderedDict实例化会得到一个dict子类的实例，支持通常的dict方法。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-07-18T07:10:19.389Z">
+<meta property="article:modified_time" content="2022-07-18T07:10:19.389Z">
+<meta property="article:author" content="KungSing">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://gsproj.github.io/2022/07/18/03_Python/01_Python%E5%9F%BA%E7%A1%80/52_%E9%99%84%E5%BD%95%E4%B8%83%EF%BC%9Acollections%E4%B9%8BOrderedDict/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://gsproj.github.io/2022/07/18/03_Python/01_Python%E5%9F%BA%E7%A1%80/52_%E9%99%84%E5%BD%95%E4%B8%83%EF%BC%9Acollections%E4%B9%8BOrderedDict/","path":"2022/07/18/03_Python/01_Python基础/52_附录七：collections之OrderedDict/","title":""}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title> | KungSing's Blog</title>
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">KungSing's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">“如果你想攀登高峰，切莫把彩虹当作梯子” -- 徐志摩</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#collections%E4%B9%8BOrderedDict"><span class="nav-text">collections之OrderedDict</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2%E3%80%81%E6%96%B9%E6%B3%95popitem-last-x3D-True"><span class="nav-text">2、方法popitem(last&#x3D;True)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3%E3%80%81%E6%96%B9%E6%B3%95move-to-end-key-last-x3D-True"><span class="nav-text">3、方法move_to_end(key, last&#x3D;True)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4%E3%80%81OrderDict%E5%AF%B9%E8%B1%A1%E4%B9%8B%E9%97%B4%E7%9A%84%E7%9B%B8%E7%AD%89%E6%80%A7%E5%88%A4%E6%96%AD"><span class="nav-text">4、OrderDict对象之间的相等性判断</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5%E3%80%81OrderedDict%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E5%92%8Cupdate"><span class="nav-text">5、OrderedDict构造函数和update()</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6%E3%80%81OrderedDict%E4%B8%8Esort%E7%BB%93%E5%90%88"><span class="nav-text">6、OrderedDict与sort结合</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7%E3%80%81%E8%87%AA%E5%AE%9A%E4%B9%89OrderDict%E5%8F%98%E4%BD%93"><span class="nav-text">7、自定义OrderDict变体</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="KungSing"
+      src="/images/myavatar.png">
+  <p class="site-author-name" itemprop="name">KungSing</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">108</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/18/03_Python/01_Python%E5%9F%BA%E7%A1%80/52_%E9%99%84%E5%BD%95%E4%B8%83%EF%BC%9Acollections%E4%B9%8BOrderedDict/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="KungSing">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KungSing's Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | KungSing's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2022-07-18 15:10:19" itemprop="dateCreated datePublished" datetime="2022-07-18T15:10:19+08:00">2022-07-18</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h2 id="collections之OrderedDict"><a href="#collections之OrderedDict" class="headerlink" title="collections之OrderedDict"></a><strong>collections之OrderedDict</strong></h2><p> 如果想让字典有序，可以使用collections.OrderedDict，它现在在C中实现，这使其快4到100倍。</p>
+<p>##1、collections.OrderedDict的基本使用  将类OrderedDict实例化会得到一个dict子类的实例，支持通常的dict方法。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">from collections import OrderedDict</span><br><span class="line"></span><br><span class="line">od=OrderedDict()</span><br><span class="line">print(isinstance(od,OrderedDict)) # True</span><br><span class="line">print(isinstance(od,dict)) # True</span><br></pre></td></tr></table></figure>
+
+<p> OrderedDict是记住键首次插入顺序的字典。如果新条目覆盖现有条目，则原始插入位置保持不变。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">od[&#x27;name&#x27;] = &#x27;egon&#x27;</span><br><span class="line">od[&#x27;age&#x27;] = 18</span><br><span class="line">od[&#x27;gender&#x27;] = &#x27;male&#x27;</span><br><span class="line">print(od) # OrderedDict([(&#x27;name&#x27;, &#x27;egon&#x27;), (&#x27;age&#x27;, 18), (&#x27;gender&#x27;, &#x27;male&#x27;)])</span><br><span class="line"></span><br><span class="line">od[&#x27;age&#x27;]=19</span><br><span class="line">print(od) # OrderedDict([(&#x27;name&#x27;, &#x27;egon&#x27;), (&#x27;age&#x27;, 19), (&#x27;gender&#x27;, &#x27;male&#x27;)])</span><br></pre></td></tr></table></figure>
+
+<p> 删除条目并重新插入会将其移动到末尾。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">del od[&#x27;age&#x27;]</span><br><span class="line"></span><br><span class="line">od[&#x27;age&#x27;]=20</span><br><span class="line">print(od) # OrderedDict([(&#x27;name&#x27;, &#x27;egon&#x27;), (&#x27;gender&#x27;, &#x27;male&#x27;), (&#x27;age&#x27;, 20)])</span><br></pre></td></tr></table></figure>
+
+<h2 id="2、方法popitem-last-x3D-True"><a href="#2、方法popitem-last-x3D-True" class="headerlink" title="2、方法popitem(last&#x3D;True)"></a><strong>2、方法popitem(last&#x3D;True)</strong></h2><p> 调用有序字典的popitem()方法会删除并返回(key, value)对。如果last为真，则以LIFO(后进先出)顺序返回这些键值对，如果为假，则以FIFO(先进先出)顺序返回。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">from collections import OrderedDict</span><br><span class="line"></span><br><span class="line">od=OrderedDict()</span><br><span class="line"></span><br><span class="line">od[&#x27;k1&#x27;]=&#x27;egon&#x27;</span><br><span class="line">od[&#x27;k2&#x27;]=&#x27;tom&#x27;</span><br><span class="line">od[&#x27;k3&#x27;]=&#x27;jack&#x27;</span><br><span class="line"></span><br><span class="line">print(od.popitem(last=False))</span><br><span class="line">print(od.popitem(last=False))</span><br><span class="line">print(od.popitem(last=False))</span><br><span class="line">&#x27;&#x27;&#x27;</span><br><span class="line">(&#x27;k1&#x27;, &#x27;egon&#x27;)</span><br><span class="line">(&#x27;k2&#x27;, &#x27;tom&#x27;)</span><br><span class="line">(&#x27;k3&#x27;, &#x27;jack&#x27;)</span><br><span class="line">&#x27;&#x27;&#x27;</span><br></pre></td></tr></table></figure>
+
+<h2 id="3、方法move-to-end-key-last-x3D-True"><a href="#3、方法move-to-end-key-last-x3D-True" class="headerlink" title="3、方法move_to_end(key, last&#x3D;True)"></a><strong>3、方法move_to_end(key, last&#x3D;True)</strong></h2><p> 该方法用于将一个已存在的key移动到有序字典的任一端。如果last为True（默认值），则移动到末尾，如果last为False，则移动到开头。如果key不存在，引发KeyError</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">from collections import OrderedDict</span><br><span class="line"></span><br><span class="line">od = OrderedDict()</span><br><span class="line"></span><br><span class="line">od = OrderedDict.fromkeys(&#x27;abcde&#x27;)</span><br><span class="line">od.move_to_end(&#x27;b&#x27;)</span><br><span class="line">print(&#x27;&#x27;.join(od.keys())) # acdeb</span><br><span class="line"></span><br><span class="line">od.move_to_end(&#x27;b&#x27;, last=False)</span><br><span class="line">print(&#x27;&#x27;.join(od.keys())) # bacde</span><br></pre></td></tr></table></figure>
+
+<h2 id="4、OrderDict对象之间的相等性判断"><a href="#4、OrderDict对象之间的相等性判断" class="headerlink" title="4、OrderDict对象之间的相等性判断"></a><strong>4、OrderDict对象之间的相等性判断</strong></h2><p> OrderedDict对象之间的相等性判断是顺序敏感的</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">判断：od1 == od2</span><br><span class="line">底层实现相当于：list(od1.items()) == list(od2.items())</span><br></pre></td></tr></table></figure>
+
+<p>OrderedDict对象与其他映射对象之间的相等性测试与常规字典类似，对顺序不敏感，所以我们可以在使用常规字典的任何位置替换为OrderedDict对象，并不会影响使用。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">od1=OrderedDict()</span><br><span class="line">od2=OrderedDict()</span><br><span class="line">od3=OrderedDict()</span><br><span class="line"></span><br><span class="line">od1[&#x27;k1&#x27;]=111</span><br><span class="line">od1[&#x27;k2&#x27;]=222</span><br><span class="line">od1[&#x27;k3&#x27;]=333</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">od2[&#x27;k1&#x27;]=111</span><br><span class="line">od2[&#x27;k2&#x27;]=222</span><br><span class="line">od2[&#x27;k3&#x27;]=333</span><br><span class="line"></span><br><span class="line">od3[&#x27;k1&#x27;]=111</span><br><span class="line">od3[&#x27;k3&#x27;]=333</span><br><span class="line">od3[&#x27;k2&#x27;]=222</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">print(od1 == od2) # OrderDict之间的相等判断，即list(od1.items())==list(od2.items())，所以结果为True</span><br><span class="line">print(od1 == od3) # OrderDict之间的相等判断，即list(od1.items())==list(od3.items())，所以结果为False</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">d=&#123;&#x27;k1&#x27;:111,&#x27;k3&#x27;:333,&#x27;k2&#x27;:222&#125; # 定义常规字典</span><br><span class="line"></span><br><span class="line">print(od1 == d) # OrderDict对象与常规字典比较，对顺序不敏感，所以结果为True</span><br></pre></td></tr></table></figure>
+
+<h2 id="5、OrderedDict构造函数和update"><a href="#5、OrderedDict构造函数和update" class="headerlink" title="5、OrderedDict构造函数和update()"></a><strong>5、OrderedDict构造函数和update()</strong></h2><p> OrderedDict构造函数和update()方法都可以接受关键字参数，但是它们的顺序丢失，因为OrderedDict构造函数和update()方法都属于Python的函数调用，而Python的函数调用语义使用常规无序字典传递关键字参数。请在python2中测试</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">from collections import OrderedDict</span><br><span class="line">od1=OrderedDict(x=1,y=2,z=3)</span><br><span class="line">print(od1) # 顺序错乱：OrderedDict([(&#x27;y&#x27;, 2), (&#x27;x&#x27;, 1), (&#x27;z&#x27;, 3)])</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">od2=OrderedDict()</span><br><span class="line">od2.update(a=1)</span><br><span class="line">od2.update(b=2)</span><br><span class="line">od2.update(c=3)</span><br><span class="line">print(od2) # 顺序正常：OrderedDict([(&#x27;a&#x27;, 1), (&#x27;b&#x27;, 2), (&#x27;c&#x27;, 3)])</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">od3=OrderedDict()</span><br><span class="line">od3.update(d=4,e=5,f=6)</span><br><span class="line">print(od3) # 顺序错乱：OrderedDict([(&#x27;e&#x27;, 5), (&#x27;d&#x27;, 4), (&#x27;f&#x27;, 6)])</span><br></pre></td></tr></table></figure>
+
+<h2 id="6、OrderedDict与sort结合"><a href="#6、OrderedDict与sort结合" class="headerlink" title="6、OrderedDict与sort结合"></a><strong>6、OrderedDict与sort结合</strong></h2><p> 由于有序字典会记住其插入顺序，因此可以与排序结合使用以创建排序字典：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt;</span><br><span class="line">&gt;&gt;&gt; # 标准未排序的常规字典</span><br><span class="line">&gt;&gt;&gt; d = &#123;&#x27;banana&#x27;: 3, &#x27;apple&#x27;: 4, &#x27;pear&#x27;: 1, &#x27;orange&#x27;: 2&#125;</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; # 按照key排序的字典</span><br><span class="line">&gt;&gt;&gt; OrderedDict(sorted(d.items(), key=lambda t: t[0]))</span><br><span class="line">OrderedDict([(&#x27;apple&#x27;, 4), (&#x27;banana&#x27;, 3), (&#x27;orange&#x27;, 2), (&#x27;pear&#x27;, 1)])</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; # 按照value排序的字典</span><br><span class="line">&gt;&gt;&gt; OrderedDict(sorted(d.items(), key=lambda t: t[1]))</span><br><span class="line">OrderedDict([(&#x27;pear&#x27;, 1), (&#x27;orange&#x27;, 2), (&#x27;banana&#x27;, 3), (&#x27;apple&#x27;, 4)])</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; # 按照key的长度排序的字典</span><br><span class="line">&gt;&gt;&gt; OrderedDict(sorted(d.items(), key=lambda t: len(t[0])))</span><br><span class="line">OrderedDict([(&#x27;pear&#x27;, 1), (&#x27;apple&#x27;, 4), (&#x27;orange&#x27;, 2), (&#x27;banana&#x27;, 3)])</span><br></pre></td></tr></table></figure>
+
+<h2 id="7、自定义OrderDict变体"><a href="#7、自定义OrderDict变体" class="headerlink" title="7、自定义OrderDict变体"></a><strong>7、自定义OrderDict变体</strong></h2><p> 我们通过继承OrderDict类来实现在原有的基础之上上定制化我们的子类（即OrderDict变体）。</p>
+<p> 比如我们在用新条目覆盖现有条目时，我们不想像OrderDict原先那样保留原始的插入位置，而是将覆盖的条目移动到结尾，实现如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">class LastUpdatedOrderedDict(OrderedDict):</span><br><span class="line">    &#x27;Store items in the order the keys were last added&#x27;</span><br><span class="line"></span><br><span class="line">    def __setitem__(self, key, value):</span><br><span class="line">        if key in self:</span><br><span class="line">            del self[key]</span><br><span class="line">        OrderedDict.__setitem__(self, key, value)</span><br><span class="line"></span><br><span class="line">od5=LastUpdatedOrderedDict()</span><br><span class="line">od5[&#x27;k1&#x27;]=111</span><br><span class="line">od5[&#x27;k2&#x27;]=222</span><br><span class="line">od5[&#x27;k3&#x27;]=333</span><br><span class="line">print(od5) # LastUpdatedOrderedDict([(&#x27;k1&#x27;, 111), (&#x27;k2&#x27;, 222), (&#x27;k3&#x27;, 333)])</span><br><span class="line"></span><br><span class="line">od5[&#x27;k2&#x27;]=2222222222</span><br><span class="line">print(od5) # 覆盖的值跑到末尾，LastUpdatedOrderedDict([(&#x27;k1&#x27;, 111), (&#x27;k3&#x27;, 333), (&#x27;k2&#x27;, 2222222222)])</span><br></pre></td></tr></table></figure>
+
+<p>##8、OrderDict与collections.Counter结合</p>
+<p> 有序字典可以与Counter类结合，以便计数器记住首次遇到的顺序元素：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">from collections import OrderedDict,Counter</span><br><span class="line"></span><br><span class="line">class OrderedCounter(Counter, OrderedDict):</span><br><span class="line">    &#x27;Counter that remembers the order elements are first encountered&#x27;</span><br><span class="line">    def __repr__(self):</span><br><span class="line">        print(&#x27;====&gt;&#x27;)</span><br><span class="line">        return &#x27;%s(%r)&#x27; % (self.__class__.__name__, OrderedDict(self))</span><br><span class="line">    def __reduce__(self):</span><br><span class="line">        return self.__class__, (OrderedDict(self),)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">c1 = Counter([&#x27;bbb&#x27;,&#x27;ccc&#x27;,&#x27;aaa&#x27;,&#x27;aaa&#x27;,&#x27;ccc&#x27;])</span><br><span class="line">print(c1)  # 顺序错乱：Counter(&#123;&#x27;ccc&#x27;: 2, &#x27;aaa&#x27;: 2, &#x27;bbb&#x27;: 1&#125;)</span><br><span class="line"></span><br><span class="line">c2=OrderedCounter([&#x27;bbb&#x27;,&#x27;ccc&#x27;,&#x27;aaa&#x27;,&#x27;aaa&#x27;,&#x27;ccc&#x27;])</span><br><span class="line">print(c2)  # 顺序保持原有：OrderedCounter(OrderedDict([(&#x27;bbb&#x27;, 1), (&#x27;ccc&#x27;, 2), (&#x27;aaa&#x27;, 2)]))</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2022/07/18/03_Python/01_Python%E5%9F%BA%E7%A1%80/54_%E9%99%84%E5%BD%95%E4%B9%9D%EF%BC%9AType/" rel="prev" title="">
+                  <i class="fa fa-chevron-left"></i> 
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2022/07/18/03_Python/01_Python%E5%9F%BA%E7%A1%80/51_%E9%99%84%E5%BD%95%E5%85%AD%EF%BC%9A%E8%BD%BB%E6%9D%BE%E6%90%9E%E5%AE%9A%E4%BD%8D%E8%BF%90%E7%AE%97/" rel="next" title="">
+                   <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">KungSing</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.0/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+  <script src="/js/third-party/fancybox.js"></script>
+
+
+  
+
+
+
+
+
+  
+
+  <script async src="/js/cursor/fireworks.js"></script>
+
+
+</body>
+</html>

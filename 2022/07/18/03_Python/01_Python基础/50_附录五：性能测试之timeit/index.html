@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 5.4.2">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" integrity="sha256-DfWjNxDkM94fVBWx1H5BMMp0Zq7luBlV8QRcSES7s+0=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"gsproj.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.12.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":"mac"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="一、timeit模块的使用timeit模块下主要有两个函数十分有用，分别为timeit.timeit、timeit.repeat 1.1 timeit.timeit的使用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="KungSing&#39;s Blog">
+<meta property="og:url" content="http://gsproj.github.io/2022/07/18/03_Python/01_Python%E5%9F%BA%E7%A1%80/50_%E9%99%84%E5%BD%95%E4%BA%94%EF%BC%9A%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95%E4%B9%8Btimeit/index.html">
+<meta property="og:site_name" content="KungSing&#39;s Blog">
+<meta property="og:description" content="一、timeit模块的使用timeit模块下主要有两个函数十分有用，分别为timeit.timeit、timeit.repeat 1.1 timeit.timeit的使用">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-07-18T07:10:19.389Z">
+<meta property="article:modified_time" content="2022-07-18T07:10:19.389Z">
+<meta property="article:author" content="KungSing">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://gsproj.github.io/2022/07/18/03_Python/01_Python%E5%9F%BA%E7%A1%80/50_%E9%99%84%E5%BD%95%E4%BA%94%EF%BC%9A%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95%E4%B9%8Btimeit/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://gsproj.github.io/2022/07/18/03_Python/01_Python%E5%9F%BA%E7%A1%80/50_%E9%99%84%E5%BD%95%E4%BA%94%EF%BC%9A%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95%E4%B9%8Btimeit/","path":"2022/07/18/03_Python/01_Python基础/50_附录五：性能测试之timeit/","title":""}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title> | KungSing's Blog</title>
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">KungSing's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">“如果你想攀登高峰，切莫把彩虹当作梯子” -- 徐志摩</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81timeit%E6%A8%A1%E5%9D%97%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="nav-text">一、timeit模块的使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-timeit-timeit%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="nav-text">1.1 timeit.timeit的使用</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="KungSing"
+      src="/images/myavatar.png">
+  <p class="site-author-name" itemprop="name">KungSing</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">108</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://gsproj.github.io/2022/07/18/03_Python/01_Python%E5%9F%BA%E7%A1%80/50_%E9%99%84%E5%BD%95%E4%BA%94%EF%BC%9A%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95%E4%B9%8Btimeit/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/myavatar.png">
+      <meta itemprop="name" content="KungSing">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KungSing's Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | KungSing's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2022-07-18 15:10:19" itemprop="dateCreated datePublished" datetime="2022-07-18T15:10:19+08:00">2022-07-18</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h2 id="一、timeit模块的使用"><a href="#一、timeit模块的使用" class="headerlink" title="一、timeit模块的使用"></a><strong>一、timeit模块的使用</strong></h2><p>timeit模块下主要有两个函数十分有用，分别为timeit.timeit、timeit.repeat</p>
+<h3 id="1-1-timeit-timeit的使用"><a href="#1-1-timeit-timeit的使用" class="headerlink" title="1.1 timeit.timeit的使用"></a><strong>1.1 timeit.timeit的使用</strong></h3><p> timeit.timeit参数：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"># stmt</span><br><span class="line">指定要执行的语句/statement,值可以是字符串形式的表达式，也可以是一个函数，或者是一个变量的形式。</span><br><span class="line"></span><br><span class="line"># number</span><br><span class="line">指定stmt语句执行的次数，默认值为一百万次</span><br><span class="line"></span><br><span class="line"># setup</span><br><span class="line">这个参数可以将stmt的环境传进去。比如各种import以及参数。多个值用分号；分隔开</span><br><span class="line"></span><br><span class="line"># timer </span><br><span class="line">指定计数器函数，使用默认time.perf_counter就好，详见下一小节</span><br></pre></td></tr></table></figure>
+
+<p> stmt参数使用示例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">from timeit import timeit, repeat</span><br><span class="line"></span><br><span class="line"># 1、stmt值为字符串表达式</span><br><span class="line">res1 = timeit(stmt=&quot;[i for i in range(1000)]&quot;, number=100)</span><br><span class="line"></span><br><span class="line">#2、stmt值为一个变量</span><br><span class="line">statement = &quot;&quot;&quot;</span><br><span class="line">l = []</span><br><span class="line">for i in range(1000):</span><br><span class="line">    l.append(i)</span><br><span class="line">&quot;&quot;&quot;</span><br><span class="line">res2 = timeit(stmt=statement, number=100)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#3、stmt值为一个函数</span><br><span class="line">def foo():</span><br><span class="line">    l = []</span><br><span class="line">    for i in range(1000):</span><br><span class="line">        l.append(i)</span><br><span class="line"></span><br><span class="line">res3 = timeit(stmt=foo, number=100)</span><br><span class="line">&quot;&quot;&quot;</span><br><span class="line">注意：如果stmt=&quot;foo()&quot;，那么必须通过setupo来导入from __main__ import foo如下</span><br><span class="line">res3=timeit(stmt=&quot;foo()&quot;,setup=&#x27;from __main__ import foo&#x27;,number=10)</span><br><span class="line">&quot;&quot;&quot;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">print(res1)  # 0.003296864000731148</span><br><span class="line">print(res2)  # 0.008153499999025371</span><br><span class="line">print(res3)  # 0.008153499999025371</span><br></pre></td></tr></table></figure>
+
+<p> setup参数使用示例</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">from timeit import timeit</span><br><span class="line"></span><br><span class="line">res=timeit(stmt=&quot;json.loads(json_data)&quot;,number=1000,</span><br><span class="line">           setup=&quot;import json;data=&#123;&#x27;name&#x27;:&#x27;egon&#x27;,&#x27;age&#x27;:18&#125;;json_data=json.dumps(data)&quot;</span><br><span class="line">           )</span><br><span class="line">print(res)</span><br></pre></td></tr></table></figure>
+
+<p>###1.2 timeit.repeat</p>
+<p> 其实repeat就比timeit多了一个参数，参数名与函数名一致，也叫repeat，用来指定重复的次数</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">from timeit import timeit, repeat</span><br><span class="line"></span><br><span class="line">res = repeat(stmt=&quot;[i for i in range(1000)]&quot;, number=100,repeat=3)</span><br><span class="line">print(res)</span><br><span class="line"></span><br><span class="line"># repeat=3，所以返回的列表中包含三个元素，所代表的含义依次为：</span><br><span class="line"># 1、第一个100次执行指定语句所耗费时间</span><br><span class="line"># 2、第二个100次执行指定语句所耗费时间</span><br><span class="line"># 3、第三个100次执行指定语句所耗费时间</span><br><span class="line">[0.0033898779984156135, 0.003476719997706823, 0.00342772699877969]</span><br></pre></td></tr></table></figure>
+
+<p>##二、编写通用计时装饰器</p>
+<p> python2和python3里面的计时函数是不一样的，所以推荐建议使用timeit模块中的timeit.default_timer()，它会根据平台不同选取合适的计时函数，详解如下</p>
+<p> 由timeit.default_timer()的官方文档可知，计时时间精度和平台以及使用的函数有关：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&quot;Define a default timer, in a platform-specific manner. On Windows, time.clock() has microsecond granularity, but time.time()’s granularity is 1/60th of a second. On Unix, time.clock() has 1/100th of a second granularity, and time.time() is much more precise. On either platform, default_timer() measures wall clock time, not the CPU time. This means that other processes running on the same computer may interfere with the timing.&quot;</span><br><span class="line"></span><br><span class="line">翻译过来就是：</span><br><span class="line">“定义在默认的计时器中，针对不同平台采用不同方式。在Windows上，time.clock()具有微秒精度，但是time.time()精度是1/60s。在Unix上，time.clock()有1/100s精度，而且time.time()精度远远更高。在另外的平台上，default_timer()测量的是墙上时钟时间，不是CPU时间。这意味着同一计算机的其他进程可能影响计时。”</span><br></pre></td></tr></table></figure>
+
+<p> 具体区别可以查看python2和3中timeit的实现</p>
+<p> 在python2中：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">if sys.platform == &quot;win32&quot;:</span><br><span class="line">    # On Windows, the best timer is time.clock()</span><br><span class="line">    default_timer = time.clock</span><br><span class="line">else:</span><br><span class="line">    # On most other platforms the best timer is time.time()</span><br><span class="line">    default_timer = time.time</span><br></pre></td></tr></table></figure>
+
+<p>在python3中：default_timer &#x3D; time.perf_counter</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">由time.clock()的官方文档可以看出：</span><br><span class="line"></span><br><span class="line">&quot;Deprecated since version 3.3: The behaviour of this function depends on the platform: use perf_counter() or process_time() instead, depending on your requirements, to have a well defined behaviour.&quot;</span><br><span class="line"></span><br><span class="line">翻译过来就是：</span><br><span class="line">“python3.3版本后time.clock()就过时了：这个函数的行为受平台影响，用time.perf_counter()”或者time.process_time()代替来得到一个定义更好的行为，具体取决于你的需求。”</span><br></pre></td></tr></table></figure>
+
+<p> 更多详细信息请看官方文档中的time.get_clock_info()</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://docs.python.org/3/library/time.html#time.get_clock_info</span><br></pre></td></tr></table></figure>
+
+<p> 综上，我们可以定一个同时适用于Python2和Python3解释器的通用计时装饰器</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">import timeit</span><br><span class="line"></span><br><span class="line">def clock(func):</span><br><span class="line">    def clocked(*args, **kwargs):</span><br><span class="line">        start = timeit.default_timer()</span><br><span class="line">        res = func(*args, **kwargs)</span><br><span class="line">        run_time = timeit.default_timer() - start</span><br><span class="line">        func_name = func.__name__</span><br><span class="line">        arg_str = &#x27;, &#x27;.join(repr(arg) for arg in args)</span><br><span class="line">        print(&#x27;调用&gt;&gt;&gt;%s(%s)   返回值&gt;&gt;&gt;%r   耗时&gt;&gt;&gt;%0.8fs&#x27; % (func_name, arg_str, res, run_time))</span><br><span class="line">        return res</span><br><span class="line"></span><br><span class="line">    return clocked</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">@clock</span><br><span class="line">def func(n):</span><br><span class="line">    &quot;&quot;&quot;累计加1&quot;&quot;&quot;</span><br><span class="line">    res=0</span><br><span class="line">    for i in range(n):</span><br><span class="line">        res+=1</span><br><span class="line">    return res</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">if __name__ == &#x27;__main__&#x27;:</span><br><span class="line">    func(10000000)</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2022/07/18/03_Python/01_Python%E5%9F%BA%E7%A1%80/51_%E9%99%84%E5%BD%95%E5%85%AD%EF%BC%9A%E8%BD%BB%E6%9D%BE%E6%90%9E%E5%AE%9A%E4%BD%8D%E8%BF%90%E7%AE%97/" rel="prev" title="">
+                  <i class="fa fa-chevron-left"></i> 
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2022/07/18/03_Python/01_Python%E5%9F%BA%E7%A1%80/49_%E9%99%84%E5%BD%95%E5%9B%9B%EF%BC%9APython%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%9A%844%E4%B8%AD%E6%96%B9%E5%BC%8F/" rel="next" title="">
+                   <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">KungSing</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.0/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+  <script src="/js/third-party/fancybox.js"></script>
+
+
+  
+
+
+
+
+
+  
+
+  <script async src="/js/cursor/fireworks.js"></script>
+
+
+</body>
+</html>
