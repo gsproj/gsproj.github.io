@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" integrity="sha256-DfWjNxDkM94fVBWx1H5BMMp0Zq7luBlV8QRcSES7s+0=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"gsproj.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.12.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":"mac"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
@@ -24,7 +25,7 @@
 <meta property="og:type" content="article">
 <meta property="og:title" content="运维之综合架构--07--Nginx(七)均衡调度">
 <meta property="og:url" content="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/13-Nginx(%E4%B8%83)Nginx%E4%B8%83%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5/index.html">
-<meta property="og:site_name" content="Codefish&#39;s Blog">
+<meta property="og:site_name" content="KungSing&#39;s Blog">
 <meta property="og:description" content="一、Nginx均衡调度算法Nginx七层负载均衡分为5种调度算法    调度算法 概述    轮询（常用） 按时间顺序逐一分配到不同的后端服务器(默认)   weight（面试点） 加权轮询,weight值越大,分配到的访问几率越高   ip_hash（面试点） 每个请求按访问IP的hash结果分配,这样来自同一IP的固定访问一个后端服务器   url_hash 按照访问URL的hash结果来分配">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20210821113447825.png">
@@ -34,7 +35,7 @@
 <meta property="og:image" content="http://gsproj.github.io/img/image-20210823225412626.png">
 <meta property="article:published_time" content="2022-07-06T03:19:52.000Z">
 <meta property="article:modified_time" content="2022-07-11T05:55:06.515Z">
-<meta property="article:author" content="Codefish.GS">
+<meta property="article:author" content="KungSing">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://gsproj.github.io/img/image-20210821113447825.png">
 
@@ -46,7 +47,7 @@
 <script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/13-Nginx(%E4%B8%83)Nginx%E4%B8%83%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5/","path":"2022/07/06/01_运维/02-综合架构/13-Nginx(七)Nginx七层负载均衡调度与健康检查/","title":"运维之综合架构--07--Nginx(七)均衡调度"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>运维之综合架构--07--Nginx(七)均衡调度 | Codefish's Blog</title>
+<title>运维之综合架构--07--Nginx(七)均衡调度 | KungSing's Blog</title>
   
 
 
@@ -76,7 +77,7 @@
 
     <a href="/" class="brand" rel="start">
       <i class="logo-line"></i>
-      <p class="site-title">Codefish's Blog</p>
+      <p class="site-title">KungSing's Blog</p>
       <i class="logo-line"></i>
     </a>
       <p class="site-subtitle" itemprop="description">“如果你想攀登高峰，切莫把彩虹当作梯子” -- 徐志摩</p>
@@ -155,16 +156,16 @@
 
         <div class="site-overview-wrap sidebar-panel">
           <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-    <img class="site-author-image" itemprop="image" alt="Codefish.GS"
+    <img class="site-author-image" itemprop="image" alt="KungSing"
       src="/images/myavatar.png">
-  <p class="site-author-name" itemprop="name">Codefish.GS</p>
+  <p class="site-author-name" itemprop="name">KungSing</p>
   <div class="site-description" itemprop="description"></div>
 </div>
 <div class="site-state-wrap site-overview-item animated">
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">69</span>
+          <span class="site-state-item-count">73</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -218,16 +219,16 @@
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/myavatar.png">
-      <meta itemprop="name" content="Codefish.GS">
+      <meta itemprop="name" content="KungSing">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Codefish's Blog">
+      <meta itemprop="name" content="KungSing's Blog">
       <meta itemprop="description" content="">
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="运维之综合架构--07--Nginx(七)均衡调度 | Codefish's Blog">
+      <meta itemprop="name" content="运维之综合架构--07--Nginx(七)均衡调度 | KungSing's Blog">
       <meta itemprop="description" content="">
     </span>
       <header class="post-header">
@@ -308,29 +309,14 @@
 <h3 id="1-1-加权轮询"><a href="#1-1-加权轮询" class="headerlink" title="1.1 加权轮询"></a>1.1 加权轮询</h3><p>比如实现访问5次web01，1次web02</p>
 <p>当web服务器配置不相同，有差距时，可以用此方法</p>
 <p>在<code>lb01</code>配置</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
-upstream node &#123;
-        server 172.16.1.7:80 weight&#x3D;5;
-        server 172.16.1.8:80 weight&#x3D;1;
-&#125;
-
-server &#123;
-...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@lb01 nginx]# cat /etc/nginx/conf.d/proxy_node.conf</span><br><span class="line">upstream node &#123;</span><br><span class="line">        server 172.16.1.7:80 weight=5;</span><br><span class="line">        server 172.16.1.8:80 weight=1;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
 
 <h3 id="1-2-ip-hash"><a href="#1-2-ip-hash" class="headerlink" title="1.2 ip_hash"></a>1.2 ip_hash</h3><blockquote>
 <p>PS：不能与weight一起使用</p>
 </blockquote>
 <p>根据请求的IP地址，固定访问到某一后端，除非已选择的后端down了，有点浪费资源</p>
 <p>在<code>lb01</code>配置</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
-upstream node &#123;
-        ip_hash;
-        server 172.16.1.7:80;
-        server 172.16.1.8:80;
-&#125;
-
-server &#123; 
-...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@lb01 nginx]# cat /etc/nginx/conf.d/proxy_node.conf</span><br><span class="line">upstream node &#123;</span><br><span class="line">        ip_hash;</span><br><span class="line">        server 172.16.1.7:80;</span><br><span class="line">        server 172.16.1.8:80;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">server &#123; </span><br><span class="line">...</span><br></pre></td></tr></table></figure>
 
 <h2 id="二、Nginx负载均衡后端状态"><a href="#二、Nginx负载均衡后端状态" class="headerlink" title="二、Nginx负载均衡后端状态"></a>二、Nginx负载均衡后端状态</h2><table>
 <thead>
@@ -364,91 +350,54 @@ server &#123;
 <p>一般用于停机维护</p>
 </blockquote>
 <p>在<code>lb01</code>配置，可见当两台web的Nginx服务都正常时，只能访问web02，当web02的Nginx服务挂了，返回502</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
-upstream node &#123;
-        server 172.16.1.7:80 down;
-        server 172.16.1.8:80;
-&#125;
-
-server &#123;
-...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@lb01 nginx]# cat /etc/nginx/conf.d/proxy_node.conf</span><br><span class="line">upstream node &#123;</span><br><span class="line">        server 172.16.1.7:80 down;</span><br><span class="line">        server 172.16.1.8:80;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
 
 <h3 id="2-2-backup状态"><a href="#2-2-backup状态" class="headerlink" title="2.2 backup状态"></a>2.2 backup状态</h3><p>在<code>lb01</code>配置，可见当两台web都正常时，只能访问web02，如果web02的服务挂了，会访问web01，当web02恢复后，再次访问到的是web02</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
-upstream node &#123;
-        server 172.16.1.7:80 backup;
-        server 172.16.1.8:80;
-&#125;
-
-server &#123;
-...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@lb01 nginx]# cat /etc/nginx/conf.d/proxy_node.conf</span><br><span class="line">upstream node &#123;</span><br><span class="line">        server 172.16.1.7:80 backup;</span><br><span class="line">        server 172.16.1.8:80;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
 
 <h3 id="2-3-健康检查"><a href="#2-3-健康检查" class="headerlink" title="2.3 健康检查"></a>2.3 健康检查</h3><blockquote>
 <p>自带的健康检查不够精准，且看不到信息，面试会问</p>
 </blockquote>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
-upstream node &#123;
-        server 172.16.1.7:80 max_fails&#x3D;2 fail_timeout&#x3D;10s;
-        server 172.16.1.8:80 max_fails&#x3D;2 fail_timeout&#x3D;10s;
-&#125;
-
-server &#123;
-...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@lb01 nginx]# cat /etc/nginx/conf.d/proxy_node.conf</span><br><span class="line">upstream node &#123;</span><br><span class="line">        server 172.16.1.7:80 max_fails=2 fail_timeout=10s;</span><br><span class="line">        server 172.16.1.8:80 max_fails=2 fail_timeout=10s;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
 
 <h2 id="三、第三方健康检查模块check-upstream"><a href="#三、第三方健康检查模块check-upstream" class="headerlink" title="三、第三方健康检查模块check_upstream"></a>三、第三方健康检查模块check_upstream</h2><blockquote>
 <p>检测更精准，且有页面可以展示服务端的状态，需要编译安装</p>
 </blockquote>
 <h3 id="3-1-编译安装Nginx"><a href="#3-1-编译安装Nginx" class="headerlink" title="3.1 编译安装Nginx"></a>3.1 编译安装Nginx</h3><p>1、安装依赖包</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb02 ~]# yum install -y gcc glibc gcc-c++ pcre-devel openssl-devel  patch libxml2 -libxml2-devel libxslt libxslt-devel gd-devel perl-ExtUtils-Embed gperftools-devel.x86_64 gperftools-libs.x86_64 gperftools.x86_64<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@lb02 ~]# yum install -y gcc glibc gcc-c++ pcre-devel openssl-devel  patch libxml2 -libxml2-devel libxslt libxslt-devel gd-devel perl-ExtUtils-Embed gperftools-devel.x86_64 gperftools-libs.x86_64 gperftools.x86_64</span><br></pre></td></tr></table></figure>
 
 <p>2、下载Nginx源码及第三方模块源码</p>
 <blockquote>
 <p>PS：为保持一致，先通过yum源安装nginx，这是当前实验环境的Nginx版本</p>
 <p>[root@lb01 nginx]# nginx -version<br>nginx version: nginx&#x2F;1.20.1</p>
 </blockquote>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb02 ~]# wget http:&#x2F;&#x2F;nginx.org&#x2F;download&#x2F;nginx-1.20.1.tar.gz
-[root@lb02 ~]# wget https:&#x2F;&#x2F;github.com&#x2F;yaoweibin&#x2F;nginx_upstream_check_module&#x2F;archive&#x2F;master.zip<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@lb02 ~]# wget http://nginx.org/download/nginx-1.20.1.tar.gz</span><br><span class="line">[root@lb02 ~]# wget https://github.com/yaoweibin/nginx_upstream_check_module/archive/master.zip</span><br></pre></td></tr></table></figure>
 
 <p>3、解压nginx源码包以及第三方模块</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 ~]# unzip master.zip
-[root@lb01 ~]# tar -vxf nginx-1.20.1.tar.gz<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@lb01 ~]# unzip master.zip</span><br><span class="line">[root@lb01 ~]# tar -vxf nginx-1.20.1.tar.gz</span><br></pre></td></tr></table></figure>
 
 <p>4、打补丁</p>
 <blockquote>
 <p>打补丁(nginx的版本是1.20.1补丁就选择1.20.1的,p1代表在nginx目录，p0是不在nginx目录)</p>
 </blockquote>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx-1.20.1]# cd nginx-1.20.1&#x2F;
-[root@lb01 nginx-1.20.1]# patch -p1 &lt; ..&#x2F;nginx_upstream_check_module-master&#x2F;check_1.20.1+.patch<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@lb01 nginx-1.20.1]# cd nginx-1.20.1/</span><br><span class="line">[root@lb01 nginx-1.20.1]# patch -p1 &lt; ../nginx_upstream_check_module-master/check_1.20.1+.patch</span><br></pre></td></tr></table></figure>
 
 <p>5、编译Nginx，附带模块参数</p>
 <blockquote>
 <p>通过nginx -V获取configure参数，尽量保持一致</p>
 </blockquote>
 <p>–add-module&#x3D;&#x2F;root&#x2F;nginx_upstream_check_module-master</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx-1.20.1]# .&#x2F;configure --prefix&#x3D;&#x2F;usr&#x2F;share&#x2F;nginx --sbin-path&#x3D;&#x2F;usr&#x2F;sbin&#x2F;nginx --modules-path&#x3D;&#x2F;usr&#x2F;lib64&#x2F;nginx&#x2F;modules --conf-path&#x3D;&#x2F;etc&#x2F;nginx&#x2F;nginx.conf --error-log-path&#x3D;&#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log --http-log-path&#x3D;&#x2F;var&#x2F;log&#x2F;nginx&#x2F;access.log --http-client-body-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;client_body --http-proxy-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;proxy --http-fastcgi-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;fastcgi --http-uwsgi-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;uwsgi --http-scgi-temp-path&#x3D;&#x2F;var&#x2F;lib&#x2F;nginx&#x2F;tmp&#x2F;scgi --pid-path&#x3D;&#x2F;run&#x2F;nginx.pid --lock-path&#x3D;&#x2F;run&#x2F;lock&#x2F;subsys&#x2F;nginx --user&#x3D;nginx --group&#x3D;nginx --with-compat --with-debug --with-google_perftools_module --with-http_addition_module --with-http_auth_request_module --with-http_dav_module --with-http_degradation_module --with-http_flv_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_image_filter_module&#x3D;dynamic --with-http_mp4_module --with-http_perl_module&#x3D;dynamic --with-http_random_index_module --with-http_realip_module --with-http_secure_link_module --with-http_slice_module --with-http_ssl_module --with-http_stub_status_module --with-http_sub_module --with-http_v2_module --with-http_xslt_module&#x3D;dynamic --with-mail&#x3D;dynamic --with-mail_ssl_module --with-pcre --with-pcre-jit --with-stream&#x3D;dynamic --with-stream_ssl_module --with-stream_ssl_preread_module --with-threads --add-module&#x3D;&#x2F;root&#x2F;nginx_upstream_check_module-master<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@lb01 nginx-1.20.1]# ./configure --prefix=/usr/share/nginx --sbin-path=/usr/sbin/nginx --modules-path=/usr/lib64/nginx/modules --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --http-client-body-temp-path=/var/lib/nginx/tmp/client_body --http-proxy-temp-path=/var/lib/nginx/tmp/proxy --http-fastcgi-temp-path=/var/lib/nginx/tmp/fastcgi --http-uwsgi-temp-path=/var/lib/nginx/tmp/uwsgi --http-scgi-temp-path=/var/lib/nginx/tmp/scgi --pid-path=/run/nginx.pid --lock-path=/run/lock/subsys/nginx --user=nginx --group=nginx --with-compat --with-debug --with-google_perftools_module --with-http_addition_module --with-http_auth_request_module --with-http_dav_module --with-http_degradation_module --with-http_flv_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_image_filter_module=dynamic --with-http_mp4_module --with-http_perl_module=dynamic --with-http_random_index_module --with-http_realip_module --with-http_secure_link_module --with-http_slice_module --with-http_ssl_module --with-http_stub_status_module --with-http_sub_module --with-http_v2_module --with-http_xslt_module=dynamic --with-mail=dynamic --with-mail_ssl_module --with-pcre --with-pcre-jit --with-stream=dynamic --with-stream_ssl_module --with-stream_ssl_preread_module --with-threads --add-module=/root/nginx_upstream_check_module-master</span><br></pre></td></tr></table></figure>
 
 <p>6、在已有的负载均衡上增加健康检查的功能</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx-1.20.1]# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy_node.conf
-upstream node &#123;
-        server 172.16.1.7:80;
-        server 172.16.1.8:80;
-        check interval&#x3D;3000 rise&#x3D;2 fall&#x3D;3 timeout&#x3D;1000 type&#x3D;tcp;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@lb01 nginx-1.20.1]# cat /etc/nginx/conf.d/proxy_node.conf</span><br><span class="line">upstream node &#123;</span><br><span class="line">        server 172.16.1.7:80;</span><br><span class="line">        server 172.16.1.8:80;</span><br><span class="line">        check interval=3000 rise=2 fall=3 timeout=1000 type=tcp;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <h3 id="3-2-功能测试"><a href="#3-2-功能测试" class="headerlink" title="3.2 功能测试"></a>3.2 功能测试</h3><p>1、正常情况下的检测数据</p>
 <p><img src="/img/image-20210821113447825.png" alt="image-20210821113447825"></p>
 <p>2、测试将web01的nginx服务关掉</p>
 <p><img src="/img/image-20210821114011230.png" alt="image-20210821114011230"></p>
 <p>3、日志分析</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 nginx-1.20.1]# tail -f &#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log
-# 两web服务正常，能获取peer
-2021&#x2F;08&#x2F;21 02:42:11 [error] 50522#50522: enable check peer: 172.16.1.8:80
-2021&#x2F;08&#x2F;21 02:42:12 [error] 50522#50522: enable check peer: 172.16.1.7:80
-2021&#x2F;08&#x2F;21 02:46:17 [error] 50522#50522: *13 connect() failed (111: Connection refused) while connecting to upstream, client: 10.0.0.1, server: node.oldboy.com, request: &quot;GET &#x2F; HTTP&#x2F;1.1&quot;, upstream: &quot;http:&#x2F;&#x2F;172.16.1.7:80&#x2F;&quot;, host: &quot;node.oldboy.com&quot;
-# 停止web01的nginx服务
-2021&#x2F;08&#x2F;21 02:46:20 [error] 50522#50522: disable check peer: 172.16.1.7:80
-# 重新启动web01的nginx服务
-2021&#x2F;08&#x2F;21 02:47:59 [error] 50522#50522: enable check peer: 172.16.1.7:80<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@lb01 nginx-1.20.1]# tail -f /var/log/nginx/error.log</span><br><span class="line"><span class="meta">#</span><span class="bash"> 两web服务正常，能获取peer</span></span><br><span class="line">2021/08/21 02:42:11 [error] 50522#50522: enable check peer: 172.16.1.8:80</span><br><span class="line">2021/08/21 02:42:12 [error] 50522#50522: enable check peer: 172.16.1.7:80</span><br><span class="line">2021/08/21 02:46:17 [error] 50522#50522: *13 connect() failed (111: Connection refused) while connecting to upstream, client: 10.0.0.1, server: node.oldboy.com, request: &quot;GET / HTTP/1.1&quot;, upstream: &quot;http://172.16.1.7:80/&quot;, host: &quot;node.oldboy.com&quot;</span><br><span class="line"><span class="meta">#</span><span class="bash"> 停止web01的nginx服务</span></span><br><span class="line">2021/08/21 02:46:20 [error] 50522#50522: disable check peer: 172.16.1.7:80</span><br><span class="line"><span class="meta">#</span><span class="bash"> 重新启动web01的nginx服务</span></span><br><span class="line">2021/08/21 02:47:59 [error] 50522#50522: enable check peer: 172.16.1.7:80</span><br></pre></td></tr></table></figure>
 
 <h2 id="四、如何解决网站重复登录的问题"><a href="#四、如何解决网站重复登录的问题" class="headerlink" title="四、如何解决网站重复登录的问题"></a>四、如何解决网站重复登录的问题</h2><p>有三种方法解决：</p>
 <ol>
@@ -464,117 +413,57 @@ upstream node &#123;
 <p>本案例，选用3.2配置，session共享，写入redis数据库</p>
 <h3 id="4-1-安装phpmyadmin重现问题"><a href="#4-1-安装phpmyadmin重现问题" class="headerlink" title="4.1 安装phpmyadmin重现问题"></a>4.1 安装phpmyadmin重现问题</h3><p><code>web01</code>和<code>web02</code>都需要安装</p>
 <p>1、配置Nginx</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cat php.conf
-server &#123;
-	listen 80;
-	server_name php.oldboy.com;
-	root &#x2F;code&#x2F;phpMyAdmin-4.8.4-all-languages;
-
-	location &#x2F; &#123;
-		index index.php index.html;
-	&#125;
-
-	location ~ \.php$ &#123;
-		fastcgi_pass 127.0.0.1:9000;
-		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-		include fastcgi_params;
-	&#125;
-&#125;
-[root@web01 conf.d]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">[root@web01 conf.d]# cat php.conf</span><br><span class="line">server &#123;</span><br><span class="line">	listen 80;</span><br><span class="line">	server_name php.oldboy.com;</span><br><span class="line">	root /code/phpMyAdmin-4.8.4-all-languages;</span><br><span class="line"></span><br><span class="line">	location / &#123;</span><br><span class="line">		index index.php index.html;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	location ~ \.php$ &#123;</span><br><span class="line">		fastcgi_pass 127.0.0.1:9000;</span><br><span class="line">		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;</span><br><span class="line">		include fastcgi_params;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line">[root@web01 conf.d]# systemctl restart nginx</span><br></pre></td></tr></table></figure>
 
 <p>2、安装phpmyadmin</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# cd &#x2F;code
-[root@web01 code]# wget https:&#x2F;&#x2F;files.phpmyadmin.net&#x2F;phpMyAdmin&#x2F;4.8.4&#x2F;phpMyAdmin-4.8.4-all-languages.zip
-[root@web01 code]# unzip phpMyAdmin-4.8.4-all-languages.zip<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@web01 conf.d]# cd /code</span><br><span class="line">[root@web01 code]# wget https://files.phpmyadmin.net/phpMyAdmin/4.8.4/phpMyAdmin-4.8.4-all-languages.zip</span><br><span class="line">[root@web01 code]# unzip phpMyAdmin-4.8.4-all-languages.zip</span><br></pre></td></tr></table></figure>
 
 <p>3、配置phpmyadmin连接远程数据库</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# cd phpMyAdmin-4.8.4-all-languages&#x2F;
-[root@web01 phpMyAdmin-4.8.4-all-languages]# cp config.sample.inc.php config.inc.php
-[root@web01 phpMyAdmin-4.8.4-all-languages]# vim config.inc.php
-&#x2F;* Server parameters *&#x2F;
-$cfg[&#39;Servers&#39;][$i][&#39;host&#39;] &#x3D; &#39;172.16.1.51&#39;;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@web01 code]# cd phpMyAdmin-4.8.4-all-languages/</span><br><span class="line">[root@web01 phpMyAdmin-4.8.4-all-languages]# cp config.sample.inc.php config.inc.php</span><br><span class="line">[root@web01 phpMyAdmin-4.8.4-all-languages]# vim config.inc.php</span><br><span class="line">/* Server parameters */</span><br><span class="line"><span class="meta">$</span><span class="bash">cfg[<span class="string">&#x27;Servers&#x27;</span>][<span class="variable">$i</span>][<span class="string">&#x27;host&#x27;</span>] = <span class="string">&#x27;172.16.1.51&#x27;</span>;</span></span><br></pre></td></tr></table></figure>
 
 <p>4、配置授权</p>
 <blockquote>
 <p>这个文件夹中会记录session，需要权限</p>
 <p>session_start(): Failed to read session data: files (path: &#x2F;var&#x2F;lib&#x2F;php&#x2F;session)</p>
 </blockquote>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 conf.d]# chown -R www.www &#x2F;var&#x2F;lib&#x2F;php&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@web01 conf.d]# chown -R www.www /var/lib/php/</span><br></pre></td></tr></table></figure>
 
 <p>5、将web01上配置好的phpmyadmin以及nginx的配置文件推送到web02主机上</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web01 code]# scp -rp  phpMyAdmin-4.8.4-all-languages root@172.16.1.8:&#x2F;code&#x2F;
-[root@web01 code]# scp &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;php.conf  root@172.16.1.8:&#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@web01 code]# scp -rp  phpMyAdmin-4.8.4-all-languages root@172.16.1.8:/code/</span><br><span class="line">[root@web01 code]# scp /etc/nginx/conf.d/php.conf  root@172.16.1.8:/etc/nginx/conf.d/</span><br></pre></td></tr></table></figure>
 
 <p>6、重载Nginx服务，授权访问权限</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web02 code]# systemctl restart nginx
-[root@web02 code]# chown -R www.www &#x2F;var&#x2F;lib&#x2F;php&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@web02 code]# systemctl restart nginx</span><br><span class="line">[root@web02 code]# chown -R www.www /var/lib/php/</span><br></pre></td></tr></table></figure>
 
 <p>7、接入负载均衡，并重启nginx服务，<code>lb01</code>操作</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@lb01 conf.d]# vim proxy_php.com.conf 
-upstream php &#123;
-        server 172.16.1.7:80;
-        server 172.16.1.8:80;
-&#125;
-server &#123;
-        listen 80;
-        server_name php.oldboy.com;
-        location &#x2F; &#123;
-                proxy_pass http:&#x2F;&#x2F;php;
-                include proxy_params;
-        &#125;
-&#125;
-
-[root@lb01 conf.d]# nginx -t
-nginx: the configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf syntax is ok
-nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test is successful
-[root@lb01 conf.d]# systemctl restart nginx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[root@lb01 conf.d]# vim proxy_php.com.conf </span><br><span class="line">upstream php &#123;</span><br><span class="line">        server 172.16.1.7:80;</span><br><span class="line">        server 172.16.1.8:80;</span><br><span class="line">&#125;</span><br><span class="line">server &#123;</span><br><span class="line">        listen 80;</span><br><span class="line">        server_name php.oldboy.com;</span><br><span class="line">        location / &#123;</span><br><span class="line">                proxy_pass http://php;</span><br><span class="line">                include proxy_params;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">[root@lb01 conf.d]# nginx -t</span><br><span class="line">nginx: the configuration file /etc/nginx/nginx.conf syntax is ok</span><br><span class="line">nginx: configuration file /etc/nginx/nginx.conf test is successful</span><br><span class="line">[root@lb01 conf.d]# systemctl restart nginx</span><br></pre></td></tr></table></figure>
 
 <p>9、测试访问</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">网页访问：
-	http:&#x2F;&#x2F;php.oldboy.com
-登录账户:
-	采用db01（172.16.1.51）的mysql远程账户oldboy&#x2F;Bgx123.com
-此时访问phpmyadmin登录将一直失败，因为轮询访问，session一直变：
-报错：
-Failed to set session cookie. Maybe you are using HTTP instead of HTTPS to access phpMyAdmin.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">网页访问：</span><br><span class="line">	http://php.oldboy.com</span><br><span class="line">登录账户:</span><br><span class="line">	采用db01（172.16.1.51）的mysql远程账户oldboy/Bgx123.com</span><br><span class="line">此时访问phpmyadmin登录将一直失败，因为轮询访问，session一直变：</span><br><span class="line">报错：</span><br><span class="line">Failed to set session cookie. Maybe you are using HTTP instead of HTTPS to access phpMyAdmin.</span><br></pre></td></tr></table></figure>
 
 <h3 id="4-2-解决问题"><a href="#4-2-解决问题" class="headerlink" title="4.2 解决问题"></a>4.2 解决问题</h3><p>1、在<code>db01</code>安装redis数据库</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@db01 ~]# yum install redis -y<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@db01 ~]# yum install redis -y</span><br></pre></td></tr></table></figure>
 
 <p>2、配置并启动redis</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@db01 ~]# sed  -i &#39;&#x2F;^bind&#x2F;c bind 127.0.0.1 172.16.1.51&#39; &#x2F;etc&#x2F;redis.conf
-[root@db01 ~]# systemctl start redis
-[root@db01 ~]# systemctl enable redis<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@db01 ~]# sed  -i &#x27;/^bind/c bind 127.0.0.1 172.16.1.51&#x27; /etc/redis.conf</span><br><span class="line">[root@db01 ~]# systemctl start redis</span><br><span class="line">[root@db01 ~]# systemctl enable redis</span><br></pre></td></tr></table></figure>
 
 <p>3、<code>web01</code>的php配置session连接redis</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">#1.修改&#x2F;etc&#x2F;php.ini文件
-[root@web01 ~]# vim &#x2F;etc&#x2F;php.ini
-session.save_handler &#x3D; redis
-session.save_path &#x3D; &quot;tcp:&#x2F;&#x2F;172.16.1.51:6379&quot;
-;session.save_path &#x3D; &quot;tcp:&#x2F;&#x2F;172.16.1.51:6379?auth&#x3D;123&quot; #如果redis存在密码，则使用该方式
-session.auto_start &#x3D; 1<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">1.修改/etc/php.ini文件</span></span><br><span class="line">[root@web01 ~]# vim /etc/php.ini</span><br><span class="line">session.save_handler = redis</span><br><span class="line">session.save_path = &quot;tcp://172.16.1.51:6379&quot;</span><br><span class="line">;session.save_path = &quot;tcp://172.16.1.51:6379?auth=123&quot; #如果redis存在密码，则使用该方式</span><br><span class="line">session.auto_start = 1</span><br></pre></td></tr></table></figure>
 
 <p>4、注释php-fpm.d&#x2F;<a target="_blank" rel="noopener" href="http://www.conf里面的两条内容,否则session内容会一直写入/var/lib/php/session%E7%9B%AE%E5%BD%95%E4%B8%AD">www.conf里面的两条内容，否则session内容会一直写入/var/lib/php/session目录中</a></p>
-<pre class="line-numbers language-she" data-language="she"><code class="language-she">;php_value[session.save_handler] &#x3D; files
-;php_value[session.save_path]    &#x3D; &#x2F;var&#x2F;lib&#x2F;php&#x2F;session<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">;php_value[session.save_handler] = files</span><br><span class="line">;php_value[session.save_path]    = /var/lib/php/session</span><br></pre></td></tr></table></figure>
 
 <p>5、重启php-fpm</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@web02 code]# systemctl restart php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@web02 code]# systemctl restart php-fpm</span><br></pre></td></tr></table></figure>
 
 <p>6、将<code>web01</code>的配置文件推送到<code>web02</code>上</p>
-<pre class="line-numbers language-she" data-language="she"><code class="language-she">[root@web01 code]# scp &#x2F;etc&#x2F;php.ini root@172.16.1.8:&#x2F;etc&#x2F;php.ini  
-[root@web01 code]# scp &#x2F;etc&#x2F;php-fpm.d&#x2F;www.conf root@172.16.1.8:&#x2F;etc&#x2F;php-fpm.d&#x2F;www.conf <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@web01 code]# scp /etc/php.ini root@172.16.1.8:/etc/php.ini  </span><br><span class="line">[root@web01 code]# scp /etc/php-fpm.d/www.conf root@172.16.1.8:/etc/php-fpm.d/www.conf </span><br></pre></td></tr></table></figure>
 
 <p>7、重启服务</p>
-<pre class="line-numbers language-she" data-language="she"><code class="language-she">[root@web02 code]# systemctl restart php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@web02 code]# systemctl restart php-fpm</span><br></pre></td></tr></table></figure>
 
 <p>8、再次测试访问网站</p>
 <p>可以登录，并且session的值将记录到redis数据库</p>
-<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell">[root@db01 ~]# redis-cli -h 172.16.1.51
-172.16.1.51:6379&gt; KEYS *
-1) &quot;PHPREDIS_SESSION:716e61cabeb40f974fcbcdcac65f8607&quot;
-2) &quot;PHPREDIS_SESSION:42ca5a8ea9375a93a7974427b77b3dd7&quot;
-172.16.1.51:6379&gt;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@db01 ~]# redis-cli -h 172.16.1.51</span><br><span class="line">172.16.1.51:6379&gt; KEYS *</span><br><span class="line">1) &quot;PHPREDIS_SESSION:716e61cabeb40f974fcbcdcac65f8607&quot;</span><br><span class="line">2) &quot;PHPREDIS_SESSION:42ca5a8ea9375a93a7974427b77b3dd7&quot;</span><br><span class="line">172.16.1.51:6379&gt;</span><br></pre></td></tr></table></figure>
 
 <p>9、刷新页面的负载均衡效果展示</p>
 <p><img src="/img/image-20210823225246243.png" alt="image-20210823225246243"></p>
@@ -626,7 +515,7 @@ session.auto_start &#x3D; 1<span aria-hidden="true" class="line-numbers-rows"><s
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">Codefish.GS</span>
+  <span class="author" itemprop="copyrightHolder">KungSing</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
@@ -636,6 +525,8 @@ session.auto_start &#x3D; 1<span aria-hidden="true" class="line-numbers-rows"><s
 
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
 <script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
 
   
@@ -644,6 +535,7 @@ session.auto_start &#x3D; 1<span aria-hidden="true" class="line-numbers-rows"><s
 
 
 
+  <script src="/js/third-party/fancybox.js"></script>
 
 
   

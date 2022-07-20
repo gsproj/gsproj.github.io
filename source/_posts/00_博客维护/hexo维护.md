@@ -206,7 +206,7 @@ avatar:
 
 将背景图片放到`themes\next\source\images`
 
-新建`themes\next\source\_data`文件夹
+新建`source\_data`文件夹（是hexo目录下的source,不是主题的source）
 
 在`_data`中新建`styles.styl`文件
 
@@ -243,7 +243,7 @@ custom_file_path:
 
 ### 2.7 修改为圆角
 
-根据当前使用的主题，编辑主题对应的style文件，如`\themes\next\source\css\_variables\Gemini.styl`
+创建`source/_data/variables.styl`文件
 
 在里面添加：
 
@@ -251,6 +251,44 @@ custom_file_path:
 // 圆角设置
 $border-radius-inner     = 20px;
 $border-radius           = 20px;
+```
+
+然后将`themes/next/_config.yml`配置文件中`custom_file_path:`下的`#style: source/_data/variables.styl`#号去掉，如下
+
+```yaml
+custom_file_path:
+  #head: source/_data/head.njk
+  #header: source/_data/header.njk
+  #sidebar: source/_data/sidebar.njk
+  #postMeta: source/_data/post-meta.njk
+  #postBodyEnd: source/_data/post-body-end.njk
+  #footer: source/_data/footer.njk
+  #bodyEnd: source/_data/body-end.njk
+  variable: source/_data/variables.styl
+  #mixin: source/_data/mixins.styl
+  style: source/_data/styles.styl
+```
+
+部分微调:
+
+1）侧边栏部分没有圆角
+
+编辑2.6创建的`styles.styl`文件，添加
+
+```yaml
+.site-brand-container {
+    border-radius-inner: 20px 20px 0 0;
+    border-radius: 20px 20px 0 0;
+}
+```
+
+2）返回顶部按钮显示为方形
+
+编辑`themes\next\source\css\_variables\Gemini.styl`
+
+```yaml
+// $body-bg-color           = #eee;	# 注释
+$body-bg-color           = transparent;	# 新增
 ```
 
 ### 2.8 加载动画速度调整
@@ -275,5 +313,115 @@ bootstrap: function() {
 }
 ```
 
+### 2.9 图片点击放大
 
+修改`themes/next/_config.yml`配置
+
+```yaml
+# FancyBox is a tool that offers a nice and elegant way to add zooming functionality for images.
+# For more information: https://fancyapps.com/fancybox/
+fancybox: true
+```
+
+### 2.10 界面透明
+
+修改`source\_data\styles.styl`文件，添加
+
+```css
+// 界面透明
+.main-inner{
+	opacity: 0.9;
+}
+
+.header-inner{
+	opacity: 0.9;
+	z-index: 10;
+}
+```
+
+效果：
+
+
+
+### 2.11 mac代码块
+
+修改hexo的`_config.yml`文件
+
+```yaml
+highlight:
+  enable: true	# 开启highlight渲染引擎
+  line_number: true
+  auto_detect: true
+  tab_replace: ''
+  wrap: true
+  hljs: false
+prismjs:
+  enable: false	# 关闭prismjs渲染引擎
+  preprocess: true
+  line_number: true
+  tab_replace: ''
+```
+
+修改`themes/next/_config.yml`
+
+```yaml
+codeblock:
+  # Code Highlight theme
+  # All available themes: https://theme-next.js.org/highlight/
+  theme:
+    light: a11y-dark	# 选用highlight引擎，并启用a11y-dark风格
+    dark: stackoverflow-dark
+  prism:
+    light: docco
+    dark: prism-dark
+  # Add copy button on codeblock
+  copy_button:
+    enable: true
+    # Available values: default | flat | mac
+    style: mac	# 启用mac风格
+```
+
+效果：
+
+![image-20220720150943450](../../img/image-20220720150943450.png)
+
+### 2.12 添加回到顶部按钮-小猫
+
+将小猫图片放到`themes/next/source/images`中
+
+编辑2.6创建的`styles.styl`文件，添加
+
+```css
+//自定义回到顶部样式
+.back-to-top {
+  right: 60px;
+  width: 70px;  //图片素材宽度
+  height: 900px;  //图片素材高度
+  top: -900px;
+  bottom: unset;
+  transition: all .5s ease-in-out;
+  background: url("/images/scroll.png");
+
+  //隐藏箭头图标
+  > i {
+    display: none;
+  }
+
+  &.back-to-top-on {
+    bottom: unset;
+    top: 100vh < (900px + 200px) ? calc( 100vh - 900px - 200px ) : 0px;
+  }
+}
+```
+
+编辑`themes/next/_config.yml`文件，打开返回顶部按钮开关
+
+```yaml
+back2top:
+  enable: true	# 改为true打开
+  # Back to top in sidebar.
+  sidebar: false
+  # Scroll percent label in b2t button.
+  scrollpercent: false
+```
 

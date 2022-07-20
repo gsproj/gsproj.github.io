@@ -1,11 +1,12 @@
 ---
-title: (二)编程语言与Python介绍
-date: 2022-07-15 11:03:40
+title: 02-编程语言与Python介绍
+date: 2022-07-18 9:14:22
 categories:
 - Python
-- 01_Python入门
-tag：
+- Python入门
+tags:
 ---
+
 
 ## 一 引子
 
@@ -21,7 +22,7 @@ tag：
 
 ![image-20220715110833863](../../../img/image-20220715110833863.png)
 
-机器语言是站在计算机(奴隶)的角度，说计算机能听懂/理解的语言，而计算机能直接理解的就是二进制指令，所以机器语言就是直接用二进制编程，这意味着机器语言是直接操作硬件的，因此机器语言属于低级语言，此处的低级指的是底层、贴近计算机硬件（贴近代指需要详细了解计算机硬件细节、直接控制硬件），详解如下
+`机器语言`是站在计算机(奴隶)的角度，说计算机能听懂/理解的语言，而计算机能直接理解的就是二进制指令，所以机器语言就是直接用`二进制编程`，这意味着机器语言是直接操作硬件的，因此机器语言属于低级语言，此处的低级指的是底层、贴近计算机硬件（贴近代指需要详细了解计算机硬件细节、直接控制硬件），详解如下
 
 ```python
 #机器语言
@@ -332,6 +333,8 @@ print('hello world')
 ```python
 '''
 这是多行注释
+这是多行注释
+这是多行注释
 '''
 
 # 这是单行注释，下面是测试代码
@@ -346,7 +349,7 @@ print("Hello World")
 2、注释可以用中文或英文，但不要用拼音
 ```
 
-## 六 IDE工具pycharm的使用
+# 六 IDE工具pycharm的使用
 
 ## 6.1、什么是IDE？为何要有IDE
 
@@ -387,16 +390,3 @@ print("Hello World")
 
 ![image-20220715111759964](../../../img/image-20220715111759964.png)
 
-## 视频链接：
-
-1、编程与编程语言介绍
-
-[python快速入门（一）_哔哩哔哩 (゜-゜)つロ 干杯~-bilibiliwww.bilibili.com/video/av73342471/?p=1![img](https://pic4.zhimg.com/v2-c64ada0dd06d0c57ed905be65d17acb7_180x120.jpg)](https://link.zhihu.com/?target=https%3A//www.bilibili.com/video/av73342471/%3Fp%3D1)
-
-2、解释器多版本共存
-
-[python快速入门（一）_哔哩哔哩 (゜-゜)つロ 干杯~-bilibiliwww.bilibili.com/video/av73342471?p=2![img](https://pic4.zhimg.com/v2-c64ada0dd06d0c57ed905be65d17acb7_180x120.jpg)](https://link.zhihu.com/?target=https%3A//www.bilibili.com/video/av73342471%3Fp%3D2)
-
-3、运行python代码的两种方式
-
-[python快速入门（一）_哔哩哔哩 (゜-゜)つロ 干杯~-bilibiliwww.bilibili.com/video/av73342471?p=3![img](https://pic4.zhimg.com/v2-c64ada0dd06d0c57ed905be65d17acb7_180x120.jpg)](https://link.zhihu.com/?target=https%3A//www.bilibili.com/video/av73342471%3Fp%3D3)
