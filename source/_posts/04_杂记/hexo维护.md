@@ -2,7 +2,7 @@
 title: Hexo博客维护
 date: 2022-07-07 14:10:52
 categories:
-- 博客维护
+- 杂记
 tags:
 ---
 

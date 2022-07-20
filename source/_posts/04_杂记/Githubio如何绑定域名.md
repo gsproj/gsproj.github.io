@@ -1,3 +1,13 @@
+---
+title: Github IO如何绑定域名
+date: 2022-07-20 16:10:52
+categories:
+- 杂记
+tags:
+---
+
+>“如何将自己的域名绑定到Github IO”
+
 ## 1 获取原地址IP
 
 通过ping获取
