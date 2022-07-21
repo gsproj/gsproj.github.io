@@ -425,3 +425,32 @@ back2top:
   scrollpercent: false
 ```
 
+### 2.13 给blockquote添加颜色
+
+编辑`themes\next\source\css\_common\scaffolding\base.styl`
+
+```css
+blockquote {
+  border-left: 4px solid $grey-lighter;
+  color: var(--blockquote-color);
+  margin: 0;
+  padding: 0 15px;
+
+  // 添加颜色
+  padding-left: 10px;
+  background-color rgba(212,239,223,.6);
+  border-left 4px solid rgb(30,132,73);
+
+  cite::before {
+    content: '-';
+    padding: 0 5px;
+  }
+}
+```
+
+效果如下：
+
+><font color=blue>**TIPS:**</font>
+>
+>这是一段Blockquote的演示文字
+
