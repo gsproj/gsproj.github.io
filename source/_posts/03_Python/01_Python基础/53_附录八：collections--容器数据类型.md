@@ -1,1 +1,0 @@
-collections模块：[https://yiyibooks.cn/xx/python_](https://link.zhihu.com/?target=https%3A//yiyibooks.cn/xx/python_352/library/collections.html)
