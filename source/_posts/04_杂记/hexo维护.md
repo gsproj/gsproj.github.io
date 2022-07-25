@@ -36,7 +36,6 @@ npm install -g hexo-cli
 4、使用npm安装搜索功能依赖
 
 ```shell
-
 npm install hexo-excerpt --save
 ```
 
@@ -339,10 +338,6 @@ fancybox: true
 }
 ```
 
-效果：
-
-
-
 ### 2.11 mac代码块
 
 修改hexo的`_config.yml`文件
@@ -453,4 +448,73 @@ blockquote {
 ><font color=blue>**TIPS:**</font>
 >
 >这是一段Blockquote的演示文字
+
+### 2.14 修改选中文字底色
+
+编辑2.6创建的`styles.styl`文件，添加
+
+```css
+// 修改选中文字底色
+/* webkit, opera, IE9 */
+::selection { 
+    background: #00c4b6;
+    color: #f7f7f7; 
+}
+/* firefox */
+::-moz-selection { 
+    background: #00c4b6;
+    color: #f7f7f7;    
+}
+```
+
+### 2.15 添加阅读全文功能
+
+安装插件
+
+```shell
+npm install hexo-excerpt --save
+```
+
+编辑hexo的`_config.yml`文件，添加以下内容
+
+```yaml
+# 阅读全文
+excerpt:
+  depth: 1	# 他的大小就是全文阅读预览长度设置
+  excerpt_excludes: []
+  more_excludes: []
+  hideWholePostExcerpts: true
+```
+
+编辑主题的`_config.yml`文件，添加
+
+```yaml
+excerpt_description: true
+```
+
+### 2.16 开启不蒜子统计访问量
+
+编辑`themes\next\layout\_partials\footer.njk`文件，在`首行`添加
+
+```css
+<script
+  async
+  src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"
+></script>
+```
+
+编辑主题配置文件`themes\next\_config.yml`，开启设置
+
+```yaml
+busuanzi_count:
+  enable: true	# 开启
+  total_visitors: true  # 访客数
+  total_visitors_icon: fa fa-user
+  total_views: true # 访问量
+  total_views_icon: fa fa-eye
+  post_views: true
+  post_views_icon: far fa-eye
+```
+
+
 

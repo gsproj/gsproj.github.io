@@ -8,9 +8,11 @@ tags:
 
 
 
->“如何实现开机启动自定义的应用”
+“前言：工作上有这方面的需求，特记录下来，方便之后参考"
 
-## 1、创建rc-local服务文件
+
+
+### 1 创建rc-local服务文件🌞
 
 创建文件
 
@@ -35,13 +37,13 @@ SysVStartPriority=99
 WantedBy=multi-user.target
 ```
 
-## 2、激活rc-local服务
+### 2 激活rc-local服务🌞
 
 ```shell
 sudo systemctl enable rc-local.service	
 ```
 
-## 3、添加服务文件  
+### 3 添加服务文件🌞
 
 ```shell
 sudo vim /etc/rc.local
@@ -80,19 +82,19 @@ exit 0
 sudo chmod +x /etc/rc.local
 ```
 
-## 4、启动rc-local服务  
+### 4 启动rc-local服务🌞  
 
 ```shell
 systemc start rc-local.service
 ```
 
-## 5、查看服务启动情况  
+### 5 查看服务启动情况🌞  
 
 ```shell
 systemctl status rc-local
 ```
 
-正常情况下是Active状态显示active(exited)  
+正常情况下`Active`状态显示`active(exited)`  
 
 
 
