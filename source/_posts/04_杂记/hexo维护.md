@@ -516,5 +516,21 @@ busuanzi_count:
   post_views_icon: far fa-eye
 ```
 
+### 2.17 字体大小修改
+
+编辑`themes\next\source\css\_variables\base.styl`, 修改字体大小
+
+```css
+// Font size
+$font-size-base           = (hexo-config('font.enable') and hexo-config('font.global.size') is a 'unit') ? unit(hexo-config('font.global.size'), em) : 1em;
+$font-size-smallest       = 10px;
+$font-size-smaller        = 11px;
+$font-size-small          = 12px;
+$font-size-medium         = 13px;
+$font-size-large          = 14px;
+$font-size-larger         = 15px;
+$font-size-largest        = 22px;
+```
+
 
 
