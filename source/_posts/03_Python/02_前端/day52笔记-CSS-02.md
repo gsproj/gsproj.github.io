@@ -7,6 +7,10 @@ categories:
 tags:
 ---
 
+“第52天CSS02学习笔记”
+
+
+
 # 1 分组与嵌套
 
 ## 1.1 分组选择器
@@ -394,4 +398,181 @@ p {
 </body>
 </html>
 ```
+
+# 10 display属性
+
+display属性常用方法：
+
+```css
+display:none	隐藏元素，位置不占用
+display:block	转换为块元素（独占一行，可调节高宽）
+display:inline	转换为行内元素（非独占一行，不可调节高宽）
+display:inline-block	转换为行内块元素（非独占一行，可调节高宽）
+```
+
+另一个隐藏属性的方法：
+
+```css
+visibility: hidden
+```
+
+与`display:none`的区别：隐藏的属性**<font color='red'>仍然占用位置</font>**
+
+案例代码如下：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        /*#d1 {*/
+        /*    !*display: none;  !*隐藏标签不展示到前端页面并且原来的位置也不再占有了 但是还存在于文档上*!*!*/
+        /*    display: inline;  !*将标签设置为行内标签的特点*!*/
+        /*}*/
+        /*#d2 {*/
+        /*    display: inline;*/
+        /*}*/
+        /*#d1 {*/
+        /*    display: block;  !*将标签设置成块儿级标签的特点*!*/
+        /*}*/
+        /*#d2 {*/
+        /*    display: block;*/
+        /*}*/
+        /*#d1 {*/
+        /*    display: inline-block;*/
+        /*}*/
+        /*#d2 {*/
+        /*    display: inline-block;  !*标签即可以在一行显示又可以设置长宽*!*/
+        /*}*/
+    </style>
+</head>
+<body>
+<div style="display: none">div1</div>
+<div>div2</div>
+<div style="visibility: hidden">单纯的隐藏 位置还在</div>  
+<div>div4</div>
+<!--<div id="d1" style="height: 100px;width: 100px;background-color: red">01</div>-->
+<!--<div id="d2" style="height: 100px;width: 100px;background-color: greenyellow">02</div>-->
+<!--<span id="d1" style="height: 100px;width: 100px;background-color: red">span</span>-->
+<!--<span id="d2" style="height: 100px;width: 100px;background-color: greenyellow">span</span>-->
+
+<!--<div id="d1" style="height: 100px;width: 100px;background-color: red">01</div>-->
+<!--<div id="d2" style="height: 100px;width: 100px;background-color: greenyellow">02</div>-->
+</body>
+</html>
+```
+
+# 11 盒子模型
+
+什么是盒子模型？
+
+- 就以快递盒为例
+- 快递盒与快递盒之间的距离(标签与标签之间的距离 margin外边距)
+- 盒子的厚度(标签的边框 border)
+- 盒子里面的物体到盒子的距离(内容到边框的距离  padding内边距)
+- 物体的大小(内容 content)
+
+如果你想要调整标签与标签之间的距离 你就可以调整margin
+
+> 补充：浏览器会自带8px的margin，一般情况下我们在写页面的时候，上来就会先将body的margin去除
+
+![image-20220804084912153](../../../img/image-20220804084912153.png)
+
+案例代码如下：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            margin: 0;  /*上下左右全是0
+            /*margin: 10px 20px;  !* 第一个上下 第二个左右*!*/
+            /*margin: 10px 20px 30px;  !*第一个上  第二个左右  第三个下*!*/
+            /*margin: 10px 20px 30px 40px;  !*上 右 下 左*!*/
+        }
+        /*p {*/
+        /*    margin-left: 0;*/
+        /*    margin-top: 0;*/
+        /*    margin-right: 0;*/
+        /*    margin-bottom: 0;*/
+        /*}*/
+
+        #d1 {
+            margin-bottom: 50px;
+        }
+
+
+        #d2 {
+            margin-top: 20px;  /*不叠加 只取大的*/
+        }
+
+        #dd {
+            margin: 0 auto;  /*只能做到标签的水平居中*/
+        }
+        p {
+            border: 3px solid red;
+            /*padding-left: 10px;*/
+            /*padding-top: 20px;*/
+            /*padding-right: 20px;*/
+            /*padding-bottom: 50px;*/
+
+            /*padding: 10px;*/
+            /*padding: 10px 20px;*/
+            /*padding: 10px 20px 30px;*/
+            /*padding: 10px 20px 30px 40px;*/  /*规律和margin一模一样*/
+        }
+    </style>
+</head>
+<body>
+<!--    <p style="border: 1px solid red;" id="d1">ppp</p>-->
+<!--    <p style="border: 1px solid orange;" id="d2">ppp</p>-->
+<!--<div style="border: 3px solid red;height: 400px;width: 400px">-->
+<!--    <div id='dd' style="border: 1px solid orange;height: 50px;width: 50px;background-color: blue;"></div>-->
+<!--</div>-->
+
+<p>ppp</p>
+
+</body>
+</html>
+```
+
+# 12 浮动
+
+浮动的元素，没有块级和行内一说，本身多大浮起来之后就占多大
+
+案例代码如下：
+
+```html
+只要是设计到页面的布局一般都是用浮动来提前规划好
+<style>
+        body {
+            margin: 0;
+        }
+        #d1 {
+            height: 200px;
+            width: 200px;
+            background-color: red;
+            float: left;  /*浮动  浮到空中往左飘*/
+        }
+        #d2 {
+            height: 200px;
+            width: 200px;
+            background-color: greenyellow;
+            float: right;   /*浮动 浮到空中往右飘*/
+        }
+</style>
+```
+
+`overflow:hidden`超出部分隐藏，用来解决外边距塌陷问题：
+
+父级元素内部有子元素，如果给子元素添加margin-top样式，那么父级元素也会跟着下来，造成外边距塌陷。
+
+# 13 浮动带来的影响
 
