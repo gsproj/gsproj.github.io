@@ -13,7 +13,7 @@ tags:
 
 **<font color=blue>JavaScript(简称JS)</font>** 听起来是不是感觉跟Java的关系很大?
 
-其实跟Java什么关系都没有, 只是为了<font color="red">**蹭jiava的热度**</font>,才起的这么个名字!
+其实跟Java什么关系都没有, 只是为了<font color="red">**蹭Java的热度**</font>,才起的这么个名字!
 
 JS到底是什么?
 
@@ -50,7 +50,7 @@ JS到底是什么?
 
 # 2 JS变量
 
-定义js变量两种方法
+## 2.1 定义变量的两种方法
 
 - var 
 - let  (es6推出的新语法, 如果你的编辑器支持的版本是5.1那么无法使用let)
@@ -133,6 +133,36 @@ let和var的区别是什么?
 
 
 
+## 2.2 变量的命名规范
+
+```shell
+js变量的命名规范
+	1.变量名只能是 
+		数字 字母 下划线 $
+	2.变量名命名规范(不遵循也可以)
+		1.js中推荐使用驼峰式命名
+			userName
+			dataOfDb
+		2.python推荐使用下划线的方式
+			user_name
+			data_of_db
+	3.不能用关键字作为变量名
+			不需要记忆 
+```
+
+
+
+## 2.3 代码的书写位置
+
+```shell
+1.可以单独开设js文件书写
+2.还可以直接在浏览器提供的console界面书写
+	在用浏览器书写js的时候 左上方的清空按钮只是清空当前页面 代码其实还在
+	如果你想要重新来 最好重新开设一个 页面
+```
+
+
+
 # 3 JS常量
 
 js中使用`const`定义常量, 不可被修改的变量
@@ -147,9 +177,116 @@ console.log(pi)
 pi = 80 // 报错：Uncaught TypeError: Assignment to constant variable.
 ```
 
+ 
+
+# 4 数据类型
+
+js也是一门面向对象 的编程语言 即一切皆对象!!!
+
+js/python是一门拥有动态类型
+
+案例代码如下：
+
+```javascript
+name = 'jason'
+name = 123
+name = [1,2,3,4]
+# name可以指向任意的数据类型 
+```
 
 
 
+## 4.1 数值类型（Number）
+
+常用方法：
+	parseInt()		转换为Int类型	
+	parseFloat()	转换为Float类型
+
+案例代码如下：
+
+```javascript
+// 定义变量
+var a = 11;
+var b = 11.11;
+
+// 如何查看当前数据类型
+typeof a;
+
+// 查看参数的类型
+typeof a;
+typeof b;
+"number"
+
+// 特殊的 NaN:数值类型 表示的意思是“不是一个数字” NOT A NUMBER
+
+parseInt('12312312')	// 正常将字符串转为Int类型
+12312312
+parseFloat('11.11')		// 正常将字符串转为浮点类型
+11.11
+parseInt('11.11')	// 正常将字符串转为Int类型，将去掉小数点后面的数
+11
+parseInt('123sdasdajs2312dasd')	// 只取前面的数
+123
+parseInt('asdasdad123sdasdajs2312dasd')	// 完全无法识别的转换为NaN
+NaN
+```
 
 
+
+## 4.2 字符类型（String）
+
+定义字符串的案例代码如下:
+
+```javascript
+// 使用【单引号】定义变量
+var s = 'jason'
+
+// 自动识别成了字符类型
+typeof s
+'string'
+
+// 也可以使用【双引号】定义字符串
+var s2 = "jason"
+undefined
+
+typeof s2
+'string'
+
+// 不能使用python的三引号方式定义多行文本的字符串
+var s3 = '''jason'''
+VM894:1 Uncaught SyntaxError: Unexpected string
+
+// JavaScript中使用【反引号】定义多行文本的字符串
+var s3 = `
+这是多行文字
+的演示
+这是多行文字
+的演示
+`
+// 输出s3
+s3
+'\n这是多行文字\n的演示\n这是多行文字\n的演示\n'
+```
+
+输出字符串的案例如下：
+
+```javascript
+// 通过${}的方式输出字符串
+var age = 18
+var name = "GLF"
+var sss = `My name is ${name} and my age is ${age}`
+
+// 输出
+sss
+'My name is GLF and my age is 18'
+
+// JS中推荐使用【+】号拼接字符串
+var year = '2022'
+var day = '12'
+var month = '08'
+date = `Today is ${year + '-' + month + day}`
+'Today is 2022-0812'
+date
+'Today is 2022-0812'
+```
 
