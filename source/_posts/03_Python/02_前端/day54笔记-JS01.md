@@ -1,5 +1,5 @@
 ---
-title: Day54-JS-01
+title: Day54-JavaScript
 date: 2022-08-08 16:44:22
 categories:
 - Python
@@ -7,7 +7,7 @@ categories:
 tags:
 ---
 
-“第54天JS-01学习笔记”
+“第54天JavaScript学习笔记”
 
 # 1 JavaScript简介
 
@@ -919,4 +919,451 @@ while(i<100){
 var res = 2 > 5 ? 8 : 10 # 10
 var res = 2 > 5 ? 8 : ( 8 > 5 ? 666 : 444 )  # 666
 ```
+
+## 6.6 函数
+
+### 6.6.1 函数定义
+
+无参函数
+
+```javascript
+// 定义函数
+function func1() {
+    console.log("Hello")
+}
+
+// 调用
+func1()
+// 输出 -- Hello
+```
+
+有参函数
+
+```javascript
+// 定义函数
+function fcun2(a, b) {
+    console.log(a + b)
+}
+
+// 调用函数
+fcun2(8, 99)
+// 输出 -- 107
+
+// 少了参数不会报错，第二个参数自动识别为"undefined"
+fcun2(8)
+// 输出 -- NaN  // 识别为 8 + undefined 所以是 "Not A Number"
+
+// 多了参数也不报错，会自动按需求取
+fcun2(1, 3, 66, 77, 88)
+// 输出 -- 4
+```
+
+### 6.6.2 关键字`arguments` 
+
+用于获取函数接收到的所有参数
+
+```javascript
+function func3(a, b, c) {
+    console.log(arguments)
+}
+
+func3(1,2,3)
+VM758:2 Arguments(3) [1, 2, 3, callee: ƒ, Symbol(Symbol.iterator): ƒ]
+```
+
+可以用于判断参数的数量
+
+```javascript
+function func2(a,b){
+  if(arguments.length<2){
+    console.log('传少了')
+  }else if (arguments.length>2){
+    console.log('传多了')
+  }else{
+    console.log('正常执行')
+  }
+}
+```
+
+### 6.6.3 函数返回值
+
+函数中使用`return`返回值
+
+```javascript
+// 定义函数
+function func4(a, b) {
+    return a + b
+}
+
+// 调用函数
+res = func4(1, 2)
+3
+
+// 输出值
+res
+3
+```
+
+JS能不能像Python一样返回多个值？ --- **<font color=red>不能</font>**
+
+```javascript
+function func3(a, b, c) {
+    return a,b,c
+}
+
+// 当返回多个值的时候，**只能拿到最后一个返回值**
+res = func3(111, 222, 333)
+333
+
+res
+333
+```
+
+如何返回多个值呢？ ---- 可以使用`数组`的方式返回
+
+```javascript
+function func3(a, b, c) {
+    return [a,b,c]
+}
+res = func3(1,2,3)
+(3) [1, 2, 3]
+res
+(3) [1, 2, 3]
+```
+
+### 6.6.4 匿名函数
+
+没有名字的函数
+
+```javascript
+// 创建名函数
+function() {
+    console.log("我是匿名函数")
+}
+
+// 使用匿名函数
+var res= function() {
+    console.log("我是匿名函数")
+}
+
+// 不带括号输出
+res
+ƒ () {
+    console.log("我是匿名函数")
+}
+
+// 带括号输出
+res()
+VM1565:2 我是匿名函数
+```
+
+### 6.6.5 箭头函数（了解）
+
+主要用来处理简单的业务逻辑
+
+```javascript
+// 创建箭头函数
+var func1 = (arg1, arg2) => arg1 + arg2;
+// 调用
+res = func1(6, 8)
+14
+```
+
+箭头函数是什么意思？
+
+```javascript
+var func1 = (arg1, arg2) => arg1 + arg2;
+// 相当于
+var func1 = function(arg1, arg2) {
+    return arg1 + arg2
+}
+```
+
+### 6.6.7 函数的全局变量和局部变量
+
+局部变量在函数内生效，优先使用局部变量
+
+```javascript
+// 跟python查找变量的顺序一致
+var city = "BeiJing";
+
+function f() {
+  var city = "ShangHai";
+  function inner(){
+    var city = "ShenZhen";
+    console.log(city);
+  }
+  inner();
+}
+
+f();  //输出"ShenZhen"
+```
+
+离开函数，局部变量将失效，优先使用全局变量
+
+```javascript
+var city = "BeiJing";
+
+function Bar() {
+  console.log(city);
+}
+
+function f() {
+  var city = "ShangHai";
+  return Bar;
+}
+
+var ret = f();
+ret();  // 打印结果是？ Beijing
+```
+
+如果是函数内部返回函数呢？
+
+```javascript
+var city = "BeiJing";
+function f(){
+    var city = "ShangHai";
+    function inner(){
+        console.log(city);
+    }
+    return inner;
+}
+var ret = f();
+ret();	// 输出"ShangHai"
+```
+
+## 6.7 自定义对象
+
+### 6.7.1 花括号的方式创建
+
+创建
+
+```javascript
+var d1 = {'name':'Goosh', age:18};
+console.log(typeof d1)	// 输出 object
+```
+
+使用
+
+```javascript
+console.log(d1['name'])	// 输出 Goosh
+console.log(d1['age']) // 输出 18
+```
+
+循环遍历
+
+```javascript
+for (let i in d1) {
+    console.log(i, d1[i])
+}
+
+// 输出
+name Goosh
+age 18
+```
+
+### 6.7.2 关键字`new`方式创建
+
+创建
+
+```javascript
+var d2 = new Object()
+d2.name = 'Goosh'
+d2.age = 18
+```
+
+循环遍历
+
+```javascript
+// 遍历
+for (let i in d2) {
+    console.log(i, d2[i])
+}
+
+// 输出
+name Goosh
+age 18
+```
+
+
+
+## 6.8 Date对象
+
+创建Date对象
+
+```javascript
+var mydate = Date()
+console.log(mydate)
+
+// 输出
+Tue Aug 16 2022 09:44:40 GMT+0800 (中国标准时间)
+```
+
+自定义Date的方式一
+
+```javascript
+let mydate2 = new Date('2200/1/1 11:11:11')
+console.log(mydate2.toLocaleString())
+//输出
+2200/1/1 11:11:11
+```
+
+自定义Date的方式二
+
+```javascript
+let mydate3 = new Date(2211, 11, 11, 22, 22, 22)
+console.log(mydate3)
+
+// 输出
+Wed Dec 11 2211 22:22:22 GMT+0800 (中国标准时间)
+```
+
+### 6.8.1 时间对象的具体方法
+
+```javascript
+let d6 = new Date();
+d6.getDate()  获取日
+d6.getDay()		获取星期
+d6.getMonth()		获取月份(0-11)
+d6.getFullYear()		获取完整的年份
+d6.getHours()			获取小时
+d6.getMinutes()		获取分钟
+d6.getSeconds()		获取秒
+d6.getMilliseconds()  获取毫秒
+d6.getTime()					时间戳
+```
+
+## 6.9 JSON对象
+
+用于`序列化`和`反序列化`
+
+```javascript
+// 创建对象
+let d7 = {'name':'Goosh', 'age':18}
+
+// 序列化
+let res7 = JSON.stringify(d7)
+console.log(res7)
+
+// 反序列化
+let d8 = JSON.parse(res7)
+console.log(d8)
+```
+
+## 6.10 RegExp对象（正则表达式）
+
+### 6.10.1 使用正则的两种方式
+
+```javascript
+// 第一种方式
+let reg1 = new RegExp('^[a-zA-Z][d-zD-Z0-9]{5,11}')
+
+// 第二种方式（推荐）
+let reg2 = /^[a-zA-Z][d-zD-Z0-9]{5,11}/
+
+// 匹配内容
+res1 = reg1.test('abcc123321')
+res2 = reg2.test('76ehk88')
+res3 = reg1.test('a76ehk88')
+
+// 输出
+console.log(res1, res2, res3) // 输出 false false true
+```
+
+### 6.10.2`match`单项匹配
+
+```javascript
+let ss = 'ds222 fdsgfd dsb dsb'
+
+// 非全局匹配
+res1 = ss.match(/s/)
+console.log(res1)
+// 输出内容
+(1) ['s', index: 1, input: 'ds222 fdsgfd dsb dsb', groups: undefined]
+
+// 全局匹配
+res1 = ss.match(/s/g)
+console.log(res1)
+// 输出内容
+(4) ['s', 's', 's', 's']
+```
+
+### 6.10.3 全局匹配的吐槽点
+
+吐槽点一：LastIndex导致匹配异常
+
+```javascript
+let reg3 = /^[a-zA-Z][a-zA-Z0-9]{5,11}/g
+reg2.test('egondsb')
+
+reg3.test('egondsb')  # 全局模式有一个lastIndex属性
+true
+reg3.test('egondsb')
+false
+reg3.test('egondsb')
+true
+reg3.test('egondsb')
+false
+
+// 为什么会有这个现象？
+reg3.lastIndex	// 当前下标在0
+0
+reg3.test('egondsb')	// 正常匹配
+true
+reg3.lastIndex	// 匹配完下标挪到了7的位置
+7
+reg3.test('egondsb')	// 再次匹配异常
+false
+```
+
+吐槽点二：什么都不传也能匹配成功
+
+​	什么都不传 默认传的是undefined, 而且是字符串！
+
+```javascript
+let reg4 = /^[a-zA-Z][a-zA-Z0-9]{5,11}/
+reg4.test()
+
+reg4.test()  // 什么都不传 默认传的是undefined, 居然能匹配成功。。。
+true
+reg4.test()
+true
+
+// 验证是Undefined
+let reg5 = /undefined/
+console.log(reg4.test('Goosh'))	// false
+console.log(reg4.test())	// true
+console.log(reg4.test('undefined'))	// true
+```
+
+## 6.11 Math对象
+
+常用数学处理对象
+
+```javascript
+abs(x)      返回数的绝对值。
+exp(x)      返回 e 的指数。
+floor(x)    对数进行下舍入。
+log(x)      返回数的自然对数（底为e）。
+max(x,y)    返回 x 和 y 中的最高值。
+min(x,y)    返回 x 和 y 中的最低值。
+pow(x,y)    返回 x 的 y 次幂。
+random()    返回 0 ~ 1 之间的随机数。
+round(x)    把数四舍五入为最接近的整数。
+sin(x)      返回数的正弦。
+sqrt(x)     返回数的平方根。
+tan(x)      返回角的正切。
+```
+
+
+
+
+
+
+
+
+
+
+
+
 
