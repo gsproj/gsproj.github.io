@@ -1,5 +1,5 @@
 ---
-title: Day54-JavaScript
+title: Day54-JavaScript-01
 date: 2022-08-08 16:44:22
 categories:
 - Python
@@ -7,7 +7,7 @@ categories:
 tags:
 ---
 
-“第54天JavaScript学习笔记”
+“第54天JavaScript（01）学习笔记”
 
 # 1 JavaScript简介
 
