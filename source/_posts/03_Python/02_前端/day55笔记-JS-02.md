@@ -351,3 +351,259 @@ divEle.innerHTML = '<h1>hahahaha</h1>'  # 识别html标签
 "<h1>hahahaha</h1>"
 ```
 
+# 3 获取值的操作
+
+获取标签内部属性的数据
+
+```javascript
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Document</title>
+</head>
+<body>
+    <div id="d1" value="我是D1">第一层
+        <div id="d2" value="我是D2" desc="今年18岁">第二层</div>
+    </div>
+    
+
+    <script>
+        // 获取标签d1的序号1属性的值
+        var d1Ele = document.getElementById('d1')
+        console.log(d1Ele.attributes[1].value)	// 输出 -- 我是01
+		
+		// 获取标签d2的序号2属性的值
+        var d2Ele = document.getElementById('d2')
+        console.log(d2Ele.attributes[2].value)	// 输出 -- 今年18岁
+    </script>
+</body>
+</html>
+```
+
+获取输入框中的数据
+
+```javascript
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Document</title>
+</head>
+<body>
+    <form action="">
+        <div>账号：<input type="text" id="input01"></div>
+        <div>文件：<input type="file" id="input02"></div>
+    </form>
+    
+
+    <script>
+        let input01Ele = document.getElementById('input01')
+        let input02Ele = document.getElementById('input02')
+        
+        // 获取数据
+        input01Ele.value
+		input02Ele.value
+    </script>
+</body>
+</html>
+```
+
+![image-20220818095441409](../../../img/image-20220818095441409.png)
+
+
+
+# 4 操作Class和CSS
+
+案例如下：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Document</title>
+    <style>
+        body {
+            margin: 0;
+        }
+    
+        #d1 {
+            height: 200px;
+            width: 200px;
+        }
+
+        #d2 {
+            border-radius: 50px;
+            height: 100px;
+            width: 100px;
+        }
+
+        .bg_red {
+            background-color: red;
+        }
+
+        .bg_green {
+            background-color: green;
+        }
+
+        .bg_orange {
+            background-color: darkorange;
+        }
+    </style>
+</head>
+<body>
+    <div id="d1" class="c1 bg_red bg_green">
+        <div id="d2" class="c2 bg_red bg_orange"></div>
+    </div>
+</body>
+</html>
+```
+
+页面效果：
+
+![image-20220818101241668](../../../img/image-20220818101241668.png)
+
+## 4.1 Class操作
+
+**获取**标签的class属性
+
+```javascript
+// 获取d1标签（底层绿色标签）
+let divEle = document.getElementById("d1")
+undefined
+
+// 获取d1标签的所有class
+divEle.classList
+DOMTokenList(3) ['c1', 'bg_red', 'bg_green', value: 'c1 bg_red bg_green']
+```
+
+**添加/移除**标签的class属性
+
+```javascript
+// 移除"bg_red"class
+divEle.classList.remove('bg_red')
+undefined
+
+// 添加"bg_red"class
+divEle.classList.add('bg_red')
+undefined
+
+// 移除"bg_green"class
+divEle.classList.remove('bg_green')
+undefined
+
+// 再添加"bg_green"class
+divEle.classList.add('bg_green')
+undefined
+```
+
+**查询**标签是否包含指定的class属性
+
+```javascript
+divEle.classList.contains('bg_green')
+true
+divEle.classList.remove('bg_green')
+undefined
+divEle.classList.contains('bg_green')
+false
+```
+
+**toggle**有则删除，无则添加
+
+```javascript
+divEle.classList.toggle('bg_green')
+true
+divEle.classList.toggle('bg_green')
+false
+divEle.classList.toggle('bg_green')
+true
+divEle.classList.toggle('bg_green')
+false
+divEle.classList.toggle('bg_green')
+true
+```
+
+## 4.2 CSS操作
+
+以4.1的页面为案例，操作div(d1)的css
+
+通过`style`可以直接对应的属性
+
+```javascript
+// 背景色改为蓝色
+divEle.style.backgroundColor='blue'
+'blue'
+// 圆角20px
+divEle.style.borderRadius='20px'
+'20px'
+// 边框设置
+divEle.style.border='3px solid red'
+'3px solid red'
+```
+
+效果如下：
+
+![image-20220818102533004](../../../img/image-20220818102533004.png)
+
+# 5 事件(*)
+
+别听着这名字就跑路了，实际上就是按钮的点击事件
+
+我们的案例html页面代码如下：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Document</title>
+</head>
+<body>
+    <input type="button" name="" id="btn01" value="点我有你好康">
+</body>
+</html>
+```
+
+<font color=red>**在JS中绑定事件有两种方式**</font>
+
+第一种方式--行内绑定：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Document</title>
+</head>
+<body>
+    <input type="button" name="" id="btn01" value="点我有你好康" onclick="func1()">
+
+    <script>
+        function func1() {
+            alert("嘎子偷狗！")
+        }
+    </script>
+</body>
+</html>
+```
+
+第二种方式--通过ID绑定：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Document</title>
+</head>
+<body>
+    <input type="button" name="" id="btn01" value="点我有你好康"">
+
+    <script>
+        let btnEle = document.getElementById("btn01")
+        btnEle.onclick = function() {
+            alert("潘嘎之交")
+        }
+    </script>
+</body>
+</html>
+```
+
+效果如下：
+
+![image-20220818104606375](../../../img/image-20220818104606375.png)
