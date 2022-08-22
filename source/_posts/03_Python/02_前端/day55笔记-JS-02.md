@@ -607,3 +607,213 @@ divEle.style.border='3px solid red'
 效果如下：
 
 ![image-20220818104606375](../../../img/image-20220818104606375.png)
+
+# 6 JS代码位置
+
+JS代码一般放在body的最下方，如果在前面，将出现“XXX未定义”的问题
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Document</title>
+</head>
+<body>
+    <div>HTML优先写</div>
+    <script>
+        // 放这里！
+    </script>
+</body>
+</html>
+```
+
+还可以使用onload
+
+```javascript
+# 等待浏览器窗口加载完毕之后再执行代码
+window.onload = function () {
+            // 第一种绑定事件的方式
+            function func1() {
+                alert(111)
+            }
+            // 第二种
+            let btnEle = document.getElementById('d1');
+            btnEle.onclick = function () {
+                alert(222)
+            }
+        }
+```
+
+# 7 原生JS事件绑定
+
+通过几个案例学习
+
+## 7.1 开关灯案例
+
+点击按钮，div方块在“红色”和绿色之间切换
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Document</title>
+    <style>
+        .bg_red {
+            background-color: red;
+        }
+
+        .bg_green {
+            background-color: green;
+        }
+
+        .c1 {
+            width: 200px;
+            height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div id="d1" class="c1 bg_red bg_green"></div>
+    <button id="d2">变色</button>
+
+
+    <script>
+        let btnEle = document.getElementById("d2")
+        let divEle = document.getElementById("d1")
+        btnEle.onclick = function() {
+            // 动态修改div类的属性
+            divEle.classList.toggle('bg_green')
+        }
+    </script>
+</body>
+</html>
+```
+
+效果：
+
+![image-20220822161548595](../../../img/image-20220822161548595.png)
+
+点击变色按钮后：
+
+![image-20220822161608377](../../../img/image-20220822161608377.png)
+
+
+
+## 7.2 input框获取焦点/失去焦点
+
+新事件`onfocus`和`onblur`
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Document</title>
+</head>
+<body>
+    <input type="text" value="来看看嘛~" id="d1">
+    
+    <script>
+        let iEle = document.getElementById('d1')
+        // 获取焦点事件
+        iEle.onfocus = function() {
+            // 将input框中的值去掉
+            iEle.value = '哎呀~鼠标点到我了'
+        }
+
+        // 失去焦点事件
+        iEle.onblur = function() {
+            iEle.value = '完事走人'
+        }
+    </script>
+</body>
+</html>
+```
+
+效果：
+
+![image-20220822163319837](../../../img/image-20220822163319837.png)
+
+鼠标点击上去：
+
+![image-20220822163338421](../../../img/image-20220822163338421.png)
+
+鼠标移开：
+
+![image-20220822163352708](../../../img/image-20220822163352708.png)
+
+
+
+## 7.3 实时展示当前时间
+
+点击“Start”按钮，实时刷新显示当前时间（1s一次），点击"End"按钮停止
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Document</title>
+    <style>
+        #d1 {
+            display: block;
+            width: 200px;
+            height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <input type="text" value="我这显示当前时间" id="d1">
+    <div>
+        <button id="d2">Start</button>
+        <button id="d3">End</button>
+    </div>
+
+    
+    <script>
+        let iEle = document.getElementById('d1')
+        let btnStartEle = document.getElementById('d2')
+        let btnEndEle = document.getElementById('d3')
+        
+        // 定义标识，用于标示开始和停止
+        var flag = null 
+
+        // 显示时间的时间
+        function showtime() {
+            // 创建时间对象，获取当前时间
+            let currentTime = new Date();
+            // 将当前时间显示到input框中
+            iEle.value = currentTime.toLocaleString()
+        }
+
+        // Start按钮绑定事件
+        btnStartEle.onclick = function() {
+            console.log(showtime())
+            if (!flag) {
+                // 1秒显示一次当前时间
+                t = setInterval(showtime, 1000)
+            }
+        }
+
+        // End按钮绑定事件
+        btnEndEle.onclick = function() {
+            // 停止循环
+            clearInterval(t)
+            // 将标志设为null
+            flag = null
+            iEle.value = "计时停止"
+        }
+    </script>
+</body>
+</html>
+```
+
+效果：
+
+![image-20220822165219698](../../../img/image-20220822165219698.png)
+
+点击“Start”后，显示时间，一秒刷新一次
+
+![image-20220822165240697](../../../img/image-20220822165240697.png)
+
+点击“End”按钮后：
+
+![image-20220822165308453](../../../img/image-20220822165308453.png)
