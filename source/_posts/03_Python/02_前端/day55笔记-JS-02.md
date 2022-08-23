@@ -817,3 +817,91 @@ window.onload = function () {
 点击“End”按钮后：
 
 ![image-20220822165308453](../../../img/image-20220822165308453.png)
+
+## 7.4 省市联动
+
+下拉框选择“省”，展示相应的“市区”
+
+```javascript
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+</head>
+<body>
+    <!-- 创建两个选择框 -->
+    <select name="" id="d1">
+        <!-- 添加默认选项 -->
+        <option value="" seleted="disabled">--请选择--</option>
+    </select>
+    <select name="" id="d2"></select>
+
+    <script>
+        // 获取标签
+        let d1Ele = document.getElementById('d1')
+        let d2Ele = document.getElementById('d2')
+        // 添加模拟数据
+        data = {
+            "河北":["廊坊", "邯郸", "唐山"],
+            "北京":["朝阳区", "海淀区", "昌平区"],
+            "湖南":["长沙市", "益阳市", "常德市"],
+            "广东":["深圳市", "广州市", "佛山市"]
+        }
+
+        // 标签添加数据
+        for(let key in data) {
+            // 将省信息作为一个option标签,插到d1中
+            // 创建标签
+            let opEle = document.createElement('option')
+            // 设置标签的innerText
+            opEle.innerText = key
+            // 设置标签的value
+            opEle.value = key
+            // 将option标签追加到d1中
+            d1Ele.appendChild(opEle)
+        }
+
+        // 选择框文本域变化事件
+        d1Ele.onchange = function() {
+            // 获取选择的省
+            let curPro = d1Ele.value
+            // 获取对应的市区信息
+            let curCityList = data[curPro]
+            // 清空d2中的所有option
+            d2Ele.innerHTML = ""
+            // 自己加一个请选择
+            let ss = "<option disabled selected>请选择</option>"
+            d2Ele.innerHTML = ss
+
+            // for 循环所有的市,渲染到第二个select(d2)中
+            for (let i = 0; i < curCityList.length; i++) {
+                let curCity = curCityList[i]
+                // 创建option标签
+                let cityEle = document.createElement('option')
+                // 标签添加value
+                cityEle.value = curCity
+                // 标签添加内容
+                cityEle.innerText = curCity
+                // d2追加标签
+                d2Ele.appendChild(cityEle)
+            }
+        }
+    </script>
+</body>
+</html>
+```
+
+效果：
+
+可以选择设定的省
+
+![image-20220823142032372](../../../img/image-20220823142032372.png)
+
+通过省，显示对应的市区
+
+![image-20220823142041796](../../../img/image-20220823142041796.png)
+
+换一个，也显示正常
+
+![image-20220823142051735](../../../img/image-20220823142051735.png)
