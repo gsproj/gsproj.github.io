@@ -282,11 +282,11 @@ reboot
 
 #### 开启 BBRPlus 及优化
 
-秋水一键脚本,选择`7`开启`BBRPlus`加速.
-再次`./tcp.sh`运行脚本,选择`10`优化并重启完成.
+下载秋水一键脚本`tcp.sh`,选择`7`开启`BBRPlus`加速.
+等脚本退出后，再次`./tcp.sh`运行脚本,选择`10`优化，过程中需要重启。
 
 ```shell
-wget -N --no-check-certificate "https://raw.githubusercontent.com/chiakge/Linux-NetSpeed/master/tcp.sh" && chmod +x tcp.sh && ./tc
+wget -N --no-check-certificate "https://raw.githubusercontent.com/chiakge/Linux-NetSpeed/master/tcp.sh" && chmod +x tcp.sh && ./tcp.sh
 ```
 
 
