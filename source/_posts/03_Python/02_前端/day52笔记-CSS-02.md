@@ -3,7 +3,7 @@ title: Day52-CSS-02
 date: 2022-08-03 15:44:22
 categories:
 - Python
-- Python入门
+- 前端基础
 tags:
 ---
 

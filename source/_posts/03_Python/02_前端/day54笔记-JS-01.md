@@ -3,7 +3,7 @@ title: Day54-JavaScript-01
 date: 2022-08-08 16:44:22
 categories:
 - Python
-- Python入门
+- 前端基础
 tags:
 ---
 

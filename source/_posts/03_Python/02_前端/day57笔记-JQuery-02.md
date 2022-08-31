@@ -1,9 +1,9 @@
 ---
-title: Day56-JQuery-01
+title: Day57-JQuery-02
 date: 2022-08-25 14:44:22
 categories:
 - Python
-- Python入门
+- 前端基础
 tags:
 ---
 

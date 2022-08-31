@@ -3,7 +3,7 @@ title: Day51-CSS-01
 date: 2022-08-02 15:44:22
 categories:
 - Python
-- Python入门
+- 前端基础
 tags:
 ---
 
