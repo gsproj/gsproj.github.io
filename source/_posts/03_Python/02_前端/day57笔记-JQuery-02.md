@@ -830,3 +830,290 @@ $('#d2').on('click',function () {
   </script>
   ```
 
+## 3.4 阻止后续事件执行
+
+以案例说明，点击按钮后，本应将span(d1)的文本设置成'宝贝 你能看到我吗?'，但由于后续submit的提交事件执行，页面将刷新，导致设置的文本消失：
+
+提交前：
+
+![image-20220831151405792](../../../img/image-20220831151405792.png)
+
+提交后：
+
+![image-20220831151419650](../../../img/image-20220831151419650.png)
+
+半秒后：
+
+![image-20220831151405792](../../../img/image-20220831151405792.png)
+
+如何解决这个问题，停止后续的submit操作？
+
+- return false
+- e.preventDefault()
+
+案例代码如下：
+
+```javascript
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.bootcss.com/twitter-bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+<form action="">
+    <span id="d1" style="color: red"></span>
+    <input type="submit" id="d2">
+</form>
+
+<script>
+    $('#d2').click(function (e) {
+        $('#d1').text('宝贝 你能看到我吗?')
+        // 阻止标签后续事件的执行 方式1
+        // return false
+        // 阻止标签后续事件的执行 方式2
+        // e.preventDefault()
+    })
+</script>
+
+</body>
+</html>
+```
+
+## 3.5 阻止事件冒泡
+
+以案例说明，由于d1、d2、 d3是嵌套关系，当点击d3触发click事件后，页面显示alert('span')，然后alert('p')，最后alert('div')，将alert三次。
+
+怎么解决这个问题，实现只触发#d3的alert？
+
+- return false
+- e.stopPropagation()
+
+案例代码如下：
+
+```javascript
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.bootcss.com/twitter-bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div id="d1">div
+        <p id="d2">div>p
+            <span id="d3">span</span>
+        </p>
+    </div>
+
+
+    <script>
+        $('#d1').click(function () {
+            alert('div')
+        })
+        $('#d2').click(function () {
+            alert('p')
+        })
+        $('#d3').click(function (e) {
+            alert('span')
+            // 阻止事件冒泡的方式1
+            // return false
+            // 阻止事件冒泡的方式2
+            // e.stopPropagation()
+        })
+    </script>
+</body>
+</html>
+```
+
+## 3.6 事件委托
+
+正常情况下，我们帮一个按钮添加点击事件，只需给按钮绑定事件即可，即：
+
+```javascript
+$('button').click(function () {  // 无法影响到动态创建的标签
+     alert(123)
+})
+```
+
+但是，假如我们动态创建了button按钮，这种绑定方式对`后续动态生成的button`是`无效的`
+
+需要使用事件委托:
+
+```javascript
+// 事件委托
+$('body').on('click','button',function () {
+    alert(123)  // 在指定的范围内 将事件委托给某个标签 无论该标签是事先写好的还是后面动态创建的
+})
+```
+
+# 4 补充
+
+## 4.1 页面加载
+
+等页面元素加载完毕后，再调用JS代码。
+
+在原生JS中，我们使用：
+
+```javascript
+// 方法一
+window.onload = function(){
+  // js代码
+}
+
+// 方法二
+直接写在body最下方
+```
+
+在JQuery中有三种方式
+
+```javascript
+// 第一种
+$(document).ready(function(){
+  // js代码
+})
+// 第二种
+$(function(){
+  // js代码
+})
+// 第三种
+直接写在body内部最下方
+```
+
+## 4.2 动画效果
+
+给元素添加`淡入淡出`、`隐藏/出现`等效果
+
+```javascript
+$('#d1').hide(5000)
+w.fn.init [div#d1]
+$('#d1').show(5000)
+w.fn.init [div#d1]
+$('#d1').slideUp(5000)
+w.fn.init [div#d1]
+$('#d1').slideDown(5000)
+w.fn.init [div#d1]
+$('#d1').fadeOut(5000)
+w.fn.init [div#d1]
+$('#d1').fadeIn(5000)
+w.fn.init [div#d1]
+$('#d1').fadeTo(5000,0.4)
+w.fn.init [div#d1]   
+```
+
+案例代码如下：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.bootcss.com/twitter-bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <style>
+        #d1 {
+            height: 1000px;
+            width: 400px;
+            background-color: red;
+        }
+    </style>
+</head>
+<body>
+    <div id="d1"></div>
+    <div><button id="d2">别按我！</button><button id="d3">再按就生气了~！</button></div>
+
+    <script>
+        $("#d2").click(
+            function() {
+                $("#d1").hide(5000)	// 5秒动画-消失
+            }
+        )
+
+        $("#d3").click(
+            function() {
+                $("#d1").show(5000) // 5秒动画-出现
+                
+            }
+        )
+    </script>
+</body>
+</html>
+```
+
+## 4.3 遍历元素
+
+案例代码如下：
+
+```javascript
+# each()
+# 第一种方式
+$('div')
+w.fn.init(10) [div, div, div, div, div, div, div, div, div, div, prevObject: w.fn.init(1)]
+$('div').each(function(index){console.log(index)})
+VM181:1 0
+VM181:1 1
+VM181:1 2
+VM181:1 3
+VM181:1 4
+VM181:1 5
+VM181:1 6
+VM181:1 7
+VM181:1 8
+VM181:1 9
+
+$('div').each(function(index,obj){console.log(index,obj)})
+VM243:1 0 <div>​1​</div>​
+VM243:1 1 <div>​2​</div>​
+VM243:1 2 <div>​3​</div>​
+VM243:1 3 <div>​4​</div>​
+VM243:1 4 <div>​5​</div>​
+VM243:1 5 <div>​6​</div>​
+VM243:1 6 <div>​7​</div>​
+VM243:1 7 <div>​8​</div>​
+VM243:1 8 <div>​9​</div>​
+VM243:1 9 <div>​10​</div>​
+
+# 第二种方式
+$.each([111,222,333],function(index,obj){console.log(index,obj)})
+VM484:1 0 111
+VM484:1 1 222
+VM484:1 2 333
+(3) [111, 222, 333]
+"""
+有了each之后 就无需自己写for循环了 用它更加的方便
+"""
+# data()
+"""
+能够让标签帮我们存储数据 并且用户肉眼看不见
+"""
+$('div').data('info','回来吧，我原谅你了!')
+w.fn.init(10) [div#d1, div, div, div, div, div, div, div, div, div, prevObject: w.fn.init(1)]
+               
+$('div').first().data('info')
+"回来吧，我原谅你了!"
+$('div').last().data('info')
+"回来吧，我原谅你了!"
+               
+$('div').first().data('xxx')
+undefined
+$('div').first().removeData('info')
+w.fn.init [div#d1, prevObject: w.fn.init(10)]
+           
+$('div').first().data('info')
+undefined
+$('div').last().data('info')
+"回来吧，我原谅你了!"
+```
+
+
+
