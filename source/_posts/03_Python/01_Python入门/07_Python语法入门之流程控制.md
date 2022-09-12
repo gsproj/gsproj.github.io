@@ -3,17 +3,21 @@ title: 07-流程控制
 date: 2022-07-18 9:19:22
 categories:
 - Python
-- Python入门
+- 01_Python入门
 tags:
 ---
 
-## 一 引子：
+# 1 引子：
 
-流程控制即控制流程，具体指控制程序的执行流程，而程序的执行流程分为三种结构：顺序结构（之前我们写的代码都是顺序结构）、分支结构（用到if判断）、循环结构（用到while与for）
+流程控制即控制流程，具体指控制程序的执行流程，而程序的执行流程分为三种结构：
+
+- 顺序结构（之前我们写的代码都是顺序结构）
+- 分支结构（用到if判断）
+- 循环结构（用到while与for）
 
 ![img](https://pic3.zhimg.com/80/v2-1c94b67e61036b4b8029f1ff0e04021e_720w.jpg)
 
-## 二 分支结构
+# 2 分支结构
 
 ## 2.1 什么是分支结构
 
@@ -66,22 +70,22 @@ else:　　   # 其它情况，就依次执行：代码7、代码8，......
 
 如果：女人的年龄>30岁，那么：叫阿姨
 
-```text
-age_of_girl=31
+```python
+age_of_girl = 31
 if age_of_girl > 30:
-    print('阿姨好')
+    print("阿姨")
 ```
 
 案例2：
 
-如果：女人的年龄>30岁，那么：叫阿姨，否则：叫小姐
+如果：女人的年龄>30岁，那么：叫阿姨，否则：叫小姐姐
 
 ```text
-age_of_girl=18
+age_of_girl = 29
 if age_of_girl > 30:
-    print('阿姨好')
+    print("阿姨")
 else:
-    print('小姐好')
+    print("小姐姐")
 ```
 
 案例3：
@@ -150,17 +154,18 @@ else:
 练习1: 登陆功能
 
 ```python
-name=input('请输入用户名字：').strip()
-password=input('请输入密码：').strip()
-if name == 'tony' and password == '123':
-    print('tony login success')
+username = input("请输入用户名：").strip()
+password = input("请输入用户密码：").strip()
+
+if username == 'admin' and password == 'local666':
+    print("老铁，登录成功")
 else:
-    print('用户名或密码错误')
+    print("滚蛋，登录失败！")
 ```
 
 练习2：
 
-```text
+```python
 #!/usr/bin/env python
 #根据用户输入内容打印其权限
 
@@ -170,7 +175,7 @@ tom  --> 普通管理员
 jack,rain --> 业务主管
 其他 --> 普通用户
 '''
-name=input('请输入用户名字：')
+name = input('请输入用户名字：')
 
 if name == 'egon':
     print('超级管理员')
@@ -182,7 +187,7 @@ else:
     print('普通用户')
 ```
 
-## 三 循环结构
+# 3 循环结构
 
 ## 3.1 什么是循环结构
 

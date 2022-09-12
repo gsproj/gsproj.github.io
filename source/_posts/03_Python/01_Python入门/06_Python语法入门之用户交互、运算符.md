@@ -3,7 +3,7 @@ title: 06-用户交互与运算符
 date: 2022-07-18 9:18:22
 categories:
 - Python
-- Python入门
+- 01_Python入门
 tags:
 ---
 
@@ -105,6 +105,8 @@ Job   : Teacher
 ![img](https://pic3.zhimg.com/80/v2-1e691dd00888ffbc6a6a91fd6b871fb2_720w.jpg)
 
 ## 2.2 比较运算符
+
+
 
  比较运算用来对两个值进行比较，返回的是布尔值True或False，我们以x=9，y=2为例来依次介绍它们
 
