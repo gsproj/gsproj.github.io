@@ -11,99 +11,108 @@ tags:
 
 
 
-# 一、路由层
-
-## 1.1 无名有名分组反向解析
-
-```python
-# 无名分组反向解析
-	url(r'^index/(\d+)/',views.index,name='xxx')
-
-# 前端
-	{% url 'xxx' 123 %}
-# 后端
-	reverse('xxx', args=(1,))
-
-"""
-这个数字写代码的时候应该放什么
-	数字一般情况下放的是数据的主键值  数据的编辑和删除
-	url(r'^edit/(\d+)/',views.edit,name='xxx')
-	
-	def edit(request,edit_id):
-		reverse('xxx',args=(edit_id,))
-		
-	{%for user_obj in user_queryset%}
-		<a href="{% url 'xxx' user_obj.id %}">编辑</a>
-	{%endfor%}
-
-今天每个人都必须完成的作业(*******)
-	利用无名有名 反向解析 完成数据的增删改查
-"""
-
-
-
-# 有名分组反向解析
-   url(r'^func/(?P<year>\d+)/',views.func,name='ooo')
-# 前端
-	<a href="{% url 'ooo' year=123 %}">111</a>  了解
-	<a href="{% url 'ooo' 123 %}">222</a>  			记忆
-
-# 后端	
-	 # 有名分组反向解析 写法1  了解
-   print(reverse('ooo',kwargs={'year':123}))
-   # 简便的写法  减少你的脑容量消耗 记跟无名一样的操作即可
-   print(reverse('ooo',args=(111,)))
-```
+# 一、路由层（接day61）
 
 ## 1.2 路由分发
 
+### 1.2.1 什么是路由分发？
+
+​	将所有的url都写在Django项目总的`urls.py`中，写多了杂乱，不好维护
+
+​	但是Django有个特点：每一个应用都可以有自己的templates文件夹、urls.py、static文件夹
+
+​	基于上述的特点 django能够非常好的做到分组开发(每个人只写自己的app)
+
+利用路由分发来减轻总路由的压力，总路由统领各app里面的路由
+
+### 1.2.2 路由分发案例
+
+1）新项目，创建两个app
+
+```shell
+python .\manage.py startapp app01
+python .\manage.py startapp app02
+```
+
+2）两个app配置子路由`urls.py`文件
+
 ```python
-"""
-django的每一个应用都可以有自己的templates文件夹 urls.py static文件夹
-正是基于上述的特点 django能够非常好的做到分组开发(每个人只写自己的app)
-作为组长 只需要将手下书写的app全部拷贝到一个新的django项目中 然后在配置文件里面注册所有的app再利用路由分发的特点将所有的app整合起来
+# app01
+from django.urls import path
+from app01 import views
 
-当一个django项目中的url特别多的时候 总路由urls.py代码非常冗余不好维护
-这个时候也可以利用路由分发来减轻总路由的压力
-
-利用路由分发之后 总路由不再干路由与视图函数的直接对应关系
-而是做一个分发处理
-	识别当前url是属于哪个应用下的 直接分发给对应的应用去处理
-	
-"""
-
-
-# 总路由
-from app01 import urls as app01_urls
-from app02 import urls as app02_urls
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
-    # 1.路由分发
-    url(r'^app01/',include(app01_urls)),  # 只要url前缀是app01开头 全部交给app01处理
-    url(r'^app02/',include(app02_urls))   # 只要url前缀是app02开头 全部交给app02处理
-  
-    # 2.终极写法  推荐使用
-    url(r'^app01/',include('app01.urls')),
-    url(r'^app02/',include('app02.urls'))
-    # 注意事项:总路由里面的url千万不能加$结尾
+    path('reg/', views.reg),
 ]
 
-# 子路由
-	# app01 urls.py
-  from django.conf.urls import url
-  from app01 import views
+# app02
+from django.urls import path
+from app02 import views
 
-  urlpatterns = [
-      url(r'^reg/',views.reg)
-  ]
-  # app02 urls.py
-  from django.conf.urls import url
-  from app02 import views
-
-  urlpatterns = [
-      url(r'^reg/',views.reg)
-  ]
+urlpatterns = [
+    path('reg/', views.reg),
+]
 ```
+
+3）两个app的views文件修改
+
+```python
+# app01
+from django.shortcuts import render, HttpResponse
+
+# Create your views here.
+def reg(request):
+    return HttpResponse("app01:reg")
+
+# app02
+from django.shortcuts import render, HttpResponse
+
+# Create your views here.
+def reg(request):
+    return HttpResponse("app01:reg")
+```
+
+4）总路由`urls.py`配置路由分发
+
+```python
+from django.contrib import admin
+from django.conf.urls import url, include
+# 需要导入模块
+from django.urls import path, re_path
+from app01 import urls as app01_urls
+from app02 import urls as app02_urls
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    # 凡是app01开头的，都交给app01子路由处理
+    re_path(r'^app01/', include(app01_urls)),
+    # 凡是app02开头的，都交给app02子路由处理
+    re_path(r'^app02/', include(app02_urls)),
+]
+```
+
+更推荐的写发，不需要重命名：
+
+```python
+from django.contrib import admin
+from django.conf.urls import url, include
+# 需要导入模块
+from django.urls import path, re_path
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    # 凡是app01开头的，都交给app01子路由处理
+    re_path(r'^app01/', include('app01.urls')),
+    # 凡是app02开头的，都交给app02子路由处理
+    re_path(r'^app02/', include('app02.urls')),
+]
+```
+
+测试访问成功：
+
+![image-20220913193027730](../../../img/image-20220913193027730.png)
+
+
 
 ## 1.3 名称空间(了解)
 
@@ -319,26 +328,53 @@ def ab_json(request):
 
 ## 2.3 form表单上传文件及后端如何操作
 
-```python
-"""
 form表单上传文件类型的数据
-	1.method必须指定成post
-	2.enctype必须换成formdata
 
-"""
-def ab_file(request):
-    if request.method == 'POST':
+1. method必须指定成post
+2. enctype必须换成formdata
+
+### 2.3.1 案例：
+
+HTML页面代码：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+	# 必须设置
+    <form action="" method="post" enctype="multipart/form-data">
+        <p>选择文件：<input type="file" name="file"></p>
+        <input type="submit">
+    </form>
+</body>
+</html>
+```
+
+views.py代码
+
+```python
+from django.shortcuts import render, HttpResponse
+
+
+# Create your views here.
+def reg(request):
+    if request.method == "POST":
         # print(request.POST)  # 只能获取普通的简直对数据 文件不行
-        print(request.FILES)  # 获取文件数据
-        # <MultiValueDict: {'file': [<InMemoryUploadedFile: u=1288812541,1979816195&fm=26&gp=0.jpg (image/jpeg)>]}>
+        print(request.FILES)
         file_obj = request.FILES.get('file')  # 文件对象
         print(file_obj.name)
-        with open(file_obj.name,'wb') as f:
+        with open(file_obj.name, 'wb') as f:
             for line in file_obj.chunks():  # 推荐加上chunks方法 其实跟不加是一样的都是一行行的读取
                 f.write(line)
+    return render(request, 'index.html')
 
-    return render(request,'form.html')
 ```
+
+测试：页面上传文件后，会保存到项目文件夹中
 
 ## 2.4 request对象方法
 
@@ -353,9 +389,9 @@ request.path
 request.path_info
 request.get_full_path()  能过获取完整的url及问号后面的参数 
 """
-    print(request.path)  # /app01/ab_file/
-    print(request.path_info)  # /app01/ab_file/
-    print(request.get_full_path())  # /app01/ab_file/?username=jason
+print(request.path)  # /app01/ab_file/
+print(request.path_info)  # /app01/ab_file/
+print(request.get_full_path())  # /app01/ab_file/?username=jason
 ```
 
 ## 2.5 FBV与CBV
@@ -370,15 +406,15 @@ def index(request):
     url(r'^login/',views.MyLogin.as_view())
 
 
-		from django.views import View
+    from django.views import View
 
 
-		class MyLogin(View):
-    	def get(self,request):
-        return render(request,'form.html')
+    class MyLogin(View):
+        def get(self,request):
+            return render(request,'form.html')
 
-    	def post(self,request):
-        return HttpResponse('post方法')
+        def post(self,request):
+            return HttpResponse('post方法')
       
 """
 FBV和CBV各有千秋
@@ -390,4 +426,3 @@ CBV特点
 """
 ```
 
-# 作业
