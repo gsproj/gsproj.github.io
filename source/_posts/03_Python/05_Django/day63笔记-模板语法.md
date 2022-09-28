@@ -555,6 +555,9 @@ def left(n):
 	模版内容
 {% endblock %}
 
+# 子页面继承父页面的
+{% block.super %}
+
 # 子页面就可以声明想要修改哪块划定了的区域
 {% block content %}
 	子页面内容	
