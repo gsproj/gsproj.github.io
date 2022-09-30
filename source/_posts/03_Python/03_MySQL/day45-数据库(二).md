@@ -291,21 +291,24 @@ ERROR 1264 (22003): Out of range value for column 'id' at row 1
 ## 3.2 严格模式
 
 ```python
-# 如何查看严格模式
+# 1、如何查看严格模式
 show variables like "%mode";
+或者
+select @@sql_mode
 
 模糊匹配/查询
 	关键字 like
 		%:匹配任意多个字符
         _:匹配任意单个字符
 
-# 修改严格模式
+# 2、修改严格模式
 	set session  只在当前窗口有效
     set global   全局有效
     
-    set global sql_mode = 'STRICT_TRANS_TABLES';
+    # 临时关闭严格模式（具体内容依据#1命令得到的结果为准，去除ONLY_FULL_GROUP_BY即可）
+    set global sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
     
-    修改完之后 重新进入服务端即可
+	修改完之后 重新进入服务端即可
 ```
 
 ## 3.3 浮点型
@@ -407,8 +410,9 @@ show variables like "%mode";
   | time     | 时分秒：11:11:11                |
 | year     | 年：2020                        |
   
+
 案例如下：
-  
+
   ```python
   create table student(
   	id int,
@@ -458,6 +462,7 @@ show variables like "%mode";
   insert into teacher values(1,'jason','male','read');  # 正常
 insert into teacher values(2,'egon','female','DBJ,hecha');  # 正常
   insert into teacher values(3,'tank','others','生蚝'); # 报错
+  ```
 # 集合可以只写一个  但是不能写没有列举的
   ```
   
@@ -472,3 +477,5 @@ insert into teacher values(2,'egon','female','DBJ,hecha');  # 正常
 
 
 
+
+  ```
