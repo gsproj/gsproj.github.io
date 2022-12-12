@@ -1,5 +1,5 @@
 ---
-title: Day58-Bootstrap
+title: Day72-BBS项目-01
 date: 2022-11-09 09:03:22
 categories:
 - Python
