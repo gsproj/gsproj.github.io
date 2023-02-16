@@ -1,6 +1,6 @@
 ---
 title: Day05-C高级编程
-date: 2022-1-13 11:05:22
+date: 2022-2-15 11:05:22
 categories:
 - C++
 - 02_C高级编程
@@ -676,4 +676,405 @@ int main(){
 | 缺点     | 随机访问效率低                           | 需要一块连续内存空间，删除和插入效率低 |
 
 ## 2.2 链表节点
+
+链表由一系列的节点组成，那么如何表示一个包含数据域和指针域的节点呢？
+
+链表的节点实际上是`结构体变量`，此结构体包含数据域和指针域：
+
+- 数据域：用来存数据
+- 指针域：用于建立与下一个节点的关系（当此节点为尾节点时，指针域的值为NULL）
+
+一个链表节点的C代码表示如下：
+
+```c
+typedef struct __Node {
+    // 数据域
+    char name[50];
+    int id;
+    // 指针域
+    struct Node *next;
+}Node;
+```
+
+通过指针域指定节点，将各个节点相连，即一个链表
+
+![image-20230215144957486](../../../img/image-20230215144957486.png)
+
+## 2.3 链表的分类
+
+### 2.3.1 动态链表和静态链表
+
+链表按数据存储方式分为两类：
+
+- 静态链表
+  - 所有节点都在程序中定义，不是临时开辟的，也不在用完之后释放
+- 动态链表
+  - 程序执行过程中从无到有地创建一个链表，即一个个地开辟节点，输入数据，建立连接关系
+
+静态链表的案例如下：
+
+```c
+#include <stdio.h>
+
+// 静态链表案例
+
+// 1.定义节点
+typedef struct __NODE
+{
+	// 数据域
+	char name[50];
+	int age;
+
+	// 指针域
+	struct __NODE *next;
+}Node;
+
+void test() {
+	// 2.创建节点，并建立联系
+	Node n1 = { "大王", 18, NULL };
+	Node n2 = { "小新", 20, NULL };
+	Node n3 = { "真好", 38, NULL };
+
+	n1.next = &n2;
+	n2.next = &n3;
+
+	// 3.遍历节点
+	Node* p = &n1;
+	while (p != NULL) {
+		printf("name = %s, age = %d\n", p->name, p->age);
+		p = p->next;
+	}
+}
+
+int main() {
+	test();
+	return 0;
+}
+
+/*
+执行结果：
+name = 大王, age = 18
+name = 小新, age = 20
+name = 真好, age = 38
+*/
+```
+
+动态链表的案例如下：
+
+```c
+#define _CRT_SECURE_NO_WARNINGS		// 消除strcpy的报错
+
+#include <stdio.h>
+#include <malloc.h>		// 消除malloc未被定义的报错
+#include <string.h>
+
+// 创建节点结构体
+typedef struct __NODE {
+	char name[50];
+	int age;
+
+	struct __NODE* next;
+}Node;
+
+
+void test1() {
+	// 开辟空间创建节点
+	Node* n1 = (Node*)malloc(sizeof(Node));
+	strcpy(n1->name, "BigWang");
+	n1->age = 18;
+
+	Node* n2 = (Node*)malloc(sizeof(Node));
+	strcpy(n2->name, "LittleXin");
+	n2->age = 28;
+
+	Node* n3 = (Node*)malloc(sizeof(Node));
+	strcpy(n3->name, "MoMo");
+	n3->age = 38;
+
+	// 建立联系
+	n1->next = n2;
+	n2->next = n3;
+	n3->next = NULL;
+
+	// 输出
+	Node* p = n1;
+	while (p != NULL) {
+		printf("name = %s, age = %d\n", p->name, p->age);
+		p = p->next;
+	}
+
+	// 释放空间
+	p = n1;
+	Node* tmp = NULL;
+	while (p != NULL) {
+		tmp = p;
+		p = p->next;
+
+		free(tmp);
+		tmp = NULL;
+	}
+
+}
+
+int main() {
+	test1();
+	return 0;
+}
+
+/*
+输出：
+name = BigWang, age = 18
+name = LittleXin, age = 28
+name = MoMo, age = 38
+*/
+```
+
+### 2.3.2 带头和不带头链表
+
+补充一个概念，什么是带头的节点，什么是不带头的节点？
+
+- 带头的节点：
+
+  - 头节点固定不动，其数据域不保存有效数据，起一个标志位的作用
+
+  ![image-20230215161908705](../../../img/image-20230215161908705.png)
+
+- 不带头的节点：
+
+  - 头节点不固定，更具实际需要变换头节点（比如前面新插入一个节点，就会成为新的头节点）
+
+  ![image-20230215161921237](../../../img/image-20230215161921237.png)
+
+### 2.3.3 单向链表、双向链表、循环链表
+
+单向链表：
+
+![image-20230215162131406](../../../img/image-20230215162131406.png)
+
+双向链表：
+
+![image-20230215162158745](../../../img/image-20230215162158745.png)
+
+循环链表：
+
+![image-20230215162221998](../../../img/image-20230215162221998.png)
+
+## 2.4 链表的增删改查
+
+通过案例了解如何创建链表、新增节点、删除节点以及查询数据
+
+```c
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <malloc.h>
+#include <string.h>
+
+// 节点结构体
+typedef struct __NODE {
+	int id;
+	struct __NODE * next;
+}Node;
+
+// 遍历链表函数
+void foreach_linklist(Node* headnode) {
+	if (headnode == NULL || headnode->id != -1) {
+		printf("链表不存在\n");
+		return;
+	}
+	Node* temp_node = headnode->next;
+	while (temp_node != NULL) {
+		printf("%d ", temp_node->id);
+		temp_node = temp_node->next;
+	}
+	printf("\n");
+}
+
+// 创建链表函数
+Node* init_list() {
+	// 创建头节点
+	Node* head_node = NULL;
+	
+	// 给头节点分配内存
+	head_node = (Node*)malloc(sizeof(Node));
+	// 容错判断
+	if (head_node == NULL) {
+		return NULL;
+	}
+
+	// 头节点赋值
+	head_node->id = -1;
+	head_node->next = NULL;
+
+	// 保存头节点
+	Node* current_node = head_node;
+	int data = -1;
+	
+	// 循环插入节点
+	while (1) {
+		printf("please input data: ");
+		scanf("%d", &data);
+
+		// 如果输入-1,退出循环
+		if (data == -1) {
+			break;
+		}
+
+		// 创建新节点
+		Node* node = (Node*)malloc(sizeof(Node));
+		if (node == NULL) {
+			break;
+		}
+		// 赋值
+		node->id = data;
+		node->next = NULL;
+
+		// 指针域指向下一节点
+		current_node->next = node;
+		current_node = node;
+	}
+
+	// 返回头节点
+	return head_node;
+}
+
+// 插入节点函数(在指定值val后面插入数据data，如果值val不存在，则在尾部插入)
+void insert_node(Node* headnode, int val, int data) {
+	if (headnode == NULL || headnode->id != -1) {
+		printf("插入失败，链表不存在！");
+		return;
+	}
+
+	Node* pre_node = headnode;
+	Node* current_node = headnode->next;
+
+	while (current_node != NULL) {
+		if (current_node->id == val) {
+			break;
+		}
+
+		pre_node = current_node;
+		current_node = pre_node->next;
+	}
+
+	if (current_node == NULL) {
+		printf("插入失败，不存在值为%d的节点\n", val);
+		return;
+	}
+
+	// 创建新的节点
+	Node* newnode = (Node*)malloc(sizeof(Node));
+	newnode->id = data;
+	newnode->next = NULL;
+
+	// 新节点入链表
+	Node* nextnode = current_node->next;
+	current_node->next = newnode;
+	newnode->next = nextnode;
+}
+
+// 删除节点函数(删除第一个值为val的节点)
+void remove_linklist(Node *head, int val) {
+	Node* pre_node = head;
+	Node* current_node = head->next;
+
+	// 通过循环找节点
+	while (current_node != NULL) {
+		// 已经找到停止循环
+		if (current_node->id == val) {
+			break;
+		}
+		// 没找到继续
+		pre_node = current_node;
+		current_node = pre_node->next;
+	}
+
+	// 如果遍历完都没找到
+	if (current_node == NULL) {
+		return;
+	}
+
+	// 删除节点
+	pre_node->next = current_node->next;
+	// 释放内存
+	free(current_node);
+}
+
+
+// 销毁链表函数
+void destory_linklist(Node* head) {
+	if (head == NULL) {
+		return;
+	}
+
+	if(head->id != -1) {
+		return;
+	}
+
+	Node* current_node = head;
+	while (current_node != NULL) {
+		// 缓存当前节点的下一个节点
+		Node* next = current_node->next;
+		free(current_node);
+		current_node = next;
+		next = NULL;
+	}
+}
+
+
+void test() {
+	int opt = 1;
+	int num = 0;
+	Node* head = NULL;
+	while (opt == 1) {
+		printf("-----------------------\n");
+		printf("欢迎来到链表的增删改查\n");
+		printf("1-创建链表\n");
+		printf("2-插入数据\n");
+		printf("3-查询数据\n");
+		printf("4-销毁链表\n");
+		printf("5-退出\n");
+		printf("-----------------------\n");
+		printf("请输入执行项: ");
+		scanf("%d", &num);
+
+		int data = 0;
+		int val = 0;
+
+		switch (num)
+		{
+		case 1:
+			printf("---创建链表---\n");
+			head = init_list();
+			break;
+		case 2:
+			printf("---插入数据---\n");
+			printf("请输入需要插在那个值的后面: ");
+			scanf("%d", &val);
+			printf("请输入插入的值: ");
+			scanf("%d", &data);
+			insert_node(head, val, data);
+			break;
+		case 3:
+			printf("---查询数据---\n");
+			foreach_linklist(head);
+
+			break;
+		case 4:
+			printf("---销毁链表---");
+			destory_linklist(head);
+			break;
+		case 5:
+			opt = 0;
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+int main() {
+	test();
+	return 0;
+}
+```
 
