@@ -293,10 +293,51 @@ wget -N --no-check-certificate "https://raw.githubusercontent.com/chiakge/Linux-
 
 ### 4.3 安装V2Ray
 
-在梯子服务器，执行一键搭建脚本
+在梯子服务器，wget下载一键搭建脚本
 
 ```shell
-bash <(curl -sL https://gist.githubusercontent.com/JodenHe/815dd91277b722d36a860d39c2296083/raw/7f2b5ac0f8137b245d44741fc4a9f40cffa36755/v2Ray-install.sh)
+wget https://gist.githubusercontent.com/JodenHe/815dd91277b722d36a860d39c2296083/raw/7f2b5ac0f8137b245d44741fc4a9f40cffa36755/v2Ray-install.sh
+```
+
+**20230228更新**
+
+因为其中下载链接中的v2ray分支更新，需要改成继续使用老版本，错误日志如下
+
+```shell
+安装V2ray...
+ 安装V2Ray v5.3.0 ，架构64
+ 下载V2Ray: https://github.com/v2fly/v2ray-core/releases/download/v5.3.0/v2ray-linux-64.zip
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+100 11.1M  100 11.1M    0     0  11.8M      0 --:--:-- --:--:-- --:--:-- 59.4M
+Archive:  /tmp/v2ray/v2ray.zip
+  inflating: /tmp/v2ray/config.json  
+  inflating: /tmp/v2ray/geosite.dat  
+  inflating: /tmp/v2ray/geoip-only-cn-private.dat  
+   creating: /tmp/v2ray/systemd/
+   creating: /tmp/v2ray/systemd/system/
+  inflating: /tmp/v2ray/systemd/system/v2ray.service  
+  inflating: /tmp/v2ray/systemd/system/v2ray@.service  
+  inflating: /tmp/v2ray/vpoint_socks_vmess.json  
+  inflating: /tmp/v2ray/geoip.dat    
+  inflating: /tmp/v2ray/v2ray        
+  inflating: /tmp/v2ray/vpoint_vmess_freedom.json  
+cp: cannot stat ‘/tmp/v2ray/v2ctl’: No such file or directory
+chmod: cannot access ‘/usr/bin/v2ray/v2ctl’: No such file or directory
+ V2ray安装失败
+```
+
+修改脚本内容
+
+```shell
+sed -i 's/${NEW_VER}/v4.45.2/g' v2Ray-install.sh
+```
+
+继续执行脚本
+
+```shell
+bash v2Ray-install.sh
 ```
 
 ![image-20220715155109519](../../img/image-20220715155109519.png)
