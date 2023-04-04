@@ -172,13 +172,28 @@ make results OS=arch-linux
 make see
 ```
 
-错误：
+错误一：
 
 ```shell
 报错: undefined reference to 'llseek'
 解决方法:
 修改src/disk.c文件
 将llseek改为lseek64
+```
+
+错误二：
+
+```shell
+gmake[1]: Entering directory `/home/testcpu/test652/tools/lmbench3/src'
+gmake[1]: *** No rule to make target `../SCCS/s.ChangeSet', needed by `bk.ver'.  Stop.
+gmake[1]: Leaving directory `/home/testcpu/test652/tools/lmbench3/src'
+
+解决方法：
+	vim Makefile
+	231行修改：
+	$O/lmbench : ../scripts/lmbench bk.ver
+	改为
+	$O/lmbench : ../scripts/lmbench
 ```
 
 ## 4 文件读写测试
