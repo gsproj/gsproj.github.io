@@ -404,7 +404,7 @@ sudo cp 10-vsync.conf  ~/.drirc
 vblank_mode=0 ./Run ubgears
 ```
 
-## 11 显卡测试-Glmark2
+## 12 显卡测试-Glmark2
 
 安装
 
@@ -420,7 +420,7 @@ sudo ./waf install
 glmark2
 ```
 
-## 12 显卡测试-Glxgears
+## 13 显卡测试-Glxgears
 
 安装
 
@@ -435,7 +435,7 @@ sudo apt-get install mesa-utils
 glxgears
 ```
 
-## 12 网络性能测试-iperf3
+## 14 网络性能测试-iperf3
 
 >测试网络传输速率、重传等
 
@@ -473,5 +473,113 @@ iperf3 -c 10.47.74.25 -i 5 -t 30
 # 3、如服务端拒绝连接请求，需考虑firewall或者selinux
 ```
 
+## 15 CPU、内存压测-stress
+
+>stress是一款压力测试工具，可以用它来对系统CPU，内存，以及磁盘IO生成负载。
+
+安装stress
+
+```shell
+apt-get install stress
+```
+
+使用stress
+
+```shell
+stress [option]
+
+-? 显示帮助信息
+-v 显示版本号
+-q 不显示运行信息
+-n，--dry-run 显示已经完成的指令执行情况
+-t --timeout N 指定运行N秒后停止
+   --backoff N 等待N微妙后开始运行
+-c --cpu 产生n个进程 每个进程都反复不停的计算随机数的平方根
+-i --io  产生n个进程 每个进程反复调用sync()，sync()用于将内存上的内容写到硬盘上
+-m --vm n 产生n个进程,每个进程不断调用内存分配malloc和内存释放free函数
+   --vm-bytes B 指定malloc时内存的字节数 (默认256MB)
+   --vm-hang N 指示每个消耗内存的进程在分配到内存后转入休眠状态，与正常的无限分配和释放内存的处理相反，这有利于模拟只有少量内存的机器
+-d --hadd n 产生n个执行write和unlink函数的进程
+   --hadd-bytes B 指定写的字节数，默认是1GB
+   --hadd-noclean 不要将写入随机ASCII数据的文件Unlink
+    
+时间单位可以为秒s，分m，小时h，天d，年y，文件大小单位可以为K，M，G
+```
+
+使用stress进行CPU压测
+
+```shell
+# 128进程压测
+stress -c 128
+```
+
+使用stress进行内存压测
+
+```shell
+# 创建三个进程，每个进程使用300M内存
+stress -m 3 --vm-bytes 300M
+```
+
+使用stress进行磁盘压测
+
+```shell
+# stress -i N 会产生N个进程，每个进程反复调用sync()将内存上的内容写到硬盘上.
+# stress -d N 会产生N个进程，每个进程往当前目录中写入固定大小的临时文件，然后执行unlink操作删除该临时文件。 临时文件的大小默认为1G，但可以通过 --hdd-bytes 设置临时文件的大小。比如
+stress -i 2 -d 4 
+```
+
+同时对多个指标进行压力测试，只需要把上面的参数组合起来就行
 
 
+
+## 16 ARM64服务器安装Zabbix
+
+安装依赖包
+
+```shell
+yum -y install net-snmp-devel libxml2-devel libcurl-devel libevent-devel pcre-devel libxml2-devel openssl-devel zlib-devel
+```
+
+安装数据库
+
+```shell
+yum install mariadb mariadb-server
+```
+
+启动数据库服务
+
+```shell
+systemctl enable mariadb && systemctl start mariadbCreated symlink 
+```
+
+
+
+编译
+
+```shell
+./configure --prefix=/usr/local/zabbix --enable-server --with-mysql --with-net-snmp --with-libcurl --with-libxml2 --with-libevent=/usr/local/libevent
+```
+
+```shell
+./configure --prefix=/usr/local/zabbix --enable-proxy --with-net-snmp --with-libevent=/usr/local/libevent --with-sqlite3=/usr/local/sqlite3 --with-libcurl --with-openssl
+```
+
+```shell
+./configure --prefix=/usr/local/zabbix --enable-agent --with-net-snmp --with-libcurl --with-openss
+```
+
+
+
+useradd --system -g zabbix -d /usr/lib/zabbix -s /sbin/nologin -c "Zabbix Monitoring System" zabbix# mkdir -p /data/zabbix/{logs,socket,data}# chown -R zabbix.zabbix  /data/zabbix/
+
+
+
+create database zabbix character set utf8 collate utf8_bin; 
+
+grant all privileges on zabbix.* to zabbix@localhost identified by 'Greatwall@123'; 
+
+grant all privileges on zabbix.* to zabbix@127.0.0.1 identified by 'Greatwall@123'; 
+
+GRANT ALL PRIVILEGES ON *.* TO 'zabbix'@'%'IDENTIFIED BY 'Greatwall@123' WITH GRANT OPTION; 
+
+flush privileges;
