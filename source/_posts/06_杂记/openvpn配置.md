@@ -1,3 +1,12 @@
+---
+title: openvpn 使用手册
+date: 2022-07-11 9:29:52
+categories:
+- 杂记
+tags:
+---
+
+
 # openvpn 使用手册
 
 此手册的目的是使读者快速上手将openvpn使用起来，满足大部分需求
