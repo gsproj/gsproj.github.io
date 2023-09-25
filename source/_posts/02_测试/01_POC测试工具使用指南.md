@@ -10,7 +10,7 @@ tags:
 
 # POC测试工具使用指南
 
-## 1、SPEC OMP 2012测试
+## 1 SPEC OMP 2012测试
 
 SPEC OMP 2012是基于SPEC测试套件的OpenMP评测工具，其中包含15个基于OpenMP的并行程序。
 
@@ -62,6 +62,26 @@ runspec --action=build --config=gcc.cfg -i ref -I all
 ```shell
 测试工具包：
 d2000-spec2006test.tar.gz
+```
+
+系统优化：
+
+```shell
+# 修改操作系统/boot/efi/EFI/kylin/grub.cfg
+sed -i ‘s/video=VGA-1:640x480-32@60me/& mitigations=off /’ /boot/efi/EFI/kylin/grub.cfg
+sed -i ‘s/video=VGA-1:640x480-32@60me/& selinux=0 audit=0 /’ /boot/efi/EFI/kylin/grub.cfg    （注：与上面是同一行，注意空格）
+
+# 配置透明页
+echo always > /sys/kernel/mm/transparent_hugepage/enabled
+
+# 操作系统打开性能模式，关闭服务
+tuned-adm profile throughput-performance
+for srv in firewalld auditd irqbalance tuned; do for act in stop disable; do systemctl $act ${srv}.service
+输入done
+输入done 
+
+# 关闭SELINUX
+sed -i ‘/^SELINUX=/s/=.*$/=disabled/g’ /etc/selinux/config 
 ```
 
 2、测试步骤
@@ -211,19 +231,70 @@ taskset -c
 2、cfg文件中的submit可以设置绑核选项
 ```
 
+## 3 SPEC JVM 2008
 
+1、安装步骤
 
-## 3 lmbench测试（用时3小时）
+```shell
+# 确定java安装好后，将specjvm2008放到/home路径下，并安装
+java -jar SPECjvm2008_1_01_setup.jar -i console
+根据提示安装，全部选择默认即可，也可自行定义安装路径，默认路径为/SPECjvm2008。
+
+# 安装jdk
+yum install -y java-1.8.0-openjdk-devel 
+```
+
+2、配置JAVA_HOME
+
+```shell
+vi /etc/profile
+在文件最后添加如下几行内容
+JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-arm64
+CLASSPATH=.:$JAVA_HOME/lib/tools.jar:/lib.dt.jar
+PATH=$JAVA_HOME/bin:$PATH
+export JAVA_HOME CLASSPATH PATH
+source /etc/profile执行 source 命令使/etc/profile 文件中变量生效
+```
+
+3、优化操作
+
+```shell
+JAVA_OPTS="-Xms8192M -Xmx131072M -XX:PermSize=512M -XX:MaxPermSize=1g -Dspecjvm.benchmark.threads.scimark.fft.large=1 "
+
+export JAVA_OPTS
+```
+
+4、测试
+
+```shell
+cd /SPECjvm2008
+sudo java -jar SPECjvm2008.jar --base -ikv
+sudo java -Xms1024m -Xmx349525m -jar SPECjvm2008.jar --peak -ikv
+```
+
+## 4 LTP测试
+
+测试步骤
+
+```shell
+cd /opt/ltp-20180510
+./configure
+make && make install
+cd /opt/ltp
+./testscripts/ltpstress.sh -n -t 168
+```
+
+## 5 lmbench测试（用时3小时）
 
 >测试简单的系统调用时间、shell命令启动时间、系统信号处理时间、统计2p/16K的上下文切换性能、16p/64K的上下文切换性能、0K/10K文件创建时间、0K/10K文件删除时间
 
-源码包准备：
+1、源码包准备：
 
 ```shell
 wget http://www.bitmover.com/lmbench/lmbench3.tar.gz
 ```
 
-编译前的准备：
+2、编译前的准备：
 
 ```shell
 tar xvf lmbench3.tar.gz
@@ -232,17 +303,37 @@ mkdir SCCS
 touch  SCCS/s.ChangeSet
 ```
 
-编译并测试
-
-```she
-make results OS=arch-linux
-```
-
-读取测试结果
+3、优化操作：
 
 ```shell
-make see
+修改 Makefile 文件第 114、115 和 139 行，将 O 修改成 O2，使用 O2 编译可使性能优化。  
+cd lmbench-3.0-a9/src/ 
+vim Makefile
+
+CFLAGS=-O 改为 CFLAGS=-O2
 ```
+
+4、编译并测试
+
+```she
+cd lmbench3
+make results LDFLAGS=-ltirpc
+（1）MULTIPLE COPIES,选择默认
+（2）Job placement selection 选1
+（3）MB:建议不超过1G
+（4）其余选项选择默认
+（5）Mail results ，选择no
+注：服务器内存大小指定为16384，桌面采用默认大小即可。
+```
+
+5、读取测试结果
+
+```shell
+make see查看结果，results目录下。
+make rerun再次运行，不需要重新配置。（注：测试多次时执行）
+```
+
+6、错误处理
 
 错误一：
 
@@ -261,6 +352,7 @@ gmake[1]: *** No rule to make target `../SCCS/s.ChangeSet', needed by `bk.ver'. 
 gmake[1]: Leaving directory `/home/testcpu/test652/tools/lmbench3/src'
 
 解决方法：
+	# 修改Makefile
 	vim Makefile
 	231行修改：
 	$O/lmbench : ../scripts/lmbench bk.ver
@@ -268,7 +360,15 @@ gmake[1]: Leaving directory `/home/testcpu/test652/tools/lmbench3/src'
 	$O/lmbench : ../scripts/lmbench
 ```
 
-## 4 文件读写测试
+错误三：
+
+```shell
+sudo yum -y install libtirpc libtirpc-devel
+cp -rf /usr/include/tirpc/rpc/* /usr/include/rpc/，解决了丢失rpc.h的问题
+ln -s /usr/include/tirpc/netconfig.h /usr/include,解决netconfig.h的问题
+```
+
+## 6 文件读写测试
 
 >测试硬盘内文件（10G）拷贝性能，记录时间
 
@@ -282,9 +382,7 @@ dd if=/dev/zero of=big_file count=10 bs=1G
 time cp big_file  big_file_bak
 ```
 
-
-
-## 5 USB存储设备读写性能
+## 7 USB存储设备读写性能
 
 >测试USB存储设备读写性能（Mb/s），平均读写速度等
 
@@ -311,20 +409,16 @@ dd if=./largefile of=/dev/null bs=64k
 
 
 
-## 6 硬盘读写测试-IOZONE/
+## 8 硬盘读写测试-IOZONE
 
-安装步骤：
+1、准备源码：
 
 ```shell
 # 下载源码包
 wget http://www.iozone.org/src/current/iozone3_487.tar
-# 解压
-tar -vxf iozone3_487.tar && cd iozone3_489/src/current
-# 编译
-make linux
 ```
 
-参数说明：
+2、参数说明：
 
 ```shell
 iozone
@@ -358,9 +452,35 @@ iozone
     -b 指定输出到指定文件上. 比如 -Rb ttt.xls
 ```
 
-> 1、测试硬盘读写性能（Mb/s），包括随机和顺序读写平均读写速度（IOzone设置块大小16M，文件大小为物理内存2倍、1倍、1/2倍三组数据）
+3、执行：df -h，查看可用空间需大于2倍内存大小的路径。
 
-测试步骤
+4、优化操作
+
+```shell
+HDD优化：
+echo deadline > /sys/block/sdb/queue/scheduler 
+echo 65536 > /sys/block/sdb/queue/nr_requests
+echo 65536 > /sys/block/sdb/queue/read_ahead_kb
+echo 1 > /proc/sys/vm/drop_caches 
+echo 40 > /proc/sys/vm/dirty_background_ratio
+echo 80 > /proc/sys/vm/dirty_ratio 
+将磁盘格式化为 xfs 格式
+mkfs.xfs -f -d agcount=256 -l size=128m,lazy-count=1,version=2 /dev/sdb（按实际盘符）
+```
+
+5、编译
+
+```shell
+cd iozone3_482/src/current 
+make linux-arm
+./iozone -i 0 -i 1 -i 2 -s Xg -r 16m -f /date/tmpfile
+注：iozone 在测试过程中测试规模要大于或等于物理内存的两倍，且保证测试硬盘 
+空闲空间大于测试规模，如果测试规模偏小导致内存压力不够大会使分数不准确。X为内存大小的1/2倍、1倍、2倍，-f指定测试文件，测试完自动删除。
+```
+
+6、测试
+
+> 1、测试硬盘读写性能（Mb/s），包括随机和顺序读写平均读写速度（IOzone设置块大小16M，文件大小为物理内存2倍、1倍、1/2倍三组数据）
 
 ```shell
 # 需要root权限
@@ -373,11 +493,45 @@ sudo su
 ./iozone -i 0 -i 1 -i 2 -s 4g -r 16m -f /iozone.tmpfile -Rb ./report/iotest_4G_0.xls
 ```
 
->2、测试数据盘（裸设备）的在块大小为512B、1MB下的读写性能（包括IOPS、带宽和响应时间）
+## 9 硬盘测试-FIO
 
+1、配置优化
 
+```shell
+# 1、组raid，使用3块硬盘组成raid5，划分分区，不做文件系统，不挂载，并设置如下：
+write policy：alway write back
+BGI：yes
+I/O：cache
 
-## 7 内存读写性能测试-Stream
+# 2、修改磁盘策略
+echo mq-deadline > /sys/block/sdb/queue/scheduler
+
+# 3、关闭IO merge
+echo 2 > /sys/block/sdb/queue/nomerges
+```
+
+2、安装编译
+
+```shell
+cd /opt/fio-3.2
+./configure
+make 
+make install
+```
+
+3、开始测试
+
+```shell
+# 顺序读性能测试
+fio -filename=/dev/XXXX -ioengine=psync -time_based=1 -rw=read -direct=1 -buffered＝0 -thread -size=110g -bs=XXK -numjobs=16 -iodepth=1 -runtime=300 -lockmem=1G -group_reporting -name=“cepreiTest-IOread”
+
+# 顺序写性能测试
+fio -filename=/dev/XXXX -ioengine=psync -time_based=1 -rw=write -direct=1 -buffered＝0 -thread -size=110g -bs=XXK -numjobs=16 -iodepth=1 -runtime=300 -lockmem=1G -group_reporting -name=“cepreiTest-IOwrite”
+
+# 测试时，-filename后指定硬盘裸读写的分区，不可使用系统盘，会使系统崩溃；-bs指定块大小，分别指定512B、1M，各测试3次；部分硬盘不支持512B,改用4K，报告中注明
+```
+
+## 10 内存读写性能测试-Stream
 
 >STREAM是一套综合性能测试程序集，通过fortran和C两种高级且高效的语言编写完成，由于这两种语言在数学计算方面的高效率， 使得 STREAM 测试例程可以充分发挥出内存的能力。Stream测试是内存测试中业界公认的内存带宽性能测试基准工具。
 >
@@ -398,20 +552,86 @@ gcc -O3 stream.c -o stream
 gcc -O3 -fopenmp stream.c -o stream_omp
 ```
 
-测试
+2、系统优化
 
 ```shell
-export OMP_NUM_THREADS=48/32/16/8/4  # 设置每个进程的线程数
-./stream_omp 
+# 1、修改操作系统/boot/efi/EFI/kylin/grub.cfg
+sed -i ‘s/video=VGA-1:640x480-32@60me/& mitigations=off /’ /boot/efi/EFI/kylin/grub.cfg
+sed -i ‘s/video=VGA-1:640x480-32@60me/& selinux=0 audit=0 /’ /boot/efi/EFI/kylin/grub.cfg    
+
+# 2、配置透明页
+echo always > /sys/kernel/mm/transparent_hugepage/enabled
+
+# 3、操作系统打开性能模式，关闭服务
+tuned-adm profile throughput-performance
+for srv in firewalld auditd irqbalance tuned; do for act in stop disable; do systemctl $act ${srv}.service
+输入done
+输入done
+
+# 4 、关闭SELINUX
+sed -i ‘/^SELINUX=/s/=.*$/=disabled/g’ /etc/selinux/config 
 ```
 
-如在intel平台，建议用ICC编译
+3、单线程测试
 
 ```shell
-icc -mtune=native -march=native -O3 -mcmodel=large -fopenmp -DSTREAM_ARRAY_SIZE=100000000 -DNTIMES=30 -DOFFSET=512 stream.c -o stream-gs
+cd /opt/stream
+vim stream.c或者双击打开stream.c
+修改define N 80000000
+
+gcc -O3 -mtune=native -march=native -mcmodel=large -DNTIME=50 stream.c -o stream
+echo never > /sys/kernel/mm/transparent_hugepage/enabled
+echo never > /sys/kernel/mm/transparent_hugepage/defrag
+nice -n -20 ./stream（多执行几次，数值会越好，取最大值）
 ```
 
-## 10 操作系统综合性能测试-unixbench（用时1小时）
+4、多线程测试（双路128核CPU）
+
+```shell
+cd /opt/stream
+vim stream.c或者双击打开stream.c
+修改define N 800000000（按照256内存计算）
+
+gcc -O3 -fopenmp -mtune=native -march=native -mcmodel=large -DNTIME=50 stream.c -o stream
+
+# 绑核
+export OMP_NUM_THREADS=128
+export GOMP_CPU_AFFINITY=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126
+echo never > /sys/kernel/mm/transparent_hugepage/enabled
+echo never > /sys/kernel/mm/transparent_hugepage/defrag
+nice -n -20 ./stream（多执行几次，数值会越好，取最大值）
+```
+
+## 11 操作系统综合性能测试-unixbench（用时1小时）
+
+系统优化：
+
+```shell
+# 分别率修改：修改操作系统/boot/efi/EFI/kylin/grub.cfg
+sed -i ‘s/video=VGA-1:640x480-32@60me/& mitigations=off /’ /boot/efi/EFI/kylin/grub.cfg
+sed -i ‘s/video=VGA-1:640x480-32@60me/& selinux=0 audit=0 /’ /boot/efi/EFI/kylin/grub.cfg    
+
+# 配置透明页
+echo always > /sys/kernel/mm/transparent_hugepage/enabled
+
+# 操作系统打开性能模式，关闭服务
+tuned-adm profile throughput-performance
+
+# 关闭服务
+for srv in firewalld auditd irqbalance tuned; do for act in stop disable; do systemctl $act ${srv}.service
+> done
+> done
+Removed /etc/systemd/system/multi-user.target.wants/firewalld.service.
+Removed /etc/systemd/system/dbus-org.fedoraproject.FirewallD1.service.
+Removed /etc/systemd/system/multi-user.target.wants/auditd.service.
+Removed /etc/systemd/system/multi-user.target.wants/irqbalance.service.
+Removed /etc/systemd/system/multi-user.target.wants/tuned.service.
+
+# 关闭selinux 
+sed -i '/^SELINUX=/s/=.*$/=disabled/g' /etc/selinux/config
+```
+
+开始测试：
 
 ```shell
 # 解压UnixBench工具包：
@@ -431,9 +651,7 @@ sudo ./Run -c 1 -c N
 // 其中N代表cpu核数
 ```
 
-
-
-## 11 显卡性能测试-unixbench（用时约半小时）
+## 12 显卡性能测试-unixbench（用时约半小时）
 
 >1、测试2D显示处理性能，主要包括画点、画线、画三角形、画平行四边形、画正方形、画多边形等性能测试
 >
@@ -484,7 +702,7 @@ sudo cp 10-vsync.conf  ~/.drirc
 vblank_mode=0 ./Run ubgears
 ```
 
-## 12 显卡测试-Glmark2
+## 13 显卡测试-Glmark2
 
 安装
 
@@ -500,7 +718,7 @@ sudo ./waf install
 glmark2
 ```
 
-## 13 显卡测试-Glxgears
+## 14 显卡测试-Glxgears
 
 安装
 
@@ -515,7 +733,7 @@ sudo apt-get install mesa-utils
 glxgears
 ```
 
-## 14 网络性能测试-iperf3
+## 15 网络性能测试-iperf3
 
 >测试网络传输速率、重传等
 
@@ -553,7 +771,59 @@ iperf3 -c 10.47.74.25 -i 5 -t 30
 # 3、如服务端拒绝连接请求，需考虑firewall或者selinux
 ```
 
-## 15 CPU、内存压测-stress
+
+
+## 16 网络性能Netperf
+
+1、安装编译
+
+```shell
+cd netperf-2.7.0/ 
+./configure --build=arm 
+make&&make install
+```
+
+2、优化操作
+
+```shell
+客户端与服务端相同优化方法
+# 注释配置参数
+vim /usr/lib/sysctl.d/kylin.conf 注释掉 kylin.conf 中所有参数 
+# 关闭 swap 交换分区和自动化 NUMA 平衡 
+vim /etc/sysctl.conf 
+# 增加 vm.swappiness=0 
+Kernel.numa_balancing=0 
+sysctl -p 
+reboot 重启操作系统
+# 设置高性能 
+tuned-adm profile throughput-performance 
+# 关闭服务 
+systemctl stop firewalld.service 
+systemctl stop auditd.service 
+systemctl stop irqbalance.service 
+systemctl stop tuned.service 
+# 清理缓存 
+echo 3 > /proc/sys/vm/drop_caches 
+# 设置 MTU 
+ifconfig 网口名称 mtu 9000 
+```
+
+3、开始测试
+
+```shell
+服务端和客户端关闭防火墙systemctl stop firewalld.service
+服务端运行 
+cd src/ 
+./nerserver 
+客户端运行 
+cd src/ 
+./netperf -H serverip -l 60 -t TCP_STREAM 
+./netperf -H serverip -l 60 -t UDP_STREAM 
+./netperf -H serverip -l 120 -t TCP_RR 
+./netperf -H serverip -l 120 -t UDP_RR
+```
+
+## 17 CPU、内存压测-stress
 
 >stress是一款压力测试工具，可以用它来对系统CPU，内存，以及磁盘IO生成负载。
 
@@ -610,7 +880,7 @@ stress -i 2 -d 4
 
 同时对多个指标进行压力测试，只需要把上面的参数组合起来就行
 
-## 16 NPB测试
+## 18 NPB测试
 
 NAS并行基准测试程序（NPB），是由美国航空航天局开发的一套代表流体动力学计算的应用程序集，它已经成为公认的用于测评大规模并行机和超级计算机的标准测试程序。NPB可用于常用的编程模型，如MPI和OpenMP。
 
@@ -631,7 +901,7 @@ cd bin
 mpirun -np 4 ./xxx
 ```
 
-## 17 Linpack测试
+## 19 Linpack测试
 
 > Linpack是国际上使用最广泛的测试高性能计算机系统浮点性能的基准测试。通过对高性能计算机采用高斯消元法求解一元 N次稠密线性代数方程组的测试，评价高性能计算机的浮点计算性能。Linpack的结果按每秒浮点运算次数（flops）表示。
 >
@@ -1042,7 +1312,7 @@ bios设置
 可以考虑更换下一批
 ```
 
-## 18 风冷系统linpack测试全过程记录
+## 20 风冷系统linpack测试全过程记录
 
 >##### 1、了解风冷系统的架构
 >
@@ -1109,9 +1379,9 @@ bios设置
 >```
 >
 
-## 19、附录
+## 21 附录
 
-### 8.1 Linpack脚本
+### 19.1 Linpack脚本
 
 > runpro.sh
 >
@@ -1936,7 +2206,7 @@ esac
 esac
 ```
 
-### 8.2 编译问题
+### 19.2 编译问题
 
 ```shell
 -lc 
@@ -1954,5 +2224,3 @@ esac
 #include <sys/sysmacros.h>
 	implicit declaration of function ‘major’
 ```
-
-# 
