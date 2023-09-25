@@ -1,0 +1,902 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="GongSheng">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="“Day64 Django ORM 操作数据库 进阶用法 学习笔记”">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Day64-DjangoORM进阶-01">
+<meta property="og:url" content="http://gsproj.github.io/2022/09/15/03_Python/05_Django/day64%E7%AC%94%E8%AE%B0-DjangoORM%E8%BF%9B%E9%98%B6-01/index.html">
+<meta property="og:site_name" content="迎风之豚的博客">
+<meta property="og:description" content="“Day64 Django ORM 操作数据库 进阶用法 学习笔记”">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-09-15T06:50:22.000Z">
+<meta property="article:modified_time" content="2023-09-25T02:20:28.910Z">
+<meta property="article:author" content="GongSheng">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>Day64-DjangoORM进阶-01 - 迎风之豚的博客</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>&#34;迎风之豚的博客&#34;</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Day64-DjangoORM进阶-01"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-09-15 14:50" pubdate>
+          2022年9月15日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          19k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          157 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Day64-DjangoORM进阶-01</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>“Day64 Django ORM 操作数据库 进阶用法 学习笔记”</p>
+<h1 id="今日内容概要-重要"><a href="#今日内容概要-重要" class="headerlink" title="今日内容概要(重要)"></a>今日内容概要(重要)</h1><p>模型层(ORM语法):跟数据库打交道的</p>
+<ul>
+<li>单表查询(增删改查)</li>
+<li>常见的十几种查询方法</li>
+<li>神奇的双下划线查询</li>
+<li>多表操作</li>
+<li>外键字段的增删改查</li>
+<li>跨表查询(重点)<ul>
+<li>子查询</li>
+<li>联表查询</li>
+</ul>
+</li>
+<li>聚合查询</li>
+<li>分组查询</li>
+<li>F与Q查询</li>
+</ul>
+<h1 id="一、环境准备"><a href="#一、环境准备" class="headerlink" title="一、环境准备"></a>一、环境准备</h1><p>准备实验环境</p>
+<h2 id="1-1-基础准备"><a href="#1-1-基础准备" class="headerlink" title="1.1 基础准备"></a>1.1 基础准备</h2><p>1、创建数据库<code>day64</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs mysql"># 修改root密码:<br>mysql&gt; use mysql;<br>Database changed<br>mysql&gt; alter user &#x27;root&#x27;@&#x27;localhost&#x27; identified by &#x27;123123&#x27;;<br>Query OK, 0 rows affected (0.01 sec)<br><br># 创建数据库<br>mysql&gt; create database day64;<br>Query OK, 1 row affected (0.00 sec)<br><br>mysql&gt; show databases;<br>+--------------------+<br>| Database           |<br>+--------------------+<br>| day61              |<br>| day64              |<br>| information_schema |<br>| mysql              |<br>| performance_schema |<br>| sys                |<br>| test               |<br>+--------------------+<br>7 rows in set (0.00 sec)<br></code></pre></td></tr></table></figure>
+
+<p>2、创建Django项目</p>
+<p>3、设置<code>setting.py</code>，连接Mysql的参数</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs python">DATABASES = &#123;<br>    <span class="hljs-string">&#x27;default&#x27;</span>: &#123;<br>        <span class="hljs-string">&#x27;ENGINE&#x27;</span>: <span class="hljs-string">&#x27;django.db.backends.mysql&#x27;</span>,<br>        <span class="hljs-string">&#x27;NAME&#x27;</span>: <span class="hljs-string">&#x27;day64&#x27;</span>,<br>        <span class="hljs-string">&#x27;USER&#x27;</span>: <span class="hljs-string">&#x27;root&#x27;</span>,<br>        <span class="hljs-string">&#x27;PASSWORD&#x27;</span>: <span class="hljs-string">&#x27;123123&#x27;</span>,<br>        <span class="hljs-string">&#x27;HOST&#x27;</span>: <span class="hljs-string">&#x27;127.0.0.1&#x27;</span>,<br>        <span class="hljs-string">&#x27;PORT&#x27;</span>: <span class="hljs-number">3306</span>,<br>        <span class="hljs-string">&#x27;CHARSET&#x27;</span>: <span class="hljs-string">&#x27;utf8&#x27;</span>,<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>4、设置<code>__init__.py</code>文件，导入pymysql</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> pymysql<br>pymysql.install_as_MySQLdb()<br></code></pre></td></tr></table></figure>
+
+<p>5、创建app01应用，并在<code>settings.py</code>中注册应用</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs shell">python manage.py startapp app01<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> setting.py</span><br>INSTALLED_APPS = [<br>    &#x27;django.contrib.admin&#x27;,<br>    &#x27;django.contrib.auth&#x27;,<br>    &#x27;django.contrib.contenttypes&#x27;,<br>    &#x27;django.contrib.sessions&#x27;,<br>    &#x27;django.contrib.messages&#x27;,<br>    &#x27;django.contrib.staticfiles&#x27;,<br>    &#x27;app01&#x27;<br>]<br><br></code></pre></td></tr></table></figure>
+
+<p>6、编辑<code>app01</code>中的<code>models.py</code>，创建ORM模型</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> django.db <span class="hljs-keyword">import</span> models<br><br><br><span class="hljs-comment"># Create your models here.</span><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">User</span>(<span class="hljs-params">models.Model</span>):</span><br>    name = models.CharField(max_length=<span class="hljs-number">32</span>)<br>    age = models.IntegerField()<br>    register_time = models.DateField()<br><br><br><span class="hljs-string">&#x27;&#x27;&#x27;</span><br><span class="hljs-string">    DateFiled</span><br><span class="hljs-string">    DateTimeFiled</span><br><span class="hljs-string">        两个重要参数</span><br><span class="hljs-string">        auto_now : 每次操作数据的时候，该字段会自动将时间更新</span><br><span class="hljs-string">        auto_now_add: 在创建数据的时候会自动将当前创建时间记录下来，只要不人为的改变，就一直不变</span><br><span class="hljs-string">&#x27;&#x27;&#x27;</span><br></code></pre></td></tr></table></figure>
+
+<p>7、执行创建表操作</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 本地记录</span><br>python manage.py makemigrations<br><span class="hljs-meta">#</span><span class="bash"> 同步到数据库</span><br>python manage.py migrate<br></code></pre></td></tr></table></figure>
+
+<h2 id="1-2-测试脚本"><a href="#1-2-测试脚本" class="headerlink" title="1.2 测试脚本"></a>1.2 测试脚本</h2><blockquote>
+<p>🌟 当你只是想测试django中的某一个py文件内容，那么你可以不用书写前后端交互的形式而是直接写一个测试脚本即可，脚本代码无论是写在应用下的tests.py还是自己单独开设py文件都可以</p>
+</blockquote>
+<p>编辑<code>test.py</code>文件</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> django.test <span class="hljs-keyword">import</span> TestCase<br><br><span class="hljs-comment"># Create your tests here.</span><br><br><span class="hljs-keyword">import</span> os<br><span class="hljs-keyword">import</span> sys<br><br><br><span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">&#x27;__main__&#x27;</span>:<br>    os.environ.setdefault(<span class="hljs-string">&quot;DJANGO_SETTINGS_MODULE&quot;</span>, <span class="hljs-string">&#x27;day64_ORM进阶.settings&#x27;</span>)<br>    <span class="hljs-keyword">import</span> django<br>    django.setup()<br>    <span class="hljs-comment"># 在这个代码块的下面就可以测试django里面的单个py文件了</span><br>    <span class="hljs-comment"># 所有的代码必须等环境准备完毕之后才能书写</span><br><br>    <span class="hljs-keyword">from</span> app01 <span class="hljs-keyword">import</span> models<br>    models.User.objects.<span class="hljs-built_in">all</span>()<br></code></pre></td></tr></table></figure>
+
+
+
+<h1 id="二、单表操作"><a href="#二、单表操作" class="headerlink" title="二、单表操作"></a>二、单表操作</h1><p>单表的ORM操作</p>
+<p>PS: 案例中的代码都是写在<code>test.py</code>中执行</p>
+<h2 id="2-1-增删改查"><a href="#2-1-增删改查" class="headerlink" title="2.1 增删改查"></a>2.1 增删改查</h2><h3 id="2-1-1-增"><a href="#2-1-1-增" class="headerlink" title="2.1.1 增"></a>2.1.1 增</h3><p>增有两种方式</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 方式一</span><br>res = models.User.objects.create(name=<span class="hljs-string">&#x27;jason&#x27;</span>, age=<span class="hljs-number">18</span>, register_time=<span class="hljs-string">&#x27;2022-09-27&#x27;</span>)<br><span class="hljs-built_in">print</span>(res)<br><br><span class="hljs-comment"># 方式二</span><br><span class="hljs-keyword">import</span> datetime<br>ctime = datetime.datetime.now()<br>user_obj = models.User(name=<span class="hljs-string">&#x27;tank&#x27;</span>, age=<span class="hljs-number">38</span>, register_time=ctime)<br>user_obj.save()<br></code></pre></td></tr></table></figure>
+
+<p>查看结果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs mysql">mysql&gt; select * from app01_user;<br>+----+-------+-----+---------------+<br>| id | name  | age | register_time |<br>+----+-------+-----+---------------+<br>|  1 | jason |  18 | 2022-09-27    |<br>|  2 | tank  |  38 | 2022-09-27    |<br>+----+-------+-----+---------------+<br>2 rows in set (0.00 sec)<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-1-2-删"><a href="#2-1-2-删" class="headerlink" title="2.1.2 删"></a>2.1.2 删</h3><p>删除也有两种方式，通过主键删除数据</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 方式一</span><br>res = models.User.objects.<span class="hljs-built_in">filter</span>(pk=<span class="hljs-number">1</span>).delete()<br><span class="hljs-built_in">print</span>(res)<br><br><span class="hljs-comment"># 方式二</span><br>user_obj = models.User.objects.<span class="hljs-built_in">filter</span>(pk=<span class="hljs-number">2</span>).first()<br>user_obj.delete()<br></code></pre></td></tr></table></figure>
+
+<p>为什么用<code>pk</code>?</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">pk会自动查找到当前表的主键字段 指代的就是当前表的主键字段</span><br><span class="hljs-string">用了pk之后 你就不需要指代当前表的主键字段到底叫什么了</span><br><span class="hljs-string">    uid</span><br><span class="hljs-string">    pid</span><br><span class="hljs-string">    sid</span><br><span class="hljs-string">    ...</span><br><span class="hljs-string">&quot;&quot;&quot;</span><br></code></pre></td></tr></table></figure>
+<h3 id="2-1-3-改"><a href="#2-1-3-改" class="headerlink" title="2.1.3 改"></a>2.1.3 改</h3><p>原表信息</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs python">mysql&gt; select * <span class="hljs-keyword">from</span> app01_user;<br>+----+-------+-----+---------------+<br>| <span class="hljs-built_in">id</span> | name  | age | register_time |<br>+----+-------+-----+---------------+<br>|  <span class="hljs-number">5</span> | jason |  <span class="hljs-number">18</span> | <span class="hljs-number">2022</span>-09-<span class="hljs-number">27</span>    |<br>|  <span class="hljs-number">6</span> | tank  |  <span class="hljs-number">38</span> | <span class="hljs-number">2022</span>-09-<span class="hljs-number">27</span>    |<br>+----+-------+-----+---------------+<br><span class="hljs-number">2</span> rows <span class="hljs-keyword">in</span> <span class="hljs-built_in">set</span> (<span class="hljs-number">0.00</span> sec)<br></code></pre></td></tr></table></figure>
+
+<p>ORM修改数据表的三种方法：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 方式一</span><br>res = models.User.objects.<span class="hljs-built_in">filter</span>(pk=<span class="hljs-number">5</span>).update(name=<span class="hljs-string">&#x27;laosb&#x27;</span>)<br><br><span class="hljs-comment"># 方式二</span><br>user_obj = models.User.objects.get(pk=<span class="hljs-number">6</span>)<br>user_obj.name = <span class="hljs-string">&#x27;马有铁&#x27;</span><br>user_obj.save()<br><br><span class="hljs-comment"># 方式三</span><br>user_obj2 = models.User.objects.<span class="hljs-built_in">filter</span>(pk=<span class="hljs-number">5</span>).first()<br>user_obj2.age = <span class="hljs-number">898</span><br>user_obj2.save()<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p>PS:  <code>get</code>和<code>filter</code>的区别</p>
+<p>get方法：</p>
+<p>​	返回的直接就是当前数据对象</p>
+<pre><code class="hljs">但是该方法不推荐使用
+</code></pre>
+<p>​    一旦数据不存在该方法会直接报错</p>
+<p>而filter则不会</p>
+<p>​    所以我们还是用filter</p>
+</blockquote>
+<p>查看结果</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs mysql">mysql&gt; select * from app01_user;<br>+----+--------+-----+---------------+<br>| id | name   | age | register_time |<br>+----+--------+-----+---------------+<br>|  5 | laosb  | 898 | 2022-09-27    |<br>|  6 | 马有铁 |  38 | 2022-09-27    |<br>+----+--------+-----+---------------+<br>2 rows in set (0.00 sec)<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-1-4-查"><a href="#2-1-4-查" class="headerlink" title="2.1.4 查"></a>2.1.4 查</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 拿到所有数据</span><br>res = models.User.objects.<span class="hljs-built_in">all</span>()<br><br><span class="hljs-comment"># 遍历查询</span><br><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> res:<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;id: &quot;</span>, i.<span class="hljs-built_in">id</span>, <span class="hljs-string">&quot;name:&quot;</span>, i.name, <span class="hljs-string">&quot;age:&quot;</span>, i.age, <span class="hljs-string">&quot;register_time: &quot;</span>, i.register_time)<br></code></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">id:  5 name: laosb age: 898 register_time:  2022-09-27<br>id:  6 name: 马有铁 age: 38 register_time:  2022-09-27<br></code></pre></td></tr></table></figure>
+
+<h2 id="2-2-必知必会13条"><a href="#2-2-必知必会13条" class="headerlink" title="2.2 必知必会13条"></a>2.2 必知必会13条</h2><h3 id="2-2-1-查询所有数据"><a href="#2-2-1-查询所有数据" class="headerlink" title="2.2.1 查询所有数据"></a>2.2.1 查询所有数据</h3><p><code>all()</code>方法：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs python">models.User.objects.<span class="hljs-built_in">all</span>()<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-2-2带有过滤条件的查询"><a href="#2-2-2带有过滤条件的查询" class="headerlink" title="2.2.2带有过滤条件的查询"></a>2.2.2带有过滤条件的查询</h3><p><code>filter()</code>方法</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 查询姓名是“马有铁”的数据, 默认是集合序列，需要加first()取出来第一个</span><br>res2 = models.User.objects.<span class="hljs-built_in">filter</span>(name=<span class="hljs-string">&quot;马有铁&quot;</span>).first()<br><span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;id: &quot;</span>, res2.<span class="hljs-built_in">id</span>, <span class="hljs-string">&quot;name:&quot;</span>, res2.name, <span class="hljs-string">&quot;age:&quot;</span>, res2.age, <span class="hljs-string">&quot;register_time: &quot;</span>, res2.register_time)<br></code></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-built_in">id</span>:  <span class="hljs-number">6</span> name: 马有铁 age: <span class="hljs-number">38</span> register_time:  <span class="hljs-number">2022</span>-09-<span class="hljs-number">27</span><br></code></pre></td></tr></table></figure>
+
+<h4 id="2-2-2-1-双下划线查询"><a href="#2-2-2-1-双下划线查询" class="headerlink" title="2.2.2.1 双下划线查询"></a>2.2.2.1 双下划线查询</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 1 年龄大于35岁的数据</span><br><span class="hljs-comment"># res = models.User.objects.filter(age__gt=35)</span><br><span class="hljs-comment"># print(res)</span><br><span class="hljs-comment"># 2 年龄小于35岁的数据</span><br><span class="hljs-comment"># res = models.User.objects.filter(age__lt=35)</span><br><span class="hljs-comment"># print(res)</span><br><span class="hljs-comment"># 大于等于 小于等于</span><br><span class="hljs-comment"># res = models.User.objects.filter(age__gte=32)</span><br><span class="hljs-comment"># print(res)</span><br><span class="hljs-comment"># res = models.User.objects.filter(age__lte=32)</span><br><span class="hljs-comment"># print(res)</span><br><br><span class="hljs-comment"># 年龄是18 或者 32 或者40</span><br><span class="hljs-comment"># res = models.User.objects.filter(age__in=[18,32,40])</span><br><span class="hljs-comment"># print(res)</span><br><br><span class="hljs-comment"># 年龄在18到40岁之间的  首尾都要</span><br><span class="hljs-comment"># res = models.User.objects.filter(age__range=[18,40])</span><br><span class="hljs-comment"># print(res)</span><br><br><span class="hljs-comment"># 查询出名字里面含有s的数据  模糊查询</span><br><span class="hljs-comment"># res = models.User.objects.filter(name__contains=&#x27;s&#x27;)</span><br><span class="hljs-comment"># print(res)</span><br><span class="hljs-comment">#</span><br><span class="hljs-comment"># 是否区分大小写  查询出名字里面含有p的数据  区分大小写</span><br><span class="hljs-comment"># res = models.User.objects.filter(name__contains=&#x27;p&#x27;)</span><br><span class="hljs-comment"># print(res)</span><br><span class="hljs-comment"># 忽略大小写</span><br><span class="hljs-comment"># res = models.User.objects.filter(name__icontains=&#x27;p&#x27;)</span><br><span class="hljs-comment"># print(res)</span><br><br><span class="hljs-comment"># res = models.User.objects.filter(name__startswith=&#x27;j&#x27;)</span><br><span class="hljs-comment"># res1 = models.User.objects.filter(name__endswith=&#x27;j&#x27;)</span><br><span class="hljs-comment">#</span><br><span class="hljs-comment"># print(res,res1)</span><br><br><span class="hljs-comment"># 查询出注册时间是 2020 1月</span><br><span class="hljs-comment"># res = models.User.objects.filter(register_time__month=&#x27;1&#x27;)</span><br><span class="hljs-comment"># res = models.User.objects.filter(register_time__year=&#x27;2020&#x27;)</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="2-2-3-直接拿数据对象"><a href="#2-2-3-直接拿数据对象" class="headerlink" title="2.2.3 直接拿数据对象"></a>2.2.3 直接拿数据对象</h3><p><code>get()</code>方法</p>
+<p>使用此方法，当条件不存在时，将直接报错</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 拿到名称是“马有铁”的数据对象</span><br>myt_obj = models.User.objects.<span class="hljs-built_in">filter</span>(name=<span class="hljs-string">&quot;马有铁&quot;</span>).get()<br><span class="hljs-comment"># 输出对象值</span><br><span class="hljs-built_in">print</span>(myt_obj.name)<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-2-4-拿第一个-x2F-最后一个元素"><a href="#2-2-4-拿第一个-x2F-最后一个元素" class="headerlink" title="2.2.4 拿第一个&#x2F;最后一个元素"></a>2.2.4 拿第一个&#x2F;最后一个元素</h3><p>新增一条数据</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs python">res = models.User.objects.create(name=<span class="hljs-string">&quot;张三&quot;</span>, age=<span class="hljs-number">12</span>, register_time=datetime.datetime.now())<br></code></pre></td></tr></table></figure>
+
+<p><code>first()</code>方法拿第一个元素</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs python">res3 = models.User.objects.first()<br><span class="hljs-built_in">print</span>(res3.<span class="hljs-built_in">id</span>, res3.name)<br><br><span class="hljs-comment"># 输出</span><br><span class="hljs-number">5</span> laosb<br></code></pre></td></tr></table></figure>
+
+<p><code>last()</code>方法拿最有一个元素</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs python">res3 = models.User.objects.last()<br><span class="hljs-built_in">print</span>(res3.<span class="hljs-built_in">id</span>, res3.name)<br><br><span class="hljs-comment"># 输出</span><br><span class="hljs-number">7</span> 张三<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-2-5-获取指定的数据字段"><a href="#2-2-5-获取指定的数据字段" class="headerlink" title="2.2.5 获取指定的数据字段"></a>2.2.5 获取指定的数据字段</h3><p><code>values()</code>获取name和age字段，<strong>列表套字典</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs python">res4 = models.User.objects.values(<span class="hljs-string">&#x27;name&#x27;</span>, <span class="hljs-string">&#x27;age&#x27;</span>)<br><span class="hljs-built_in">print</span>(res4)<br><br><span class="hljs-comment"># 输出</span><br>&lt;QuerySet [&#123;<span class="hljs-string">&#x27;name&#x27;</span>: <span class="hljs-string">&#x27;laosb&#x27;</span>, <span class="hljs-string">&#x27;age&#x27;</span>: <span class="hljs-number">898</span>&#125;, &#123;<span class="hljs-string">&#x27;name&#x27;</span>: <span class="hljs-string">&#x27;马有铁&#x27;</span>, <span class="hljs-string">&#x27;age&#x27;</span>: <span class="hljs-number">38</span>&#125;, &#123;<span class="hljs-string">&#x27;name&#x27;</span>: <span class="hljs-string">&#x27;张三&#x27;</span>, <span class="hljs-string">&#x27;age&#x27;</span>: <span class="hljs-number">12</span>&#125;]&gt;<br></code></pre></td></tr></table></figure>
+
+<p><code>values_list()</code>获取name和age字段，<strong>列表套元组</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs python">res5 = models.User.objects.values_list(<span class="hljs-string">&#x27;name&#x27;</span>, <span class="hljs-string">&#x27;age&#x27;</span>)<br><span class="hljs-built_in">print</span>(res5)<br><br><span class="hljs-comment"># 输出</span><br>&lt;QuerySet [(<span class="hljs-string">&#x27;laosb&#x27;</span>, <span class="hljs-number">898</span>), (<span class="hljs-string">&#x27;马有铁&#x27;</span>, <span class="hljs-number">38</span>), (<span class="hljs-string">&#x27;张三&#x27;</span>, <span class="hljs-number">12</span>)]&gt;<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-2-6-去重"><a href="#2-2-6-去重" class="headerlink" title="2.2.6 去重"></a>2.2.6 去重</h3><p>当前数据如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs python">+----+--------+-----+---------------+<br>| <span class="hljs-built_in">id</span> | name   | age | register_time |<br>+----+--------+-----+---------------+<br>|  <span class="hljs-number">5</span> | laosb  | <span class="hljs-number">898</span> | <span class="hljs-number">2022</span>-09-<span class="hljs-number">27</span>    |<br>|  <span class="hljs-number">6</span> | 马有铁 |  <span class="hljs-number">38</span> | <span class="hljs-number">2022</span>-09-<span class="hljs-number">27</span>    |<br>|  <span class="hljs-number">7</span> | 张三   |  <span class="hljs-number">12</span> | <span class="hljs-number">2022</span>-09-<span class="hljs-number">27</span>    |<br>|  <span class="hljs-number">8</span> | 张三   |  <span class="hljs-number">12</span> | <span class="hljs-number">2022</span>-09-<span class="hljs-number">27</span>    |<br>+----+--------+-----+---------------+<br></code></pre></td></tr></table></figure>
+
+<p>没有去重之前查询</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs python">res5 = models.User.objects.values_list(<span class="hljs-string">&#x27;name&#x27;</span>, <span class="hljs-string">&#x27;age&#x27;</span>)<br><br><span class="hljs-comment"># 输出</span><br>&lt;QuerySet [(<span class="hljs-string">&#x27;laosb&#x27;</span>, <span class="hljs-number">898</span>), (<span class="hljs-string">&#x27;马有铁&#x27;</span>, <span class="hljs-number">38</span>), (<span class="hljs-string">&#x27;张三&#x27;</span>, <span class="hljs-number">12</span>), (<span class="hljs-string">&#x27;张三&#x27;</span>, <span class="hljs-number">12</span>)]&gt;<br></code></pre></td></tr></table></figure>
+
+<p>使用<code>distinct()</code>去重</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs python">res5 = models.User.objects.values_list(<span class="hljs-string">&#x27;name&#x27;</span>, <span class="hljs-string">&#x27;age&#x27;</span>).distinct()<br><span class="hljs-built_in">print</span>(res5)<br><br><span class="hljs-comment"># 输出</span><br>&lt;QuerySet [(<span class="hljs-string">&#x27;laosb&#x27;</span>, <span class="hljs-number">898</span>), (<span class="hljs-string">&#x27;马有铁&#x27;</span>, <span class="hljs-number">38</span>), (<span class="hljs-string">&#x27;张三&#x27;</span>, <span class="hljs-number">12</span>)]&gt;<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-2-7-排序"><a href="#2-2-7-排序" class="headerlink" title="2.2.7 排序"></a>2.2.7 排序</h3><p><code>order_by()</code>排序（升）</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs python">res6 = models.User.objects.order_by(<span class="hljs-string">&#x27;age&#x27;</span>)<br><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> res6:<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;id: &quot;</span>, i.<span class="hljs-built_in">id</span>, <span class="hljs-string">&quot;name:&quot;</span>, i.name, <span class="hljs-string">&quot;age:&quot;</span>, i.age, <span class="hljs-string">&quot;register_time: &quot;</span>, i.register_time)<br>    <br><span class="hljs-comment"># 输出</span><br><span class="hljs-built_in">id</span>:  <span class="hljs-number">7</span> name: 张三 age: <span class="hljs-number">12</span> register_time:  <span class="hljs-number">2022</span>-09-<span class="hljs-number">27</span><br><span class="hljs-built_in">id</span>:  <span class="hljs-number">8</span> name: 张三 age: <span class="hljs-number">12</span> register_time:  <span class="hljs-number">2022</span>-09-<span class="hljs-number">27</span><br><span class="hljs-built_in">id</span>:  <span class="hljs-number">6</span> name: 马有铁 age: <span class="hljs-number">38</span> register_time:  <span class="hljs-number">2022</span>-09-<span class="hljs-number">27</span><br><span class="hljs-built_in">id</span>:  <span class="hljs-number">5</span> name: laosb age: <span class="hljs-number">898</span> register_time:  <span class="hljs-number">2022</span>-09-<span class="hljs-number">27</span><br></code></pre></td></tr></table></figure>
+
+<p><code>order_by()</code>排序（降）</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs python">res6 = models.User.objects.order_by(<span class="hljs-string">&#x27;-age&#x27;</span>)<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-2-9-反转"><a href="#2-2-9-反转" class="headerlink" title="2.2.9 反转"></a>2.2.9 反转</h3><p><code>reverse()</code>反转的前提是数据已经排序过</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs python">res6 = models.User.objects.order_by(<span class="hljs-string">&#x27;age&#x27;</span>).reverse()<br><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> res6:<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;id: &quot;</span>, i.<span class="hljs-built_in">id</span>, <span class="hljs-string">&quot;name:&quot;</span>, i.name, <span class="hljs-string">&quot;age:&quot;</span>, i.age, <span class="hljs-string">&quot;register_time: &quot;</span>, i.register_time)<br>    <br><span class="hljs-comment"># 输出，升序已经反转成降序了</span><br><span class="hljs-built_in">id</span>:  <span class="hljs-number">5</span> name: laosb age: <span class="hljs-number">898</span> register_time:  <span class="hljs-number">2022</span>-09-<span class="hljs-number">27</span><br><span class="hljs-built_in">id</span>:  <span class="hljs-number">6</span> name: 马有铁 age: <span class="hljs-number">38</span> register_time:  <span class="hljs-number">2022</span>-09-<span class="hljs-number">27</span><br><span class="hljs-built_in">id</span>:  <span class="hljs-number">7</span> name: 张三 age: <span class="hljs-number">12</span> register_time:  <span class="hljs-number">2022</span>-09-<span class="hljs-number">27</span><br><span class="hljs-built_in">id</span>:  <span class="hljs-number">8</span> name: 张三 age: <span class="hljs-number">12</span> register_time:  <span class="hljs-number">2022</span>-09-<span class="hljs-number">27</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="2-2-10-统计当前数据的个数"><a href="#2-2-10-统计当前数据的个数" class="headerlink" title="2.2.10 统计当前数据的个数"></a>2.2.10 统计当前数据的个数</h3><p><code>count()</code>统计个数</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs python">res6 = models.User.objects.order_by(<span class="hljs-string">&#x27;age&#x27;</span>).reverse().count()<br><span class="hljs-built_in">print</span>(res6)<br><br><span class="hljs-comment"># 输出</span><br><span class="hljs-number">4</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="2-2-10-排除数据"><a href="#2-2-10-排除数据" class="headerlink" title="2.2.10 排除数据"></a>2.2.10 排除数据</h3><p><code>exclude()</code>将name&#x3D;’张三’的数据排除在外</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs python">res6 = models.User.objects.exclude(name=<span class="hljs-string">&#x27;张三&#x27;</span>).<span class="hljs-built_in">all</span>()<br><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> res6:<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;id: &quot;</span>, i.<span class="hljs-built_in">id</span>, <span class="hljs-string">&quot;name:&quot;</span>, i.name, <span class="hljs-string">&quot;age:&quot;</span>, i.age, <span class="hljs-string">&quot;register_time: &quot;</span>, i.register_time)<br></code></pre></td></tr></table></figure>
+
+<p>输出</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-built_in">id</span>:  <span class="hljs-number">5</span> name: laosb age: <span class="hljs-number">898</span> register_time:  <span class="hljs-number">2022</span>-09-<span class="hljs-number">27</span><br><span class="hljs-built_in">id</span>:  <span class="hljs-number">6</span> name: 马有铁 age: <span class="hljs-number">38</span> register_time:  <span class="hljs-number">2022</span>-09-<span class="hljs-number">27</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="2-2-10-查询数据是否存在"><a href="#2-2-10-查询数据是否存在" class="headerlink" title="2.2.10 查询数据是否存在"></a>2.2.10 查询数据是否存在</h3><p><code>exists()</code>查询数据是否存在</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs python">res6 = models.User.objects.<span class="hljs-built_in">filter</span>(pk=<span class="hljs-number">10</span>).exists()<br><span class="hljs-built_in">print</span>(res6)<br>res7 = models.User.objects.<span class="hljs-built_in">filter</span>(pk=<span class="hljs-number">6</span>).exists()<br><span class="hljs-built_in">print</span>(res6)<br><br><span class="hljs-comment"># 输出</span><br><span class="hljs-literal">False</span><br><span class="hljs-literal">True</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="2-3-查看内部sql语句的方式"><a href="#2-3-查看内部sql语句的方式" class="headerlink" title="2.3 查看内部sql语句的方式"></a>2.3 查看内部sql语句的方式</h2><h3 id="2-3-1-方式一"><a href="#2-3-1-方式一" class="headerlink" title="2.3.1 方式一"></a>2.3.1 方式一</h3><p>queryset对象能够点击query查看内部的sql语句</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs python">res6 = models.User.objects.values_list(<span class="hljs-string">&#x27;name&#x27;</span>, <span class="hljs-string">&#x27;age&#x27;</span>)<br><span class="hljs-built_in">print</span>(res6.query)<br><br><span class="hljs-comment"># 输出</span><br>SELECT `app01_user`.`name`, `app01_user`.`age` FROM `app01_user`<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-3-2-方式二"><a href="#2-3-2-方式二" class="headerlink" title="2.3.2 方式二"></a>2.3.2 方式二</h3><p>所有的sql语句都能查看，在<code>settings.py</code>中添加</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs python">LOGGING = &#123;<br>    <span class="hljs-string">&#x27;version&#x27;</span>: <span class="hljs-number">1</span>,<br>    <span class="hljs-string">&#x27;disable_existing_loggers&#x27;</span>: <span class="hljs-literal">False</span>,<br>    <span class="hljs-string">&#x27;handlers&#x27;</span>: &#123;<br>        <span class="hljs-string">&#x27;console&#x27;</span>:&#123;<br>            <span class="hljs-string">&#x27;level&#x27;</span>:<span class="hljs-string">&#x27;DEBUG&#x27;</span>,<br>            <span class="hljs-string">&#x27;class&#x27;</span>:<span class="hljs-string">&#x27;logging.StreamHandler&#x27;</span>,<br>        &#125;,<br>    &#125;,<br>    <span class="hljs-string">&#x27;loggers&#x27;</span>: &#123;<br>        <span class="hljs-string">&#x27;django.db.backends&#x27;</span>: &#123;<br>            <span class="hljs-string">&#x27;handlers&#x27;</span>: [<span class="hljs-string">&#x27;console&#x27;</span>],<br>            <span class="hljs-string">&#x27;propagate&#x27;</span>: <span class="hljs-literal">True</span>,<br>            <span class="hljs-string">&#x27;level&#x27;</span>:<span class="hljs-string">&#x27;DEBUG&#x27;</span>,<br>        &#125;,<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>尝试查询数据的输出</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs python">...<br>(<span class="hljs-number">0.000</span>) SELECT `app01_user`.`<span class="hljs-built_in">id</span>`, `app01_user`.`name`, `app01_user`.`age`, `app01_user`.`register_time` FROM `app01_user` ORDER BY `app01_user`.`<span class="hljs-built_in">id</span>` DESC LIMIT <span class="hljs-number">1</span>; args=()<br></code></pre></td></tr></table></figure>
+
+
+
+<h1 id="三、多表操作"><a href="#三、多表操作" class="headerlink" title="三、多表操作"></a>三、多表操作</h1><h2 id="3-1-前期准备"><a href="#3-1-前期准备" class="headerlink" title="3.1 前期准备"></a>3.1 前期准备</h2><p>编辑<code>models.py</code>创建ORM对象</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Book</span>(<span class="hljs-params">models.Model</span>):</span><br>    title = models.CharField(max_length=<span class="hljs-number">32</span>)<br>    price = models.DecimalField(max_digits=<span class="hljs-number">8</span>, decimal_places=<span class="hljs-number">2</span>)<br>    publish_date = models.DateField(auto_now=<span class="hljs-literal">True</span>)<br><br>    <span class="hljs-comment"># 添加表关系</span><br>    <span class="hljs-comment"># 一对多</span><br>    publish = models.ForeignKey(to=<span class="hljs-string">&#x27;Publish&#x27;</span>, on_delete=models.CASCADE)<br>    <span class="hljs-comment"># 多对多</span><br>    author = models.ManyToManyField(to=<span class="hljs-string">&#x27;Author&#x27;</span>)<br><br><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Publish</span>(<span class="hljs-params">models.Model</span>):</span><br>    name = models.CharField(max_length=<span class="hljs-number">32</span>)<br>    addr = models.CharField(max_length=<span class="hljs-number">64</span>)<br>    email = models.EmailField()  <span class="hljs-comment"># 默认是varchar(254)</span><br><br><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Author</span>(<span class="hljs-params">models.Model</span>):</span><br>    name = models.CharField(max_length=<span class="hljs-number">32</span>)<br>    age = models.IntegerField()<br><br>    <span class="hljs-comment"># 添加表关系：一对一</span><br>    author_detail = models.OneToOneField(to=<span class="hljs-string">&#x27;AuthorDetail&#x27;</span>, on_delete=models.CASCADE)<br><br><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">AuthorDetail</span>(<span class="hljs-params">models.Model</span>):</span><br>    phone = models.BigIntegerField()<br>    addr = models.CharField(max_length=<span class="hljs-number">64</span>)<br></code></pre></td></tr></table></figure>
+
+<p>同步到数据库</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs python">python manage.py makemigrations<br>python manage.py migrate<br></code></pre></td></tr></table></figure>
+
+<p>查看数据库，确定创建成功</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs mysql">mysql&gt; show tables;<br>+----------------------------+<br>| Tables_in_day64            |<br>+----------------------------+<br>| app01_author	# 作者表            <br>| app01_authordetail	# 作者信息     <br>| app01_book	# 书表                <br>| app01_book_author	# 书、作者（虚拟表）        <br>| app01_publish	# 出版社表              <br>...<br></code></pre></td></tr></table></figure>
+
+<h2 id="3-2-一对多外键增删改"><a href="#3-2-一对多外键增删改" class="headerlink" title="3.2 一对多外键增删改"></a>3.2 一对多外键增删改</h2><h3 id="3-2-1-增"><a href="#3-2-1-增" class="headerlink" title="3.2.1 增"></a>3.2.1 增</h3><p>准备出版社数据，案例：一个Publish对应多本Book</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs python">mysql&gt; select * <span class="hljs-keyword">from</span> app01_publish;<br>+----+----------------+--------------+-----------------+<br>| <span class="hljs-built_in">id</span> | name           | addr         | email           |<br>+----+----------------+--------------+-----------------+<br>|  <span class="hljs-number">1</span> | 朝阳群众出版社 | 北京市朝阳区 | <span class="hljs-number">123</span>@qq.com      |<br>|  <span class="hljs-number">2</span> | 不明所以出版社 | 湖南省长沙市 | <span class="hljs-number">456</span>@<span class="hljs-number">163.</span>com     |<br>|  <span class="hljs-number">3</span> | 一本正经出版社 | 广东省深圳市 | <span class="hljs-number">666</span>@hotmail.com |<br>|  <span class="hljs-number">4</span> | 没头脑出版社   | 银河系土星   | tx@<span class="hljs-number">666.</span>com      |<br>+----+----------------+--------------+-----------------+<br></code></pre></td></tr></table></figure>
+
+<p>增之前先修改<code>setting.py</code>取消外键检测</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs python">DATABASES = &#123;<br>    <span class="hljs-string">&#x27;default&#x27;</span>: &#123;<br>        <span class="hljs-string">&#x27;ENGINE&#x27;</span>: <span class="hljs-string">&#x27;django.db.backends.mysql&#x27;</span>,<br>        <span class="hljs-string">&#x27;NAME&#x27;</span>: <span class="hljs-string">&#x27;day64&#x27;</span>,<br>        <span class="hljs-string">&#x27;USER&#x27;</span>: <span class="hljs-string">&#x27;root&#x27;</span>,<br>        <span class="hljs-string">&#x27;PASSWORD&#x27;</span>: <span class="hljs-string">&#x27;123123&#x27;</span>,<br>        <span class="hljs-string">&#x27;HOST&#x27;</span>: <span class="hljs-string">&#x27;127.0.0.1&#x27;</span>,<br>        <span class="hljs-string">&#x27;PORT&#x27;</span>: <span class="hljs-number">3306</span>,<br>        <span class="hljs-string">&#x27;CHARSET&#x27;</span>: <span class="hljs-string">&#x27;utf8&#x27;</span>,<br>        <span class="hljs-comment"># 新增</span><br>        <span class="hljs-string">&#x27;OPTIONS&#x27;</span>: &#123;<br>            <span class="hljs-string">&quot;init_command&quot;</span> : <span class="hljs-string">&quot;SET foreign_key_checks = 0;&quot;</span>,<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>增数据的两种方式</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 方式一，直接写实际字段id</span><br>models.Book.objects.create(title=<span class="hljs-string">&#x27;论语&#x27;</span>,price=<span class="hljs-number">899.23</span>,publish_id=<span class="hljs-number">1</span>)<br>models.Book.objects.create(title=<span class="hljs-string">&#x27;聊斋&#x27;</span>,price=<span class="hljs-number">444.23</span>,publish_id=<span class="hljs-number">2</span>)<br>models.Book.objects.create(title=<span class="hljs-string">&#x27;老子&#x27;</span>,price=<span class="hljs-number">333.66</span>,publish_id=<span class="hljs-number">1</span>)<br><br><br><span class="hljs-comment"># 方式二，使用虚拟字段和对象新增</span><br>publish_obj = models.Publish.objects.<span class="hljs-built_in">filter</span>(pk=<span class="hljs-number">2</span>).first()	<span class="hljs-comment"># 这个必须能获取到对象，否则后面会报错</span><br>models.Book.objects.create(title=<span class="hljs-string">&#x27;红楼梦&#x27;</span>, price=<span class="hljs-number">666.23</span>, publish=publish_obj)<br></code></pre></td></tr></table></figure>
+
+<p>查询数据库，已写入成功</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs python">mysql&gt; select * <span class="hljs-keyword">from</span> app01_book;<br>+----+--------+--------+--------------+------------+<br>| <span class="hljs-built_in">id</span> | title  | price  | publish_date | publish_id |<br>+----+--------+--------+--------------+------------+<br>|  <span class="hljs-number">6</span> | 论语   | <span class="hljs-number">899.23</span> | <span class="hljs-number">2022</span>-09-<span class="hljs-number">27</span>   |          <span class="hljs-number">1</span> |<br>|  <span class="hljs-number">7</span> | 聊斋   | <span class="hljs-number">444.23</span> | <span class="hljs-number">2022</span>-09-<span class="hljs-number">27</span>   |          <span class="hljs-number">2</span> |<br>|  <span class="hljs-number">8</span> | 老子   | <span class="hljs-number">333.66</span> | <span class="hljs-number">2022</span>-09-<span class="hljs-number">27</span>   |          <span class="hljs-number">1</span> |<br>|  <span class="hljs-number">9</span> | 红楼梦 | <span class="hljs-number">666.23</span> | <span class="hljs-number">2022</span>-09-<span class="hljs-number">27</span>   |          <span class="hljs-number">2</span> |<br>+----+--------+--------+--------------+------------+<br><span class="hljs-number">5</span> rows <span class="hljs-keyword">in</span> <span class="hljs-built_in">set</span> (<span class="hljs-number">0.00</span> sec)<br></code></pre></td></tr></table></figure>
+
+<h3 id="3-2-2-删"><a href="#3-2-2-删" class="headerlink" title="3.2.2 删"></a>3.2.2 删</h3><p>删除主键为<code>1</code>的出版社</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs python">models.Publish.objects.<span class="hljs-built_in">filter</span>(pk=<span class="hljs-number">1</span>).delete()<br></code></pre></td></tr></table></figure>
+
+<p>查询，因为是<code>级联更新，级联删除</code>，删除出版社后，对应的书也删除了</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs python">mysql&gt; select * <span class="hljs-keyword">from</span> app01_publish;<br>+----+----------------+--------------+-----------------+<br>| <span class="hljs-built_in">id</span> | name           | addr         | email           |<br>+----+----------------+--------------+-----------------+<br>|  <span class="hljs-number">2</span> | 不明所以出版社 | 湖南省长沙市 | <span class="hljs-number">456</span>@<span class="hljs-number">163.</span>com     |<br>|  <span class="hljs-number">3</span> | 一本正经出版社 | 广东省深圳市 | <span class="hljs-number">666</span>@hotmail.com |<br>|  <span class="hljs-number">4</span> | 没头脑出版社   | 银河系土星   | tx@<span class="hljs-number">666.</span>com      |<br>+----+----------------+--------------+-----------------+<br><span class="hljs-number">3</span> rows <span class="hljs-keyword">in</span> <span class="hljs-built_in">set</span> (<span class="hljs-number">0.00</span> sec)<br><br>mysql&gt; select * <span class="hljs-keyword">from</span> app01_book;<br>+----+--------+--------+--------------+------------+<br>| <span class="hljs-built_in">id</span> | title  | price  | publish_date | publish_id |<br>+----+--------+--------+--------------+------------+<br>|  <span class="hljs-number">7</span> | 聊斋   | <span class="hljs-number">444.23</span> | <span class="hljs-number">2022</span>-09-<span class="hljs-number">27</span>   |          <span class="hljs-number">2</span> |<br>|  <span class="hljs-number">9</span> | 红楼梦 | <span class="hljs-number">666.23</span> | <span class="hljs-number">2022</span>-09-<span class="hljs-number">27</span>   |          <span class="hljs-number">2</span> |<br>+----+--------+--------+--------------+------------+<br></code></pre></td></tr></table></figure>
+
+<h3 id="3-2-3-改"><a href="#3-2-3-改" class="headerlink" title="3.2.3 改"></a>3.2.3 改</h3><p>修改数据的两种方式</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 方式一</span><br>models.Book.objects.<span class="hljs-built_in">filter</span>(pk=<span class="hljs-number">7</span>).update(publish_id=<span class="hljs-number">1</span>)<br><br><span class="hljs-comment"># 方式二</span><br><span class="hljs-comment"># 获取出版社对象</span><br>publish_obj = models.Publish.objects.<span class="hljs-built_in">filter</span>(pk=<span class="hljs-number">3</span>).first()<br><span class="hljs-comment"># 将出版设和书绑定</span><br>models.Book.objects.<span class="hljs-built_in">filter</span>(pk=<span class="hljs-number">9</span>).update(publish=publish_obj)<br></code></pre></td></tr></table></figure>
+
+<p>查询数据库，修改成功</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs mysql">mysql&gt; select * from app01_book;<br>+----+--------+--------+--------------+------------+<br>| id | title  | price  | publish_date | publish_id |<br>+----+--------+--------+--------------+------------+<br>|  7 | 聊斋   | 444.23 | 2022-09-27   |          1 |<br>|  9 | 红楼梦 | 666.23 | 2022-09-27   |          3 |<br>+----+--------+--------+--------------+------------+<br></code></pre></td></tr></table></figure>
+
+<h2 id="3-3-多对多外键增删改查"><a href="#3-3-多对多外键增删改查" class="headerlink" title="3.3 多对多外键增删改查"></a>3.3 多对多外键增删改查</h2><p>多对多的案例：一本书有多个作者</p>
+<p>添加作者，和作者描述</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs mysql">mysql&gt; select * from app01_author;<br>+----+------+-----+------------------+<br>| id | name | age | author_detail_id |<br>+----+------+-----+------------------+<br>|  1 | 张三 |  11 |                1 |<br>|  2 | 李四 |  28 |                2 |<br>|  3 | 王五 |  80 |                3 |<br>+----+------+-----+------------------+<br><br>mysql&gt; select * from app01_authordetail;<br>+----+--------+------+<br>| id | phone  | addr |<br>+----+--------+------+<br>|  1 | 123456 | 长沙 |<br>|  2 | 234567 | 深圳 |<br>|  3 | 345678 | 北京 |<br>+----+--------+------+<br>3 rows in set (0.00 sec)<br></code></pre></td></tr></table></figure>
+
+<h3 id="3-3-1-增"><a href="#3-3-1-增" class="headerlink" title="3.3.1 增"></a>3.3.1 增</h3><p>给书籍增加作者，两种方式</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 方式一</span><br>book_obj = models.Book.objects.<span class="hljs-built_in">filter</span>(pk=<span class="hljs-number">7</span>).first()<br><span class="hljs-built_in">print</span>(book_obj.author) <span class="hljs-comment"># 类似于已经到了第三张表（虚拟的book_author表）</span><br>book_obj.author.add(<span class="hljs-number">2</span>, <span class="hljs-number">3</span>)    <span class="hljs-comment"># 绑定主键为2,3的作者</span><br><br><span class="hljs-comment"># 方式二</span><br><span class="hljs-comment"># 获取三个作者的对象</span><br>author_obj1 = models.Author.objects.<span class="hljs-built_in">filter</span>(pk=<span class="hljs-number">1</span>).first()<br>author_obj2 = models.Author.objects.<span class="hljs-built_in">filter</span>(pk=<span class="hljs-number">2</span>).first()<br>author_obj3 = models.Author.objects.<span class="hljs-built_in">filter</span>(pk=<span class="hljs-number">3</span>).first()<br><span class="hljs-comment"># 将作者关联到书</span><br>book_obj.author.add(author_obj1)<br></code></pre></td></tr></table></figure>
+
+<p>查询数据，关联成功，虚拟表更新</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs mysql">mysql&gt; select * from app01_book_author;<br>+----+---------+-----------+<br>| id | book_id | author_id |<br>+----+---------+-----------+<br>|  5 |       7 |         1 |<br>|  1 |       7 |         2 |<br>|  2 |       7 |         3 |<br>+----+---------+-----------+<br>3 rows in set (0.00 sec)<br></code></pre></td></tr></table></figure>
+
+<h3 id="3-3-2-删"><a href="#3-3-2-删" class="headerlink" title="3.3.2 删"></a>3.3.2 删</h3><p>删除的两种方法</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 方法一</span><br>book_obj = models.Book.objects.<span class="hljs-built_in">filter</span>(pk=<span class="hljs-number">7</span>).first()<br>book_obj.author.remove(<span class="hljs-number">2</span>,<span class="hljs-number">3</span>)<br><br><span class="hljs-comment"># 方法二</span><br>author_obj = models.Author.objects.<span class="hljs-built_in">filter</span>(pk=<span class="hljs-number">2</span>).first()<br>author_obj1 = models.Author.objects.<span class="hljs-built_in">filter</span>(pk=<span class="hljs-number">3</span>).first()<br>book_obj.authors.remove(author_obj,author_obj1)<br></code></pre></td></tr></table></figure>
+
+<p>查询</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs mysql">mysql&gt; select * from app01_book_author;<br>+----+---------+-----------+<br>| id | book_id | author_id |<br>+----+---------+-----------+<br>|  5 |       7 |         1 |<br>+----+---------+-----------+<br>1 row in set (0.00 sec)<br></code></pre></td></tr></table></figure>
+
+<h3 id="3-3-3-改"><a href="#3-3-3-改" class="headerlink" title="3.3.3 改"></a>3.3.3 改</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 方法一</span><br>book_obj.authors.<span class="hljs-built_in">set</span>([<span class="hljs-number">1</span>,<span class="hljs-number">2</span>])  <span class="hljs-comment"># 括号内必须给一个可迭代对象</span><br>book_obj.authors.<span class="hljs-built_in">set</span>([<span class="hljs-number">3</span>])  <span class="hljs-comment"># 括号内必须给一个可迭代对象</span><br><br><span class="hljs-comment"># 方法二</span><br>author_obj = models.Author.objects.<span class="hljs-built_in">filter</span>(pk=<span class="hljs-number">2</span>).first()<br>author_obj1 = models.Author.objects.<span class="hljs-built_in">filter</span>(pk=<span class="hljs-number">3</span>).first()<br>book_obj.authors.<span class="hljs-built_in">set</span>([author_obj,author_obj1])  <span class="hljs-comment"># 括号内必须给一个可迭代对象</span><br></code></pre></td></tr></table></figure>
+
+<p>查询</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs mysql">mysql&gt; select * from app01_book_author;<br>+----+---------+-----------+<br>| id | book_id | author_id |<br>+----+---------+-----------+<br>|  6 |       7 |         2 |<br>|  7 |       7 |         3 |<br>+----+---------+-----------+<br></code></pre></td></tr></table></figure>
+
+<h3 id="3-3-4-清空"><a href="#3-3-4-清空" class="headerlink" title="3.3.4 清空"></a>3.3.4 清空</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs python">book_obj.authors.clear()<br></code></pre></td></tr></table></figure>
+
+<h2 id="3-4-正反向的概念"><a href="#3-4-正反向的概念" class="headerlink" title="3.4 正反向的概念"></a>3.4 正反向的概念</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 正向</span><br>外键字段在我手上那么，我查你就是正向<br><span class="hljs-comment"># 反向</span><br>外键字段如果不在手上，我查你就是反向<br>  <br>book &gt;&gt;&gt;外键字段在书那儿(正向)&gt;&gt;&gt; publish<br>publish	&gt;&gt;&gt;外键字段在书那儿(反向)&gt;&gt;&gt;book<br>  <br>一对一和多对多正反向的判断也是如此<br>  <br><span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">正向查询按字段</span><br><span class="hljs-string">反向查询按表名小写</span><br><span class="hljs-string">				_set</span><br><span class="hljs-string">				...</span><br><span class="hljs-string">&quot;&quot;&quot;</span><br><br></code></pre></td></tr></table></figure>
+
+<h1 id="四、多表（跨表）查询"><a href="#四、多表（跨表）查询" class="headerlink" title="四、多表（跨表）查询"></a>四、多表（跨表）查询</h1><h2 id="4-1-对象查询（子查询）"><a href="#4-1-对象查询（子查询）" class="headerlink" title="4.1 对象查询（子查询）"></a>4.1 对象查询（子查询）</h2><blockquote>
+<p>在书写orm语句的时候跟写sql语句一样的<br>不要企图一次性将orm语句写完 如果比较复杂 就写一点看一点</p>
+<p>正向什么时候需要加.all()<br>   当你的结果可能有多个的时候就需要加.all()<br>   如果是一个则直接拿到数据对象<br>       book_obj.publish<br>       book_obj.authors.all()<br>       author_obj.author_detail</p>
+</blockquote>
+<p>案例一：查询书籍主键为9的出版社</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs python">book_obj = models.Book.objects.<span class="hljs-built_in">filter</span>(pk=<span class="hljs-number">9</span>).first()<br>res = book_obj.publish<br><span class="hljs-built_in">print</span>(res.name)<br><span class="hljs-built_in">print</span>(res.addr)<br><br><span class="hljs-comment"># 输出</span><br>一本正经出版社<br>广东省深圳市<br></code></pre></td></tr></table></figure>
+
+<p>案例二：查询书籍主键为7的作者</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs python">book_obj = models.Book.objects.<span class="hljs-built_in">filter</span>(pk=<span class="hljs-number">7</span>).first()<br>res = book_obj.author.<span class="hljs-built_in">all</span>()<br><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> res:<br>    <span class="hljs-built_in">print</span>(i.name)<br><br><span class="hljs-comment"># 输出</span><br>李四<br>王五<br></code></pre></td></tr></table></figure>
+
+<p>案例三：查询作者”张三”的电话</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs python">author_obj = models.Author.objects.<span class="hljs-built_in">filter</span>(name=<span class="hljs-string">&#x27;张三&#x27;</span>).first()<br>res = author_obj.author_detail<br><span class="hljs-built_in">print</span>(res.phone)<br><br><span class="hljs-comment"># 输出</span><br><span class="hljs-number">123456</span><br></code></pre></td></tr></table></figure>
+
+<p>案例四、查询出版社是“没头脑出版社“的书</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 先给”没头脑出版社“关联两本书</span><br>models.Book.objects.create(title=<span class="hljs-string">&#x27;大话西游&#x27;</span>, price=<span class="hljs-number">343.2</span>, publish_id=<span class="hljs-number">4</span>)<br>models.Book.objects.create(title=<span class="hljs-string">&#x27;进化论&#x27;</span>, price=<span class="hljs-number">3222</span>, publish_id=<span class="hljs-number">4</span>)<br><br><span class="hljs-comment"># 查询</span><br>publish_obj = models.Publish.objects.<span class="hljs-built_in">filter</span>(name=<span class="hljs-string">&#x27;没头脑出版社&#x27;</span>).first()<br>res = publish_obj.book_set.<span class="hljs-built_in">all</span>()	<span class="hljs-comment"># 反向需要加_set</span><br><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> res:<br>    <span class="hljs-built_in">print</span>(i.title, i.price)<br>    <br><span class="hljs-comment"># 输出</span><br>大话西游 <span class="hljs-number">343.20</span><br>进化论 <span class="hljs-number">3222.00</span><br></code></pre></td></tr></table></figure>
+
+<p>案例五、查询作者‘李四’写过的书</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs python">author_obj = models.Author.objects.<span class="hljs-built_in">filter</span>(name=<span class="hljs-string">&#x27;李四&#x27;</span>).first()<br>res = author_obj.book_set.<span class="hljs-built_in">all</span>()<br><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> res:<br>    <span class="hljs-built_in">print</span>(i.title)<br>    <br><span class="hljs-comment"># 输出</span><br>聊斋<br></code></pre></td></tr></table></figure>
+
+<p>案例六：查询手机号是’234567’的作者姓名</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs python">authordetail_obj = models.AuthorDetail.objects.<span class="hljs-built_in">filter</span>(phone=<span class="hljs-number">234567</span>).first()<br>res = authordetail_obj.author<br><span class="hljs-built_in">print</span>(res.name)<br><br><span class="hljs-comment"># 输出</span><br>李四<br></code></pre></td></tr></table></figure>
+
+<h2 id="4-2-双下划线查询（联表查询）"><a href="#4-2-双下划线查询（联表查询）" class="headerlink" title="4.2 双下划线查询（联表查询）"></a>4.2 双下划线查询（联表查询）</h2><p>案例一：查询作者’张三’的手机号和年龄</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 正向</span><br>res = models.Author.objects.<span class="hljs-built_in">filter</span>(name=<span class="hljs-string">&#x27;张三&#x27;</span>).values(<span class="hljs-string">&#x27;author_detail__phone&#x27;</span>, <span class="hljs-string">&#x27;age&#x27;</span>)<br><span class="hljs-built_in">print</span>(res)<br><br><span class="hljs-comment"># 反向</span><br>res2 = models.AuthorDetail.objects.<span class="hljs-built_in">filter</span>(author__name=<span class="hljs-string">&#x27;张三&#x27;</span>).values(<span class="hljs-string">&#x27;phone&#x27;</span>, <span class="hljs-string">&#x27;author__age&#x27;</span>)<br><span class="hljs-built_in">print</span>(res2)<br></code></pre></td></tr></table></figure>
+
+<p>案例二：查询书籍主键为9的出版社名称和书的名称</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 正向</span><br>res = models.Book.objects.<span class="hljs-built_in">filter</span>(pk=<span class="hljs-number">9</span>).values(<span class="hljs-string">&#x27;publish__name&#x27;</span>, <span class="hljs-string">&#x27;title&#x27;</span>)<br><span class="hljs-built_in">print</span>(res)<br><span class="hljs-comment"># 反向</span><br>res2 = models.Publish.objects.<span class="hljs-built_in">filter</span>(book__id=<span class="hljs-number">9</span>).values(<span class="hljs-string">&#x27;name&#x27;</span>, <span class="hljs-string">&#x27;book__title&#x27;</span>)<br><span class="hljs-built_in">print</span>(res2)<br><br><span class="hljs-comment"># 输出</span><br>&lt;QuerySet [&#123;<span class="hljs-string">&#x27;publish__name&#x27;</span>: <span class="hljs-string">&#x27;一本正经出版社&#x27;</span>, <span class="hljs-string">&#x27;title&#x27;</span>: <span class="hljs-string">&#x27;红楼梦&#x27;</span>&#125;]&gt;<br>&lt;QuerySet [&#123;<span class="hljs-string">&#x27;name&#x27;</span>: <span class="hljs-string">&#x27;一本正经出版社&#x27;</span>, <span class="hljs-string">&#x27;book__title&#x27;</span>: <span class="hljs-string">&#x27;红楼梦&#x27;</span>&#125;]&gt;<br></code></pre></td></tr></table></figure>
+
+<p>案例三：查询书籍主键为7的作者姓名</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 正向</span><br>res = models.Book.objects.<span class="hljs-built_in">filter</span>(pk=<span class="hljs-number">7</span>).values(<span class="hljs-string">&#x27;author__name&#x27;</span>)<br><span class="hljs-built_in">print</span>(res)<br><span class="hljs-comment"># 反向</span><br>res2 = models.Author.objects.<span class="hljs-built_in">filter</span>(book__id=<span class="hljs-number">7</span>).values(<span class="hljs-string">&#x27;name&#x27;</span>)<br><span class="hljs-built_in">print</span>(res2)<br><br><span class="hljs-comment"># 输出</span><br>&lt;QuerySet [&#123;<span class="hljs-string">&#x27;author__name&#x27;</span>: <span class="hljs-string">&#x27;李四&#x27;</span>&#125;, &#123;<span class="hljs-string">&#x27;author__name&#x27;</span>: <span class="hljs-string">&#x27;王五&#x27;</span>&#125;]&gt;<br>&lt;QuerySet [&#123;<span class="hljs-string">&#x27;name&#x27;</span>: <span class="hljs-string">&#x27;李四&#x27;</span>&#125;, &#123;<span class="hljs-string">&#x27;name&#x27;</span>: <span class="hljs-string">&#x27;王五&#x27;</span>&#125;]&gt;<br></code></pre></td></tr></table></figure>
+
+<p>案例四：查询书籍主键市7的作者的手机号</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 正向</span><br>res = models.Book.objects.<span class="hljs-built_in">filter</span>(pk=<span class="hljs-number">7</span>).values(<span class="hljs-string">&#x27;author__author_detail__phone&#x27;</span>)<br><span class="hljs-built_in">print</span>(res)<br><span class="hljs-comment"># 反向报错！不能这样写</span><br><span class="hljs-comment">#res2 = models.AuthorDetail.objects.filter(book__id=7).values(&#x27;phone&#x27;)</span><br><span class="hljs-comment">#print(res2)</span><br><br><span class="hljs-comment"># 输出</span><br>&lt;QuerySet [&#123;<span class="hljs-string">&#x27;author__author_detail__phone&#x27;</span>: <span class="hljs-number">234567</span>&#125;, &#123;<span class="hljs-string">&#x27;author__author_detail__phone&#x27;</span>: <span class="hljs-number">345678</span>&#125;]&gt;<br></code></pre></td></tr></table></figure>
+
+<h1 id="五、周末作业"><a href="#五、周末作业" class="headerlink" title="五、周末作业"></a>五、周末作业</h1><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">今日作业</span><br><span class="hljs-string">必做题</span><br><span class="hljs-string">1.整理今日内容 用自己的话术整理到博客中(切勿直接复制粘贴)</span><br><span class="hljs-string">独立完成以下任务</span><br><span class="hljs-string">2.自己手动创建图书管理系统表及数据录入  </span><br><span class="hljs-string">3.独立完成单表查询N条方法，双下划线方法</span><br><span class="hljs-string">4.将课上orm题目摘出来，自己完成orm语句书写，体会orm简便之处</span><br><span class="hljs-string">选做题</span><br><span class="hljs-string">1.图书管理系统		图书表的增删改查</span><br><span class="hljs-string">	（只需要完成图书表的就可以）</span><br><span class="hljs-string">&quot;&quot;&quot;</span><br></code></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Python/" class="category-chain-item">Python</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/Python/09-Django/" class="category-chain-item">09_Django</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Day64-DjangoORM进阶-01</div>
+      <div>http://gsproj.github.io/2022/09/15/03_Python/05_Django/day64笔记-DjangoORM进阶-01/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>GongSheng</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年9月15日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/11/09/03_Python/05_Django/day72%E7%AC%94%E8%AE%B0-BBS%E9%A1%B9%E7%9B%AE-01/" title="Day72-BBS项目-01">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Day72-BBS项目-01</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/09/15/03_Python/05_Django/day63%E7%AC%94%E8%AE%B0-%E6%A8%A1%E6%9D%BF%E8%AF%AD%E6%B3%95/" title="Day63-模板语法">
+                        <span class="hidden-mobile">Day63-模板语法</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
