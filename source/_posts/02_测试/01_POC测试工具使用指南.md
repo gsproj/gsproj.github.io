@@ -259,7 +259,7 @@ source /etc/profile执行 source 命令使/etc/profile 文件中变量生效
 3、优化操作
 
 ```shell
-JAVA_OPTS="-Xms8192M -Xmx131072M -XX:PermSize=512M -XX:MaxPermSize=1g -Dspecjvm.benchmark.threads.scimark.fft.large=1 "
+JAVA_OPTS="-Xms8192M -Xmx131072M -XX:PermSize=512M -XX:MaxPermSize=1g -Dspecjvm.benchmark.threads.scimark.fft.large=1"
 
 export JAVA_OPTS
 ```
@@ -473,7 +473,7 @@ mkfs.xfs -f -d agcount=256 -l size=128m,lazy-count=1,version=2 /dev/sdb（按实
 ```shell
 cd iozone3_482/src/current 
 make linux-arm
-./iozone -i 0 -i 1 -i 2 -s Xg -r 16m -f /date/tmpfile
+./iozone -i 0 -i 1 -i 2 -s 16g -r 16m -f /date/tmpfile
 注：iozone 在测试过程中测试规模要大于或等于物理内存的两倍，且保证测试硬盘 
 空闲空间大于测试规模，如果测试规模偏小导致内存压力不够大会使分数不准确。X为内存大小的1/2倍、1倍、2倍，-f指定测试文件，测试完自动删除。
 ```
@@ -730,7 +730,7 @@ sudo apt-get install mesa-utils
 
 ```shell
 # 终端执行
-glxgears
+vblank_mode=0 glxgears
 ```
 
 ## 15 网络性能测试-iperf3
@@ -773,7 +773,7 @@ iperf3 -c 10.47.74.25 -i 5 -t 30
 
 
 
-## 16 网络性能Netperf
+## 16 网络性能-Netperf
 
 1、安装编译
 
