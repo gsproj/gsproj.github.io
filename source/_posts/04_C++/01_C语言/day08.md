@@ -237,7 +237,7 @@ void print_list(LinkedList *list) {
 		printf("%d ", curr->val);
 		curr = curr->next;
 	}
-	printf("%d\n------------------\n");
+	printf("\n------------------\n");
 }
 ```
 
@@ -318,6 +318,138 @@ int main(void) {
 | 查找：根据value（大小无序）    | O(n)     | O(n)     |                                                  |
 
 
+
+## 1.2 链表作业
+
+### 1.2.1 求单链表的中间元素
+
+需求：
+
+```c
+int middleElement(Node* list);
+输入: 1 --> 2 --> 3
+输出: 2
+输入: 1 --> 2 --> 3 --> 4
+输出: 3
+```
+
+实现
+
+```c
+int middleElement(Node* list) {
+	if (list == NULL) {
+		return -1;
+	}
+
+	Node* slow = list;
+	Node* fast = list;
+	while (fast != NULL && fast->next != NULL) {
+		slow = slow->next;
+		fast = fast->next->next;
+	}
+	return slow->val;
+}
+```
+
+
+
+### 1.2.2 判断单链表是否有环
+
+何为有环？
+
+![image-20240417093524017](D:/C++/gsproj.github.io/source/img/image-20240417093524017.png)
+
+思路：
+
+- 使用双指针
+
+实现：
+
+```c
+bool hasCycle(Node* list) {
+	if (list == NULL) {
+		return false;
+	}
+
+	Node* slow = list;
+	Node* fast = list;
+
+	do {
+		// 如果fast达到了链表末尾
+		if (fast == NULL || fast->next == NULL) {
+			return false;
+		}
+
+		// 快慢指针，慢指针每次一步，快指针每次两步
+		fast = fast->next->next;
+		slow = slow->next;
+
+	} while (slow != fast);
+
+	// 如循环结束: fast == slow, 说明链表有环
+	return true;
+}
+```
+
+
+
+### 1.2.3 反转单链表
+
+需求：
+
+```c
+Node* reverse(Node* list);
+输入: 1 --> 2 --> 3
+输出: 3 --> 2 --> 1
+```
+
+思路：
+
+- 头插法
+- 双指针(prev, curr)
+
+实现：
+
+```c
+Node* reverse(Node* list) {
+	Node* prev = NULL;
+	Node* curr = list;
+
+	while (curr != NULL) {
+		// 保留当前节点的下一个节点
+		Node* next = curr->next;
+        // 反转当前节点
+		curr->next = prev;
+        // 后移
+		prev = curr;
+		curr = next;
+	}
+
+	// 循环结束后，curr==NULL，prev成为反转后的第一个结点
+	return prev;
+}
+```
+
+测试：
+
+```c
+print_list(list);
+Node *reNode = reverse(list->head);
+
+while (reNode != NULL) {
+    printf("%d ", reNode->val);
+    reNode = reNode->next;
+}
+printf("\n");
+
+输出：
+Head: 33
+Tail: 55
+Size: 4
+33 22 11 55
+------------------
+55 11 22 33
+```
 
 
 
