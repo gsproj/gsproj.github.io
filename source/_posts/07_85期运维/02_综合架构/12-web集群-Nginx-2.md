@@ -7,7 +7,7 @@ categories:
 tags: 
 ---
 
-# Web集群（二）
+# Web集群-Nginx（二）
 
 # 一、Nginx处理用户请求流程
 
