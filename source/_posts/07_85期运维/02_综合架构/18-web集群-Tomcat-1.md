@@ -7,793 +7,840 @@ categories:
 tags: 
 ---
 
-# Web集群-Nginx（七）完结
+# Web集群-Tomcat（一）
 
 今日内容：
 
-- 高可用服务，keepalived
-- 数据加密服务，https
-
-# 一、HA高可用服务
+- JAVA容器介绍
+- JAVA环境介绍
+- Tomcat上手
 
-## 1.1 概述
 
-HA高可用的英文全称（HighAvailablity），学习使用软件keepalived实现，
 
-它的实现机制：
 
-- 多台服务器组成高可用集群，生成虚拟IP（Virtual IP）
-- dns解析到这个VIP地址即可
 
-高可用软件的选型：
+# 一、JAVA容器
 
-| 选型           | 说明                                                         |
-| -------------- | ------------------------------------------------------------ |
-| keepalived     | 主给备定期发数据包，判定是否活着<br> 高可用软件，负载使用，一般不涉及数据服务。 |
-| heartbeat      | 通过心跳判定<br/>高可用软件，涉及数据库，存储数据相关可以用。 heartbeat + drbd |
-| 商业高可用软件 | RoseHA...略....                                              |
-
-## 1.2 keepalived原理
-
-实现原理：
-
-- keepalived是基于VRRP协议实现高可用.
-- VRRP虚拟路由器冗余协议，最开始是给网络设备实现高可用。
-- 分为主、备，一般是2个节点。主备之间通过vrrp协议发送数据包沟通.
-- 主给备定期发送数据包，备收到数据包表示主还活着，备无法收到数据包，表示主挂了，备胎转正了，接管用户请求流量.
-- vrrp协议使用组播的ip：224.xx.xx.xx  
-
-## 1.3 极速上手
-
-| 高可用环境准备 | 需要安装的服务     | ip       |
-| -------------- | ------------------ | -------- |
-| lb01           | nginx + keepalived | 10.0.0.5 |
-| lb02           | nginx + keepalived | 10.0.0.6 |
-
-部署服务
-
-```shell
-# nginx repo
-[root@lb01[ /var/run]#cat /etc/yum.repos.d/nginx.repo
-[nginx-stable]
-name=nginx stable repo
-baseurl=http://nginx.org/packages/centos/$releasever/$basearch/
-gpgcheck=1
-enabled=1
-gpgkey=https://nginx.org/keys/nginx_signing.key
-module_hotfixes=true
-
-# 安装nginx和keepalived
-[root@lb02[ ~]#yum install -y nginx keepalived
-
-# 启动服务
-systemctl enable --now keepalived
-systemctl enable --now nginx
-```
-
-keepalived配置文件`/etc/keepalived/keepalived.conf`，分为三部分
-
-| 配置文件结构            | 说明                                           |
-| ----------------------- | ---------------------------------------------- |
-| global_defs             | 全局定义部分                                   |
-| vrrp_instance ⭐ ⭐ ⭐ ⭐ ⭐ | vrrp协议配置,vip,主备,网卡....经常改动部分.    |
-| 用于管理与配置lvs的部分 | virtual_server部分 用于管理控制lvs的.(lvs再说) |
-
-lb01配置如下
-
-```shell
-[root@lb01[ /etc/keepalived]#cat keepalived.conf
-! Configuration File for keepalived
-
-! 全局定义部分
-global_defs {
-  ! 每一个keepalived的名字，当前网络中唯一
-  router_id lb01
-}
-
-! vrrp实例配置部分
-vrrp_instance vip_3 {	! vrrp实例名称
-  state MASTER			! 设置在一对主备之间使用的名字，备为BACKUP
-  interface ens33		! 指定网卡
-  virtual_router_id 51	! 一对主备之间的id号，统一即可
-  priority 100			! 优先级，数字越大，优先级越高，建议备50，相差50
-  advert_int 1			! 心跳间隔，多久发一次vrrp数据
-  authentication {		! 授权认证，保持默认即可
-    auth_type PASS
-    auth_pass 1111
-  }
-  virtual_ipaddress {	! 设置Vip ※※※
-    10.0.0.3 dev ens33 label ens33:0
-  }
-}
-```
-
-lb02配置对比：
-
-![image-20240510165558192](../../../img/image-20240510165558192.png)
-
-测试：
-
-hosts设置
-
-```shell
-10.0.0.3 blog.oldboylinux.cn
-```
-
-此时10.0.0.5为主，有10.0.0.3的VIP，另一台为备，没有VIP
-
-```shell
-# lb01 - IP信息
-[root@lb01[ /etc/nginx/conf.d]#ip add
-...
-2: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
-    link/ether 00:0c:29:8e:c3:71 brd ff:ff:ff:ff:ff:ff
-    inet 10.0.0.5/24 brd 10.0.0.255 scope global noprefixroute ens33
-       valid_lft forever preferred_lft forever
-    inet 10.0.0.3/32 scope global ens33:0
-...
-# lb01 - keepalived服务状态
-[root@lb01[ /etc/nginx/conf.d]#systemctl status keepalived
-keepalived.service - LVS and VRRP High Availability Monitor
-   Loaded: loaded (/usr/lib/systemd/system/keepalived.service; enabled; vendor preset: disabled)
-...
-May 10 22:24:22 lb01 Keepalived_vrrp[26784]: Sending gratuitous ARP on ens33 for 10.0.0.3
-...
+什么是java容器？
 
-# lb02 - IP信息
-[root@lb02[ /etc/nginx]#ip add
-...
-2: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
-    link/ether 00:0c:29:7a:5a:37 brd ff:ff:ff:ff:ff:ff
-    inet 10.0.0.6/24 brd 10.0.0.255 scope global noprefixroute ens33
-       valid_lft forever preferred_lft forever
-...
+- 用于存放java代码的环境，就叫java容器
+- web中间件，很多就是java容器，见下表
 
-# lb02 - keepalived服务状态
-[root@lb02[ /etc/nginx]#systemctl status keepalived
-● keepalived.service - LVS and VRRP High Availability Monitor
-   Loaded: loaded (/usr/lib/systemd/system/keepalived.service; enabled; vendor preset: disabled)
-...
-May 10 22:24:21 lb02 Keepalived_vrrp[20206]: VRRP_Instance(vip_3) Entering BACKUP STATE
-May 10 22:24:21 lb02 Keepalived_vrrp[20206]: VRRP_Instance(vip_3) removing protocol VIPs.
-...
-```
+| java容器 |                                                |
+| -------- | ---------------------------------------------- |
+| Tomcat   | 最常用，较重，功能完善.                        |
+| Jetty    | 轻量，功能较少.                                |
+| Weblogic | 用于Oracle数据库环境使用，Weblogic属于甲骨文． |
+| 东方通   | 国产java容器                                   |
 
-测试网站访问正常（走10.0.0.3 ---> 10.0.0.5）
 
-![image-20240510223153695](../../../img/image-20240510223153695.png)
 
-抓包信息：
+# 二、JAVA环境
 
-![image-20240510223914266](../../../img/image-20240510223914266.png)
+JAVA环境分为三部分：
 
-关闭lb01的服务
+- JVM: java 虚拟机，运行java代码的地方.
+- JRE: java Runtime Enviroment，java运行环境 。提供jvm环境，java命令。
+- JDK: Java Development Kit，java开发环境 , jvm+jre+额外功能
 
-```shell
-systemctl stop nginx keepalived
-```
+图示如下：
 
-测试网站仍可正常访问（走10.0.0.3 ---> 10.0.0.6），此时备机转正，拥有VIP
+![image-20240511160105925](../../../img/image-20240511160105925.png)
 
-```shell
-# lb02转正，拥有VIP
-[root@lb02[ /etc/nginx]#ip add
-...
-2: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
-    link/ether 00:0c:29:7a:5a:37 brd ff:ff:ff:ff:ff:ff
-    inet 10.0.0.6/24 brd 10.0.0.255 scope global noprefixroute ens33
-       valid_lft forever preferred_lft forever
-    inet 10.0.0.3/32 scope global ens33:0
-       valid_lft forever preferred_lft forever
-...
-
-# keepalived状态
-[root@lb02[ /etc/nginx]#systemctl status keepalived
-● keepalived.service - LVS and VRRP High Availability Monitor
-   Loaded: loaded (/usr/lib/systemd/system/keepalived.service; enabled; vendor preset: disabled)
-   Active: active (running) since Fri 2024-05-10 22:22:45 CST; 10min 
-...
-May 10 22:33:32 lb02 Keepalived_vrrp[20206]: Sending gratuitous ARP on ens33 for 10.0.0.3
-...
-```
-
-抓包信息
-
-![image-20240510223924312](../../../img/image-20240510223924312.png)
-
-重启lb01的服务后，主回归正常
-
-## 1.4 keepalived的问题
-
-### 1.4.1 脑裂故障（重要）
-
-故障现象：主备都有vip.
-
-原因:
-
-- 备认为主挂了，接管资源生成VIP，实际上主并没有挂，仍有VIP。
-- 有很多原因可以导致脑裂：
-  - 开启防火墙
-  - selinux
-  - keepalived配异常
-  - 物理线路异常等
-
-解决方法:
-
-- 监控(备节点监控)，只要备节点有vip就告警。
-- 更狠一点监控备节点只要有vip，远程控制主节点，只要备节点认为主挂了，那就让他真的挂了  
-
-### 1.4.2 keepalived基于主机的高可用软件
-
-问题现象：
-
-- 虽然现在测试keepalived生效了
-- 但是实际上是**<font color=red>基于手动关闭lb01的keepalived服务</font>**实现的
-- 像这种情况只会在主机挂了、网络断开后才会进行主备切换
-- 如果仅是lb01的Nginx服务挂了，并不会触发keepalived的主备机制
-- 这并不符合生产环境的要求。
-
-目标：
-
-- 某个服务关闭了，keepalived就进行主备切换
-- 这里以nginx服务为例  
-
-项目步骤：
-
-- 书写脚本，过滤服务进程数，端口数量，检查是否运行.
-- 然后进行判断如果服务没有运行，则关闭keepalived.
-- 修改keepalived配置文件，通过keepalived调用这个脚本  
-
-
-
-书写脚本
-
-```shell
-[root@lb01[ /etc/nginx/conf.d]#cat /server/scripts/keep-lb.sh
-#!/bin/bash
-
-# desc: 监控nginx端口数量
-
-port_cnt=`ss -lntup | grep nginx | wc -l`
-
-if [ $port_cnt -eq 0 ];then
-   systemctl stop keepalived;
-fi
-
-# 给予脚本执行权限
-[root@lb01[ /etc/nginx/conf.d]#chmod a+x /server/scripts/keep-lb.sh
-```
-
-keepalived配置文件监控
-
-```shell
-[root@lb01[ /etc/nginx/conf.d]#cat /etc/keepalived/keepalived.conf
-! Configuration File for keepalived
-
-global_defs {
-  router_id lb01
-}
-
-! 定义监控脚本
-vrrp_script keep-lb.sh {
-  script /server/scripts/keep-lb.sh
-  interval 2
-  weight 1
-  user root
-}
-
-
-vrrp_instance vip_3 {
-  state MASTER
-  interface ens33
-  virtual_router_id 51
-  priority 100
-  advert_int 1
-  authentication {
-    auth_type PASS
-    auth_pass 1111
-  }
-
-  virtual_ipaddress {   ! 设置Vip ※※※
-    10.0.0.3 dev ens33 label ens33:0
-  }
-
-  ! 这个vrrp实例使用keep-lb.sh脚本
-  track_script {
-    keep-lb.sh
-  }
-}
-```
-
-测试：
-
-- lb01，lb02都开启服务，默认走lb01
-- 关闭lb01的nginx，脚本生效，lb01的keepalived服务也stop
-- lb02生效，改走lb02
-- 手动重启lb01的nginx和keepalived服务，lb01重新上线，改走lb01
-
->个人评价：
+>提示：
 >
->还是不太智能，后面lb01的nginx恢复了，但是脚本没法恢复keepalived，还是要手动启服务
-
-## 1.5 进阶用法
-
-### 1.5.1 非抢占模式
-
-什么是非抢占模式？
-
-- keepalived主备默认是抢占式：主挂了，备接管
-- 非抢占模式：主恢复，不希望主重新抢回资源，继续备接管。
-
-配置非抢占模式：
-
-- 两个节点都改为BACKUP状态
-- 配置nopreempt选项
-
-![image-20240510230717070](../../../img/image-20240510230717070.png)
-
-### 1.5.2 双主模式
-
-应对高并发的时候设置的双主模式：
-
-- 设置两个VIP，互为主备
-
-![image-20240510230842673](../../../img/image-20240510230842673.png)
-
-
-
-# 二、HTTPS证书
-
-## 2.1 概述
-
-https是基于http的协议，在传输的时候进行加密
-
-部署https加密的流程
-
-- 域名 *.jd.com www.jd.com
-- 根据域名申请https证书(私钥与公钥(ca证书))，自己创建
-- 进行配置web/lb.  
-
-阿里云支持的SSL证书
-
-![image-20240511092226204](../../../img/image-20240511092226204.png)
-
-
-
-## 2.2 真实证书申请
-
-申请SSL证书需要有真实域名，freedomain域名和SSL都免费
-
-### 2.2.1 freedomian申请
-
-在freedomian：https://freedomain.one/可以申请免费的域名、DNS、SSL证书
-
-我申请的：gsblog.work.gd
-
-进入SSL页面申请证书
-
-![image-20240511101002021](../../../img/image-20240511101002021.png)
-
-申请完成
-
-![image-20240511101242798](../../../img/image-20240511101242798.png)
-
-下载证书
-
-![image-20240511101335706](../../../img/image-20240511101335706.png)
-
-里面是这三个文件
-
-![image-20240511101423902](../../../img/image-20240511101423902.png)
-
-### 2.2.2 阿里云申请
-
-阿里云每个账户提供20个免费域名额度，申请需要个人信息验证
-
-进入免费域名购买页面
-
-![image-20240511100053875](../../../img/image-20240511100053875.png)
-
-输入域名，申请证书，需要提供个人信息
-
-![image-20240511100442396](../../../img/image-20240511100442396.png)
-
-## 2.3 命令行创建https证书
-
-如果实在申请不到真实证书，也可以使用命令行创建一对
-
-```shell
-#创建私钥
-openssl genrsa -idea -out server.key 2048
-
-#根据私钥创建 证书
-openssl req -days 36500 -x509 -sha256 -nodes -newkey rsa:2048 -keyout server.key -out server.crt
-```
-
-> 这种key会触发浏览器报警，不是私密连接
-
-![image-20240511104318120](../../../img/image-20240511104318120.png)
-
-## 2.4 HTTPS加密流程-单台
-
->注意：
+>未来部署JDK即可，主要版本JDK1.8 或称 JDK8
 >
->申请的https证书域名要与网站域名一致才能正常使用。否则用户访问会有警告与提示  
+>JDK - ORACLE所有，未授权仅允许个人研究
+>
+>OPenJDK - 开源，允许商用
 
-### 2.4.1 部署证书
 
-将freedomain下载的证书上传到服务器中
+
+# 三、Tomcat极速上手
+
+## 3.1 环境准备
+
+| 环境  |                       |        |
+| ----- | --------------------- | ------ |
+| web03 | 10.0.0.9/172.16.1.9   | tomcat |
+| web04 | 10.0.0.10/172.16.1.10 | tomcat |
+| db01  | 10.0.0.51/172.16.1.51 |        |
+
+## 3.2 部署JDK
+
+版本：JDK-8u411
+
+下载：https://www.oracle.com/java/technologies/downloads/#java8
+
+部署
 
 ```shell
-[root@web01[ /etc/nginx/ssl_keys]#ls
-gsblog.work.gd.ll730fjv.zip
-[root@web01[ /etc/nginx/ssl_keys]#unzip gsblog.work.gd.ll730fjv.zip
-Archive:  gsblog.work.gd.ll730fjv.zip
-  inflating: gsblog.work.gd.cer
-  inflating: gsblog.work.gd.key
-  inflating: ca.cer
+# 解压
+tar -vxf jdk-8u411-linux-x64.tar.gz -C /app/tools/
+
+# 创建软连接
+ln -s /app/tools/jdk1.8.0_411/ /app/tools/jdk
+
+# 配置JAVA环境变量
+[root@web03[ /app/tools]#tail -n 4 /etc/profile
+# JDK环境
+export JAVA_HOME=/app/tools/jdk
+export PATH=$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH
+export CLASSPATH=.$CLASSPATH:$JAVA_HOME/lib:$JAVA_HOME/jre/lib:$JAVA_HOME/lib/tools.jar
+
+# 生效
+source /etc/profile
+
+# 测试java命令
+[root@web03[ /app/tools]#java -version
+java version "1.8.0_411"
+Java(TM) SE Runtime Environment (build 1.8.0_411-b09)
+Java HotSpot(TM) 64-Bit Server VM (build 25.411-b09, mixed mode)
+[root@web03[ /app/tools]#which java
+/app/tools/jdk/bin/java
 ```
 
-### 2.4.2 HTTPS部署流程
 
-创建子配置文件
+
+## 3.3 部署Tomcat
+
+版本：9.0.89
+
+下载：https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.89/bin/apache-tomcat-9.0.89.tar.gz
+
+部署
 
 ```shell
-[root@web01[ /etc/nginx/conf.d]#cat gsblog.work.gd.conf
-server {
-  # 端口由80改为443
-  listen 443 ssl;
-  #ssl on;  # 1.15.0以后被废弃
+tar -vxf apache-tomcat-9.0.89.tar.gz -C /app/tools/
+ln -s /app/tools/apache-tomcat-9.0.89 /app/tools/tomcat
 
-  server_name gsblog.work.gd;
-  root /app/code/ssl;
-  error_log  /var/log/nginx/ssl-error.log notice;
-  access_log /var/log/nginx/ssl-access.log main;
-
-  # ssh key 
-  ssl_certificate /etc/nginx/ssl_keys/gsblog.work.gd.cer;
-  ssl_certificate_key /etc/nginx/ssl_keys/gsblog.work.gd.key;
-
-
-  location / {
-    index index.html;
-  }
-}
+# 测试
+[root@web03[ /app/tools]#tomcat/bin/version.sh
+Using CATALINA_BASE:   /app/tools/tomcat
+Using CATALINA_HOME:   /app/tools/tomcat
+Using CATALINA_TMPDIR: /app/tools/tomcat/temp
+Using JRE_HOME:        /app/tools/jdk
+Using CLASSPATH:       /app/tools/tomcat/bin/bootstrap.jar:/app/tools/tomcat/bin/tomcat-juli.jar
+Using CATALINA_OPTS:
+Server version: Apache Tomcat/9.0.89
+Server built:   May 3 2024 20:22:11 UTC
+Server number:  9.0.89.0
+OS Name:        Linux
+OS Version:     3.10.0-1160.el7.x86_64
+Architecture:   amd64
+JVM Version:    1.8.0_411-b09
+JVM Vendor:     Oracle Corporation
 ```
 
-创建站点目录
+启动Tomcat
 
 ```shell
-mkdir -p /app/code/ssl
-echo "ssl web page web01" > /app/code/ssl/index.html
+# 启动
+[root@web03[ /app/tools]#tomcat/bin/startup.sh
+Using CATALINA_BASE:   /app/tools/tomcat
+Using CATALINA_HOME:   /app/tools/tomcat
+Using CATALINA_TMPDIR: /app/tools/tomcat/temp
+Using JRE_HOME:        /app/tools/jdk
+Using CLASSPATH:       /app/tools/tomcat/bin/bootstrap.jar:/app/tools/tomcat/bin/tomcat-juli.jar
+Using CATALINA_OPTS:
+Tomcat started.
+
+# 查看进程信息, 默认在8080端口监听
+[root@web03[ /app/tools]#ss -lntup | grep java
+tcp    LISTEN     0      100    [::]:8080               [::]:*                   users:(("java",pid=2585,fd=57))
+tcp    LISTEN     0      1        [::ffff:127.0.0.1]:8005               [::]:*                   users:(("java",pid=2585,fd=65))
+
+
+[root@web03[ /app/tools]#ps -ef | grep java
+root       2585      1  9 16:27 pts/0    00:00:02 /app/tools/jdk/bin/java -Djava.util.logging.config.file=/app/tools/tomcat/conf/logging.properties -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -Djdk.tls.ephemeralDHKeySize=2048 -Djava.protocol.handler.pkgs=org.apache.catalina.webresources -Dorg.apache.catalina.security.SecurityListener.UMASK=0027 -Dignore.endorsed.dirs= -classpath /app/tools/tomcat/bin/bootstrap.jar:/app/tools/tomcat/bin/tomcat-juli.jar -Dcatalina.base=/app/tools/tomcat -Dcatalina.home=/app/tools/tomcat -Djava.io.tmpdir=/app/tools/tomcat/temp org.apache.catalina.startup.Bootstrap start
+root       2628   2312  0 16:27 pts/0    00:00:00 grep --color=auto java
 ```
 
-配置DNS，重启服务，测试访问https成功，证书安全有效
+测试访问：http://10.0.0.9:8080/
 
-![image-20240511102557458](../../../img/image-20240511102557458.png)
+![image-20240511163252296](../../../img/image-20240511163252296.png)
 
-### 2.4.3 HTTP跳转HTTPS
 
-有人误输入了http怎么办，为了防止不能正常访问到站点，需要设置http跳转https
 
-子配置文件如下：
+# 四、Tomcat目录结构
+
+## 4.1 目录概述
+
+Tomcat下有如下目录：
 
 ```shell
-[root@web01[ /etc/nginx/conf.d]#cat gsblog.work.gd.conf
-# 添加80端口跳转443
+[root@web03[ /app/tools]#ll tomcat/
+total 132
+drwxr-x---. 2 root root  4096 May 11 16:25 bin
+-rw-r-----. 1 root root 20913 May  4 04:22 BUILDING.txt
+drwx------. 3 root root   254 May 11 16:27 conf
+-rw-r-----. 1 root root  6210 May  4 04:22 CONTRIBUTING.md
+drwxr-x---. 2 root root  4096 May 11 16:25 lib
+-rw-r-----. 1 root root 57092 May  4 04:22 LICENSE
+drwxr-x---. 2 root root   197 May 11 16:27 logs
+-rw-r-----. 1 root root  2333 May  4 04:22 NOTICE
+-rw-r-----. 1 root root  3283 May  4 04:22 README.md
+-rw-r-----. 1 root root  6901 May  4 04:22 RELEASE-NOTES
+-rw-r-----. 1 root root 16505 May  4 04:22 RUNNING.txt
+drwxr-x---. 2 root root    30 May 11 16:25 temp
+drwxr-x---. 7 root root    81 May  4 04:22 webapps
+drwxr-x---. 3 root root    22 May 11 16:27 work
+```
+
+重要目录的概述如下
+
+| 目录    |                                    |
+| ------- | ---------------------------------- |
+| bin     | 存放tomcat管理命令                 |
+| conf    | tomcat配置文件                     |
+| lib     | 依赖与库文件,插件文件              |
+| logs    | 日志目录                           |
+| webapps | 站点目录                           |
+| work    | tomcat运行java代码的存放代码的目录 |
+
+## 4.2 bin目录
+
+核心文件：
+
+| bin目录     |                                 |
+| ----------- | ------------------------------- |
+| startup.sh  | 启动脚本                        |
+| shutdown.sh | 关闭脚本                        |
+| catalina.sh | 核心脚本,配置tomcat优化,jvm优化 |
+
+## 4.3 conf目录
+
+核心文件
+
+| conf配置文件 | 说明              |
+| ------------ | ----------------- |
+| server.xml   | tomcat配置文件    |
+| web.xml      | 配置文件,辅助配置 |
+
+
+
+## 4.4 logs目录
+
+| logs目录                            |                                                              |
+| ----------------------------------- | ------------------------------------------------------------ |
+| catalina.out                        | tomcat应用日志,启动过程,关闭,错误信息 <br/>**核心找**：startup启动用时,错误提示:error,failed,exception |
+| catalina.2022-09-15.log             | catalina.out的割日志.按照每天进行切割.                       |
+| localhost_access_log.2022-09-15.txt | 访问日志,未来可以重新定义名字和内容                          |
+
+
+
+## 4.5 webapps目录
+
+站点目录
+war包，自动解压，自动部署  
+
+
+
+# 五、Tomcat日常管理与访问
+
+## 5.1 日常启动与维护
+
+启动tomcat查看日志
+
+![image-20240511163938313](../../../img/image-20240511163938313.png)
+
+浏览器测试访问：http://10.0.0.9:8080/  
+
+
+
+## 5.2 systemctl管理配置文件介绍
+
+如果纯靠手动执行`startup.sh`脚本来维护tomcat，有些费时费力，可以把这些工作写成systemctl服务，用服务来自动管理。
+
+服务管理指令存放：`/usr/lib/systemd/system/xxxx.service`，
+
+分为3个部分：Unit、Service、Install
+
+修改或设置systemctl配置要进行重新加载配置  
+
+比如sshd服务的配置
+
+```shell
+[root@web03[ /app/tools]#cat /usr/lib/systemd/system/sshd.service
+[Unit]
+Description=OpenSSH server daemon
+Documentation=man:sshd(8) man:sshd_config(5)
+After=network.target sshd-keygen.service
+Wants=sshd-keygen.service
+
+[Service]
+Type=notify
+EnvironmentFile=/etc/sysconfig/sshd
+ExecStart=/usr/sbin/sshd -D $OPTIONS
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=on-failure
+RestartSec=42s
+
+[Install]
+WantedBy=multi-user.target
+```
+
+各项解释如下：
+
+| 配置文件结构                         |                                                         |
+| ------------------------------------ | ------------------------------------------------------- |
+| **<font color=red>[Unit]</font>**    | 指定注释信息,依赖(先后顺序)                             |
+| Description                          | 说明与注释                                              |
+| After                                | 在这里指定的服务之后运行. network.target                |
+| **<font color=red>[Service]</font>** | 用于指定服务开启命令,关闭命令,重启命令.                 |
+| Type=notify                          | 指定类型 simple 或forking即可                           |
+| ExecStart                            | 服务启动命令                                            |
+| ExecStop                             | 服务关闭命令                                            |
+| ExecReload                           | 重启命令                                                |
+| EnvironmentFile                      | 配置环境变量的文件(一般对于编译安装,二进制安装需要加上) |
+| **<font color=red>[Install]</font>** | 内容固定,用于指定运行级别.                              |
+| WantedBy=multi-user.target           | 运行级别,一般都是多用户模式.                            |
+
+## 5.3 创建systemctl文件
+
+创建环境变量文件
+
+```shell
+[root@web03[ /etc/sysconfig]#cat /etc/sysconfig/tomcat
+JAVA_HOME=/app/tools/jdk
+PATH=$JAVA_HOME/bin:$JAVA_HOME/jre/bin:/usr/bin/:/usr/sbin/:/usr/local/bin/:/usr/local/sbin/
+CLASSPATH=.$CLASSPATH:$JAVA_HOME/lib:$JAVA_HOME/jre/lib:$JAVA_HOME/lib/tools.jar
+```
+
+创建tomcat systemctl文件
+
+```shell
+[root@web03[ /usr/lib/systemd/system]#cat tomcat.service
+[Unit]
+Description=Tomcat java web container
+After=network.target
+
+[Service]
+Type=forking
+EnvironmentFile=/etc/sysconfig/tomcat
+ExecStart=/app/tools/tomcat/bin/startup.sh
+ExecStop=/app/tools/tomcat/bin/shutdown.sh
+ExecReload=/app/tools/tomcat/bin/shutdown.sh && sleep 1 && /app/tools/tomcat/bin/startup.sh
+
+[Install]
+WantedBy=multi-user.target
+```
+
+重新加载配置（重要，不能忘记！！）
+
+```shell
+systemctl daemon-reload
+```
+
+测试
+
+```shell
+[root@web03[ /usr/lib/systemd/system]#systemctl enable tomcat.service
+Created symlink from /etc/systemd/system/multi-user.target.wants/tomcat.service to /usr/lib/systemd/system/tomcat.service.
+[root@web03[ /usr/lib/systemd/system]#systemctl start tomcat.service
+[root@web03[ /usr/lib/systemd/system]#systemctl status tomcat.service
+● tomcat.service - Tomcat java web container
+   Loaded: loaded (/usr/lib/systemd/system/tomcat.service; enabled; vendor preset: disabled)
+   Active: inactive (dead) since Sat 2024-05-11 16:52:52 CST; 637ms ago
+  Process: 2956 ExecStop=/app/tools/tomcat/bin/shutdown.sh (code=exited, status=0/SUCCESS)
+  Process: 2931 ExecStart=/app/tools/tomcat/bin/startup.sh (code=exited, status=0/SUCCESS)
+ Main PID: 2939 (code=exited, status=0/SUCCESS)
+
+May 11 16:52:49 web03 systemd[1]: Starting Tomcat java web container...
+May 11 16:52:49 web03 startup.sh[2931]: Tomcat started.
+May 11 16:52:49 web03 systemd[1]: Started Tomcat java web container.
+```
+
+
+
+## 5.4 运行站点代码
+
+开发写的JAVA源代码不能直接部署在Tomcat中，需要对源代码进行编译，生成war包或者jar包
+
+| 分类  | 说明                                                         | 应用场景 |
+| ----- | ------------------------------------------------------------ | -------- |
+| war包 | 需要放在java容器中运行<br/>比如放到tomcat的webapps目录下.<br/>(tomcat会自动加载与运行 war包内容) | 功能复杂 |
+| jar包 | 不需要java容器，内置tomcat<br/>只需要jdk ，通过` java -jar xxx.jar` 运行 |          |
+
+### 5.4.1 运行war包案例
+
+上传memtest.war包，放在webapps目录，然后访问即可
+
+  ```shell
+[root@web03[ /app/tools/tomcat/webapps]#ls
+docs  examples  host-manager  manager  memtest.war  ROOT
+  ```
+
+测试访问：http://10.0.0.9:8080/memtest/meminfo.jsp
+
+![image-20240511170000316](../../../img/image-20240511170000316.png)
+
+### 5.4.2 运行jar包案例
+
+> JAR包如果内置了Tomcat，直接指定端口运行即可
+
+下载程序包：
+
+```shell
+wget http://file.nginxwebui.cn/nginxWebUI-3.4.0.jar
+```
+
+部署
+
+```shell
+nohup java -jar -Dfile.encoding=UTF-8 /home/nginxWebUI/nginxWebUI-4.0.8.jar --server.port=8081 --project.home=/home/nginxWebUI/ > /dev/null &
+```
+
+参数说明
+
+| 参数           | 作用                                                    |
+| -------------- | ------------------------------------------------------- |
+| --server.port  | 占用端口                                                |
+| --project.home | 项目配置文件目录，存放数据库文件，证书文件，<br/>日志等 |
+| &              | 项目后台运行                                            |
+
+测试访问：http://10.0.0.9:8081/adminPage/login
+
+![image-20240511171222761](../../../img/image-20240511171222761.png)
+
+
+
+## 5.6 Tomcat管理端（熟悉即可）
+
+tomcat管理端：
+
+- 用于web页面管理与查看tomcat信息的功能。
+- 未来对tomcat进行调优的时候需要关闭。
+
+开启管理端的方法：
+
+1. 修改配置文件tomcat-users.xml
+2. 修改安全配置，默认只能127访问，去掉此限制  
+
+修改配置文件
+
+```shell
+[root@web03[ /app/tools/tomcat/conf]#cat tomcat-users.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<tomcat-users xmlns="http://tomcat.apache.org/xml"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://tomcat.apache.org/xml tomcat-users.xsd"
+              version="1.0">
+<!-- 添加  -->
+<role rolename="manager-gui"/>
+<role rolename="admin-gui"/>
+<user username="lidao996" password="1" roles="manager-gui,admin-gui"/>
+</tomcat-users>
+```
+
+去掉只能127网段访问的限制，否则10网段访问将报403错误
+
+```shell
+sed -i 's#127#\\d+#g' ./host-manager/META-INF/context.xml ./host-manager/WEB-INF/manager.xml  ./manager/META-INF/context.xml
+```
+
+重启服务
+
+```shell
+systemctl restart tomcat
+```
+
+测试访问：http://10.0.0.9:8080/manager/status
+
+![image-20240513103228645](../../../img/image-20240513103228645.png)
+
+输入配置的账号密码，成功进入
+
+![image-20240513103255698](../../../img/image-20240513103255698.png)
+
+
+
+# 六、Tomcat集群
+
+## 6.1 Tomcat配置文件详解
+
+主配置文件：`conf/server.xml`
+
+```xml
+<!-- 8085 shutdown端口，连接这个端口输入shutdown字符，就可以关闭tomcat -->
+<Server port="8005" shutdown="SHUTDOWN">
+
+<!-- 管理端认证功能 -->
+<GlobalNamingResources>
+    <Resource name="UserDatabase" auth="Container"
+              type="org.apache.catalina.UserDatabase"
+              description="User database that can be updated and saved"
+              factory="org.apache.catalina.users.MemoryUserDatabaseFactory"
+              pathname="conf/tomcat-users.xml" />
+  </GlobalNamingResources>
+
+<!-- 8080端口 处理用户Http请求 -->
+ <Connector port="8080" protocol="HTTP/1.1"
+               connectionTimeout="20000"
+               redirectPort="8443"
+               maxParameterCount="1000"
+               />
+
+<!--  Engine部署，指定默认的虚拟主机，这里指定localhost为默认虚拟主机 -->
+<Engine name="Catalina" defaultHost="localhost">
+
+<!-- Host部分，虚拟主机的配置, name就是域名 -->
+<Host name="localhost"  appBase="webapps"
+            unpackWARs="true" autoDeploy="true">
+        <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
+               prefix="localhost_access_log" suffix=".txt"
+               pattern="%h %l %u %t &quot;%r&quot; %s %b" />
+
+      </Host>
+
+<!-- 日志记录部分 -->
+            <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
+               prefix="localhost_access_log" suffix=".txt"
+               pattern="%h %l %u %t &quot;%r&quot; %s %b" />
+
+```
+
+Tomcat配置于nginx配置的对比
+
+| tomcat   | ngx                                                          |                                            |
+| -------- | ------------------------------------------------------------ | ------------------------------------------ |
+| 虚拟主机 | Host部分                                                     | server {}                                  |
+| 域名     | name="域名"                                                  | server_name java.oldboylinux.cn;           |
+| 端口     | Connector部分 port="8080"                                    | listen 80;                                 |
+| 站点目录 | appBase="webapps"                                            | root /app/code/blog;                       |
+| 自动解压 | unpackWARs="true"                                            | 无                                         |
+| 自动部署 | autoDeploy="true" 加载到jvm中                                | 无                                         |
+| 日志目录 | <Valve 部分 日志目录 directory="logs"                        | access_log /var/log/nginx/access.log main; |
+| 日志名字 | <Valve 部分前半部分prefix="localhost_access_log" 后半部分suffix=".txt" | access_log /var/log/nginx/access.log main; |
+| 日志格式 | <Valve 部分pattern="%h %l %u %t "%r" %s %b"                  | log_format main ................;          |
+
+## 6.2 tomcat访问日志格式
+
+说明
+
+| 说明                             | tomcat                | nginx                   |
+| -------------------------------- | --------------------- | ----------------------- |
+| 定义访问日志的格式               | Host部分的pattern定义 | http区域 log_format部分 |
+| 客户端ip地址                     | %h                    | $remote_addr            |
+| 访问的时间                       | %t                    | $local_time             |
+| 请求起始行                       | %r                    | $request                |
+| 状态码                           | %s                    | $status                 |
+| 大小                             | %b                    | $body_bytes_sent        |
+| 从哪里跳转来的(用户如何访问网站) | %{Referer}i           | $http_referer           |
+| 客户端类型,浏览器                | %{User-Agent}i        | $http_user_agent        |
+| XFF头记录                        | %{X-Forwarded-For}i   | $http_x_forwarded_for   |
+
+建议配置
+
+```xml
+pattern="%h %l %u %t &quot;%r&quot; %s %b &quot;% {Referer}i&quot; &quot;%{User-Agent}i&quot; &quot;% {X-Forwarded-For}i&quot;" />
+```
+
+>其中`&quot;`表示双引号
+
+
+
+## 6.3 Tomcat与用户请求
+
+请求流程：
+
+1. 请求与8080端口连接
+2. 域名与Host部分的Name进行匹配
+   1. 匹配成功：使用对应虚拟主机
+   2. 匹配失败：使用Engine中定义的default默认虚拟主机
+
+>Tomcat可以处理静态与动态的请求：
+>
+>- 处理静态的效率较低，擅长动态
+
+
+
+## 6.4 案例-部署zrlog应用
+
+步骤：
+
+- 准备站点war文件
+- 创建数据库、用户
+- 修改Tomcat配置
+
+1、代码准备：
+
+```shell
+# 上传zrlog的war包到webapps文件夹中
+[root@web03[ /app/tools/tomcat/webapps]#mv /root/zrlog-2.2.1-efbe9f9-release.war zrlog.war
+```
+
+2、创建数据库、用户
+
+```shell
+# 创建数据库
+MariaDB [(none)]> create database zrlog;
+Query OK, 1 row affected (0.00 sec)
+
+# 创建对应用户
+MariaDB [(none)]> grant all on zrlog.* to 'zrlog'@'172.16.1.%' identified by 'redhat123';
+Query OK, 0 rows affected (0.00 sec)
+
+# 查看
+MariaDB [(none)]> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| wordpress          |
+| zrlog              |
++--------------------+
+5 rows in set (0.01 sec)
+MariaDB [(none)]> select user,host from mysql.user;
++------------+------------+
+| user       | host       |
++------------+------------+
+| root       | 127.0.0.1  |
+| phpmyadmin | 172.16.1.% |
+| wordpress  | 172.16.1.% |
+| wp         | 172.16.1.% |
+| zrlog      | 172.16.1.% |
+| root       | ::1        |
+| root       | localhost  |
+| wordpress  | localhost  |
++------------+------------+
+8 rows in set (0.00 sec)
+```
+
+测试访问：
+
+>以上配置并没有未站点配置域名，zrlog.olboy这个域名是通过配置hosts解析设置的，只是为方便站点理解
+>
+>```shell
+>10.0.0.9 zrlog.oldboylinux.cn
+>```
+
+前台：http://zrlog.oldboylinux.cn:8080/zrlog/
+
+![image-20240513114215670](../../../img/image-20240513114215670.png)
+
+![image-20240513114343742](../../../img/image-20240513114343742.png)
+
+
+
+后台管理：http://zrlog.oldboylinux.cn:8080/zrlog/admin/  
+
+![image-20240513114715123](../../../img/image-20240513114715123.png)
+
+## 6.5 Tomcat的ROOT文件夹
+
+实现目标：想直接访问到网站，而不是加上网站路径
+
+比如：
+
+```shell
+# 现在访问zrlog
+http://zrlog.oldboylinux.cn:8080/zrlog/
+
+# 我想要的
+http://zrlog.oldboylinux.cn:8080
+```
+
+原理：当访问站点不加上路径时，会直接访问ROOT下面的内容
+
+实现直接访问zrlog：
+
+```shell
+# 先删除原有的ROOT文件夹（重命名也可以）
+mv ROOT ROOT.old
+
+# 把zrlog.war该名称ROOT.war 
+mv zrlog.war ROOT.war
+
+# 会新部署生成ROOT文件夹，老的zrlog可以删了
+rm zrlog -fr
+
+# 查看
+[root@web03[ /app/tools/tomcat/webapps]#ls
+docs  examples  host-manager  manager  memtest  memtest.war  ROOT  ROOT.old  ROOT.war 
+```
+
+测试访问：http://zrlog.oldboylinux.cn:8080/
+
+直接跳到zrlog的安装界面，说明成功
+
+![image-20240513134404186](../../../img/image-20240513134404186.png)
+
+>补充：
+>
+>如果zrlog已经配置完了，后续如何修改数据库的地址？
+>
+>```shell
+>[root@web03[ /app/tools/tomcat/webapps]#cat ROOT/WEB-INF/db.properties
+>#This is a database configuration file
+>#Mon May 13 13:44:21 CST 2024
+>driverClass=com.mysql.cj.jdbc.Driver
+>user=zrlog
+>password=redhat123
+>jdbcUrl=jdbc\:mysql\://172.16.1.51\:3306/zrlog?characterEncoding\=UTF-8&allowPublicKeyRetrieval\=true&useSSL\=false&serverTimezone\=GMT
+>```
+
+## 6.6 Tomcat接入Nginx
+
+Tomca接入Nginx，其原理是
+
+用户 --访问---> nginx ---转发---> Tomcat
+
+Nginx虚拟主机：
+
+```shell
+[root@web03[ /etc/nginx/conf.d]#cat zrlog.oldboylinux.cn.conf
 server {
   listen 80;
-  server_name gsblog.work.gd;
-  return 301 https://gsblog.work.gd$request_uri;
-}
+  server_name zrlog.oldboylinux.cn;
+  error_log  /var/log/nginx/zrlog-error.log notice;
+  access_log /var/log/nginx/zrlog-access.log main;
 
-
-server {
-  # 端口由80改为443
-  listen 443 ssl;
-  #ssl on;  # 1.15.0以后被废弃
-
-  server_name gsblog.work.gd;
-  root /app/code/ssl;
-  error_log  /var/log/nginx/ssl-error.log notice;
-  access_log /var/log/nginx/ssl-access.log main;
-
-  # ssh key
-  ssl_certificate /etc/nginx/ssl_keys/gsblog.work.gd.cer;
-  ssl_certificate_key /etc/nginx/ssl_keys/gsblog.work.gd.key;
-
-
+  # location转发
   location / {
-    index index.html;
+    proxy_pass http://127.0.0.1:8080;
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
   }
 }
+```
+
+设置Hosts，测试访问：http://zrlog.oldboylinux.cn/，转发成功
+
+![image-20240513140124888](../../../img/image-20240513140124888.png)
+
+## 6.7  Tomcat + Ngx动静分离
+
+什么是动静分离：
+
+- 动态资源和静态资源都单独存放
+- 如果需要访问静态资源，Nginx直接返回
+- 如果需要访问动态资源，Nginx再转发给Tomcat处理
+
+>前提：需要开发拆分代码，把静态资源拆分出来单独存放.  
+
+图示：没有动静分离，Ngx一股脑全抛给Tomcat
+
+![image-20240513140438636](../../../img/image-20240513140438636.png)
+
+图示：有动静分离，Nginx处理静态资源，Tomcat处理动态资源
+
+![image-20240513140505383](../../../img/image-20240513140505383.png)
+
+## 6.8 Tomcat创建多个实例
+
+目标：在同一台Linux主机上运行多个Tomcat实例
+
+原因：可以充分利用服务器资源
+
+步骤：
+
+- 创建多个tomcat目录
+- 配置文件端口8080，8005，改掉防止冲突
+- 启动  
+
+创建多个Tomcat目录
+
+```shell
+tar xf apache-tomcat-9.0.65.tar.gz
+cp -r apache-tomcat-9.0.65 tomcat-8081
+cp -r apache-tomcat-9.0.65 tomcat-8082
+mv tomcat-808* /app/tools/
+```
+
+修改配置
+
+```shell
+sed -i 's#8005#8006#g' tomcat-8081/conf/server.xml
+sed -i 's#8080#8081#g' tomcat-8081/conf/server.xml
+sed -i 's#8005#8007#g' tomcat-8082/conf/server.xml
+sed -i 's#8080#8082#g' tomcat-8082/conf/server.xml
+```
+
+手动启动
+
+```she
+echo java oldboylinux 8081 >/app/tools/tomcat-
+8081/webapps/ROOT/lidaojsp
+echo java oldboylinux 8082 >/app/tools/tomcat-
+8082/webapps/ROOT/lidao.jsp
 ```
 
 测试访问
 
-```shell
-[root@web02[ /etc/php-fpm.d]#curl -Lv -H Host:gsblog.work.gd http://10.0.0.7
-# 先到80
-* About to connect() to 10.0.0.7 port 80 (#0)
-..
-> Host:gsblog.work.gd
-
-# 再到301跳转
-< HTTP/1.1 301 Moved Permanently
-...
-
-# 再到443
-* About to connect() to gsblog.work.gd port 443 (#1)
-*   Trying 10.0.0.7...
-* Connected to gsblog.work.gd (10.0.0.7) port 443 (#1)
-* Initializing NSS with certpath: sql:/etc/pki/nssdb
-...
-```
-
-## 2.5 网站集群HTTPS配置
-
-集群HTTPS分为***全部加密***和***部分加密***
-
-全部加密：
-
-- 用户 ----> （加密）----> lb（监听80/443） ----> （加密）---->  web（监听443）
-
-部分加密：
-
-- 用户 ----> （加密）----> lb（监听80/443） ---->  web（监听80）
-
-### 2.5.1 全部加密
-
-web端加密，一心一意监听443
-
-```shell
-[root@web01[ /etc/nginx/conf.d]#cat gsblog.work.gd.conf
-server {
-  # 端口由80改为443
-  listen 443 ssl;
-  #ssl on;  # 1.15.0以后被废弃
-
-  server_name gsblog.work.gd;
-  root /app/code/ssl;
-  error_log  /var/log/nginx/ssl-error.log notice;
-  access_log /var/log/nginx/ssl-access.log main;
-
-  # ssh key
-  ssl_certificate /etc/nginx/ssl_keys/gsblog.work.gd.cer;
-  ssl_certificate_key /etc/nginx/ssl_keys/gsblog.work.gd.key;
-
-
-  location / {
-    index index.html;
-  }
-}
-```
-
-lb端加密，守住前线80/443端口
-
-```shell
-[root@lb01[ /etc/nginx/conf.d]#cat gsblog.work.gd.conf
-# 资源池
-upstream ssl_pools {
-  server 10.0.0.7:443;
-}
-
-# 80跳转443
-server {
-  listen 80;
-  server_name gsblog.work.gd;
-  return 301 https://gsblog.work.gd$request_uri;
-}
-
-# 443监听
-server {
-  listen 443 ssl;
-  server_name gsblog.work.gd;
-
-  #ssl keys
-  ssl_certificate /etc/nginx/ssl_keys/gsblog.work.gd.cer;
-  ssl_certificate_key /etc/nginx/ssl_keys/gsblog.work.gd.key;
-
-  location / {
-    proxy_pass https://ssl_pools;
-    proxy_set_header Host $http_host;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Real-Ip $remote_addr;
-  }
-}
-```
-
-设置hosts，重启服务，测试访问
-
-```shell
-[root@web02[ /etc/php-fpm.d]#curl -Lv -H Host:gsblog.work.gd http://10.0.0.5
-# 先到80
-* About to connect() to 10.0.0.5 port 80 (#0)
-...
-# 再301跳转
-< HTTP/1.1 301 Moved Permanently
-...
-# 再到443
-* About to connect() to gsblog.work.gd port 443 (#1)
-*   Trying 10.0.0.5...
-* Connected to gsblog.work.gd (10.0.0.5) port 443 (#1)
-...
-```
-
-#### 加配置HTTP2.0
-
-```shell
-[root@lb01[ /etc/nginx/conf.d]#cat gsblog.work.gd.conf
-# 资源池
-...
-
-# 80跳转443
-...
-
-# 443监听
-server {
-  listen 443 ssl http2; #此处加上标记即可
-  server_name gsblog.work.gd;
-...
-}
-```
-
-> 提示：
+>建议：
 >
-> 这个选项在1.25.1之后已被弃用
->
-> 参考：https://cloud.tencent.com/developer/article/2325511
+>未来生产上，可以直接把tomcat+应用整体打包，使用的时候直接解压即可  
 
+## 6.9 监控功能
 
+### 6.9.1 监控概述
 
-### 2.5.2 部分加密
+作用：
 
-web端不加密，监听80，放飞自我
+- 通过各种监控工具(Zabbix/Grafana/Prometheus/....)来监控Tomcat/java.
+- 需要我们开启java远程监控功能(JMX remote)  
 
-```shell
-[root@web01[ /etc/nginx/conf.d]#cat gsblog.work.gd.conf
-server {
-  listen 80;
-  server_name gsblog.work.gd;
-  root /app/code/ssl;
-  error_log  /var/log/nginx/ssl-error.log notice;
-  access_log /var/log/nginx/ssl-access.log main;
+### 6.9.2 配置步骤
 
-  location / {
-    index index.html;
-  }
-}
-```
-
-lb端加密，守住前线80/443端口，**转发注意改为80/http**
+tomcat配置中修改tomcat启动的选项，开启jmx远程监控功能。
 
 ```shell
-[root@lb01[ /etc/nginx/conf.d]#cat gsblog.work.gd.conf
-upstream ssl_pools {
-  # 改成80端口
-  server 10.0.0.7:80 ;
-}
+# 备份文件
+[root@web03[ /app/tools/tomcat]#cp bin/catalina.sh bin/catalina.sh.bak
 
-server {
-  listen 80;
-  server_name gsblog.work.gd;
-  return 301 https://gsblog.work.gd$request_uri;
-}
-
-server {
-  listen 443 ssl http2;
-  server_name gsblog.work.gd;
-  #ssl keys
-  ssl_certificate /etc/nginx/ssl_keys/gsblog.work.gd.cer;
-  ssl_certificate_key /etc/nginx/ssl_keys/gsblog.work.gd.key;
-  location / {
-    # 转发改成http
-    proxy_pass http://ssl_pools;
-    proxy_set_header Host $http_host;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Real-Ip $remote_addr;
-  }
-}
+# 编辑catalina.sh，125行之后加
+# 从tomcat 8.5开始 配置的每一行要通过\进行续行
+CATALINA_OPTS="$CATALINA_OPTS \
+ -Dcom.sun.management.jmxremote \
+ -Dcom.sun.management.jmxremote.port=12345 \
+ -Dcom.sun.management.jmxremote.authenticate=false \
+ -Dcom.sun.management.jmxremote.ssl=false \
+ -Djava.rmi.server.hostname=10.0.0.9" \
+ 
+# 重启tomcat生效
+systemctl restart tomcat
 ```
 
-## 2.6 课后任务
+选项说明
 
-搭建网站wordpress配置https.
+| 开启远程监控功能选项                              |                              |                 |
+| ------------------------------------------------- | ---------------------------- | --------------- |
+| -Dcom.sun.management.jmxremote                    | 开启远程监控功能             |                 |
+| -Dcom.sun.management.jmxremote.port=12345         | 指定端口                     |                 |
+| -Dcom.sun.management.jmxremote.authenticate=false | 关闭认证功能                 |                 |
+| -Dcom.sun.management.jmxremote.ssl=false          | 关闭ssl加密功能              |                 |
+| -Djava.rmi.server.hostname=10.0.0.9               | 写上本地网卡的ip,监听的地址. | 未来需要修改的. |
 
-给lb01,lb02配置keepalived监控nginx  
+### 6.9.3 验证
 
+配置完监控后，Tomcat的java进程有什么改变？
 
-
-# 三、优化与监控
-
-## 3.1 优化
-
-https == http over tls
+- 可以看到tomcat配置的监控信息
 
 ```shell
-server {
-  listen 443 ssl;
-  keepalive_timeout 70;
-  
-  #指定ssl加密协议的版本
-  ssl_protocols TLSv1 TLSv1.1 TLSv1.2; 
-  
-  #加密算法.需要排除算法
-  #排除null空算法, md5算法
-  ssl_ciphers AES128-SHA:AES256-SHA:RC4-SHA:DES-CBC3-SHA:RC4-MD5:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5; 
-
-  # 密钥
-  ssl_certificate /usr/local/nginx/conf/cert.pem;
-  ssl_certificate_key /usr/local/nginx/conf/cert.key;
-
-  #设置https 会话缓存
-  ssl_session_cache shared:SSL:10m;
-  
-  #超时时间 10分钟
-  ssl_session_timeout 10m;
-... 
-}
+[root@web03[ /app/tools/tomcat]#ps -ef | grep java
+root      13476      1  2 14:19 ?        00:00:05 /app/tools/jdk/bin/java -Djava.util.logging.config.file=/app/tools/tomcat/conf/logging.properties -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -Djdk.tls.ephemeralDHKeySize=2048 -Djava.protocol.handler.pkgs=org.apache.catalina.webresources -Dorg.apache.catalina.security.SecurityListener.UMASK=0027 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=12345 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=10.0.0.9 -Dignore.endorsed.dirs= -classpath /app/tools/tomcat/bin/bootstrap.jar:/app/tools/tomcat/bin/tomcat-juli.jar -Dcatalina.base=/app/tools/tomcat -Dcatalina.home=/app/tools/tomcat -Djava.io.tmpdir=/app/tools/tomcat/temp org.apache.catalina.startup.Bootstrap start
 ```
 
-## 3.2 监控证书过期时间
 
-流程：
 
-- 通过命令获取证书的过期日期
-- 与当前日期对比(30天之前)
+在windows下，通过JDK连接tomcat，模拟监控软件连接
 
-获取剩余时间的命令
+>C:\Program Files\Java\jdk1.8.0_201\bin\jconsole.exe  
 
-```shell
-# 获取不了
-[root@lb01[ /etc/nginx/conf.d]#curl -Lv https://www.baidu.com | grep 'expire date'
+执行：
 
-# 有一些命令的输出,并非标准输出,而是作为标准错误输出
-[root@lb01[ /etc/nginx/conf.d]#curl -Lv https://www.baidu.com |& grep 'expire date'
-*       expire date: Aug 06 01:51:05 2024 GMT
-```
+![image-20240513142656034](../../../img/image-20240513142656034.png)
 
->`|& `表示把管道前面标准输出(正确)和标准错误输出都传递给后面的命令。如果不加，默认传递标准输出(正确)  
+选择不安全连接
 
-编写获取检查过期时间的脚本
+![image-20240513142716314](../../../img/image-20240513142716314.png)
 
-```shell
-[root@lb01[ /server/scripts]#cat check-ssl.sh
-#!/bin/bash
-url=https://www.baidu.com
-expire_date_ori=`curl -vL $url |& grep 'expire date' |awk -F 'date:|GMT' '{print $2}'`
-expire_date_opt=`date -d "$expire_date_ori" +%F`
+连接成功
 
-echo 原始格式的过期时间 $expire_date_ori
-echo 处理后的过期时间 $expire_date_opt
-
-# 执行
-[root@lb01[ /server/scripts]#chmod a+x check-ssl.sh
-[root@lb01[ /server/scripts]#./check-ssl.sh
-原始格式的过期时间 Aug 06 01:51:05 2024
-处理后的过期时间 2024-08-06
-```
-
-改进版
-
-```shell
-[root@lb01[ /server/scripts]#cat check-ssl.sh
-#!/bin/bash
-#author: lidao996
-#version: v1.0 beta
-#desc: 检查指定url地址 https证书过期时间
-url=https://www.jd.com
-expire_date_ori=`curl -vL $url |& grep 'expire date' |awk -F 'date:|GMT' '{print $2}'`
-expire_date_opt=`date -d "$expire_date_ori" +%s`
-#当前的日期与过期时间进行相减 秒数
-date_now_second=`date +%s`
-expire_days=`echo "($expire_date_opt - $date_now_second)/(60*60*24)"|bc`
-echo "网站$url证书过期倒计时:还有 $expire_days 天"
-echo "网站过期日期是:`date -d "$expire_date_ori" +%F`"
-
-# 执行
-[root@lb01[ /server/scripts]#./check-ssl.sh
-网站https://www.jd.com证书过期倒计时:还有 211 天
-网站过期日期是:2024-12-09
-```
-
+![image-20240513142730577](../../../img/image-20240513142730577.png)
