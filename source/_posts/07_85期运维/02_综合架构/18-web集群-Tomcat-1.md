@@ -225,7 +225,7 @@ drwxr-x---. 3 root root    22 May 11 16:27 work
 | logs目录                            |                                                              |
 | ----------------------------------- | ------------------------------------------------------------ |
 | catalina.out                        | tomcat应用日志,启动过程,关闭,错误信息 <br/>**核心找**：startup启动用时,错误提示:error,failed,exception |
-| catalina.2022-09-15.log             | catalina.out的割日志.按照每天进行切割.                       |
+| catalina.2022-09-15.log             | catalina.out的切割日志.按照每天进行切割.                     |
 | localhost_access_log.2022-09-15.txt | 访问日志,未来可以重新定义名字和内容                          |
 
 
