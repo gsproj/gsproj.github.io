@@ -1,5 +1,5 @@
 ---
-title: day58-自动化架构-shell自动化编程（六）-完结
+title: day57-自动化架构-shell自动化编程（六）-完结
 date: 2024-5-22 15:23:52
 categories:
 - 运维
