@@ -439,27 +439,11 @@ CMD [ "nginx","-g","daemon off;" ]
 
 ![image-20240528165520939](../../../img/image-20240528165520939.png)
 
-## 1.4 Dockerfile小结
 
-| 生产环境应用建议         | 说明                                                         |
-| ------------------------ | ------------------------------------------------------------ |
-| 尽量保证每个镜像功能单一 | 尽量避免多个服务运行在同一个镜像中.                          |
-| 选择合适的基础镜像       | 不一定都要从头做(系统,ngx,tengine,tomcat,jdkՎՎʢ)             |
-| 注释与说明               | 添加一定的注释和镜像属性信息(LABEL)                          |
-| 指定版本号               | 使用镜像的时候指定版本,nginx:latest php:latest nginx:1.20.2-alpine |
-| 减少镜像层数/步骤        | 尽可能合并RUN,ADD,COPY                                       |
-| 记得收尾                 | 清理垃圾,记得清理缓存,临时文件,压缩包....                    |
-| 合理使用.dockerignore    | 构建的忽略的文件(了解),少传输些文件.                         |
 
-未来应用的时候,镜像做好后存放在镜像仓库中 
+## 1.4 案例
 
-分层次存储
-
-![image-20240528170010736](../../../img/image-20240528170010736.png)
-
-## 1.5 案例
-
-### 1.5.1 Dockerfile ENV使用变量
+### 1.4.1 Dockerfile ENV使用变量
 
 在Dockerfile中，可以使用ENV指令来定义变量，如
 
@@ -528,7 +512,7 @@ tengine      birds-v1        a823ac7e01d4   19 minutes ago   409MB
 
 
 
-### 1.5.2 多服务镜像nginx+php
+### 1.4.2 多服务镜像nginx+php
 
 流程:
 
@@ -617,7 +601,7 @@ CONTAINER ID   IMAGE                 COMMAND            CREATED          STATUS 
 261c8ef7b4e3   centos:nginx_php_v1   "/entrypoint.sh"   22 seconds ago   Up 21 seconds   0.0.0.0:32771->80/tcp, :::32771->80/tcp, 0.0.0.0:32770->9000/tcp, :::32770->9000/tcp   nginx_php_test
 ```
 
-### 1.5.3 使用上面的镜像部署可道云
+### 1.4.3 使用上面的镜像部署可道云
 
 主配置文件
 
@@ -725,3 +709,139 @@ CONTAINER ID   IMAGE          COMMAND            CREATED         STATUS         
 ```
 
 浏览器访问：http://10.0.0.82:32775![image-20240529121302947](../../../img/image-20240529121302947.png)
+
+>里面要求连接数据库，连172.16.1.51添加用户即可
+>
+>```shell
+>grant all on kodbox.* to 'kodbox'@'172.16.1.%' identified by 'redhat123';
+>```
+
+
+
+### 1.4.4 多阶段提交
+
+目前使用多节点提交实现:
+
+编译安装一些软件的时候,一般是先安装各种依赖,然后开始编译安装，编译安装一般会生成新的命令.
+
+- 1个镜像负责编译安装,生成命令.(临时)
+- 1个镜像上一个镜像的命令复制过来+服务必要的配置.
+
+使用最后生成镜像，Dockerfile如下：
+
+```shell
+[root@docker02 /server/dockerfile/04_duojieduan]#cat Dockerfile 
+# 设置处理镜像，AS TEMP的意思是临时使用
+FROM ubuntu:20.04 AS TEMP
+
+# 基本信息
+LABEL author="gs" \
+	  url="www.gs.com"
+
+# 变量
+ENV WEB_SERVER=tengine-2.3.3
+ENV INSTALL_DIR=/app/tools/${WEB_SERVER}
+ENV NGX_USER=nginx
+ENV CPU_CORES=1
+
+# 传输软件
+ADD tengine-2.3.3.tar.gz /tmp/
+
+# 环境准备
+RUN sed -ri 's#archive.ubuntu.com|security.ubuntu.com#mirrors.aliyun.com#g' /etc/apt/sources.list \
+&& apt update \
+&& apt install -y libssl-dev make gcc pcre2-utils libpcre3-dev zlib1g-dev \
+&& cd /tmp/tengine-2.3.3 \
+&& ./configure --prefix=${INSTALL_DIR} \
+--user=${NGX_USER} \
+--group=${NGX_USER} \
+--with-http_ssl_module \
+--with-http_v2_module \
+--with-http_realip_module \
+--with-http_stub_status_module \
+--with-http_mp4_module \
+--with-stream \
+--with-stream_ssl_module \
+--with-stream_realip_module \
+--add-module=modules/ngx_http_upstream_check_module/ \
+--add-module=modules/ngx_http_upstream_session_sticky_module \
+&& make -j ${CPU_CORES} \
+&& make install
+
+# 编译安装结束，生成tengine的nginx命令
+# 到此，第一个镜像的任务完成了
+# 开始第二各镜像的任务
+FROM ubuntu:20.04
+ENV NGX_USER=nginx
+
+# 从TEMP镜像拷贝文件
+COPY --from=TEMP /app/ /app/
+
+RUN sed -ri 's#archive.ubuntu.com|security.ubuntu.com#mirrors.aliyun.com#g' /etc/apt/sources.list \
+&& apt-get update
+
+RUN apt-get install -y libssl-dev pcre2-utils libpcre3-dev zlib1g-dev
+
+RUN ln -s /app/tools/tengine-2.3.3/ /app/tools/tengine \
+&& ln -s /app/tools/tengine/sbin/nginx /sbin/nginx \
+&& useradd -s /sbin/nologin ${NGX_USER}
+
+# 将站点目录文件放到tengine中
+ADD bird.tar.gz /app/tools/tengine/html/
+
+# 删除临时文件
+RUN rm -fr /tmp/* /var/cache/*
+
+# 设置暴露80端口
+EXPOSE 80
+
+# 设置入口命令
+CMD [ "nginx","-g","daemon off;" ]
+```
+
+构建镜像
+
+```shell
+[root@docker02 /server/dockerfile/04_duojieduan]#ls
+bird.tar.gz  Dockerfile  tengine-2.3.3.tar.gz
+
+[root@docker02 /server/dockerfile/04_duojieduan]#docker build -t tengine:duojieduan-v1 .
+[+] Building 569.9s (14/14) FINISHED                                       
+```
+
+可见TEMP的镜像并没有image保存
+
+```she
+[root@docker02 /server/dockerfile/04_duojieduan]#docker images
+REPOSITORY   TAG             IMAGE ID       CREATED       SIZE
+tengine      duojieduan-v1   21c446837763   2 hours ago   189MB
+mykodebox    v1              cec672b90ed8   6 hours ago   880MB
+centos       nginx_php_v1    c25c0c0349c1   7 hours ago   700MB
+```
+
+运行容器
+
+```shell
+[root@docker02 /server/dockerfile/04_duojieduan]#docker run -d -p 80:80 tengine:duojieduan-v1 
+d9d5555b57f100ded910cbc3f3171e0a523321dd324ec566e494a9b6fe423b1e
+```
+
+![image-20240529175149920](../../../img/image-20240529175149920.png)
+
+## 1.5 Dockerfile小结
+
+| 生产环境应用建议         | 说明                                                         |
+| ------------------------ | ------------------------------------------------------------ |
+| 尽量保证每个镜像功能单一 | 尽量避免多个服务运行在同一个镜像中.                          |
+| 选择合适的基础镜像       | 不一定都要从头做(系统,ngx,tengine,tomcat,jdkՎՎʢ)             |
+| 注释与说明               | 添加一定的注释和镜像属性信息(LABEL)                          |
+| 指定版本号               | 使用镜像的时候指定版本,nginx:latest php:latest nginx:1.20.2-alpine |
+| 减少镜像层数/步骤        | 尽可能合并RUN,ADD,COPY                                       |
+| 记得收尾                 | 清理垃圾,记得清理缓存,临时文件,压缩包....                    |
+| 合理使用.dockerignore    | 构建的忽略的文件(了解),少传输些文件.                         |
+
+未来应用的时候,镜像做好后存放在镜像仓库中 
+
+分层次存储
+
+![image-20240528170010736](../../../img/image-20240528170010736.png)
