@@ -30,8 +30,36 @@
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240703102741598.png">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240703102850916.png">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240703112102644.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240703131538925.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240703131849860.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240703132740154.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240703152540842.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240703152704288.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240703152830610.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240703152902877.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240703153110719.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240703153332017.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240703153406249.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240703153542725.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240703154026829.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240703154013462.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240703155944981.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240703160031392.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240703155304052.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240705152430350.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240705152453983.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240705152600954.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240705152918836.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240705152837059.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240705153307223.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240705153343280.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240705153809561.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240705153857179.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240705154656705.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240705154805105.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240705154817801.png">
 <meta property="article:published_time" content="2024-07-01T03:08:52.000Z">
-<meta property="article:modified_time" content="2024-07-03T03:22:01.038Z">
+<meta property="article:modified_time" content="2024-07-05T07:53:57.450Z">
 <meta property="article:author" content="GongSheng">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="http://gsproj.github.io/img/image-20240703095200643.png">
@@ -226,7 +254,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          5.3k 字
+          12k 字
         
       </span>
     
@@ -237,7 +265,7 @@
         
         
         
-          44 分钟
+          97 分钟
         
       </span>
     
@@ -492,7 +520,237 @@
 
 <p>在web页面的”Target”中可以看到</p>
 <p><img src="/../../../img/image-20240703112102644.png" srcset="/img/loading.gif" lazyload alt="image-20240703112102644"></p>
-<h1 id="六、Prometheus的exporter"><a href="#六、Prometheus的exporter" class="headerlink" title="六、Prometheus的exporter"></a>六、Prometheus的exporter</h1>
+<h1 id="六、prometheus的exporter"><a href="#六、prometheus的exporter" class="headerlink" title="六、prometheus的exporter"></a>六、prometheus的exporter</h1><h2 id="6-1-概述"><a href="#6-1-概述" class="headerlink" title="6.1 概述"></a>6.1 概述</h2><p>prometheus有众多的exporters，基本通过命令或docker运行。  </p>
+<p>命名规则：</p>
+<table>
+<thead>
+<tr>
+<th>exporter</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>node_exporter</td>
+<td>获取节点基础信息（系统监控）</td>
+</tr>
+<tr>
+<td>xx服务_exporter</td>
+<td>监控指定服务的。</td>
+</tr>
+</tbody></table>
+<p>各种exporter的使用流程基本类似：</p>
+<ul>
+<li>在被控机下载、部署、启动exporter.</li>
+<li>prometheus服务端配置、在配置中添加这主机+端口</li>
+</ul>
+<h2 id="6-2-客户端部署node-exporter"><a href="#6-2-客户端部署node-exporter" class="headerlink" title="6.2 客户端部署node_exporter"></a>6.2 客户端部署node_exporter</h2><p>0、环境准备</p>
+<table>
+<thead>
+<tr>
+<th>节点</th>
+<th>部署的内容</th>
+<th>ip地址</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>mn04-prometheus</td>
+<td>node_exporter</td>
+<td>10.0.0.64&#x2F;172.16.1.64</td>
+</tr>
+<tr>
+<td>mn03-grafana</td>
+<td>node_exporter</td>
+<td>10.0.0.63&#x2F;172.16.1.63</td>
+</tr>
+</tbody></table>
+<p>1、github下载：<a target="_blank" rel="noopener" href="https://github.com/prometheus/node_exporter">https://github.com/prometheus/node_exporter</a></p>
+<p>2、开始部署</p>
+<blockquote>
+<p>mn03、04都要操作</p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 解压</span><br>[root@mn03 /app/tools]#tar -vxf node_exporter-1.8.1.linux-amd64.tar.gz<br><span class="hljs-meta">#</span><span class="bash"> 目录软链接</span><br>[root@mn03 /app/tools]#ln -s node_exporter-1.8.1.linux-amd64/ node_exporter<br><span class="hljs-meta">#</span><span class="bash"> 命令软链接</span><br>[root@mn03 /app/tools]#ln -s /app/tools/node_exporter/node_exporter /bin/node_exporter<br></code></pre></td></tr></table></figure>
+
+<p>3、测试使用，查看版本</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn03 /app/tools]#node_exporter --version<br>node_exporter, version 1.8.1 (branch: HEAD, revision: 400c3979931613db930ea035f39ce7b377cdbb5b)<br>  build user:       root@7afbff271a3f<br>  build date:       20240521-18:36:22<br>  go version:       go1.22.3<br>  platform:         linux/amd64<br>  tags:             unknown<br></code></pre></td></tr></table></figure>
+
+<p>4、创建service服务文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 创建服务文件</span><br>[root@mn03 /app/tools]#cat /usr/lib/systemd/system/node_exporter.service <br>[Unit]<br>Description=prometheus node_exporter<br>After=network.target<br>[Service]<br>Type=simple<br>ExecStart=/bin/node_exporter<br>KillMode=process<br>[Install]<br>WantedBy=multi-user.target<br></code></pre></td></tr></table></figure>
+
+<p>启动服务</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn03 /app/tools]#systemctl daemon-reload <br>[root@mn03 /app/tools]#systemctl enable --now node_exporter.service <br></code></pre></td></tr></table></figure>
+
+<p>查看状态</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn03 /app/tools]#systemctl status node_exporter.service <br>● node_exporter.service - prometheus node_exporter<br>   Loaded: loaded (/usr/lib/systemd/system/node_exporter.service; enabled; vendor preset: disabled)<br>   Active: active (running) since Wed 2024-07-03 11:48:51 CST; 5s ago<br></code></pre></td></tr></table></figure>
+
+<p>检查端口信息</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn03 /app/tools]#ps -ef | grep node<br>root      15636      1  0 11:48 ?        00:00:00 /bin/node_exporter<br>root      15659   2322  0 11:50 pts/0    00:00:00 grep --color=auto node<br>[root@mn03 /app/tools]#ss -lntup | grep node<br>tcp    LISTEN     0      128    [::]:9100               [::]:*                   users:((&quot;node_exporter&quot;,pid=15636,fd=3))<br></code></pre></td></tr></table></figure>
+
+
+
+<h2 id="6-3-服务端配置-静态配置版"><a href="#6-3-服务端配置-静态配置版" class="headerlink" title="6.3 服务端配置-静态配置版"></a>6.3 服务端配置-静态配置版</h2><p>配置yml文件，静态版本</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn04[ /app/prometheus]#cat prometheus.yml <br>...<br>scrape_configs:<br><span class="hljs-meta">  #</span><span class="bash"> The job name is added as a label `job=&lt;job_name&gt;` to any timeseries scraped from this config.</span><br>  - job_name: &quot;prometheus-server&quot;<br><br>    # metrics_path defaults to &#x27;/metrics&#x27;<br>    # scheme defaults to &#x27;http&#x27;.<br><br>    static_configs:<br>      - targets: [&quot;localhost:9090&quot;]<br><span class="hljs-meta"></span><br><span class="hljs-meta">  #</span><span class="bash"> 新增</span><br>  - job_name: &quot;basic_info_node_exporter&quot;<br>    static_configs:<br>      - targets: [&quot;10.0.0.63:9100&quot;]<br>      - targets: [&quot;10.0.0.64:9100&quot;]<br></code></pre></td></tr></table></figure>
+
+<p>重启服务</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">systemctl restart prometheus.service<br></code></pre></td></tr></table></figure>
+
+<p>检查，确保web页面中可以查询到配置的主机</p>
+<p><img src="/../../../img/image-20240703131538925.png" srcset="/img/loading.gif" lazyload alt="image-20240703131538925">测试过滤条件可用</p>
+<p><img src="/../../../img/image-20240703131849860.png" srcset="/img/loading.gif" lazyload alt="image-20240703131849860"></p>
+<h2 id="6-4-服务端配置-动态配置版"><a href="#6-4-服务端配置-动态配置版" class="headerlink" title="6.4 服务端配置-动态配置版"></a>6.4 服务端配置-动态配置版</h2><p>作用是什么？</p>
+<ul>
+<li>获取的exporter域名+端口，写入配置文件，可以定时读取并加入到prometheus中。</li>
+<li>用于解决，大量主机添加、删除的操作</li>
+</ul>
+<p>在服务端yml文件中配置，动态版本</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn04[ /app/prometheus]#cat prometheus.yml <br>...<br>  - job_name: &quot;prometheus-server&quot;<br><br>    # metrics_path defaults to &#x27;/metrics&#x27;<br>    # scheme defaults to &#x27;http&#x27;.<br><br>    static_configs:<br>      - targets: [&quot;localhost:9090&quot;]<br><span class="hljs-meta"></span><br><span class="hljs-meta">  #</span><span class="bash"> 静态的不需要了</span><br><span class="hljs-meta">  #</span><span class="bash">- job_name: <span class="hljs-string">&quot;basic_info_node_exporter&quot;</span></span><br><span class="hljs-meta">  #</span><span class="bash">  static_configs:</span><br><span class="hljs-meta">  #</span><span class="bash">    - targets: [<span class="hljs-string">&quot;10.0.0.63:9100&quot;</span>]</span><br><span class="hljs-meta">  #</span><span class="bash">    - targets: [<span class="hljs-string">&quot;10.0.0.64:9100&quot;</span>]</span><br>  <br><span class="hljs-meta">  #</span><span class="bash"> 新增动态</span><br>  - job_name: &quot;basic_info_node_exporter_discovery&quot;<br>    file_sd_configs:<br>      - files:<br>        - /app/prometheus/discovery_node_exporter.json<br>        refresh_interval: 5s<br></code></pre></td></tr></table></figure>
+
+<p>选项的作用</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">file_sd_configs: 动态读取与加载配置文件。<br>files: 指定要加载的配置文件.<br>refresh_interval 读取间隔.<br></code></pre></td></tr></table></figure>
+
+<p>创建json文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn04[ /app/prometheus]#cat discovery_node_exporter.json <br>[<br>  &#123;<br>    &quot;targets&quot;: [<br>      &quot;10.0.0.63:9100&quot;,<br>      &quot;10.0.0.64:9100&quot;<br>    ]<br>  &#125;<br>]<br></code></pre></td></tr></table></figure>
+
+<p>重启服务并测试</p>
+<p><img src="/../../../img/image-20240703132740154.png" srcset="/img/loading.gif" lazyload alt="image-20240703132740154"></p>
+<h1 id="七、Prometheus的过滤语句"><a href="#七、Prometheus的过滤语句" class="headerlink" title="七、Prometheus的过滤语句"></a>七、Prometheus的过滤语句</h1><h2 id="7-1-基本过滤"><a href="#7-1-基本过滤" class="headerlink" title="7.1 基本过滤"></a>7.1 基本过滤</h2><p>过滤方法：直接写上prometheus的键值，比如获取所有主机的可用内存</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">node_memory_MemFree_bytes<br></code></pre></td></tr></table></figure>
+
+<p><img src="/../../../img/image-20240703152540842.png" srcset="/img/loading.gif" lazyload alt="image-20240703152540842"></p>
+<p>值不方便看，可以加入<strong>运算符</strong>，改为<code>G</code>显示</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">node_memory_MemFree_bytes/1024^3<br></code></pre></td></tr></table></figure>
+
+<p><img src="/../../../img/image-20240703152704288.png" srcset="/img/loading.gif" lazyload alt="image-20240703152704288"></p>
+<p>从Targets页面，点击对应主机可以查看到所有键值</p>
+<p><img src="/../../../img/image-20240703152830610.png" srcset="/img/loading.gif" lazyload alt="image-20240703152830610"></p>
+<p><img src="/../../../img/image-20240703152902877.png" srcset="/img/loading.gif" lazyload alt="image-20240703152902877"></p>
+<h2 id="7-2-包含条件的过滤（重要）"><a href="#7-2-包含条件的过滤（重要）" class="headerlink" title="7.2 包含条件的过滤（重要）"></a>7.2 包含条件的过滤（重要）</h2><h3 id="7-2-1-过滤指定主机的数据"><a href="#7-2-1-过滤指定主机的数据" class="headerlink" title="7.2.1 过滤指定主机的数据"></a>7.2.1 过滤指定主机的数据</h3><p>应用场景：只需要指定主机的数据</p>
+<p>比如查看剩余内存的信息，只需要mn04的数据</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">node_memory_MemFree_bytes&#123;instance=&quot;10.0.0.64:9100&quot;&#125;<br></code></pre></td></tr></table></figure>
+
+<p><img src="/../../../img/image-20240703153110719.png" srcset="/img/loading.gif" lazyload alt="image-20240703153110719"></p>
+<h3 id="7-2-2-过滤指定主机CPU信息中的iowait"><a href="#7-2-2-过滤指定主机CPU信息中的iowait" class="headerlink" title="7.2.2 过滤指定主机CPU信息中的iowait"></a>7.2.2 过滤指定主机CPU信息中的iowait</h3><p>应用场景：你给的数据太多了，我只要其中一个字段</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">node_cpu_seconds_total&#123;instance=&quot;10.0.0.63:9100&quot;,mode=&quot;iowait&quot;&#125;<br></code></pre></td></tr></table></figure>
+
+<p>不指定的情况下，这样</p>
+<p><img src="/../../../img/image-20240703153332017.png" srcset="/img/loading.gif" lazyload alt="image-20240703153332017"></p>
+<p>指定iowait的效果</p>
+<p><img src="/../../../img/image-20240703153406249.png" srcset="/img/loading.gif" lazyload alt="image-20240703153406249"></p>
+<h3 id="7-2-3-过滤出所有主机非idle的指标"><a href="#7-2-3-过滤出所有主机非idle的指标" class="headerlink" title="7.2.3 过滤出所有主机非idle的指标"></a>7.2.3 过滤出所有主机非idle的指标</h3><p>应用场景：反向查询</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">node_cpu_seconds_total&#123;instance=&quot;10.0.0.63:9100&quot;,mode!=&quot;idle&quot;&#125;<br></code></pre></td></tr></table></figure>
+
+<p><img src="/../../../img/image-20240703153542725.png" srcset="/img/loading.gif" lazyload alt="image-20240703153542725"></p>
+<h3 id="7-2-4-使用正则匹配"><a href="#7-2-4-使用正则匹配" class="headerlink" title="7.2.4 使用正则匹配"></a>7.2.4 使用正则匹配</h3><p>查询语句</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">node_cpu_seconds_total&#123;mode=~&quot;^i.*&quot;&#125;<br></code></pre></td></tr></table></figure>
+
+<p>不使用正则过滤</p>
+<p><img src="/../../../img/image-20240703154026829.png" srcset="/img/loading.gif" lazyload alt="image-20240703154026829"></p>
+<p>使用后</p>
+<p><img src="/../../../img/image-20240703154013462.png" srcset="/img/loading.gif" lazyload alt="image-20240703154013462"></p>
+<h3 id="7-2-5-取出最近1分钟系统CPU的信息"><a href="#7-2-5-取出最近1分钟系统CPU的信息" class="headerlink" title="7.2.5 取出最近1分钟系统CPU的信息"></a>7.2.5 取出最近1分钟系统CPU的信息</h3><p>关键字：<code>[1m]</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">node_cpu_seconds_total&#123;cpu=&quot;0&quot;,instance=&quot;10.0.0.64:9100&quot;,mode=&quot;iowait&quot;&#125;[1m]<br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="7-2-6-条件过滤小结"><a href="#7-2-6-条件过滤小结" class="headerlink" title="7.2.6 条件过滤小结"></a>7.2.6 条件过滤小结</h3><p>PQL过滤，可以使用匹配符号，如<code>=、!=、=~、!~</code>  </p>
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&#x3D;</td>
+<td>等于.</td>
+</tr>
+<tr>
+<td>!&#x3D;</td>
+<td>不等于.</td>
+</tr>
+<tr>
+<td>&#x3D;~</td>
+<td>支持正则，匹配，要完全匹配对应的内容 node_cpu_seconds_total{mode&#x3D;~”^i.*”}</td>
+</tr>
+<tr>
+<td>!~</td>
+<td>支持正则，不匹配</td>
+</tr>
+</tbody></table>
+<h2 id="7-3-使用函数"><a href="#7-3-使用函数" class="headerlink" title="7.3 使用函数"></a>7.3 使用函数</h2><h3 id="7-3-1-rate函数"><a href="#7-3-1-rate函数" class="headerlink" title="7.3.1 rate函数"></a>7.3.1 rate函数</h3><p><strong>案例01</strong>-过去5分钟内promethues总共收到多少http请求（&#x2F;metrics）</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">prometheus_http_requests_total&#123;handler=&quot;/metrics&quot;&#125;[5m]<br></code></pre></td></tr></table></figure>
+
+<p><img src="/../../../img/image-20240703155944981.png" srcset="/img/loading.gif" lazyload alt="image-20240703155944981"></p>
+<p>那请求每秒钟加了多少呢？此时可以用rate函数来获取</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">rate(prometheus_http_requests_total&#123;handler=&quot;/metrics&quot;&#125;[5m])<br><span class="hljs-meta">#</span><span class="bash"> 可以看到每秒约加了0.06</span><br></code></pre></td></tr></table></figure>
+
+<p><img src="/../../../img/image-20240703160031392.png" srcset="/img/loading.gif" lazyload alt="image-20240703160031392"></p>
+<p><strong>案例02</strong>-检查过去一分钟内的CPU速率</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">rate(node_cpu_seconds_total&#123;instance=&quot;10.0.0.64:9100&quot;&#125;[1m])<br></code></pre></td></tr></table></figure>
+
+<p>排除“idle”，查看cpu速率每秒加了多少</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">rate(node_cpu_seconds_total&#123;instance=&quot;10.0.0.64:9100&quot;,mode!=&quot;idle&quot;&#125;[1m])<br></code></pre></td></tr></table></figure>
+
+<p><img src="/../../../img/image-20240703155304052.png" srcset="/img/loading.gif" lazyload alt="image-20240703155304052"></p>
+<h3 id="7-3-2-sum函数求和"><a href="#7-3-2-sum函数求和" class="headerlink" title="7.3.2 sum函数求和"></a>7.3.2 sum函数求和</h3><p>比如：查询总内存的语句</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs shell">node_memory_MemTotal_bytes<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 结果</span><br>node_memory_MemTotal_bytes&#123;instance=&quot;10.0.0.64:9100&quot;, job=&quot;basic_info_node_exporter_discovery&quot;&#125; 2076536832<br>node_memory_MemTotal_bytes&#123;instance=&quot;10.0.0.63:9100&quot;, job=&quot;basic_info_node_exporter_discovery&quot;&#125; 2076536832<br></code></pre></td></tr></table></figure>
+
+<p>使用求和函数</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">sum(node_memory_MemTotal_bytes)<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 结果</span><br>&#123;&#125; 4153073664<br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="7-3-3-count函数求数量"><a href="#7-3-3-count函数求数量" class="headerlink" title="7.3.3 count函数求数量"></a>7.3.3 count函数求数量</h3><p>7.3.2的语句改为count函数</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">count(node_memory_MemTotal_bytes)<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 结果</span><br>&#123;&#125; 2<br></code></pre></td></tr></table></figure>
+
+
+
+<blockquote>
+<p>还有一堆函数，可以在官网查询</p>
+<p><a target="_blank" rel="noopener" href="https://prometheus.io/docs/prometheus/latest/querying/functions/">https://prometheus.io/docs/prometheus/latest/querying/functions/</a></p>
+</blockquote>
+<h2 id="7-4-复杂语句（重要）"><a href="#7-4-复杂语句（重要）" class="headerlink" title="7.4 复杂语句（重要）"></a>7.4 复杂语句（重要）</h2><p>所谓复杂函数，就是把不同语句混合计算，求得结果。</p>
+<p>比如：计算内存使用率</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> （总内存-剩余内存）/总内存</span><br>(node_memory_MemTotal_bytes - node_memory_MemFree_bytes) / node_memory_MemTotal_bytes * 100<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 结果</span><br>&#123;instance=&quot;10.0.0.64:9100&quot;, job=&quot;basic_info_node_exporter_discovery&quot;&#125;<br>58.20359116076589<br>&#123;instance=&quot;10.0.0.63:9100&quot;, job=&quot;basic_info_node_exporter_discovery&quot;&#125;<br>75.3697972451856<br></code></pre></td></tr></table></figure>
+
+
+
+<h1 id="八、Grafana展示数据"><a href="#八、Grafana展示数据" class="headerlink" title="八、Grafana展示数据"></a>八、Grafana展示数据</h1><p>prometheus webui一般用于调试PromQL语句（查询语句）</p>
+<p>展示交给Grafana</p>
+<p>本质：Grafana执行PromQL语句（查询语句）获取数据，然后进行展示  </p>
+<h2 id="8-1-使用流程"><a href="#8-1-使用流程" class="headerlink" title="8.1 使用流程"></a>8.1 使用流程</h2><h3 id="8-1-1-添加数据源"><a href="#8-1-1-添加数据源" class="headerlink" title="8.1.1 添加数据源"></a>8.1.1 添加数据源</h3><p>进入数据源设置界面，点击添加数据源</p>
+<p><img src="/../../../img/image-20240705152430350.png" srcset="/img/loading.gif" lazyload alt="image-20240705152430350"></p>
+<p>选择prometheus</p>
+<p><img src="/../../../img/image-20240705152453983.png" srcset="/img/loading.gif" lazyload alt="image-20240705152453983"></p>
+<p>填写信息，保存退出即可</p>
+<p><img src="/../../../img/image-20240705152600954.png" srcset="/img/loading.gif" lazyload alt="image-20240705152600954"></p>
+<p>回到数据源总览界面，点击配置好的prometheus源进去</p>
+<p><img src="/../../../img/image-20240705152918836.png" srcset="/img/loading.gif" lazyload alt="image-20240705152918836"></p>
+<p>导入自带的三个仪表盘</p>
+<p><img src="/../../../img/image-20240705152837059.png" srcset="/img/loading.gif" lazyload alt="image-20240705152837059"></p>
+<h3 id="8-1-2-修改仪表盘"><a href="#8-1-2-修改仪表盘" class="headerlink" title="8.1.2 修改仪表盘"></a>8.1.2 修改仪表盘</h3><p>进到仪表盘页面，进入”Prometheus Stats”仪表盘</p>
+<p><img src="/../../../img/image-20240705153307223.png" srcset="/img/loading.gif" lazyload alt="image-20240705153307223"></p>
+<p>可以看到默认的数据不全，很多都是缺失的</p>
+<p><img src="/../../../img/image-20240705153343280.png" srcset="/img/loading.gif" lazyload alt="image-20240705153343280"></p>
+<p>以Uptime面板为例，点进去查看它的查询语句</p>
+<p><img src="/../../../img/image-20240705153809561.png" srcset="/img/loading.gif" lazyload alt="image-20240705153809561"></p>
+<p>发现是有问题的</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> job名不对</span><br>(time() - process_start_time_seconds&#123;job=&quot;prometheus&quot;, instance=~&quot;$node&quot;&#125;)<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 修改为</span><br>(time() - process_start_time_seconds&#123;job=&quot;prometheus-server&quot;, instance=~&quot;$node&quot;&#125;)<br></code></pre></td></tr></table></figure>
+
+<p>修改后正常获取数据</p>
+<p><img src="/../../../img/image-20240705153857179.png" srcset="/img/loading.gif" lazyload alt="image-20240705153857179"></p>
+<blockquote>
+<p>这个自带的仪表盘，功能不是很完善，有的面板查询语句是正常的，但是根本查不出数据，更别说在Grafana显示了</p>
+</blockquote>
+<h3 id="8-1-3-导入第三方仪表盘"><a href="#8-1-3-导入第三方仪表盘" class="headerlink" title="8.1.3 导入第三方仪表盘"></a>8.1.3 导入第三方仪表盘</h3><p>为了解决自带仪表盘功能不完善的问题，从grafana官网下载第三方仪表盘</p>
+<p><a target="_blank" rel="noopener" href="https://grafana.com/grafana/dashboards/1860-node-exporter-full/">https://grafana.com/grafana/dashboards/1860-node-exporter-full/</a></p>
+<p>同样下载JSON文件</p>
+<p><img src="/../../../img/image-20240705154656705.png" srcset="/img/loading.gif" lazyload alt="image-20240705154656705"></p>
+<p>再导入进去即可</p>
+<p><img src="/../../../img/image-20240705154805105.png" srcset="/img/loading.gif" lazyload alt="image-20240705154805105"></p>
+<p>效果如下，丰富很多</p>
+<p><img src="/../../../img/image-20240705154817801.png" srcset="/img/loading.gif" lazyload alt="image-20240705154817801"></p>
+<h1 id="九、Push-Gateway"><a href="#九、Push-Gateway" class="headerlink" title="九、Push Gateway"></a>九、Push Gateway</h1><p>用于自定义监控项，以及分布式监控（如 zabbix proxy）</p>
+<h2 id="9-1-使用流程"><a href="#9-1-使用流程" class="headerlink" title="9.1 使用流程"></a>9.1 使用流程</h2>
                 
               </div>
             
