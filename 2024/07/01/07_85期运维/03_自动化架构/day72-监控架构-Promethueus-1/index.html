@@ -58,8 +58,12 @@
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240705154656705.png">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240705154805105.png">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240705154817801.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240705161616911.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240705162752423.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240705162808111.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240705162734852.png">
 <meta property="article:published_time" content="2024-07-01T03:08:52.000Z">
-<meta property="article:modified_time" content="2024-07-05T07:53:57.450Z">
+<meta property="article:modified_time" content="2024-07-05T08:33:24.426Z">
 <meta property="article:author" content="GongSheng">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="http://gsproj.github.io/img/image-20240703095200643.png">
@@ -254,7 +258,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          12k 字
+          16k 字
         
       </span>
     
@@ -265,7 +269,7 @@
         
         
         
-          97 分钟
+          131 分钟
         
       </span>
     
@@ -309,6 +313,13 @@
               <div class="markdown-body">
                 
                 <h1 id="监控架构-Prometheus-01"><a href="#监控架构-Prometheus-01" class="headerlink" title="监控架构-Prometheus-01"></a>监控架构-Prometheus-01</h1><p>今日内容：</p>
+<ul>
+<li>认识prometheus</li>
+<li>prometheus的基本用法以及数据查询语句</li>
+<li>Prometheus的exporter客户端</li>
+<li>Grafana展示promethues的数据</li>
+<li>使用PushGateway实现自定义监控</li>
+</ul>
 <h1 id="一、Prometheus介绍"><a href="#一、Prometheus介绍" class="headerlink" title="一、Prometheus介绍"></a>一、Prometheus介绍</h1><h2 id="2-1-概述"><a href="#2-1-概述" class="headerlink" title="2.1 概述"></a>2.1 概述</h2><p>Prometheus（普罗米修斯）监控架构，使用Golang语言实现。</p>
 <p>使用简单，学习门槛较高，Prometheus一般与Grafana配合。  </p>
 <h2 id="2-2-Prometheus对比Zabbix"><a href="#2-2-Prometheus对比Zabbix" class="headerlink" title="2.2 Prometheus对比Zabbix"></a>2.2 Prometheus对比Zabbix</h2><table>
@@ -749,8 +760,68 @@
 <p><img src="/../../../img/image-20240705154805105.png" srcset="/img/loading.gif" lazyload alt="image-20240705154805105"></p>
 <p>效果如下，丰富很多</p>
 <p><img src="/../../../img/image-20240705154817801.png" srcset="/img/loading.gif" lazyload alt="image-20240705154817801"></p>
-<h1 id="九、Push-Gateway"><a href="#九、Push-Gateway" class="headerlink" title="九、Push Gateway"></a>九、Push Gateway</h1><p>用于自定义监控项，以及分布式监控（如 zabbix proxy）</p>
-<h2 id="9-1-使用流程"><a href="#9-1-使用流程" class="headerlink" title="9.1 使用流程"></a>9.1 使用流程</h2>
+<h1 id="九、Push-Gateway"><a href="#九、Push-Gateway" class="headerlink" title="九、Push Gateway"></a>九、Push Gateway</h1><p>Pushgateway是一种<strong>中介服务</strong>，可以将无法被Prometheus直接拉取的指标推送给它，然后再向</p>
+<p>Prometheus公开，常用于自定义监控项，以及分布式监控（如 zabbix proxy）</p>
+<h2 id="9-1-使用流程"><a href="#9-1-使用流程" class="headerlink" title="9.1 使用流程"></a>9.1 使用流程</h2><ul>
+<li>部署、启动pushgateway</li>
+<li>服务端ip&#x2F;域名+端口</li>
+<li>写入配置（动态、静态）。</li>
+<li>书写脚本获取你要的信息，把信息发送到pushgateway中。</li>
+</ul>
+<h3 id="9-1-1-安装部署"><a href="#9-1-1-安装部署" class="headerlink" title="9.1.1 安装部署"></a>9.1.1 安装部署</h3><blockquote>
+<p>在grafana节点（mn03）部署push gateway</p>
+</blockquote>
+<p>1、获取安装包</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">https://github.com/prometheus/pushgateway/releases/tag/v1.9.0<br></code></pre></td></tr></table></figure>
+
+<p>2、解压、创建软连接</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs shell">tar -vxf pushgateway-1.9.0.linux-amd64.tar.gz <br>ln -s pushgateway-1.9.0.linux-amd64 pushgateway<br><br>[root@mn03 /app/tools]#ls<br>node_exporter  node_exporter-1.8.1.linux-amd64  pushgateway  pushgateway-1.9.0.linux-amd64  pushgateway-1.9.0.linux-amd64.tar.gz  sersync<br></code></pre></td></tr></table></figure>
+
+<p>3、测试使用</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn03 /app/tools/pushgateway]#./pushgateway --version<br>pushgateway, version 1.9.0 (branch: HEAD, revision: d1ca1a6a426126a09a21f745e8ffbaba550f9643)<br>  build user:       root@2167597b1e9c<br>  build date:       20240608-15:04:08<br>  go version:       go1.22.4<br>  platform:         linux/amd64<br>  tags:             unknown<br></code></pre></td></tr></table></figure>
+
+<p>4、启动服务</p>
+<p>手动方式</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">pushgateway &amp;ՎҴ/tmp/pushgw.log &amp;<br></code></pre></td></tr></table></figure>
+
+<p>systemctl管理方式（推荐）</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 创建service文件</span><br>[root@mn03 /]#cat /usr/lib/systemd/system/pushgateway-server.service <br>[Unit]<br>Description=Push Gateway Server<br>After=network.target<br>[Service]<br>Type=simple<br>ExecStart=/app/tools/pushgateway/pushgateway <br>KillMode=process<br>[Install]<br>WantedBy=multi-user.target<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 重新加载并启动服务</span><br>[root@mn03 /]#systemctl daemon-reload <br>[root@mn03 /]#systemctl enable --now pushgateway-server.service <br>Created symlink from /etc/systemd/system/multi-user.target.wants/pushgateway-server.service to /usr/lib/systemd/system/pushgateway-server.service.<br></code></pre></td></tr></table></figure>
+
+<p>4、查看状态，其端口是9091</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn03 /]#systemctl status pushgateway-server.service <br>● pushgateway-server.service - Push Gateway Server<br>   Loaded: loaded (/usr/lib/systemd/system/pushgateway-server.service; enabled; vendor preset: disabled)<br>   Active: active (running) since Fri 2024-07-05 16:10:34 CST; 26s ago<br>...<br>[root@mn03 /]#ps -ef | grep push<br>root      33538      1  0 16:10 ?        00:00:00 /app/tools/pushgateway/pushgateway<br>root      33555   2322  0 16:11 pts/0    00:00:00 grep --color=auto push<br>[root@mn03 /]#ss -lntup | grep push<br>tcp    LISTEN     0      128    [::]:9091               [::]:*                   users:((&quot;pushgateway&quot;,pid=33538,fd=3))<br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="9-1-2-Prometheus配置"><a href="#9-1-2-Prometheus配置" class="headerlink" title="9.1.2 Prometheus配置"></a>9.1.2 Prometheus配置</h3><p>修改Prometheus的配置文件（静态），把push gateway添加进去</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn04[ /app/prometheus]#cat prometheus.yml <br>...<br><span class="hljs-meta">  #</span><span class="bash"> The job name is added as a label `job=&lt;job_name&gt;` to any timeseries scraped from this config.</span><br>  - job_name: &quot;prometheus-server&quot;<br><br>    # metrics_path defaults to &#x27;/metrics&#x27;<br>    # scheme defaults to &#x27;http&#x27;.<br><br>    static_configs:<br>      - targets: [&quot;localhost:9090&quot;]<br><span class="hljs-meta"></span><br><span class="hljs-meta">  #</span><span class="bash"> 静态的不需要了</span><br><span class="hljs-meta">  #</span><span class="bash">- job_name: <span class="hljs-string">&quot;basic_info_node_exporter&quot;</span></span><br><span class="hljs-meta">  #</span><span class="bash">  static_configs:</span><br><span class="hljs-meta">  #</span><span class="bash">    - targets: [<span class="hljs-string">&quot;10.0.0.63:9100&quot;</span>]</span><br><span class="hljs-meta">  #</span><span class="bash">    - targets: [<span class="hljs-string">&quot;10.0.0.64:9100&quot;</span>]</span><br>  <br><span class="hljs-meta">  #</span><span class="bash"> 新增动态</span><br>  - job_name: &quot;basic_info_node_exporter_discovery&quot;<br>    file_sd_configs:<br>      - files:<br>        - /app/prometheus/discovery_node_exporter.json<br>        refresh_interval: 5s<br>  <br><span class="hljs-meta">  #</span><span class="bash"> 新增pushgateway监控</span>     <br>  - job_name: &quot;pushgateway&quot;<br>    static_configs:<br>      - targets: [&quot;10.0.0.63:9091&quot;]<br></code></pre></td></tr></table></figure>
+
+<p>重启prometheus服务</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn04[ /app/prometheus]#systemctl restart prometheus.service <br></code></pre></td></tr></table></figure>
+
+<p>查看是否添加成功</p>
+<p><img src="/../../../img/image-20240705161616911.png" srcset="/img/loading.gif" lazyload alt="image-20240705161616911"></p>
+<h3 id="9-1-3-使用push-gateway"><a href="#9-1-3-使用push-gateway" class="headerlink" title="9.1.3 使用push gateway"></a>9.1.3 使用push gateway</h3><p>测试自定义监控，以获取CPU核心数的命令为例</p>
+<p>shell命令如下</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn03 /app/tools/pushgateway]#lscpu |awk &#x27;/^CPU\(s\):/&#123;print $2&#125;&#x27;<br>1<br></code></pre></td></tr></table></figure>
+
+<p>写成脚本，上传数据</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn03 /server/scripts]#cat test-push.sh <br><span class="hljs-meta">#</span><span class="bash">!/bin/bash</span><br><span class="hljs-meta">#</span><span class="bash"><span class="hljs-comment">#############################################################</span></span><br><span class="hljs-meta">#</span><span class="bash"> File Name:test-push.sh</span><br><span class="hljs-meta">#</span><span class="bash"> Version:V1.0</span><br><span class="hljs-meta">#</span><span class="bash"> Author:Haris Gong</span><br><span class="hljs-meta">#</span><span class="bash"> Organization:gsproj.github.io</span><br><span class="hljs-meta">#</span><span class="bash"> Desc:</span><br><span class="hljs-meta">#</span><span class="bash"><span class="hljs-comment">#############################################################</span></span><br><span class="hljs-meta"></span><br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash">1. vars</span> <br>job=&quot;pushgateway&quot;<br>ins=&quot;10.0.0.63:9091&quot;<br>pushgw=&quot;http://10.0.0.63:9091&quot;<br>cores=`lscpu |awk &#x27;/^CPU\(s\):/&#123;print $2&#125;&#x27;`<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash">2、推送到pushgateway</span><br>echo &quot;cpu_cores $cores&quot; | \<br>curl --data-binary @- $&#123;pushgw&#125;/metrics/job/$&#123;job&#125;/instance/$&#123;ins&#125;<br></code></pre></td></tr></table></figure>
+
+<p>执行脚本</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn03 /server/scripts]#sh -x test-push.sh <br>+ job=pushgateway<br>+ ins=10.0.0.63:9091<br>+ pushgw=http://10.0.0.63:9091<br>++ lscpu<br>++ awk &#x27;/^CPU\(s\):/&#123;print $2&#125;&#x27;<br>+ cores=1<br>+ curl --data-binary @- http://10.0.0.63:9091/metrics/job/pushgateway/instance/10.0.0.63:9091<br></code></pre></td></tr></table></figure>
+
+<p>执行完，可以去prometheus页面去看看是否添加成功了</p>
+<p><img src="/../../../img/image-20240705162752423.png" srcset="/img/loading.gif" lazyload alt="image-20240705162752423"></p>
+<p>已经可以看到</p>
+<p><img src="/../../../img/image-20240705162808111.png" srcset="/img/loading.gif" lazyload alt="image-20240705162808111"></p>
+<p>测试查询语句正常</p>
+<p><img src="/../../../img/image-20240705162734852.png" srcset="/img/loading.gif" lazyload alt="image-20240705162734852"></p>
+<h2 id="9-2-小结"><a href="#9-2-小结" class="headerlink" title="9.2 小结"></a>9.2 小结</h2><p>push gateway算是对prometheus功能的补充，类似于zbx的自定义监控</p>
+<ul>
+<li>当前学习的只是一个很小的案例，功能很少，</li>
+<li>后续可以根据实际需求，把脚本交给定时任务、或者死循环每5秒执行一次，不断地向push gateway服务器推送数据，确保数据实时有效</li>
+</ul>
+
                 
               </div>
             
