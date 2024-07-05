@@ -11,7 +11,11 @@ tag:
 
 今日内容：
 
-
+- 认识prometheus
+- prometheus的基本用法以及数据查询语句
+- Prometheus的exporter客户端
+- Grafana展示promethues的数据
+- 使用PushGateway实现自定义监控
 
 # 一、Prometheus介绍
 
@@ -828,7 +832,208 @@ https://grafana.com/grafana/dashboards/1860-node-exporter-full/
 
 # 九、Push Gateway
 
-用于自定义监控项，以及分布式监控（如 zabbix proxy）
+Pushgateway是一种**中介服务**，可以将无法被Prometheus直接拉取的指标推送给它，然后再向
+
+Prometheus公开，常用于自定义监控项，以及分布式监控（如 zabbix proxy）
 
 ## 9.1 使用流程
 
+- 部署、启动pushgateway
+- 服务端ip/域名+端口
+- 写入配置（动态、静态）。
+- 书写脚本获取你要的信息，把信息发送到pushgateway中。  
+
+
+
+### 9.1.1 安装部署
+
+> 在grafana节点（mn03）部署push gateway
+
+1、获取安装包
+
+```shell
+https://github.com/prometheus/pushgateway/releases/tag/v1.9.0
+```
+
+2、解压、创建软连接
+
+```shell
+tar -vxf pushgateway-1.9.0.linux-amd64.tar.gz 
+ln -s pushgateway-1.9.0.linux-amd64 pushgateway
+
+[root@mn03 /app/tools]#ls
+node_exporter  node_exporter-1.8.1.linux-amd64  pushgateway  pushgateway-1.9.0.linux-amd64  pushgateway-1.9.0.linux-amd64.tar.gz  sersync
+```
+
+3、测试使用
+
+```shell
+[root@mn03 /app/tools/pushgateway]#./pushgateway --version
+pushgateway, version 1.9.0 (branch: HEAD, revision: d1ca1a6a426126a09a21f745e8ffbaba550f9643)
+  build user:       root@2167597b1e9c
+  build date:       20240608-15:04:08
+  go version:       go1.22.4
+  platform:         linux/amd64
+  tags:             unknown
+```
+
+4、启动服务
+
+手动方式
+
+```shell
+pushgateway &ՎҴ/tmp/pushgw.log &
+```
+
+systemctl管理方式（推荐）
+
+```shell
+# 创建service文件
+[root@mn03 /]#cat /usr/lib/systemd/system/pushgateway-server.service 
+[Unit]
+Description=Push Gateway Server
+After=network.target
+[Service]
+Type=simple
+ExecStart=/app/tools/pushgateway/pushgateway 
+KillMode=process
+[Install]
+WantedBy=multi-user.target
+
+# 重新加载并启动服务
+[root@mn03 /]#systemctl daemon-reload 
+[root@mn03 /]#systemctl enable --now pushgateway-server.service 
+Created symlink from /etc/systemd/system/multi-user.target.wants/pushgateway-server.service to /usr/lib/systemd/system/pushgateway-server.service.
+```
+
+4、查看状态，其端口是9091
+
+```shell
+[root@mn03 /]#systemctl status pushgateway-server.service 
+● pushgateway-server.service - Push Gateway Server
+   Loaded: loaded (/usr/lib/systemd/system/pushgateway-server.service; enabled; vendor preset: disabled)
+   Active: active (running) since Fri 2024-07-05 16:10:34 CST; 26s ago
+...
+[root@mn03 /]#ps -ef | grep push
+root      33538      1  0 16:10 ?        00:00:00 /app/tools/pushgateway/pushgateway
+root      33555   2322  0 16:11 pts/0    00:00:00 grep --color=auto push
+[root@mn03 /]#ss -lntup | grep push
+tcp    LISTEN     0      128    [::]:9091               [::]:*                   users:(("pushgateway",pid=33538,fd=3))
+```
+
+
+
+### 9.1.2 Prometheus配置
+
+修改Prometheus的配置文件（静态），把push gateway添加进去
+
+```shell
+[root@mn04[ /app/prometheus]#cat prometheus.yml 
+...
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: "prometheus-server"
+
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # 静态的不需要了
+  #- job_name: "basic_info_node_exporter"
+  #  static_configs:
+  #    - targets: ["10.0.0.63:9100"]
+  #    - targets: ["10.0.0.64:9100"]
+  
+  # 新增动态
+  - job_name: "basic_info_node_exporter_discovery"
+    file_sd_configs:
+      - files:
+        - /app/prometheus/discovery_node_exporter.json
+        refresh_interval: 5s
+  
+  # 新增pushgateway监控     
+  - job_name: "pushgateway"
+    static_configs:
+      - targets: ["10.0.0.63:9091"]
+```
+
+重启prometheus服务
+
+```shell
+[root@mn04[ /app/prometheus]#systemctl restart prometheus.service 
+```
+
+查看是否添加成功
+
+![image-20240705161616911](../../../img/image-20240705161616911.png)
+
+
+
+### 9.1.3 使用push gateway
+
+测试自定义监控，以获取CPU核心数的命令为例
+
+shell命令如下
+
+```shell
+[root@mn03 /app/tools/pushgateway]#lscpu |awk '/^CPU\(s\):/{print $2}'
+1
+```
+
+写成脚本，上传数据
+
+```shell
+[root@mn03 /server/scripts]#cat test-push.sh 
+#!/bin/bash
+##############################################################
+# File Name:test-push.sh
+# Version:V1.0
+# Author:Haris Gong
+# Organization:gsproj.github.io
+# Desc:
+##############################################################
+
+
+#1. vars 
+job="pushgateway"
+ins="10.0.0.63:9091"
+pushgw="http://10.0.0.63:9091"
+cores=`lscpu |awk '/^CPU\(s\):/{print $2}'`
+
+#2、推送到pushgateway
+echo "cpu_cores $cores" | \
+curl --data-binary @- ${pushgw}/metrics/job/${job}/instance/${ins}
+```
+
+执行脚本
+
+```shell
+[root@mn03 /server/scripts]#sh -x test-push.sh 
++ job=pushgateway
++ ins=10.0.0.63:9091
++ pushgw=http://10.0.0.63:9091
+++ lscpu
+++ awk '/^CPU\(s\):/{print $2}'
++ cores=1
++ curl --data-binary @- http://10.0.0.63:9091/metrics/job/pushgateway/instance/10.0.0.63:9091
+```
+
+执行完，可以去prometheus页面去看看是否添加成功了
+
+![image-20240705162752423](../../../img/image-20240705162752423.png)
+
+已经可以看到
+
+![image-20240705162808111](../../../img/image-20240705162808111.png)
+
+测试查询语句正常
+
+![image-20240705162734852](../../../img/image-20240705162734852.png)
+
+## 9.2 小结
+
+push gateway算是对prometheus功能的补充，类似于zbx的自定义监控
+
+- 当前学习的只是一个很小的案例，功能很少，
+- 后续可以根据实际需求，把脚本交给定时任务、或者死循环每5秒执行一次，不断地向push gateway服务器推送数据，确保数据实时有效
