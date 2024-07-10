@@ -1,5 +1,5 @@
 ---
-title: day71-监控架构-Prometheus(一)
+title: day72-监控架构-Prometheus(一)
 date: 2024-7-1 11:08:52
 categories:
 - 运维
