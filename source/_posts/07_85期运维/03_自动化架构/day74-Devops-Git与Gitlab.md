@@ -15,6 +15,9 @@ tag:
 - CI CD基础知识
 - Git的安装与使用
 - Gitlab的安装与使用
+- Gitlab的备份与恢复
+- Gitlab的迁移与升级
+- Gitlab的补充说明（配置邮箱、优化方法）
 
 # 一、运维的发展过程
 
@@ -727,3 +730,256 @@ Total 9 (delta 0), reused 0 (delta 0)
 
 
 ## 4.6 Gitlab的备份与恢复
+
+目标：
+
+- 掌握如何备份Gitlab相关的配置文件
+- 掌握如何备份Gitlab中的程序代码(代码仓库(项目),用户,用户组,密钥.)  
+
+
+
+### 4.6.1 备份Gitlab服务的配置文件
+
+备份`/etc/gitlab`目录下的所有内容即可
+
+```shell
+[root@devops01 /app/gitest/project01]#ls /etc/gitlab/
+gitlab.rb  gitlab.rb.bak  gitlab-secrets.json  initial_root_password  trusted-certs
+```
+
+
+
+### 4.6.2 备份Gitlab里面的内容  
+
+#### a）开启备份功能
+
+修改gitlab的配置文件，开启备份功能
+
+```shell
+[root@devops01 /etc/gitlab]#grep -rn "^[a-Z]" gitlab.rb
+32:external_url 'http://gitlab.test.cn'
+# 是否可以指定备份目录
+605:gitlab_rails['manage_backup_path'] = true
+# 指定备份目录
+606:gitlab_rails['backup_path'] = "/var/opt/gitlab/backups"
+# 备份压缩包的权限
+610:gitlab_rails['backup_archive_permissions'] = 0644
+# 备份保留多久（秒，这个值等于7天）
+615:gitlab_rails['backup_keep_time'] = 604800
+```
+
+配置生效
+
+```shell
+gitlab-ctl reconfigure
+gitlab-ctl restart
+```
+
+
+
+#### b）生成备份
+
+输入命令，生成备份文件
+
+```shell
+# GitLab 版本 >= 12.2 （实验用这个）
+gitlab-backup create
+
+# GitLab 版本 <= 12.1
+gitlab-rake gitlab:backup:create
+
+# 执行结果
+...
+2024-07-10 07:47:17 UTC -- Deleting backups/tmp ... done
+2024-07-10 07:47:17 UTC -- Warning: Your gitlab.rb and gitlab-secrets.json files contain sensitive data 
+and are not included in this backup. You will need these files to restore a backup.
+Please back them up manually.
+2024-07-10 07:47:17 UTC -- Backup 1720597580_2024_07_10_16.6.8 is done.
+2024-07-10 07:47:17 UTC -- Deleting backup and restore PID file ... done
+```
+
+查看生成的备份压缩包
+
+```shell
+[root@devops01 /etc/gitlab]#ls /var/opt/gitlab/backups/
+1720597580_2024_07_10_16.6.8_gitlab_backup.tar
+```
+
+
+
+#### c）恢复
+
+先停止写入类的服务
+
+```shell
+gitlab-ctl stop unicorn
+gitlab-ctl stop sidekiq
+```
+
+再恢复
+
+>备份包名字不包含右边内容`_gitlab-backup.tar`
+
+```shell
+# 新版本GitLab 版本 >= 12.2:
+gitlab-backup restore BACKUP=1720597580_2024_07_10_16.6.8
+
+# 旧版本GitLab 版本 <= 12.1:
+gitlab-rake gitlab:backup:restore BACKUP=1720597580_2024_07_10_16.6.8
+
+# 再输入yes继续
+Do you want to continue (yes/no)? yes 输入yes
+```
+
+最后重启gitlab
+
+```shell
+gitlab-ctl restart
+```
+
+
+
+#### d）自动备份脚本
+
+脚本如下：`backup-gitlab.sh`
+
+```shell
+#!/bin/bash
+# author :gs
+# desc : backup gitlab all
+
+# 1.备份gitlab数据
+gitlab-backup create
+
+# 2.备份gitlab配置和密码文件
+tar zcf /backup/gitlab/gitlab-conf-$(date+%F).tar.gz /etc/gitlab/
+
+# 3. 传输到备份服务器
+rsync xxx
+```
+
+写入定时任务，每天备份一次
+
+```shell
+# crontab
+00 03 * * * sh /server/scripts/backup-gitlab.sh &>/dev/null
+```
+
+
+
+## 4.7 Gitlab的升级与迁移
+
+### 4.7.1 升级方法
+
+为什么要升级？
+
+1. 新功能，非常吸引
+2. 修复bug、漏洞
+3. 公司制定统一版本，为了标准化、自动化  
+
+需要遵循以下升级步骤
+
+- 升级至**之前主要版本**的**最新次要版本**。
+- 升级到**目标主要版本**的**第一个次要版本**（X.0.Z）。
+- 继续升级到较新的版本  
+
+比如12.0.3升级到14.1.1，需要先一步步升级中间版本，最后再升级到14.1.1
+
+![image-20240710160127666](../../../img/image-20240710160127666.png)
+
+
+
+### 4.7.2 迁移方法
+
+迁移比较简单一些，老主机备份，新主机恢复
+
+![image-20240710160312010](../../../img/image-20240710160312010.png)
+
+
+
+## 4.8 开启HTTPS
+
+如果有证书，可以在配置文件中设置，开启HTTPS，参考如下：
+
+```shell
+# 为了防止内网渗透，将gitlab服务的访问添加了ssl
+external_url 'https://gitlab.oldboylinux.cn'
+nginx[' enable' ] = true
+nginx['client_max_body_size' ]= '250m '
+nginx['redirect_http_to_https' ]= true
+nginx[' redirect_http_to_https _port' ] = 443
+# 核心部分，指定证书
+nginx['ssl_certificate' ] = "path/ key.crt"
+# 核心部分，指定私钥
+nginx['ssl_certificate_key'] = "path/ key.key"
+nginx['ssl_ciphers' ] ="ECDHE-RSA-AES256-GCMSHA384:ECDHE-RSA-AES128-GCM-SHA256"
+nginx['ssl_prefer_server_ciphers']= "on"
+nginx['ssl_protocols']= "TLSv1.2"
+nginx['ssl_session_cache ' ] = "builtin:1000shared:sSL: 10m"
+nginx['ssl_session_timeout']= "5m"
+```
+
+修改完，重新初始化，并重启服务
+
+```shell
+gitlab-ctl reconfigure
+gitlab-ctl restart
+```
+
+
+
+## 4.9 配置邮箱
+
+默认已经有发送邮件的功能，可以通过配置文件来修改发件人，参考如下
+
+```shell
+# 配置发件人
+51 ### Email Settings
+52 gitlab_rails['gitlab_email_enabled'] = true
+53 gitlab_rails['gitlab_email_from'] = 'lidao996@163.com'
+54 gitlab_rails['gitlab_email_display_name'] = 'Oldboy_gitlab_tongzhi'
+
+# 配置发件人详细信息
+517 gitlab_rails['smtp_enable'] = true
+518 gitlab_rails['smtp_address'] = "smtp.163.com"
+519 gitlab_rails['smtp_port'] = 465
+520 gitlab_rails['smtp_user_name'] = "lidao996@163.com"
+521 gitlab_rails['smtp_password'] = "smtp授权码"
+522 gitlab_rails['smtp_domain'] = "163.com"
+523 gitlab_rails['smtp_authentication'] = "login"
+524 gitlab_rails['smtp_enable_starttls_auto'] = true
+525 gitlab_rails['smtp_tls'] = true
+```
+
+修改完，重新初始化，并重启服务
+
+```shell
+gitlab-ctl reconfigure
+gitlab-ctl restart
+```
+
+
+
+## 4.10 Gitlab优化
+
+优化策略：关闭目前不使用的组件，默认都是true，修改为 false  
+
+```shell
+# 关闭prometheus
+prometheus['enable'] = false
+prometheus['monitor_kubernetes'] = false
+
+# 关闭alertmanger
+alertmanager['enable'] = false
+
+# 关闭exporter 如果需要prometheus监控 则可以打开。
+node_exporter['enable'] = false
+redis_exporter['enable'] = false
+postgres_exporter['enable'] = false
+gitlab_monitor['enable'] = false
+
+# gitlab_exporter
+prometheus_monitoring['enable'] = false
+grafana['enable'] = false
+```
+
