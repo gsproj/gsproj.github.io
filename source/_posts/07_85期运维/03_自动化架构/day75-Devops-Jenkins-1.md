@@ -11,7 +11,11 @@ tag:
 
 今日内容：
 
-- 
+- 了解什么是Jenkins
+- Jenkins的安装部署方法
+- Jenkins项目01-执行Shell命令
+- Jenkins项目02-拉取Gitlab上的代码
+- Jenkins项目03-基于tag标签拉取代码并部署
 
 # 一、Jenkins概述
 
@@ -146,14 +150,6 @@ systemctl status jenkins.service
 
 ### 2.2.5 安装插件
 
->到这一步，为了方便实验，还是换回了教程提供的jenkins版本
->
->jenkins-2.361.4-1.1.noarch.rpm
->
->因为有配套的离线插件包
->
->jenkins-2.361-plugins.tar.gz
-
 | Jenkins插件安装方式               |                                                              |
 | --------------------------------- | ------------------------------------------------------------ |
 | web页面,选择与安装(联网)          | 一个一个找选择,安装重启jenkins                               |
@@ -182,6 +178,7 @@ systemctl status jenkins.service
 #### a）离线安装插件
 
 ```shell
+# 将离线插件包解压到jenkins插件目录中
 [root@devops02 /app/rpms]#tar -xf jenkins-2.361-plugins.tar.gz -C /var/lib/jenkins/plugins/
 
 # 重启服务
@@ -574,3 +571,115 @@ git push -u origin --tags
 
 1、创建自由风格项目
 
+![image-20240712161314975](../../../img/image-20240712161314975.png)
+
+2、参数化构建过程---选Git参数
+
+![image-20240712163249672](../../../img/image-20240712163249672.png)
+
+填写信息，创建`git_tag`变量，默认值origin，即master中的最新值
+
+![image-20240712163503837](../../../img/image-20240712163503837.png)
+
+3、配置-源码管理
+
+填写git项目信息
+
+![image-20240712163726106](../../../img/image-20240712163726106.png)
+
+4、配置-每次构建之前清空工作目录，防止缓存导致问题
+
+![image-20240712163815888](../../../img/image-20240712163815888.png)
+
+5、配置-Build步骤--执行Shell
+
+![image-20240712163955122](../../../img/image-20240712163955122.png)
+
+## 5.5 测试执行
+
+1、测试执行，在此处可以选择参数值，选择"v2.0"的tag
+
+![image-20240712164059363](../../../img/image-20240712164059363.png)
+
+
+
+2、执行错误，可以看到`${git-tag}`的标签名没有替换成值，有问题
+
+![image-20240712165756849](../../../img/image-20240712165756849.png)
+
+3、解决方法：变量命名有问题，改成`git_tag`可以
+
+![image-20240712165959106](../../../img/image-20240712165959106.png)
+
+分支也要记得改
+
+![image-20240712170041378](../../../img/image-20240712170041378.png)
+
+shell也是![image-20240712170255940](../../../img/image-20240712170255940.png)
+
+
+
+
+
+4、改完再次测试，成功，可以看到标签变量换成“v2.0”了
+
+![image-20240712170412733](../../../img/image-20240712170412733.png)
+
+查看系统中的打包文件
+
+```shell
+[root@devops02 /app/rpms]#ls /tmp/myproj-v2.0.tar.gz 
+/tmp/myproj-v2.0.tar.gz
+```
+
+
+
+## 5.6 将代码部署到web节点
+
+1、先在web01服务器，把nginx服务配置好
+
+```shell
+[root@web01 /etc/nginx/conf.d]#cat myproj.conf 
+server {
+  listen 8061;
+  server_name myproj.test.cn;
+  access_log /var/log/nginx/myproj.access.log main;
+  error_log /var/log/nginx/myproj.error.log notice;
+  root /app/code/myproj;
+  location / {
+    index index.html;
+  }
+}
+```
+
+2、配置免密认证，jenkins连接web01不再需要输入密码
+
+```shell
+[root@devops02 /app/rpms]#ssh-keygen
+[root@devops02 /app/rpms]#ssh-copy-id root@172.16.1.7
+# 测试
+[root@devops02 /app/rpms]#ssh root@172.16.1.7 hostname -I
+10.0.0.7 172.16.1.7
+```
+
+3、jenkins配置，修改shell命令
+
+```shell
+echo "您当前部署的代码版本为:${git_tag}"
+#1. 打包压缩
+tar zcf /tmp/myproj-${git_tag}.tar.gz .
+#2. 分发
+scp /tmp/myproj-${git_tag}.tar.gz root@172.16.1.7:/tmp/
+#3. 解压
+ssh root@172.16.1.7 "tar xf /tmp/myproj-${git_tag}.tar.gz -C /app/code/myproj/"
+```
+
+3、检查部署结果
+
+jenkins任务执行成功，
+
+![image-20240712171555867](../../../img/image-20240712171555867.png)
+
+nginx页面部署成功，能正常访问
+
+![image-20240712171619376](../../../img/image-20240712171619376.png)
