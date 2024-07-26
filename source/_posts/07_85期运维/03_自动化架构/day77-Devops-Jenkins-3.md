@@ -7,7 +7,7 @@ categories:
 tag: 
 ---
 
-# Devops架构-Jenkins-02
+# Devops架构-Jenkins-03
 
 今日内容：
 
@@ -416,7 +416,13 @@ chown sonar:sonar /usr/local/sonarqube-10.6.0.92116/ -R
 44:sonar.jdbc.url=jdbc:postgresql://localhost/sonar
 ```
 
-5、启动sonarqube
+5、启动sonarqube（<font color=red>不能用ROOT启动！启动前需要先启动PSQL</font>）
+
+>不能用root启动，只能普通用户，否则会报错！
+>
+>像组件中带的elasticsearch
+>
+>![image-20240719145429109](../../../img/image-20240719145429109.png)
 
 ```shell
 # 不能用root启动，只能普通用户
