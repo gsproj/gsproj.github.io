@@ -1,0 +1,875 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="GongSheng">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="容器架构-Docker-01">
+<meta property="og:type" content="article">
+<meta property="og:title" content="day59-容器架构-Docker（一）">
+<meta property="og:url" content="http://gsproj.github.io/2024/05/24/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/03_%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9E%B6%E6%9E%84/day59-%E5%AE%B9%E5%99%A8%E6%9E%B6%E6%9E%84-docker-1/index.html">
+<meta property="og:site_name" content="迎风之豚的博客">
+<meta property="og:description" content="容器架构-Docker-01">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240524101205606.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240524101508600.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240524101958278.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240524103829054.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240524104300825.png">
+<meta property="article:published_time" content="2024-05-24T01:08:52.000Z">
+<meta property="article:modified_time" content="2024-08-02T01:48:34.361Z">
+<meta property="article:author" content="GongSheng">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://gsproj.github.io/img/image-20240524101205606.png">
+  
+  
+  
+  <title>day59-容器架构-Docker（一） - 迎风之豚的博客</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>&#34;迎风之豚的博客&#34;</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="day59-容器架构-Docker（一）"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-05-24 09:08" pubdate>
+          2024年5月24日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          7.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          62 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">day59-容器架构-Docker（一）</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="容器架构-Docker-01"><a href="#容器架构-Docker-01" class="headerlink" title="容器架构-Docker-01"></a>容器架构-Docker-01</h1><p>今日内容：</p>
+<ul>
+<li>服务架构概述</li>
+<li>容器介绍</li>
+<li>Docker快速上手</li>
+</ul>
+<h1 id="一、IAAS-PAAS-SAAS概述"><a href="#一、IAAS-PAAS-SAAS概述" class="headerlink" title="一、IAAS PAAS SAAS概述"></a>一、IAAS PAAS SAAS概述</h1><p>Iaas：基础设施即服务 Infrastructure-as-a-Service</p>
+<p>Paas：平台即服务 Platform-as-a-Service</p>
+<p>Saas：软件即服务 Software-as-a-Service</p>
+<p>Caas：容器即服务 介于IAAS和PAAS</p>
+<p>IAAS，PAAS，SAAS这些服务，用于帮助人们更快实现目标(搭建环境,使用产品)</p>
+<p>从左到右，人们需要管理与维护的地方越来越少，人们可以把重点关注在使用&#x2F;应用上.  </p>
+<p>更形象点：</p>
+<ul>
+<li>IAAS平台:基础设施,阿里云,云厂商.</li>
+<li>PAAS平台:服务&#x2F;运行环境是ok，公有云，负载均衡SLB</li>
+<li>SAAS平台:服务已经准备好，您直接用，具体产品，如processon,wps,亿图</li>
+</ul>
+<p>图示-抽象：</p>
+<p><img src="/../../../img/image-20240524101205606.png" srcset="/img/loading.gif" lazyload alt="image-20240524101205606"></p>
+<p>图示-具体：</p>
+<p><img src="/../../../img/image-20240524101508600.png" srcset="/img/loading.gif" lazyload alt="image-20240524101508600"></p>
+<h1 id="二、容器介绍"><a href="#二、容器介绍" class="headerlink" title="二、容器介绍"></a>二、容器介绍</h1><h2 id="2-1-什么是容器"><a href="#2-1-什么是容器" class="headerlink" title="2.1 什么是容器"></a>2.1 什么是容器</h2><p>容器是在隔离环境中运行的一个进程，如果进程结束，容器就会停止.</p>
+<p>容器的隔离环境，拥有自己的ip地址、系统文件、主机名、进程管理，相当于一个mini的系统  </p>
+<h2 id="2-2-容器VS虚拟机🌟"><a href="#2-2-容器VS虚拟机🌟" class="headerlink" title="2.2 容器VS虚拟机🌟"></a>2.2 容器VS虚拟机🌟</h2><table>
+<thead>
+<tr>
+<th></th>
+<th>虚拟机</th>
+<th>容器</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>优点</td>
+<td>1. 使用简单 <br/>2. 也有成熟管理工具,vmware esxi,KVM,Openstack <br/>3. 可以随意定制. <br/>4. 启动虚拟机要经历完整的Linux启动流程</td>
+<td>1. 快速部署(扩容,弹性伸缩)<br/> 2. 大部分环境都有现成镜像<br/> 3. 让我们不再关注系统基础设施,把关注点放在配置,升级,优化 <br/>4. 不依赖硬件 <br/>5. 启动容器秒级.<br/> 6. 相当于一个进程</td>
+</tr>
+<tr>
+<td>缺点</td>
+<td>1. 需要硬件支持虚拟化技术(VT-X) <br/>2. 资源利用率不高 <br/>3. 同一台虚拟跑多个服务,可能有冲突<br/> 4. 占用资源较多. <br/>5. 不满足目前升级,快速扩容,快速部署,回滚不方便.</td>
+<td>1. 使用较为复杂<br/> 2. 共享linux系统内核,推荐使用较新linux内核.</td>
+</tr>
+</tbody></table>
+<p><img src="/../../../img/image-20240524101958278.png" srcset="/img/loading.gif" lazyload alt="image-20240524101958278"></p>
+<h1 id="三、Docker极速上手"><a href="#三、Docker极速上手" class="headerlink" title="三、Docker极速上手"></a>三、Docker极速上手</h1><blockquote>
+<p>Docker需要Linux内核: 3.10以上. 如果旧的内核需要升级内核才能使用  </p>
+</blockquote>
+<p>Docker版本说明：</p>
+<ul>
+<li><p>分为docker-ce(开源)和docker-ee(企业版)</p>
+</li>
+<li><p>Docker版本从1.13开始改成年-月版本命名方式.</p>
+</li>
+</ul>
+<h2 id="3-1-环境准备"><a href="#3-1-环境准备" class="headerlink" title="3.1 环境准备"></a>3.1 环境准备</h2><p>准备两台机器，用于Docker实验</p>
+<table>
+<thead>
+<tr>
+<th>docker环境</th>
+<th>ip</th>
+<th>配置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>docker01.oldboylinux.cn</td>
+<td>10.0.0.81&#x2F;172.16.1.81</td>
+<td>2c4G(至少1c2G)</td>
+</tr>
+<tr>
+<td>docker02.oldboylinux.cn</td>
+<td>10.0.0.82&#x2F;172.16.1.82</td>
+<td>2c4G(至少1c2G）</td>
+</tr>
+</tbody></table>
+<h2 id="3-2-安装docker"><a href="#3-2-安装docker" class="headerlink" title="3.2 安装docker"></a>3.2 安装docker</h2><p>步骤</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash">1.安装相关依赖.</span><br>yum install -y yum-utils device-mapper-persistentdata lvm2<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash">2.下载官方的docker yum源文件</span><br>yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash">3.替换yum源地址</span><br>sed -i &#x27;s+download.docker.com+mirrors.tuna.tsinghua.edu.cn/docker-ce+&#x27; /etc/yum.repos.d/docker-ce.repo<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash">4.清空缓存</span><br>yum clean all<br>yum makecache<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash">4.安装docker-ce</span><br>yum install -y docker-ce<br>systemctl enable --now docker<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash">5.检查</span><br>[root@docker01[ ~]#docker version<br>Client: Docker Engine - Community<br> Version:           26.1.3<br> API version:       1.45<br> Go version:        go1.21.10<br> Git commit:        b72abbb<br> Built:             Thu May 16 08:36:24 2024<br> OS/Arch:           linux/amd64<br> Context:           default<br>Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?<br></code></pre></td></tr></table></figure>
+
+
+
+<h2 id="3-3-Docker下载镜像加速"><a href="#3-3-Docker下载镜像加速" class="headerlink" title="3.3 Docker下载镜像加速"></a>3.3 Docker下载镜像加速</h2><blockquote>
+<p>阿里云,腾讯云有加速用的地址  </p>
+<p>如阿里云：<a target="_blank" rel="noopener" href="https://help.aliyun.com/zh/acr/user-guide/accelerate-the-pulls-of-docker-official-images#section-9tt-j3m-d2f">https://help.aliyun.com/zh/acr/user-guide/accelerate-the-pulls-of-docker-official-images#section-9tt-j3m-d2f</a></p>
+</blockquote>
+<p>配置镜像加速</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 创建配置文件夹目录</span><br>sudo mkdir -p /etc/docker<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 创建配置文件</span><br>[root@docker01[ ~]#cat /etc/docker/daemon.json <br>&#123;<br>	&quot;registry-mirrors&quot;:[&quot;https://bjjtv7cs.mirror.aliyuncs.com&quot;]<br>&#125;<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 重新加载服务</span><br>[root@docker01[ ~]#sudo systemctl daemon-reload<br>[root@docker01[ ~]#sudo systemctl restart docker<br></code></pre></td></tr></table></figure>
+
+
+
+<h2 id="3-4-配置docker自动补全"><a href="#3-4-配置docker自动补全" class="headerlink" title="3.4 配置docker自动补全"></a>3.4 配置docker自动补全</h2><p>安装</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">yum install -y bash-completion bash-completion-extras<br></code></pre></td></tr></table></figure>
+
+
+
+<h1 id="四、-Docker-C-x2F-S架构"><a href="#四、-Docker-C-x2F-S架构" class="headerlink" title="四、 Docker C&#x2F;S架构"></a>四、 Docker C&#x2F;S架构</h1><p>什么是CS架构？</p>
+<ul>
+<li>cs client&#x2F;server 客户端&#x2F;服务端</li>
+</ul>
+<p>Docker的C&#x2F;S架构也分为服务端和客户端：</p>
+<ul>
+<li>Docker 服务端:docker daemon 叫dockerd</li>
+<li>Docker 客户端:docker命令(下载镜像,运行容器…)</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>docker相关词汇</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>镜像</td>
+<td>存放各种的环境或服务</td>
+</tr>
+<tr>
+<td>容器</td>
+<td>进程,运行起来的镜像.</td>
+</tr>
+<tr>
+<td>仓库(存放镜像)</td>
+<td>远程仓库,本地仓库</td>
+</tr>
+</tbody></table>
+<p>图示：</p>
+<p><img src="/../../../img/image-20240524103829054.png" srcset="/img/loading.gif" lazyload alt="image-20240524103829054"></p>
+<p>示例：下载nginx镜像到本地仓库，然后启动容器</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 下载Niginx镜像</span><br>[root@docker01[ ~]#docker pull nginx<br>Using default tag: latest<br>latest: Pulling from library/nginx<br>a2abf6c4d29d: Pull complete <br>a9edb18cadd1: Pull complete <br>589b7251471a: Pull complete <br>186b1aaa4aa6: Pull complete <br>b4df32aa5a72: Pull complete <br>a0bcbecc962e: Pull complete <br>Digest: sha256:0d17b565c37bcbd895e9d92315a05c1c3c9a29f762b011a10c54a66cd53c9b31<br>Status: Downloaded newer image for nginx:latest<br>docker.io/library/nginx:latest<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 查看镜像</span><br>[root@docker01[ ~]#docker images<br>REPOSITORY   TAG       IMAGE ID       CREATED       SIZE<br>nginx        latest    605c77e624dd   2 years ago   141MB<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 启动容器</span><br>[root@docker01[ ~]#docker run -d -p 80:80 nginx<br>50715f7f85a3b083d136e92d2969cae4d40f5c31f4b7f243c57e5d31fc748dbd<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 查看容器</span><br>[root@docker01[ ~]#docker ps<br>CONTAINER ID   IMAGE     COMMAND                  CREATED          STATUS          PORTS                               NAMES<br>50715f7f85a3   nginx     &quot;/docker-entrypoint.…&quot;   56 seconds ago   Up 54 seconds   0.0.0.0:80-&gt;80/tcp, :::80-&gt;80/tcp   bold_bartik<br></code></pre></td></tr></table></figure>
+
+<p>测试访问</p>
+<p><img src="/../../../img/image-20240524104300825.png" srcset="/img/loading.gif" lazyload alt="image-20240524104300825"></p>
+<blockquote>
+<p>以上docker run的选项说明：</p>
+<ul>
+<li><p>-d 容器后台运行</p>
+</li>
+<li><p>-p 端口映射</p>
+</li>
+<li><p>可能需要开启系统的内核转发功能</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker01[ ~]# tail -1<br>/etc/sysctl.conf<br>net.ipv4.ip_forward = 1<br>[root@docker01[ ~]#sysctl -p<br>net.ipv4.ip_forward = 1<br></code></pre></td></tr></table></figure>
+</li>
+<li><p>nginx 镜像名字</p>
+</li>
+</ul>
+</blockquote>
+<h1 id="五、-Dcoker的镜像管理"><a href="#五、-Dcoker的镜像管理" class="headerlink" title="五、 Dcoker的镜像管理"></a>五、 Dcoker的镜像管理</h1><h2 id="5-1-镜像管理操作"><a href="#5-1-镜像管理操作" class="headerlink" title="5.1 镜像管理操作"></a>5.1 镜像管理操作</h2><h3 id="1）查看镜像"><a href="#1）查看镜像" class="headerlink" title="1）查看镜像"></a>1）查看镜像</h3><p>查看镜像列表</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker01[ ~]#docker images<br>REPOSITORY   TAG       IMAGE ID       CREATED       SIZE<br>nginx        latest    605c77e624dd   2 years ago   141MB<br><span class="hljs-meta">#</span><span class="bash"> 或者</span><br>[root@docker01[ ~]#docker image ls<br>REPOSITORY   TAG       IMAGE ID       CREATED       SIZE<br>nginx        latest    605c77e624dd   2 years ago   141MB<br></code></pre></td></tr></table></figure>
+
+<p>查看所有镜像，包括隐藏镜像</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker images -a<br></code></pre></td></tr></table></figure>
+
+<p>查看单个镜像的详细信息</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker01[ ~]#docker image inspect nginx:latest <br>[<br>    &#123;<br>        &quot;Id&quot;: &quot;sha256:605c77e624ddb75e6110f997c58876baa13f8754486b461117934b24a9dc3a85&quot;,<br>        &quot;RepoTags&quot;: [<br>            &quot;nginx:latest&quot;<br>        ],<br>...<br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="2）搜索镜像"><a href="#2）搜索镜像" class="headerlink" title="2）搜索镜像"></a>2）搜索镜像</h3><p>优先选官方、stars数量多的</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker01[ ~]#docker search nginx<br>NAME                                              DESCRIPTION                                     STARS     OFFICIAL<br>nginx                                             Official build of Nginx.                        19857     [OK]<br>unit                                              Official build of NGINX Unit: Universal Web …   29        [OK]<br>nginx/nginx-ingress                               NGINX and  NGINX Plus <br>....<br></code></pre></td></tr></table></figure>
+
+<h3 id="3）拉取-x2F-推送镜像"><a href="#3）拉取-x2F-推送镜像" class="headerlink" title="3）拉取&#x2F;推送镜像"></a>3）拉取&#x2F;推送镜像</h3><p>拉取和推送的时候注意版本</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 拉取</span><br>docker pull nginx<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 推动，得要有自己仓库，且认证通过</span><br>[root@docker01[ ~]#docker push nginx<br>Using default tag: latest<br>The push refers to repository [docker.io/library/nginx]<br>d874fd2bc83b: Layer already exists <br>32ce5f6a5106: Layer already exists <br>f1db227348d0: Layer already exists <br>b8d6e692a25e: Layer already exists <br>e379e8aedd4d: Layer already exists <br>2edcec3590a4: Layer already exists <br><span class="hljs-meta">#</span><span class="bash"> 认证失败，不让推送</span><br>errors:<br>denied: requested access to the resource is denied<br>unauthorized: authentication required<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p>关于镜像版本的指定：</p>
+<ul>
+<li>只写服务名字一般下载服务的最新版本.</li>
+<li>下载ngx最新版本 nginx:latest</li>
+<li>下载ngx最新稳定的版本 nginx:stable</li>
+<li>下载指定的版本 nginx:1.20.2</li>
+</ul>
+<p>指定系统</p>
+<ul>
+<li>nginx镜像默认的系统是Debian系统</li>
+<li>docker pull nginx:1.20.2-alpine 使用alpine系统更加节约空间</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>docker镜像使用的系统</th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ubuntu</td>
+<td>都可以做镜像的系统.</td>
+<td></td>
+</tr>
+<tr>
+<td>debian</td>
+<td>都可以做镜像的系统. bullseye ,bluster</td>
+<td></td>
+</tr>
+<tr>
+<td>centos</td>
+<td>都可以做镜像的系统.</td>
+<td>最大.</td>
+</tr>
+<tr>
+<td>alpine</td>
+<td>镜像非常小(命令,依赖精简) linux内核+busybox</td>
+<td></td>
+</tr>
+</tbody></table>
+</blockquote>
+<h3 id="4）导入-x2F-导出镜像"><a href="#4）导入-x2F-导出镜像" class="headerlink" title="4）导入&#x2F;导出镜像"></a>4）导入&#x2F;导出镜像</h3><p>单个镜像操作</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 导出镜像</span><br>[root@docker01[ ~]#docker save nginx -o /tmp/docker_nginx.tar.gz<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 导入镜像</span><br>[root@docker01[ ~]#docker load -i /tmp/docker_nginx.tar.gz <br>Loaded image: nginx:latest<br></code></pre></td></tr></table></figure>
+
+<p>批量导出镜像</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 命令</span><br>docker images |awk &#x27;NR&gt;1&#123;print &quot;docker save&quot;,$1&quot;:&quot;$2,&quot;-o&quot;,$1&quot;_&quot;$2&quot;.tar&quot;&#125;&#x27;<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 最后加 | bash 运行，如</span><br>[root@docker01[ ~]#docker images |awk &#x27;NR&gt;1&#123;print &quot;docker save&quot;,$1&quot;:&quot;$2,&quot;-o&quot;,$1&quot;_&quot;$2&quot;.tar&quot;&#125;&#x27; | bash<br></code></pre></td></tr></table></figure>
+
+<h3 id="5）删除镜像"><a href="#5）删除镜像" class="headerlink" title="5）删除镜像"></a>5）删除镜像</h3><p>正在运行的镜像是不能删除的</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker01[ ~]#docker rmi nginx:latest <br>Error response from daemon: conflict: unable to remove repository reference &quot;nginx:latest&quot; (must force) - container 50715f7f85a3 is using its referenced image 605c77e624dd<br></code></pre></td></tr></table></figure>
+
+<h3 id="6）清理临时镜像"><a href="#6）清理临时镜像" class="headerlink" title="6）清理临时镜像"></a>6）清理临时镜像</h3><p>未来我们自定义镜像的时候会用到</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 查看系统中所有镜像,包含隐藏镜像</span><br>[root@docker01[ ~]#docker images -a<br>REPOSITORY   TAG             IMAGE ID       CREATED       SIZE<br>nginx        latest          605c77e624dd   2 years ago   141MB<br>nginx        stable-alpine   373f8d4d4c60   2 years ago   23.2MB<br><span class="hljs-meta">#</span><span class="bash"> 清理临时镜像</span><br>[root@docker01[ ~]#docker image prune<br>WARNING! This will remove all dangling images.<br>Are you sure you want to continue? [y/N] y<br>Total reclaimed space: 0B<br></code></pre></td></tr></table></figure>
+
+<h3 id="7）镜像打标签"><a href="#7）镜像打标签" class="headerlink" title="7）镜像打标签"></a>7）镜像打标签</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 打标签</span><br>[root@docker01[ ~]#docker tag nginx nginx-my<br>[root@docker01[ ~]#docker images<br>REPOSITORY   TAG       IMAGE ID       CREATED       SIZE<br>nginx-my     latest    605c77e624dd   2 years ago   141MB<br>nginx        latest    605c77e624dd   2 years ago   141MB<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 把标签删掉</span><br>[root@docker01[ ~]#docker rmi nginx-my:latest <br>Untagged: nginx-my:latest<br></code></pre></td></tr></table></figure>
+
+<h2 id="5-2-知识扩展：jq命令"><a href="#5-2-知识扩展：jq命令" class="headerlink" title="5.2 知识扩展：jq命令"></a>5.2 知识扩展：jq命令</h2><p>当我们使用<code>inspect</code>查看镜像的详细信息，出来的是一大串json内容，不知该从何下手，这时使用<code>jq</code>命令，可以很好的处理json格式的文件内容。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 安装jq</span><br>yum install -y jq<br></code></pre></td></tr></table></figure>
+
+<h3 id="案例01：处理简单json数据"><a href="#案例01：处理简单json数据" class="headerlink" title="案例01：处理简单json数据"></a>案例01：处理简单json数据</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 文件内容</span><br>[root@docker01[ ~]#cat /tmp/json.txt <br>&#123;<br>  &quot;name&quot;: &quot;harryYang&quot;,<br>  &quot;age&quot;: 38,<br>  &quot;height&quot;: 100,<br>  &quot;weight&quot;: &quot;100kg&quot;<br>&#125;<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> jq，不做处理</span><br>[root@docker01[ ~]#cat /tmp/json.txt | jq<br>&#123;<br>  &quot;name&quot;: &quot;harryYang&quot;,<br>  &quot;age&quot;: 38,<br>  &quot;height&quot;: 100,<br>  &quot;weight&quot;: &quot;100kg&quot;<br>&#125;<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> jq，获取name</span><br>[root@docker01[ ~]#cat /tmp/json.txt | jq .name<br>&quot;harryYang&quot;<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> jq，获取age</span><br>[root@docker01[ ~]#cat /tmp/json.txt | jq .age<br>38<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 赋值给变量</span><br>[root@docker01[ ~]#name=`cat /tmp/json.txt |  jq .name`<br>[root@docker01[ ~]#echo $name<br>&quot;harryYang&quot;<br></code></pre></td></tr></table></figure>
+
+<h3 id="案例02-处理复杂格式的inspect数据"><a href="#案例02-处理复杂格式的inspect数据" class="headerlink" title="案例02-处理复杂格式的inspect数据"></a>案例02-处理复杂格式的inspect数据</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker01[ ~]#docker inspect nginx:stable-alpine | jq .[].Id<br>&quot;sha256:373f8d4d4c60c0ec2ad5aefe46e4bbebfbb8e86b8cf4263f8df9730bc5d22c11&quot;<br>[root@docker01[ ~]#docker inspect nginx:stable-alpine | jq .[].Created<br>&quot;2021-11-16T18:22:27.763985311Z&quot;<br>[root@docker01[ ~]#docker inspect nginx:stable-alpine | jq .[].Config.Cmd<br>[<br>  &quot;nginx&quot;,<br>  &quot;-g&quot;,<br>  &quot;daemon off;&quot;<br>]<br></code></pre></td></tr></table></figure>
+
+
+
+
+
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%BF%90%E7%BB%B4/" class="category-chain-item">运维</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" class="category-chain-item">（二）综合架构</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>day59-容器架构-Docker（一）</div>
+      <div>http://gsproj.github.io/2024/05/24/07_85期运维/03_自动化架构/day59-容器架构-docker-1/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>GongSheng</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2024年5月24日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2024/05/24/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/03_%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9E%B6%E6%9E%84/day60-%E5%AE%B9%E5%99%A8%E6%9E%B6%E6%9E%84-docker-2/" title="day60-容器架构-Docker（二）">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">day60-容器架构-Docker（二）</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/05/23/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/03_%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9E%B6%E6%9E%84/day58-%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9E%B6%E6%9E%84-iptables%E9%98%B2%E7%81%AB%E5%A2%99/" title="day59-自动化架构-iptables防火墙">
+                        <span class="hidden-mobile">day59-自动化架构-iptables防火墙</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

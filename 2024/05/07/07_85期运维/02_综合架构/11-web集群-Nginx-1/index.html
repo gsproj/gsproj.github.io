@@ -1,0 +1,1174 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="GongSheng">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="Web集群-Nginx（一）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="11-Web集群-Nginx(一)">
+<meta property="og:url" content="http://gsproj.github.io/2024/05/07/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/02_%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/11-web%E9%9B%86%E7%BE%A4-Nginx-1/index.html">
+<meta property="og:site_name" content="迎风之豚的博客">
+<meta property="og:description" content="Web集群-Nginx（一）">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240507101353334.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240507103819706.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240507101546545.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240507103341566.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240507110935037.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240507111202660.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240507111428798.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240507113859205.png">
+<meta property="article:published_time" content="2024-05-07T01:59:52.000Z">
+<meta property="article:modified_time" content="2024-08-02T01:48:34.361Z">
+<meta property="article:author" content="GongSheng">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://gsproj.github.io/img/image-20240507101353334.png">
+  
+  
+  
+  <title>11-Web集群-Nginx(一) - 迎风之豚的博客</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>&#34;迎风之豚的博客&#34;</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="11-Web集群-Nginx(一)"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-05-07 09:59" pubdate>
+          2024年5月7日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          7.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          62 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">11-Web集群-Nginx(一)</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="Web集群-Nginx（一）"><a href="#Web集群-Nginx（一）" class="headerlink" title="Web集群-Nginx（一）"></a>Web集群-Nginx（一）</h1><h1 id="一、HTTP协议"><a href="#一、HTTP协议" class="headerlink" title="一、HTTP协议"></a>一、HTTP协议</h1><h2 id="1-1-HTTP协议概述"><a href="#1-1-HTTP协议概述" class="headerlink" title="1.1 HTTP协议概述"></a>1.1 HTTP协议概述</h2><p>什么是HTTP协议？</p>
+<ul>
+<li>http协议全称叫超文本传输协议，默认端口是80，主要用于数据请求与响应。解决网络传输问题：<ul>
+<li>用户的数据如何传递给网站（请求request）<ul>
+<li>打开网站，访问网站</li>
+</ul>
+</li>
+<li>网站如何传递数据给用户（响应response）<ul>
+<li>网站显示，返回你想要的内容</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>什么是超文本？</p>
+<ul>
+<li>文本,图片,视频….都是超文本</li>
+</ul>
+<p>案例01：通过curl或wget访问网站并显示详细过程,能够找出哪部分是请求和响应 </p>
+<p>curl</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn01[ /server/scripts/roles-all/roles01]#curl -v baidu.com<br>* About to connect() to baidu.com port 80 (#0)<br>*   Trying 110.242.68.66...<br>* Connected to baidu.com (110.242.68.66) port 80 (#0)<br><span class="hljs-meta">&gt;</span><span class="bash"> GET / HTTP/1.1</span><br><span class="hljs-meta">&gt;</span><span class="bash"> User-Agent: curl/7.29.0</span><br><span class="hljs-meta">&gt;</span><span class="bash"> Host: baidu.com</span><br><span class="hljs-meta">&gt;</span><span class="bash"> Accept: */*</span><br><span class="hljs-meta">&gt;</span><span class="bash"></span><br><span class="bash">&lt; HTTP/1.1 200 OK</span><br>&lt; Date: Tue, 07 May 2024 02:06:40 GMT<br>&lt; Server: Apache<br>&lt; Last-Modified: Tue, 12 Jan 2010 13:48:00 GMT<br>&lt; ETag: &quot;51-47cf7e6ee8400&quot;<br>&lt; Accept-Ranges: bytes<br>&lt; Content-Length: 81<br>&lt; Cache-Control: max-age=86400<br>&lt; Expires: Wed, 08 May 2024 02:06:40 GMT<br>&lt; Connection: Keep-Alive<br>&lt; Content-Type: text/html<br>&lt;<br>&lt;html&gt;<br>&lt;meta http-equiv=&quot;refresh&quot; content=&quot;0;url=http://www.baidu.com/&quot;&gt;<br>&lt;/html&gt;<br>* Connection #0 to host baidu.com left intact<br></code></pre></td></tr></table></figure>
+
+<p>wget</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn01[ /server/scripts/roles-all/roles01]#wget --debug baidu.com<br>...<br>---request begin---<br>GET / HTTP/1.1<br>User-Agent: Wget/1.14 (linux-gnu)<br>Accept: */*<br>Host: baidu.com<br>Connection: Keep-Alive<br><br>---request end---<br>HTTP request sent, awaiting response...<br>---response begin---<br>HTTP/1.1 200 OK<br>Date: Tue, 07 May 2024 02:07:08 GMT<br>Server: Apache<br>Last-Modified: Tue, 12 Jan 2010 13:48:00 GMT<br>ETag: &quot;51-47cf7e6ee8400&quot;<br>Accept-Ranges: bytes<br>Content-Length: 81<br>Cache-Control: max-age=86400<br>Expires: Wed, 08 May 2024 02:07:08 GMT<br>Connection: Keep-Alive<br>Content-Type: text/html<br><br>---response end---<br>200 OK<br>Registered socket 3 for persistent reuse.<br>Length: 81 [text/html]<br>Saving to: ‘index.html’<br>...<br></code></pre></td></tr></table></figure>
+
+<h2 id="1-2-HTTP协议版本"><a href="#1-2-HTTP协议版本" class="headerlink" title="1.2 HTTP协议版本"></a>1.2 HTTP协议版本</h2><table>
+<thead>
+<tr>
+<th></th>
+<th>http1.0</th>
+<th>http1.1</th>
+<th>http2.0</th>
+<th>http3.0</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>特点</td>
+<td>短连接,每次请求都需要重复建立 断开连接.</td>
+<td>加入长连接功能</td>
+<td>增加并发 问更快 ,访</td>
+<td>基于 流媒体 udp更快,应用于</td>
+</tr>
+<tr>
+<td></td>
+<td>占用服务端资源</td>
+<td>keepalive功能 (网站响应后不会立刻断开,保留下 这个连接)</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>是否加密</td>
+<td></td>
+<td>http 不加密的 https 加密的</td>
+<td>默认基于 https</td>
+<td></td>
+</tr>
+<tr>
+<td>基于 tcp&#x2F;udp</td>
+<td>tcp</td>
+<td>tcp</td>
+<td>tcp</td>
+<td>udp</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>目前状况：</p>
+<ul>
+<li>大部分企业还在使用http1.1, 一部分使用http2.0</li>
+<li>目前http3.0( QUIC ) 流媒体直播在使用.</li>
+</ul>
+</blockquote>
+<h2 id="1-3-HTTP协议详解"><a href="#1-3-HTTP协议详解" class="headerlink" title="1.3 HTTP协议详解"></a>1.3 HTTP协议详解</h2><p>图示一：请求报文和响应报文</p>
+<p><img src="/../../../img/image-20240507101353334.png" srcset="/img/loading.gif" lazyload alt="image-20240507101353334"></p>
+<p>更为详细的流程如图：</p>
+<p><img src="/../../../img/image-20240507103819706.png" srcset="/img/loading.gif" lazyload alt="image-20240507103819706"></p>
+<h3 id="1-3-1-HTTP请求"><a href="#1-3-1-HTTP请求" class="headerlink" title="1.3.1 HTTP请求"></a>1.3.1 HTTP请求</h3><h4 id="a-概述"><a href="#a-概述" class="headerlink" title="a) 概述"></a>a) 概述</h4><p>请求流程图示：</p>
+<p><img src="/../../../img/image-20240507101546545.png" srcset="/img/loading.gif" lazyload alt="image-20240507101546545"></p>
+<h4 id="b-请求报文起始行"><a href="#b-请求报文起始行" class="headerlink" title="b) 请求报文起始行"></a>b) 请求报文起始行</h4><p>请求方法: 用于指定客户端如何访问服务端(下载,上传,查看服务端信息)  </p>
+<table>
+<thead>
+<tr>
+<th>常见的请求方法</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GET</td>
+<td>下载(大部分请求)</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>上传(上传文件内容,登录)</td>
+</tr>
+<tr>
+<td>HEAD</td>
+<td>类似于GET,仅仅输出响应的头部信息.(查看服务端的信息,一般用于检查)</td>
+</tr>
+</tbody></table>
+<p>资源的位置(URI): 这个资源在网站站点目录的哪个地方,叫什么名字.  </p>
+<p>这里面写的<code>/lidao.mp4</code>,斜线并非是Linux系统的根目录.这个<code>/</code>叫网站的站点目录  </p>
+<blockquote>
+<p>什么是URI (uri)？</p>
+<ul>
+<li>统一资源标识符</li>
+</ul>
+<p>什么是站点目录？</p>
+<ul>
+<li>用于存放网站代码的地方。未来在nginx中我们可以指定与查看。</li>
+<li>GET &#x2F;lidaoav.mp4 HTTP&#x2F;1.1 这里的&#x2F;不是根,是网站站点目录,未来可以在web服务中进行配置.</li>
+<li>比如&#x2F;app&#x2F;code&#x2F;www&#x2F;是站点目录</li>
+<li>访问&#x2F;lidaoav.mp4 &#x3D;&#x3D; &#x2F;app&#x2F;code&#x2F;www&#x2F;lidaoav.mp4</li>
+</ul>
+</blockquote>
+<h4 id="c-请求头"><a href="#c-请求头" class="headerlink" title="c) 请求头"></a>c) 请求头</h4><table>
+<thead>
+<tr>
+<th>字段(一些关键词)</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>User-Agent</td>
+<td>客户端代理(用什么工具访问网站),浏览器.</td>
+</tr>
+<tr>
+<td>Host</td>
+<td>表示访问的目标网站:域名或ip</td>
+</tr>
+<tr>
+<td>….</td>
+<td></td>
+</tr>
+</tbody></table>
+<h4 id="d-其他"><a href="#d-其他" class="headerlink" title="d) 其他"></a>d) 其他</h4><p>请求报文中还包含：</p>
+<ul>
+<li>空行: 分割请求头与请求报文主体</li>
+<li>请求报文主体(body): 一般上传的时候才有</li>
+</ul>
+<h3 id="1-3-2-HTTP响应"><a href="#1-3-2-HTTP响应" class="headerlink" title="1.3.2 HTTP响应"></a>1.3.2 HTTP响应</h3><h4 id="a-概述-1"><a href="#a-概述-1" class="headerlink" title="a) 概述"></a>a) 概述</h4><p>状态码与服务端信息  </p>
+<p><img src="/../../../img/image-20240507103341566.png" srcset="/img/loading.gif" lazyload alt="image-20240507103341566"></p>
+<h4 id="b-响应报文起始行"><a href="#b-响应报文起始行" class="headerlink" title="b) 响应报文起始行"></a>b) 响应报文起始行</h4><p>协议与版本 HTTP&#x2F;1.1</p>
+<p>状态码: 数字3位,用于描述服务端是否能找到或处理用户的请求.(类似于命令行错误提示) 200 ok. 404</p>
+<p>状态码描述:  见1.3.3</p>
+<h4 id="c-响应头"><a href="#c-响应头" class="headerlink" title="c) 响应头"></a>c) 响应头</h4><table>
+<thead>
+<tr>
+<th>响应头字段</th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Server</td>
+<td>显示服务端使用的web服务器及版本</td>
+</tr>
+<tr>
+<td>下面了解</td>
+<td></td>
+</tr>
+<tr>
+<td>Content-Type</td>
+<td>媒体类型(文件类型)</td>
+</tr>
+<tr>
+<td>Content-Length</td>
+<td>大小</td>
+</tr>
+<tr>
+<td>Location</td>
+<td>跳转之后的新的位置(未来讲解rewrite 301&#x2F;302),跳转的时候才有</td>
+</tr>
+</tbody></table>
+<h4 id="d）其他"><a href="#d）其他" class="headerlink" title="d）其他"></a>d）其他</h4><p>响应报文中还有什么？</p>
+<ul>
+<li>空行</li>
+<li>响应报文主体: 服务端返回给客户端的数据</li>
+</ul>
+<h3 id="1-3-3-状态码"><a href="#1-3-3-状态码" class="headerlink" title="1.3.3 状态码"></a>1.3.3 状态码</h3><p>状态码:：错误提示，反映出服务端是否能够正常的处理用户请求  </p>
+<p>大致分类：</p>
+<table>
+<thead>
+<tr>
+<th>状态码</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>2xx</td>
+<td>表示正常</td>
+</tr>
+<tr>
+<td>3xx</td>
+<td>表示需要进行跳转,表示正常</td>
+</tr>
+<tr>
+<td>4xx</td>
+<td>表示异常,客户端问题</td>
+</tr>
+<tr>
+<td>5xx</td>
+<td>表示异常,服务端问题</td>
+</tr>
+</tbody></table>
+<p>详细状态码：</p>
+<table>
+<thead>
+<tr>
+<th>详细的状态码</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>200 ok</td>
+<td>访问正常</td>
+</tr>
+<tr>
+<td>301 Moved Permanently</td>
+<td>永久跳转</td>
+</tr>
+<tr>
+<td>302 Found或Moved Temporarily</td>
+<td>临时跳转</td>
+</tr>
+<tr>
+<td>304 Not Modified</td>
+<td>浏览器缓存</td>
+</tr>
+<tr>
+<td>403 Forbidden</td>
+<td>权限拒绝(拒绝访问)</td>
+</tr>
+<tr>
+<td>404 Not Found</td>
+<td>文件找不到,一般辅助错误日志排查</td>
+</tr>
+<tr>
+<td>500 Internal Error</td>
+<td>内部错误,SElinux开启,其他原因一般辅助错误日志排查</td>
+</tr>
+<tr>
+<td>502 Bad Gateway</td>
+<td>网关错误,一般发生在负载中(类似场景下),请求发送到后面,后面无人处理,提示 502.</td>
+</tr>
+<tr>
+<td>503 service temporarily unavailable</td>
+<td>服务临时不可用,后端负载异常等情况,人为设置(升级)</td>
+</tr>
+<tr>
+<td>504 Gateway Time-out</td>
+<td>网关超时</td>
+</tr>
+</tbody></table>
+<h3 id="1-3-4-HTTP协议小结"><a href="#1-3-4-HTTP协议小结" class="headerlink" title="1.3.4 HTTP协议小结"></a>1.3.4 HTTP协议小结</h3><p>HTTP: 用户的请求与响应的格式与定义</p>
+<p>HTTP请求报文</p>
+<ul>
+<li>请求起始行: GET &#x2F; (url) HTTP&#x2F;1.1</li>
+<li>请求头(head):<ul>
+<li>User-Agent: 客户端代理(浏览器)  </li>
+<li>Host: 域名</li>
+</ul>
+</li>
+<li>空行</li>
+<li>请求豹纹主体(body): POST</li>
+</ul>
+<p>HTTP响应报文</p>
+<ul>
+<li>响应报文的起始行: HTTP&#x2F;1.1 状态码</li>
+<li>响应头: Server(web服务器)</li>
+<li>空行</li>
+<li>响应豹纹的主体(body): 文件内容</li>
+</ul>
+<p>状态码</p>
+<h1 id="二、衡量系统访问量的指标"><a href="#二、衡量系统访问量的指标" class="headerlink" title="二、衡量系统访问量的指标"></a>二、衡量系统访问量的指标</h1><h2 id="2-1-概述"><a href="#2-1-概述" class="headerlink" title="2.1 概述"></a>2.1 概述</h2><p>指标分为：</p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>IP</td>
+<td>访问网站的独立ip数量，公网ip.</td>
+</tr>
+<tr>
+<td>PV</td>
+<td>页面访问量Page view.</td>
+</tr>
+<tr>
+<td>UV</td>
+<td>独立访客数量，接近于用户数量 Unique Vistor</td>
+</tr>
+<tr>
+<td>DAU</td>
+<td>每天的活跃用户的数量：日活(日活跃用户)</td>
+</tr>
+<tr>
+<td>MAU</td>
+<td>月活(月活跃用户)</td>
+</tr>
+</tbody></table>
+<h2 id="2-2-统计方法"><a href="#2-2-统计方法" class="headerlink" title="2.2 统计方法"></a>2.2 统计方法</h2><p>IP,PV,UV </p>
+<ul>
+<li>使用三剑客进行过滤</li>
+<li>第三方统计插件(百度统计,…..网站页面加入代码),ELK</li>
+</ul>
+<p>DAU,MAU </p>
+<ul>
+<li>第3方工具统计</li>
+<li>数据库统计用户登录情况</li>
+</ul>
+<h1 id="三、Nginx介绍"><a href="#三、Nginx介绍" class="headerlink" title="三、Nginx介绍"></a>三、Nginx介绍</h1><h2 id="3-1-web服务概述"><a href="#3-1-web服务概述" class="headerlink" title="3.1 web服务概述"></a>3.1 web服务概述</h2><p><strong>WEB服务</strong>：网站服务,部署并启动了这个服务,你就可以搭建一个网站.<br><strong>WEB中间件</strong>：等同于WEB服务<br>中间件：范围更加广泛,指的负载均衡之后的服务.<br>数据库中间件：数据库缓存,消息对列… </p>
+<h2 id="3-2-常见网站服务"><a href="#3-2-常见网站服务" class="headerlink" title="3.2 常见网站服务"></a>3.2 常见网站服务</h2><table>
+<thead>
+<tr>
+<th>网站服务</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Nginx</td>
+<td>大部分使用nginx,Engine X</td>
+</tr>
+<tr>
+<td>Tengine</td>
+<td>基于Nginx二开,淘宝开源,更多内置模块</td>
+</tr>
+<tr>
+<td>Openresty</td>
+<td>基于Nginx二开,加强Lua功能与模块</td>
+</tr>
+<tr>
+<td>……</td>
+<td></td>
+</tr>
+<tr>
+<td>Tomcat&#x2F;Jboss&#x2F;Jetty&#x2F;Weblogic</td>
+<td>运行java环境的,web服务</td>
+</tr>
+<tr>
+<td>PHP</td>
+<td>运行php环境,需要ngx(LNMP)</td>
+</tr>
+</tbody></table>
+<h2 id="3-3-配置Nginx"><a href="#3-3-配置Nginx" class="headerlink" title="3.3 配置Nginx"></a>3.3 配置Nginx</h2><p>Nginx版本选择：</p>
+<ul>
+<li>记录常用服务的版本：1.22.1</li>
+<li>选用稳定版本：上一个稳定版本</li>
+</ul>
+<p><font color=red>本配置在web01（10.0.0.7）服务器操作</font></p>
+<h3 id="3-3-1-安装nginx"><a href="#3-3-1-安装nginx" class="headerlink" title="3.3.1 安装nginx"></a>3.3.1 安装nginx</h3><p>配置yum源</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01[ /]#cat /etc/yum.repos.d/nginx.repo<br>[nginx-stable]<br>name=nginx stable repo<br>baseurl=http://nginx.org/packages/centos/$releasever/$basearch/<br>gpgcheck=1<br>enabled=1<br>gpgkey=https://nginx.org/keys/nginx_signing.key<br>module_hotfixes=true<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 刷新yum源</span><br>yum clean all<br>yum makecache<br></code></pre></td></tr></table></figure>
+
+<p>安装</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01[ /]#yum install nginx -y<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 查看安装情况</span><br>[root@web01[ /]#rpm -ql nginx<br>/etc/logrotate.d/nginx<br>/etc/nginx<br>/etc/nginx/conf.d<br>/etc/nginx/conf.d/default.conf<br>/etc/nginx/fastcgi_params<br>/etc/nginx/mime.types<br>/etc/nginx/modules<br>/etc/nginx/nginx.conf<br>/etc/nginx/scgi_params<br>/etc/nginx/uwsgi_params<br>/usr/lib/systemd/system/nginx-debug.service<br>/usr/lib/systemd/system/nginx.service<br>/usr/lib64/nginx<br>/usr/lib64/nginx/modules<br>/usr/libexec/initscripts/legacy-actions/nginx<br>/usr/libexec/initscripts/legacy-actions/nginx/check-reload<br>/usr/libexec/initscripts/legacy-actions/nginx/upgrade<br>/usr/sbin/nginx<br>/usr/sbin/nginx-debug<br>/usr/share/doc/nginx-1.26.0<br>/usr/share/doc/nginx-1.26.0/COPYRIGHT<br>/usr/share/man/man8/nginx.8.gz<br>/usr/share/nginx<br>/usr/share/nginx/html<br>/usr/share/nginx/html/50x.html<br>/usr/share/nginx/html/index.html<br>/var/cache/nginx<br>/var/log/nginx<br>[root@web01[ /]#rpm -qa nginx<br>nginx-1.26.0-1.el7.ngx.x86_64<br></code></pre></td></tr></table></figure>
+
+<h3 id="3-3-2-nginx目录结构"><a href="#3-3-2-nginx目录结构" class="headerlink" title="3.3.2 nginx目录结构"></a>3.3.2 nginx目录结构</h3><blockquote>
+<p>温馨提示:</p>
+<p>Nginx不同的安装方法，目录，文件会有所区别.  </p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>目录结构</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&#x2F;etc&#x2F;nginx&#x2F;</td>
+<td>nginx各种配置目录</td>
+</tr>
+<tr>
+<td>&#x2F;etc&#x2F;nginx&#x2F;nginx.conf</td>
+<td>主配置文件</td>
+</tr>
+<tr>
+<td>&#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;</td>
+<td>子配置文件(网站)</td>
+</tr>
+<tr>
+<td>&#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;default.conf</td>
+<td>默认的子配置文件</td>
+</tr>
+<tr>
+<td>&#x2F;usr&#x2F;sbin&#x2F;nginx</td>
+<td>ngx命令</td>
+</tr>
+<tr>
+<td>&#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html&#x2F;</td>
+<td>ngx默认的站点目录,网站的根目录</td>
+</tr>
+<tr>
+<td>&#x2F;var&#x2F;log&#x2F;nginx&#x2F;</td>
+<td>ngx日志: 访问日志,错误日志 ,跳转日志</td>
+</tr>
+</tbody></table>
+<p>其他目录说明</p>
+<table>
+<thead>
+<tr>
+<th>其他目录和文件</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&#x2F;etc&#x2F;logrotate.d&#x2F;nginx</td>
+<td>日志切割(防止文件过大)</td>
+</tr>
+<tr>
+<td>&#x2F;etc&#x2F;nginx&#x2F;mime.types</td>
+<td>媒体类型</td>
+</tr>
+<tr>
+<td>&#x2F;etc&#x2F;nginx&#x2F;fastcgi_params</td>
+<td>ngx+php</td>
+</tr>
+<tr>
+<td>&#x2F;etc&#x2F;nginx&#x2F;uwsgi_params</td>
+<td>ngx+python</td>
+</tr>
+<tr>
+<td>&#x2F;usr&#x2F;lib&#x2F;systemd&#x2F;system&#x2F;nginx.service</td>
+<td>systemctl配置文件</td>
+</tr>
+<tr>
+<td>&#x2F;var&#x2F;cache&#x2F;nginx&#x2F;</td>
+<td>缓存目录</td>
+</tr>
+</tbody></table>
+<h3 id="3-3-3-服务启动与管理"><a href="#3-3-3-服务启动与管理" class="headerlink" title="3.3.3 服务启动与管理"></a>3.3.3 服务启动与管理</h3><p>启动服务</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">systemctl enable nginx<br>systemctl start nginx<br></code></pre></td></tr></table></figure>
+
+<p>检查端口与进程</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash">检查服务状态</span><br>systemctl status nginx<br><span class="hljs-meta">#</span><span class="bash">检查端口，会显示TCP和UDP</span><br>ss -lntup |grep 80<br><span class="hljs-meta">#</span><span class="bash">检查进程</span><br>ps -ef |grep nginx<br></code></pre></td></tr></table></figure>
+
+<p>浏览器访问：<a target="_blank" rel="noopener" href="http://10.0.0.7/">http://10.0.0.7</a></p>
+<p><img src="/../../../img/image-20240507110935037.png" srcset="/img/loading.gif" lazyload alt="image-20240507110935037"></p>
+<p>命令访问</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">curl 10.0.0.7<br>curl -v 10.0.0.7<br></code></pre></td></tr></table></figure>
+
+
+
+<h1 id="四、Nginx核心功能"><a href="#四、Nginx核心功能" class="headerlink" title="四、Nginx核心功能"></a>四、Nginx核心功能</h1><h2 id="4-1-配置文件详解"><a href="#4-1-配置文件详解" class="headerlink" title="4.1 配置文件详解"></a>4.1 配置文件详解</h2><h3 id="4-1-1-主配置文件"><a href="#4-1-1-主配置文件" class="headerlink" title="4.1.1 主配置文件"></a>4.1.1 主配置文件</h3><p>主配置文件：<code>/etc/nginx/nginx.conf  </code></p>
+<p>各配置项的详解如下：</p>
+<p><img src="/../../../img/image-20240507111202660.png" srcset="/img/loading.gif" lazyload alt="image-20240507111202660"></p>
+<blockquote>
+<p>需要熟练掌握的配置项</p>
+<ul>
+<li>include 文件包含,引用其他地方的ngx配置文件.</li>
+<li>user指定ngx用户.</li>
+<li>error_log错误日志</li>
+<li>log_format日志格式</li>
+<li>access_log 访问日志</li>
+</ul>
+</blockquote>
+<h3 id="4-1-2-子配置文件"><a href="#4-1-2-子配置文件" class="headerlink" title="4.1.2 子配置文件"></a>4.1.2 子配置文件</h3><p>子配置文件：<code>/etc/nginx/conf.d/default.conf</code></p>
+<p><img src="/../../../img/image-20240507111428798.png" srcset="/img/loading.gif" lazyload alt="image-20240507111428798"></p>
+<p>常用选项如下：</p>
+<table>
+<thead>
+<tr>
+<th>网站中常用必会指 令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>listen</td>
+<td>指定监听端口</td>
+</tr>
+<tr>
+<td>server_name</td>
+<td>指定域名,多个通过空格分割.</td>
+</tr>
+<tr>
+<td>location(区域)</td>
+<td>匹配请求中的uri(资源地址)</td>
+</tr>
+<tr>
+<td>root</td>
+<td>指定站点目录(网站的根目录) root &#x2F;app&#x2F;code&#x2F;www; <a target="_blank" rel="noopener" href="http://www.baidu.com/lidao/lidao.txt">www.baidu.com/lidao/lidao.txt</a> &#x3D;&#x3D; &#x2F;app&#x2F;code&#x2F;www&#x2F;lidao&#x2F;lidao.txt</td>
+</tr>
+<tr>
+<td>index</td>
+<td>指定站点的首页文件. 用户访问的时候不加上任何的文件,展示首页文件.</td>
+</tr>
+<tr>
+<td>error_log</td>
+<td>指定错误状态码与对应的错误页面.</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>ngx:必会问题：</p>
+<p>如果删除首页文件,进行(不指定文件)访问会发生什么?</p>
+<ul>
+<li>403首页文件不存在.</li>
+</ul>
+</blockquote>
+<h2 id="4-2-部署第一个CXK网站"><a href="#4-2-部署第一个CXK网站" class="headerlink" title="4.2 部署第一个CXK网站"></a>4.2 部署第一个CXK网站</h2><table>
+<thead>
+<tr>
+<th>网站要求</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>域名</td>
+<td>cxk.oldboylinux.cn</td>
+</tr>
+<tr>
+<td>站点目录</td>
+<td>&#x2F;app&#x2F;code&#x2F;cxk</td>
+</tr>
+<tr>
+<td>代码来源</td>
+<td><a target="_blank" rel="noopener" href="https://gitee.com/xiaomingcai/cxk">https://gitee.com/xiaomingcai/cxk</a></td>
+</tr>
+</tbody></table>
+<h3 id="a-部署代码"><a href="#a-部署代码" class="headerlink" title="a) 部署代码"></a>a) 部署代码</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 创建目录/app/cpde/cxk</span><br>[root@web01[ /app]#mkdir -p code/cxk<br><span class="hljs-meta">#</span><span class="bash"> 解压代码放进去</span><br>[root@web01[ /]#tree -F app/code/cxk<br>app/code/cxk<br>├── about.md<br>├── css/<br>│   ├── common.css<br>│   └── style.css<br>├── images/<br>│   ├── b1.png<br>│   ├── b2.png<br>....<br></code></pre></td></tr></table></figure>
+
+<h3 id="b-创建配置文件"><a href="#b-创建配置文件" class="headerlink" title="b) 创建配置文件"></a>b) 创建配置文件</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 新建配置文件</span><br>[root@web01[ /etc/nginx/conf.d]#cat cxk.oldboylinux.cn.conf<br>server &#123;<br>  listen 80;<br>  server_name cxk.oldboylinux.cn;<br>  root /app/code/cxk;<br>  location / &#123;<br>    index index.html;<br>  &#125;<br>&#125;<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 检查</span><br>[root@web01[ /etc/nginx/conf.d]#nginx -t<br>nginx: the configuration file /etc/nginx/nginx.conf syntax is ok<br>nginx: configuration file /etc/nginx/nginx.conf test is successful<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 重新加载</span><br>[root@web01[ /etc/nginx/conf.d]#systemctl reload nginx<br></code></pre></td></tr></table></figure>
+
+<h2 id="c-设置客户机器的hosts解析文件"><a href="#c-设置客户机器的hosts解析文件" class="headerlink" title="c) 设置客户机器的hosts解析文件"></a>c) 设置客户机器的hosts解析文件</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">10.0.0.7 cxk.oldboylinux.cn<br></code></pre></td></tr></table></figure>
+
+<p>访问</p>
+<p><img src="/../../../img/image-20240507113859205.png" srcset="/img/loading.gif" lazyload alt="image-20240507113859205"></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%BF%90%E7%BB%B4/" class="category-chain-item">运维</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" class="category-chain-item">（二）综合架构</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>11-Web集群-Nginx(一)</div>
+      <div>http://gsproj.github.io/2024/05/07/07_85期运维/02_综合架构/11-web集群-Nginx-1/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>GongSheng</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2024年5月7日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2024/05/08/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/02_%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/13-web%E9%9B%86%E7%BE%A4-Nginx-3/" title="13-Web集群-Nginx(三)">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">13-Web集群-Nginx(三)</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/05/07/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/02_%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/12-web%E9%9B%86%E7%BE%A4-Nginx-2/" title="12-Web集群-Nginx(二)">
+                        <span class="hidden-mobile">12-Web集群-Nginx(二)</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

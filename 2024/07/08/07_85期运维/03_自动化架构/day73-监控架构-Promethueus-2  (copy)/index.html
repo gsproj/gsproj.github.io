@@ -1,0 +1,942 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="GongSheng">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="监控架构-Prometheus-02">
+<meta property="og:type" content="article">
+<meta property="og:title" content="day73-监控架构-Prometheus(二)">
+<meta property="og:url" content="http://gsproj.github.io/2024/07/08/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/03_%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9E%B6%E6%9E%84/day73-%E7%9B%91%E6%8E%A7%E6%9E%B6%E6%9E%84-Promethueus-2%20%20(copy)/index.html">
+<meta property="og:site_name" content="迎风之豚的博客">
+<meta property="og:description" content="监控架构-Prometheus-02">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240708112735461.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240708113234024.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240708113909177.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240708114432191.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240708114407520.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240708115947050.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240708120657581.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240708120828721.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240708121354551.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240708121649340.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240708121836525.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240708143625215.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240708141641881.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240708142540442.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240708155658555.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240708155721004.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240709103019307.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240709103316474.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240709103518806.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240709103549729.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240709103610586.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240709103706690.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240708232803550.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240708233404738.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240708233504490.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240708233549745.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240708234115220.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240709002502359.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240709002534109.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240709000856398.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240709001139730.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240709001221383.png">
+<meta property="article:published_time" content="2024-07-08T03:08:52.000Z">
+<meta property="article:modified_time" content="2024-08-02T01:48:34.361Z">
+<meta property="article:author" content="GongSheng">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://gsproj.github.io/img/image-20240708112735461.png">
+  
+  
+  
+  <title>day73-监控架构-Prometheus(二) - 迎风之豚的博客</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>&#34;迎风之豚的博客&#34;</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="day73-监控架构-Prometheus(二)"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-07-08 11:08" pubdate>
+          2024年7月8日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          10k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          84 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">day73-监控架构-Prometheus(二)</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="监控架构-Prometheus-02"><a href="#监控架构-Prometheus-02" class="headerlink" title="监控架构-Prometheus-02"></a>监控架构-Prometheus-02</h1><p>今日内容：</p>
+<ul>
+<li>基于prometheus的nginx监控</li>
+<li>基于prometheus的Mysql监控</li>
+<li>基于prometheus的docker容器监控</li>
+<li>prometheus的告警配置</li>
+</ul>
+<h1 id="一、前期沟通"><a href="#一、前期沟通" class="headerlink" title="一、前期沟通"></a>一、前期沟通</h1><p>在监控开始部署前，需要在组内完成沟通：</p>
+<ul>
+<li>确定监控指标</li>
+<li>可能需要开发人员配合书写监控页面  </li>
+<li>等等其他沟通</li>
+</ul>
+<h1 id="二、环境准备"><a href="#二、环境准备" class="headerlink" title="二、环境准备"></a>二、环境准备</h1><p>监控的目标确定：</p>
+<table>
+<thead>
+<tr>
+<th>监控的项目</th>
+<th>exporter</th>
+<th>涉及的主机</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>系统基本信息</td>
+<td>node_exporter</td>
+<td>所有主机</td>
+</tr>
+<tr>
+<td>负载均衡，web</td>
+<td>nginx_exporter</td>
+<td>负载均衡，web服务器</td>
+</tr>
+<tr>
+<td>web中间件:php、java</td>
+<td>jmx_exporter</td>
+<td>web服务器</td>
+</tr>
+<tr>
+<td>数据库</td>
+<td>mysqld_exporter</td>
+<td>数据库服务器</td>
+</tr>
+<tr>
+<td>redis</td>
+<td>redis_exporter</td>
+<td>缓存服务器</td>
+</tr>
+<tr>
+<td>存储</td>
+<td>xxx_exporter</td>
+<td>nfs、对象存储（OSS）、Ceph、minio等</td>
+</tr>
+<tr>
+<td>容器</td>
+<td>cdvisor</td>
+<td>容器服务器</td>
+</tr>
+</tbody></table>
+<h1 id="三、搭建流程"><a href="#三、搭建流程" class="headerlink" title="三、搭建流程"></a>三、搭建流程</h1><p>这里演示nginx和mysql的exporter</p>
+<h2 id="3-1-nginx-exporter部署"><a href="#3-1-nginx-exporter部署" class="headerlink" title="3.1 nginx_exporter部署"></a>3.1 nginx_exporter部署</h2><h3 id="3-1-1-准备web页面"><a href="#3-1-1-准备web页面" class="headerlink" title="3.1.1 准备web页面"></a>3.1.1 准备web页面</h3><p>按照插件需求，需要开启status页面</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 访问指定的uri和端口就显示nginx_status页面</span>  <br>[root@docker01 /app/docker/conf/nginx/conf.d]#cat status.conf <br>server &#123;<br>  listen 8000;<br>    location / &#123;<br>      stub_status;<br>    &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="3-1-2-客户端部署nginx-exporter"><a href="#3-1-2-客户端部署nginx-exporter" class="headerlink" title="3.1.2 客户端部署nginx_exporter"></a>3.1.2 客户端部署nginx_exporter</h3><blockquote>
+<p>插件地址：<a target="_blank" rel="noopener" href="https://github.com/nginxinc/nginx-prometheus-exporter">https://github.com/nginxinc/nginx-prometheus-exporter</a></p>
+</blockquote>
+<p>部署方式有三种：</p>
+<ul>
+<li>下载二进制包，直接使用</li>
+<li>docker方式部署</li>
+<li>下载插件源码包，编译安装</li>
+</ul>
+<p>二进制包的方式，前面我们已经在部署node_exporter时用过，这里采用docker的方式部署。</p>
+<blockquote>
+<p>部署在拥有docker环境的服务器–docker01（10.0.0.81）中</p>
+</blockquote>
+<p>1、创建docker容器</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker01 /app/docker/conf/nginx/conf.d]#docker run -d --name &quot;ngx&quot; -v `pwd`/status.conf:/etc/nginx/conf.d/status.conf --restart=always -p 80:80 -p 8000:8000 nginx:stable-alpine<br>30ea712a92191e5ec596f1ce406516a1589e9d7ed5c0a94a5e5cc8fecc45afe9<br></code></pre></td></tr></table></figure>
+
+<p>2、检查环境是否启动成功</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> docker命令检查</span><br>[root@docker01 /app/docker/conf/nginx/conf.d]#docker ps<br>CONTAINER ID   IMAGE                 COMMAND                  CREATED              STATUS              PORTS                                                                          NAMES<br>30ea712a9219   nginx:stable-alpine   &quot;/docker-entrypoint.…&quot;   About a minute ago   Up About a minute   0.0.0.0:80-&gt;80/tcp, :::80-&gt;80/tcp, 0.0.0.0:8000-&gt;8000/tcp, :::8000-&gt;8000/tcp   ngx<br><span class="hljs-meta">#</span><span class="bash"> 网页测试</span><br>[root@docker01 /app/docker/conf/nginx/conf.d]#curl 172.16.1.81:8000<br>Active connections: 1 <br>server accepts handled requests<br> 1 1 1 <br>Reading: 0 Writing: 1 Waiting: 0 <br></code></pre></td></tr></table></figure>
+
+<p>3、创建ngx_exporter容器</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker run -d --name &quot;ngx_exporter_8000&quot; -p 9113:9113 --restart=always nginx/nginx-prometheus-exporter:0.10.0 -nginx.scrape-uri &quot;http://172.16.1.81:8000/&quot;<br></code></pre></td></tr></table></figure>
+
+<p>4、测试访问metrics页面</p>
+<p><a target="_blank" rel="noopener" href="http://10.0.0.81:9113/metrics">http://10.0.0.81:9113/metrics</a></p>
+<p><img src="/../../../img/image-20240708112735461.png" srcset="/img/loading.gif" lazyload alt="image-20240708112735461"></p>
+<h3 id="3-1-3-服务端配置"><a href="#3-1-3-服务端配置" class="headerlink" title="3.1.3 服务端配置"></a>3.1.3 服务端配置</h3><p>修改prometheus的配置文件，把被监控器加进去</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn04[ /app/prometheus]#cat prometheus.yml <br>.... <br>  - job_name: &quot;pushgateway&quot;<br>    static_configs:<br>      - targets: [&quot;10.0.0.63:9091&quot;]<br>  <br><span class="hljs-meta">  #</span><span class="bash"> 新增nginx_exporter监控</span>     <br>  - job_name: &quot;nginx_exporter&quot;<br>    static_configs:<br>      - targets: [&quot;10.0.0.81:9113&quot;]<br></code></pre></td></tr></table></figure>
+
+<p>重启服务，可在网页查看是否添加成功</p>
+<p><img src="/../../../img/image-20240708113234024.png" srcset="/img/loading.gif" lazyload alt="image-20240708113234024"></p>
+<h3 id="3-1-4-Grafana页面-导入模板"><a href="#3-1-4-Grafana页面-导入模板" class="headerlink" title="3.1.4 Grafana页面-导入模板"></a>3.1.4 Grafana页面-导入模板</h3><blockquote>
+<p>nginx exporter的监控模板下载（ID：9512）：</p>
+<p><a target="_blank" rel="noopener" href="https://grafana.com/grafana/dashboards/9512-nginx-connections-overview/">https://grafana.com/grafana/dashboards/9512-nginx-connections-overview/</a></p>
+</blockquote>
+<p>1、下载json文件，导入模板</p>
+<p><img src="/../../../img/image-20240708113909177.png" srcset="/img/loading.gif" lazyload alt="image-20240708113909177"></p>
+<p>2、默认界面如下</p>
+<p><img src="/../../../img/image-20240708114432191.png" srcset="/img/loading.gif" lazyload alt="image-20240708114432191"></p>
+<p>这里面的<code>UP</code>是怎么来的？右下角的<code>mapping</code>设置</p>
+<p><img src="/../../../img/image-20240708114407520.png" srcset="/img/loading.gif" lazyload alt="image-20240708114407520"></p>
+<p>其他面板没有数据，需要自行配置</p>
+<h3 id="3-1-5-Grafana页面-配置面板"><a href="#3-1-5-Grafana页面-配置面板" class="headerlink" title="3.1.5 Grafana页面-配置面板"></a>3.1.5 Grafana页面-配置面板</h3><p>(踩坑)</p>
+<blockquote>
+<p>注意，这里涉及到一个问题：在使用第三方模板时，多数情况下是方便的，但是涉及到某些特殊情况，exporter收集的<strong>参数和模板不一定匹配</strong>，需要根据与实际情况修改。</p>
+</blockquote>
+<p>比如面板中自带的查询语句</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">irate(nginx_connections_processed_total&#123;instance=~&quot;$instance&quot;, app=~&quot;$app&quot;, stage=&quot;handled&quot;, namespace=~&quot;$namespace&quot;&#125;[5m])<br></code></pre></td></tr></table></figure>
+
+<p>在<a target="_blank" rel="noopener" href="http://10.0.0.81:9113/metrics%E4%B8%AD%EF%BC%8C%E6%A0%B9%E6%9C%AC%E5%B0%B1%E6%B2%A1%E6%9C%89%60nginx_connections_processed_total%60%E8%BF%99%E4%B8%AA%E5%87%BD%E6%95%B0%EF%BC%8C%E9%9C%80%E8%A6%81%E4%BF%AE%E6%94%B9%E6%88%90%E6%95%88%E6%9E%9C%E7%B1%BB%E4%BC%BC%E7%9A%84%60nginx_http_requests_total%60%E5%87%BD%E6%95%B0">http://10.0.0.81:9113/metrics中，根本就没有`nginx_connections_processed_total`这个函数，需要修改成效果类似的`nginx_http_requests_total`函数</a></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> job缺少参数，只能写死，不能写 “<span class="hljs-variable">$job</span>”</span><br>irate(nginx_http_requests_total&#123;instance=~&quot;$instance&quot;, job=~&quot;nginx_exporter&quot;&#125;[5m])<br></code></pre></td></tr></table></figure>
+
+<p>效果如下，数据出来了</p>
+<p><img src="/../../../img/image-20240708115947050.png" srcset="/img/loading.gif" lazyload alt="image-20240708115947050"></p>
+<p>但是可以看到，我们自行使用的函数，其参数只有2个（instance、job），而此模板面板带的参数有4个（instance、namespace、app、datasource），参数不匹配，<strong>需要对模板参数进行设置</strong></p>
+<h3 id="3-1-6-Grafana页面-模板参数设置"><a href="#3-1-6-Grafana页面-模板参数设置" class="headerlink" title="3.1.6 Grafana页面-模板参数设置"></a>3.1.6 Grafana页面-模板参数设置</h3><p>进到模板对应的设置页面，创建变量</p>
+<p><img src="/../../../img/image-20240708120657581.png" srcset="/img/loading.gif" lazyload alt="image-20240708120657581"></p>
+<p>填写信息，创建<code>job</code>变量</p>
+<p><img src="/../../../img/image-20240708120828721.png" srcset="/img/loading.gif" lazyload alt="image-20240708120828721"></p>
+<p>这样修改后，在<code>3.1.5</code>中不能使用<code>“$job”</code>的问题就解决了</p>
+<p><img src="/../../../img/image-20240708121354551.png" srcset="/img/loading.gif" lazyload alt="image-20240708121354551"></p>
+<p>删除其他多余的变量，再修改instance</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash">如果想job与实例是关联的则使用下面即可</span><br>label_values(up&#123;job=&quot;$job&quot;&#125;,instance)<br></code></pre></td></tr></table></figure>
+
+<p><img src="/../../../img/image-20240708121649340.png" srcset="/img/loading.gif" lazyload alt="image-20240708121649340"></p>
+<p>最后该面板的效果</p>
+<p><img src="/../../../img/image-20240708121836525.png" srcset="/img/loading.gif" lazyload alt="image-20240708121836525"></p>
+<h3 id="3-1-7-nginx-exporter小结"><a href="#3-1-7-nginx-exporter小结" class="headerlink" title="3.1.7 nginx exporter小结"></a>3.1.7 nginx exporter小结</h3><p>部署小结：</p>
+<ul>
+<li>有相对应的环境</li>
+<li>部署export(docker,直接部署)</li>
+<li>测试exporter是否有数据 10.0.0.81:9113&#x2F;metrics</li>
+<li>配置prometheus服务端管理exporter</li>
+<li>配置grafana(仪表盘(模板),自定义仪表盘(自定义job变量和instance变量))</li>
+</ul>
+<h2 id="3-2-mysqld-exporter部署"><a href="#3-2-mysqld-exporter部署" class="headerlink" title="3.2 mysqld_exporter部署"></a>3.2 mysqld_exporter部署</h2><blockquote>
+<p>本实验需要两台服务器配合：</p>
+<p>db01	部署、配置mysqld</p>
+<p>docker01 部署mysqld_exporter</p>
+</blockquote>
+<p>获取exporter：<a target="_blank" rel="noopener" href="https://github.com/prometheus/mysqld_exporter">https://github.com/prometheus/mysqld_exporter</a></p>
+<h3 id="3-2-1-db01配置"><a href="#3-2-1-db01配置" class="headerlink" title="3.2.1 db01配置"></a>3.2.1 db01配置</h3><p>按照mysqld_exporter的需求，创建用户并授权</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 官方给的有问题，这是根据网上的方法找到的</span><br>CREATE USER &#x27;exporter&#x27;@&#x27;%&#x27; IDENTIFIED BY &#x27;redhat123&#x27;;<br>GRANT PROCESS, REPLICATION CLIENT, REPLICATION SLAVE, SLAVE MONITOR, SELECT ON . TO &#x27;exporter&#x27;@&#x27;%&#x27;;<br></code></pre></td></tr></table></figure>
+
+<h3 id="3-2-2-docker01配置"><a href="#3-2-2-docker01配置" class="headerlink" title="3.2.2 docker01配置"></a>3.2.2 docker01配置</h3><p>1、创建连接数据库的文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker01 /app/docker/conf/mysql]#cat my.cnf <br>[client]<br>host = 172.16.1.51<br>user = exporter<br>password = redhat123<br></code></pre></td></tr></table></figure>
+
+<p>2、配置连接数据库的变量</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 格式：<span class="hljs-built_in">export</span> DATA_SOURCE_NAME=<span class="hljs-string">&#x27;login:password@(hostname:port)/&#x27;</span></span><br><br>[root@docker01 /]#export DATA_SOURCE_NAME=&#x27;exporter:redhat123@(172.16.1.51:3306)/&#x27;<br></code></pre></td></tr></table></figure>
+
+<p>3、启动Mysqld_exporter</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker01 /]#docker run -d --restart=always --name &quot;mysqld_exporter&quot; -v /app/docker/conf/mysql/my.cnf:/etc/exporter-my.cnf -e &quot;DATA_SOURCE_NAME=&#x27;exporter:redhat123@(172.16.1.51:3306)/&#x27;&quot; -p 9104:9104 prom/mysqld-exporter --config.my-cnf=/etc/exporter-my.cnf<br></code></pre></td></tr></table></figure>
+
+<p>4、测试</p>
+<p>查看docker容器状态，显示连不上数据库服务器</p>
+<p><img src="/../../../img/image-20240708143625215.png" srcset="/img/loading.gif" lazyload alt="image-20240708143625215"></p>
+<p>尝试修改Mysql的用户权限设置也没用，<strong>官方镜像存在问题</strong></p>
+<h3 id="3-2-3-服务端配置"><a href="#3-2-3-服务端配置" class="headerlink" title="3.2.3 服务端配置"></a>3.2.3 服务端配置</h3><p>1、修改prometheus服务端配置文件，新增监控</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn04[ /app/prometheus]#cat prometheus.yml <br>...<br><span class="hljs-meta">  #</span><span class="bash"> 新增nginx_exporter监控</span>     <br>  - job_name: &quot;nginx_exporter&quot;<br>    static_configs:<br>      - targets: [&quot;10.0.0.81:9113&quot;]<br>  <br><span class="hljs-meta">  #</span><span class="bash"> 新增mysqld_exporter监控</span>     <br>  - job_name: &quot;mysqld_exporter&quot;<br>    static_configs:<br>      - targets: [&quot;10.0.0.81:9104&quot;]<br></code></pre></td></tr></table></figure>
+
+<p>2、测试：在metrics中mysql up的值始终是0，<strong>容器确实有问题</strong></p>
+<p><img src="/../../../img/image-20240708141641881.png" srcset="/img/loading.gif" lazyload alt="image-20240708141641881"></p>
+<p>官方镜像存在问题，需要自定义镜像！</p>
+<h3 id="3-2-4-自定义docker镜像部署"><a href="#3-2-4-自定义docker镜像部署" class="headerlink" title="3.2.4 自定义docker镜像部署"></a>3.2.4 自定义docker镜像部署</h3><p>1、为解决3.2.3跟3.2.4的问题，创建Dockerfile自定义mysqld_exporter镜像</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs dockerfile">[root@docker01 /app/docker/conf/mysql]<span class="hljs-comment">#cat Dockerfile </span><br><span class="hljs-keyword">FROM</span> alpine:latest<br><span class="hljs-keyword">LABEL</span><span class="bash"> author=lidao996</span><br><span class="hljs-keyword">ADD</span><span class="bash"> mysqld_exporter-0.15.1.linux-amd64.tar.gz /app/tools/</span><br><span class="hljs-keyword">COPY</span><span class="bash"> my.cnf /app/tools/mysqld_exporter-0.15.1.linux-amd64/</span><br><span class="hljs-keyword">ENV</span> DATA_SOURCE_NAME=<span class="hljs-string">&#x27;exporter:redhat123@(172.16.1.51:3306)/&#x27;</span><br><span class="hljs-keyword">RUN</span><span class="bash"> ln -s /app/tools/mysqld_exporter-0.15.1.linux-amd64 /app/tools/mysqld_exporter</span><br><span class="hljs-keyword">WORKDIR</span><span class="bash"> /app/tools/mysqld_exporter-0.15.1.linux-amd64/</span><br><span class="hljs-keyword">EXPOSE</span> <span class="hljs-number">9104</span><br><span class="hljs-keyword">CMD</span><span class="bash"> [<span class="hljs-string">&quot;./mysqld_exporter&quot;</span>,<span class="hljs-string">&quot;--config.my-cnf=./my.cnf&quot;</span>]</span><br></code></pre></td></tr></table></figure>
+
+<p>2、在github下载mysqld_exporter，放到对应的文件夹中</p>
+<p><img src="/../../../img/image-20240708142540442.png" srcset="/img/loading.gif" lazyload alt="image-20240708142540442"></p>
+<p>3、执行Dockerfile，创建镜像</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker build -t my_mysqld_exporter:latest .<br></code></pre></td></tr></table></figure>
+
+<p>4、重新运行容器</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker01 /app/docker/conf/mysql]#docker run -d --restart=always -p 9104:9104 my_mysqld_exporter:latest<br>7888508b5f0677f0812423ec085c74cd13f32feea358b17a09ffa72888e715a9<br></code></pre></td></tr></table></figure>
+
+<p>5、测试</p>
+<p>查看容器日志：正常，没有连接数据库的报错</p>
+<p><img src="/../../../img/image-20240708155658555.png" srcset="/img/loading.gif" lazyload alt="image-20240708155658555"></p>
+<p>再次测试访问metrics页面，正常</p>
+<p><img src="/../../../img/image-20240708155721004.png" srcset="/img/loading.gif" lazyload alt="image-20240708155721004"></p>
+<p>后续可以使用获得的数据，去grafana配置监控页面了</p>
+<h2 id="3-3-容器监控-cdvisor"><a href="#3-3-容器监控-cdvisor" class="headerlink" title="3.3 容器监控-cdvisor"></a>3.3 容器监控-cdvisor</h2><h3 id="3-3-1-部署cdvisor"><a href="#3-3-1-部署cdvisor" class="headerlink" title="3.3.1 部署cdvisor"></a>3.3.1 部署cdvisor</h3><blockquote>
+<p>docker01服务器操作</p>
+</blockquote>
+<p>一键部署，注意端口</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker run \<br>  --volume=/:/rootfs:ro \<br>  --volume=/var/run:/var/run:ro \<br>  --volume=/sys:/sys:ro \<br>  --volume=/var/lib/docker/:/var/lib/docker:ro \<br>  --volume=/dev/disk/:/dev/disk:ro \<br>  --publish=8080:8080 \<br>  --detach=true \<br>  --name=cadvisor \<br>  --privileged \<br>  --device=/dev/kmsg \<br>  google/cadvisor:latest<br></code></pre></td></tr></table></figure>
+
+<p>查看是否正常启动</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker01 /app/docker/conf/mysql]#docker ps<br>CONTAINER ID   IMAGE                             COMMAND                  CREATED          STATUS          PORTS                                                                          NAMES<br>0a9345fbc2a7   google/cadvisor:latest            &quot;/usr/bin/cadvisor -…&quot;   50 seconds ago   Up 49 seconds   0.0.0.0:8080-&gt;8080/tcp, :::8080-&gt;8080/tcp                                      cadvisor<br></code></pre></td></tr></table></figure>
+
+<p>测试访问页面：<a target="_blank" rel="noopener" href="http://10.0.0.81:8080/">http://10.0.0.81:8080</a></p>
+<p><img src="/../../../img/image-20240709103019307.png" srcset="/img/loading.gif" lazyload alt="image-20240709103019307"></p>
+<h3 id="3-3-2-Prometheus配置"><a href="#3-3-2-Prometheus配置" class="headerlink" title="3.3.2 Prometheus配置"></a>3.3.2 Prometheus配置</h3><blockquote>
+<p>mn04操作</p>
+</blockquote>
+<p>修改yml配置文件，对接Cdvisor</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn04[ /app/prometheus]#cat prometheus.yml<br>...  <br><span class="hljs-meta">  #</span><span class="bash"> 新增cadvisor监控</span>     <br>  - job_name: &quot;cadvisor-docker&quot;<br>    static_configs:<br>      - targets: [&quot;10.0.0.81:8080&quot;]<br></code></pre></td></tr></table></figure>
+
+<p>重启服务，访问prometheus网页查看效果</p>
+<p><img src="/../../../img/image-20240709103316474.png" srcset="/img/loading.gif" lazyload alt="image-20240709103316474"></p>
+<h3 id="3-3-3-对接Grafana展示"><a href="#3-3-3-对接Grafana展示" class="headerlink" title="3.3.3 对接Grafana展示"></a>3.3.3 对接Grafana展示</h3><p>模板ID:10619</p>
+<p><img src="/../../../img/image-20240709103518806.png" srcset="/img/loading.gif" lazyload alt="image-20240709103518806"></p>
+<p>导入</p>
+<p><img src="/../../../img/image-20240709103549729.png" srcset="/img/loading.gif" lazyload alt="image-20240709103549729"></p>
+<p>默认效果</p>
+<p><img src="/../../../img/image-20240709103610586.png" srcset="/img/loading.gif" lazyload alt="image-20240709103610586"></p>
+<p>选择“Host”后，监控正常</p>
+<p><img src="/../../../img/image-20240709103706690.png" srcset="/img/loading.gif" lazyload alt="image-20240709103706690"></p>
+<h2 id="四、警告配置（Altermanager）"><a href="#四、警告配置（Altermanager）" class="headerlink" title="四、警告配置（Altermanager）"></a>四、警告配置（Altermanager）</h2><p>用于实现监控告警功能</p>
+<p>使用流程：</p>
+<ol>
+<li>部署Alertermanager(在prometheus服务端部署)</li>
+<li>修改alertmanger配置</li>
+<li>配置告警规则rules与修改服务端配置</li>
+</ol>
+<h2 id="4-1-部署Altermanager"><a href="#4-1-部署Altermanager" class="headerlink" title="4.1 部署Altermanager"></a>4.1 部署Altermanager</h2><p>1、获取安装包：<a target="_blank" rel="noopener" href="https://github.com/prometheus/alertmanager/releases/tag/v0.27.0">https://github.com/prometheus/alertmanager/releases/tag/v0.27.0</a></p>
+<p>2、解压安装</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn04[ /app/prometheus]#tar -vxf alertmanager-0.27.0.linux-amd64.tar.gz<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 创建软连接</span><br>[root@mn04[ /app/prometheus]#ln -s /app/prometheus/alertmanager-0.27.0.linux-amd64 /app/prometheus/alertmanager<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 命令也是</span><br>[root@mn04[ /app/prometheus]#ln -s /app/prometheus/alertmanager/alertmanager /bin<br></code></pre></td></tr></table></figure>
+
+<p>3、前台启动测试</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">alertmanager --config.file=/app/prometheus/alertmanager/alertmanager.yml<br></code></pre></td></tr></table></figure>
+
+<p>4、检查进程与端口</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn04[ /app/prometheus]#ss -lntup | grep aler<br>udp    UNCONN     0      0      [::]:9094               [::]:*                   users:((&quot;alertmanager&quot;,pid=17843,fd=7))<br>tcp    LISTEN     0      128    [::]:9093               [::]:*                   users:((&quot;alertmanager&quot;,pid=17843,fd=8))<br>tcp    LISTEN     0      128    [::]:9094               [::]:*                   users:((&quot;alertmanager&quot;,pid=17843,fd=3))<br><br>[root@mn04[ /app/prometheus]#ps -ef | grep aler<br>root      17843  15588  0 23:20 pts/0    00:00:00 alertmanager --config.file=/app/prometheus/alertmanager/alertmanager.yml<br>root      17902  17854  0 23:21 pts/1    00:00:00 grep --color=auto aler<br></code></pre></td></tr></table></figure>
+
+
+
+<h2 id="4-2-配置Aler（对接第三方平台方式）"><a href="#4-2-配置Aler（对接第三方平台方式）" class="headerlink" title="4.2 配置Aler（对接第三方平台方式）"></a>4.2 配置Aler（对接第三方平台方式）</h2><p>对接第三方平台（睿象云）的方式</p>
+<p><a target="_blank" rel="noopener" href="https://www.aiops.com/">https://www.aiops.com</a></p>
+<p><img src="/../../../img/image-20240708232803550.png" srcset="/img/loading.gif" lazyload alt="image-20240708232803550"></p>
+<h3 id="4-2-1-获取aiops的apikey"><a href="#4-2-1-获取aiops的apikey" class="headerlink" title="4.2.1 获取aiops的apikey"></a>4.2.1 获取aiops的apikey</h3><p>首页点击监控工具，选择prometheus</p>
+<p><img src="/../../../img/image-20240708233404738.png" srcset="/img/loading.gif" lazyload alt="image-20240708233404738"></p>
+<p>填写应用名称，保存获取key</p>
+<p><img src="/../../../img/image-20240708233504490.png" srcset="/img/loading.gif" lazyload alt="image-20240708233504490"></p>
+<p>得到key，可按右边的方式配置</p>
+<p><img src="/../../../img/image-20240708233549745.png" srcset="/img/loading.gif" lazyload alt="image-20240708233549745"></p>
+<h3 id="4-2-3-配置文件"><a href="#4-2-3-配置文件" class="headerlink" title="4.2.3 配置文件"></a>4.2.3 配置文件</h3><p>1、按照官方提示，修改yml配置文件，对接第三方平台</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn04[ /app/prometheus]#cat alertmanager/alertmanager.yml <br>route:<br>  group_by: [&#x27;alertname&#x27;]<br>  group_wait: 30s<br>  group_interval: 5m<br>  repeat_interval: 1h<br>  receiver: &#x27;team-X-pager&#x27;<br>receivers:<br>  - name: &#x27;team-X-pager&#x27;<br>    webhook_configs:<br>      - url: &#x27;http://api.aiops.com/alert/api/event/prometheus/a6c88da68b644807acb2ebb55d70c71e&#x27;<br>        send_resolved: true<br><br>inhibit_rules:<br>  - source_match:<br>      severity: &#x27;critical&#x27;<br>    target_match:<br>      severity: &#x27;warning&#x27;<br>    equal: [&#x27;alertname&#x27;, &#x27;dev&#x27;, &#x27;instance&#x27;]<br></code></pre></td></tr></table></figure>
+
+<p>配置完重启alertmanager服务</p>
+<p>2、访问页面，查看状态</p>
+<p><a target="_blank" rel="noopener" href="http://10.0.0.64:9093/#/status">http://10.0.0.64:9093/#/status</a></p>
+<p><img src="/../../../img/image-20240708234115220.png" srcset="/img/loading.gif" lazyload alt="image-20240708234115220"></p>
+<h3 id="4-2-4-测试-制造故障"><a href="#4-2-4-测试-制造故障" class="headerlink" title="4.2.4 测试-制造故障"></a>4.2.4 测试-制造故障</h3><p>让mn03关机，收到警告与邮件</p>
+<p>警告如图</p>
+<p><img src="/../../../img/image-20240709002502359.png" srcset="/img/loading.gif" lazyload alt="image-20240709002502359"></p>
+<p>邮件如图</p>
+<p><img src="/../../../img/image-20240709002534109.png" srcset="/img/loading.gif" lazyload alt="image-20240709002534109"></p>
+<h2 id="4-3-配置Aler（邮件告警方式）"><a href="#4-3-配置Aler（邮件告警方式）" class="headerlink" title="4.3 配置Aler（邮件告警方式）"></a>4.3 配置Aler（邮件告警方式）</h2><h3 id="4-3-1-配置文件"><a href="#4-3-1-配置文件" class="headerlink" title="4.3.1 配置文件"></a>4.3.1 配置文件</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn04[ /app/prometheus]#cat alertmanager/alertmanager.yml <br>global:	# 全局定义部分，定义发件人信息<br>  resolve_timeout: 5m	# dns解析的超时时间5分钟<br>  smtp_from: &#x27;724262366@qq.com&#x27;	# 发件人<br>  smtp_smarthost: &#x27;smtp.qq.com:465&#x27;	# smtp服务器<br>  smtp_hello: &#x27;qq.com&#x27;	# 邮件厂商<br>  smtp_auth_username: &#x27;724262366@qq.com&#x27;	# 邮箱名字<br>  smtp_auth_password: &#x27;yrubyovtznyybbeg&#x27;	# 授权码<br>  smtp_require_tls: false<br><br>route:	# 收件人间隔时间，收件方式<br>  group_by: [&#x27;alertname&#x27;]<br>  group_wait: 30s<br>  group_interval: 5m<br>  repeat_interval: 1h	# 重复警告时间间隔（每一小时发一次）<br>  receiver: &#x27;email&#x27; # 什么方式接受警告<br><br>receivers:	# 收件人信息<br>  - name: &quot;email&quot;<br>    email_configs:<br>    - to: &#x27;724262366@qq.com&#x27;<br>      send_resolved: true<br><br>inhibit_rules:<br>  - source_match:<br>      severity: &#x27;critical&#x27;<br>    target_match:<br>      severity: &#x27;warning&#x27;<br>    equal: [&#x27;alertname&#x27;, &#x27;dev&#x27;, &#x27;instance&#x27;]<br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="4-3-2-Prometheus对接Altermanager"><a href="#4-3-2-Prometheus对接Altermanager" class="headerlink" title="4.3.2 Prometheus对接Altermanager"></a>4.3.2 Prometheus对接Altermanager</h3><p>1、修改配置文件，开启警告功能，yml文件片段</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn04[ /app/prometheus]#cat prometheus.yml <br>...<br><span class="hljs-meta">#</span><span class="bash"> Alertmanager configuration</span><br>alerting:<br>  alertmanagers:<br>    - static_configs:<br>        - targets:<br>          # 配置altermanager平台的ip<br>          - &quot;10.0.0.64:9093&quot;<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> Load rules once and periodically evaluate them according to the global <span class="hljs-string">&#x27;evaluation_interval&#x27;</span>.</span><br>rule_files:<br><span class="hljs-meta">  #</span><span class="bash"> - <span class="hljs-string">&quot;first_rules.yml&quot;</span></span><br><span class="hljs-meta">  #</span><span class="bash"> - <span class="hljs-string">&quot;second_rules.yml&quot;</span></span><br>  - &quot;/app/prometheus/prometheus_alert_rules.yml&quot;  # rules文件<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> A scrape configuration containing exactly one endpoint to scrape:</span><br><span class="hljs-meta">#</span><span class="bash"> Here it<span class="hljs-string">&#x27;s Prometheus itself.</span></span><br>scrape_configs:<br>...<br></code></pre></td></tr></table></figure>
+
+<p>2、创建<code>prometheus_alert_rules.yml</code>文件，内容如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs shell">groups:<br>- name: check_node_status<br>  rules:<br>  - alert: check_node_is_up<br>    expr: up == 0<br>    for: 15s<br>    labels:<br>      severity: 1<br>      team: node<br>    annotations:<br>      summary: &quot; &#123;&#123; $labels.instance &#125;&#125; 节点停止运行超过15秒!!!&quot;<br></code></pre></td></tr></table></figure>
+
+<p>3、配置完重启服务</p>
+<h3 id="4-3-3-web页面检查"><a href="#4-3-3-web页面检查" class="headerlink" title="4.3.3 web页面检查"></a>4.3.3 web页面检查</h3><p>在web页面检查规则，如图存在，则配置成功</p>
+<p><img src="/../../../img/image-20240709000856398.png" srcset="/img/loading.gif" lazyload alt="image-20240709000856398"></p>
+<h3 id="4-3-4-测试-制造故障"><a href="#4-3-4-测试-制造故障" class="headerlink" title="4.3.4 测试-制造故障"></a>4.3.4 测试-制造故障</h3><p>把grafana的服务器（mn03）shutdown，成功收到告警</p>
+<p>先是prometheus页面告警</p>
+<p><img src="/../../../img/image-20240709001139730.png" srcset="/img/loading.gif" lazyload alt="image-20240709001139730"></p>
+<p>而后收到邮件告警</p>
+<p><img src="/../../../img/image-20240709001221383.png" srcset="/img/loading.gif" lazyload alt="image-20240709001221383"></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%BF%90%E7%BB%B4/" class="category-chain-item">运维</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" class="category-chain-item">（二）综合架构</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>day73-监控架构-Prometheus(二)</div>
+      <div>http://gsproj.github.io/2024/07/08/07_85期运维/03_自动化架构/day73-监控架构-Promethueus-2  (copy)/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>GongSheng</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2024年7月8日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2024/07/09/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/03_%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9E%B6%E6%9E%84/day74-Devops-Git%E4%B8%8EGitlab/" title="day74-Devops-Git与Gitlab">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">day74-Devops-Git与Gitlab</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/07/01/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/03_%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9E%B6%E6%9E%84/day72-%E7%9B%91%E6%8E%A7%E6%9E%B6%E6%9E%84-Promethueus-1/" title="day72-监控架构-Prometheus(一)">
+                        <span class="hidden-mobile">day72-监控架构-Prometheus(一)</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

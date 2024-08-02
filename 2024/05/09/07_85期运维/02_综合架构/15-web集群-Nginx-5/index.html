@@ -1,0 +1,912 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="GongSheng">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="Web集群-Nginx（五）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="15-Web集群-Nginx(五)">
+<meta property="og:url" content="http://gsproj.github.io/2024/05/09/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/02_%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/15-web%E9%9B%86%E7%BE%A4-Nginx-5/index.html">
+<meta property="og:site_name" content="迎风之豚的博客">
+<meta property="og:description" content="Web集群-Nginx（五）">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240509165111273.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240509165153838.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240509170011620.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240509230010825.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240509175210664.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240509175315454.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240509175430280.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240509180842156.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240509223814652.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240510092319840.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240510094005767.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240510094652072.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240510102005704.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240510102128652.png">
+<meta property="article:published_time" content="2024-05-09T05:59:52.000Z">
+<meta property="article:modified_time" content="2024-08-02T01:48:34.361Z">
+<meta property="article:author" content="GongSheng">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://gsproj.github.io/img/image-20240509165111273.png">
+  
+  
+  
+  <title>15-Web集群-Nginx(五) - 迎风之豚的博客</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>&#34;迎风之豚的博客&#34;</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="15-Web集群-Nginx(五)"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-05-09 13:59" pubdate>
+          2024年5月9日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          10k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          85 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">15-Web集群-Nginx(五)</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="Web集群-Nginx（五）"><a href="#Web集群-Nginx（五）" class="headerlink" title="Web集群-Nginx（五）"></a>Web集群-Nginx（五）</h1><p>今日内容：</p>
+<ol>
+<li>反向代理 vs 负载均衡区别</li>
+<li>wordpress动态网站接入到负载均衡</li>
+<li>其他负载案例</li>
+</ol>
+<h1 id="一、复习"><a href="#一、复习" class="headerlink" title="一、复习"></a>一、复习</h1><h2 id="1-1-Nginx处理用户请求流程"><a href="#1-1-Nginx处理用户请求流程" class="headerlink" title="1.1 Nginx处理用户请求流程"></a>1.1 Nginx处理用户请求流程</h2><p>处理用户请求流程，静态，无负载</p>
+<p><img src="/../../../img/image-20240509165111273.png" srcset="/img/loading.gif" lazyload alt="image-20240509165111273"></p>
+<p>处理用户请求流程，动态，无负载</p>
+<p><img src="/../../../img/image-20240509165153838.png" srcset="/img/loading.gif" lazyload alt="image-20240509165153838"></p>
+<h2 id="1-2-负载均衡处理用户请求流程"><a href="#1-2-负载均衡处理用户请求流程" class="headerlink" title="1.2 负载均衡处理用户请求流程"></a>1.2 负载均衡处理用户请求流程</h2><p>参考：<a target="_blank" rel="noopener" href="https://www.processon.com/view/link/619d93310e3e74287fe4e3de">https://www.processon.com/view/link/619d93310e3e74287fe4e3de</a></p>
+<h1 id="二、负载均衡补充"><a href="#二、负载均衡补充" class="headerlink" title="二、负载均衡补充"></a>二、负载均衡补充</h1><h2 id="2-1-负载均衡-VS-反向代理"><a href="#2-1-负载均衡-VS-反向代理" class="headerlink" title="2.1 负载均衡 VS 反向代理"></a>2.1 负载均衡 VS 反向代理</h2><blockquote>
+<p>一般出现在面试中,如果不是一般认为这两个是一致的.</p>
+<p>区别在于处理用户请求的方式.  </p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>内容</th>
+<th>共同点</th>
+<th>区别</th>
+<th>服务</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>负载 均衡</td>
+<td>用户的请求分发到 后端节点上.</td>
+<td>用户—&gt;lb—-&gt;web lb负载均衡做的是数据转发,不会产生新的请求. 1个请求1个响应</td>
+<td>lvs</td>
+</tr>
+<tr>
+<td>反向 代理</td>
+<td>用户的请求分发到后端节点上.</td>
+<td>中间有个中介,用户—&gt;中介—&gt;web 2个请求2个响应. 代理代替用户去找web服务器.</td>
+<td>ngx&#x2F;tengine&#x2F;openresty&#x2F;haproxy</td>
+</tr>
+</tbody></table>
+<p>图示如下：</p>
+<p><img src="/../../../img/image-20240509170011620.png" srcset="/img/loading.gif" lazyload alt="image-20240509170011620"></p>
+<h2 id="2-2-负载均衡模块的选项"><a href="#2-2-负载均衡模块的选项" class="headerlink" title="2.2 负载均衡模块的选项"></a>2.2 负载均衡模块的选项</h2><p>upstream模块 sever 指令支持的选项 </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs shell">upstrem pools &#123;<br>  server 10.0.0.7:80 weight=1 max_fails=3 fail_timeout=10s;<br>  server 10.0.0.8:80 weight=1 max_fails=3 fail_timeout=10s;<br>  server 10.0.0.8:80 backup;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>选项说明：</p>
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>说明</th>
+<th>应用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>weight</td>
+<td>权重,根据权重ngx分配请求.</td>
+<td>如果web服务端配置不同,1c2g, 2c8g. 代码更新与测试的时候,给测试服务器较小的权重.</td>
+</tr>
+<tr>
+<td>max_fails</td>
+<td>ngx具备一些健康检查功能,指定失败的次数,超过这个次 数就认为节点挂了.</td>
+<td>一般情况下可以设置1-3即可. 不太重要,缓存业 务,可以设置为10.</td>
+</tr>
+<tr>
+<td>fail_timeout</td>
+<td>认为节点挂了后间隔多久再次检查健康情况. 默认是 10s.</td>
+<td>根据要求设置时间即可,可以长一些.30&#x2F;60s.</td>
+</tr>
+<tr>
+<td>backup</td>
+<td>备胎服务器,其他所有服务器都挂了的时候,才启用.</td>
+<td>使用的时候需要考虑雪崩的情况</td>
+</tr>
+</tbody></table>
+<h1 id="三、负载均衡案例"><a href="#三、负载均衡案例" class="headerlink" title="三、负载均衡案例"></a>三、负载均衡案例</h1><h2 id="3-1-案例01：wordpress接入负载均衡"><a href="#3-1-案例01：wordpress接入负载均衡" class="headerlink" title="3.1 案例01：wordpress接入负载均衡"></a>3.1 案例01：wordpress接入负载均衡</h2><p>需求：</p>
+<ul>
+<li>nfs01挂载</li>
+<li>db数据库，库用户</li>
+<li>web01,web02 部署环境ngx+php，测试，部署代码，挂载nfs。</li>
+<li>接入负载</li>
+</ul>
+<p>图示：</p>
+<p><img src="/../../../img/image-20240509230010825.png" srcset="/img/loading.gif" lazyload alt="image-20240509230010825"></p>
+<h3 id="3-1-1-NFS存储配置"><a href="#3-1-1-NFS存储配置" class="headerlink" title="3.1.1 NFS存储配置"></a>3.1.1 NFS存储配置</h3><p>nfs01服务器，10.0.0.31配置，</p>
+<blockquote>
+<p>注意事项：</p>
+<p>共享的&#x2F;nfs&#x2F;wordpress文件夹，所属用户和组都是www</p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 添加www用户和用户组</span><br>useradd -u 1999 -s /sbin/nologin -M www<br><span class="hljs-meta">#</span><span class="bash"> 查看用户</span><br>id www<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 修改nfs配置文件，指定文件夹用户</span><br>[root@nfs01[ ~]#cat /etc/exports<br>...<br>/nfs/wordpress/ 172.16.1.0/24(rw, all_squash, anonuid=1999, anongid=1999)<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 重启服务</span><br>systemctl restart rpcbind nfs<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 查看nfs是否正常</span><br>[root@nfs01[ /]#showmount -e 172.16.1.31<br>Export list for 172.16.1.31:<br>/nfs/wordpress/ 172.16.1.0/24<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 创建目录，修改所有者</span><br>[root@nfs01[ ~]#mkdir -p /nfs/wordpress<br>[root@nfs01[ ~]#chown -R www.www /nfs/wordpress<br></code></pre></td></tr></table></figure>
+
+<h3 id="3-1-2-数据库配置"><a href="#3-1-2-数据库配置" class="headerlink" title="3.1.2 数据库配置"></a>3.1.2 数据库配置</h3><p>db01服务器，10.0.0.51配置，为wordpress创建专门的数据库，以及数据库用户</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 创建wordpress数据库</span><br>MariaDB [(none)]&gt; create database wordpress;<br>Query OK, 1 row affected (0.00 sec)<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 创建wp用户</span><br>MariaDB [(none)]&gt; grant all on wordpress.* to &#x27;wp&#x27;@&#x27;172.16.1.%&#x27; identified by &#x27;redhat123&#x27;;<br>Query OK, 0 rows affected (0.00 sec)<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 查看用户</span><br>MariaDB [(none)]&gt; select user,host from mysql.user;<br>+-----------+------------+<br>| user      | host       |<br>+-----------+------------+<br>| root      | 127.0.0.1  |<br>| wordpress | 172.16.1.% |<br>| wp        | 172.16.1.% |	# 存在<br>| root      | ::1        |<br>| root      | localhost  |<br>| wordpress | localhost  |<br>+-----------+------------+<br>6 rows in set (0.00 sec)<br></code></pre></td></tr></table></figure>
+
+<h3 id="3-1-3-web服务器配置"><a href="#3-1-3-web服务器配置" class="headerlink" title="3.1.3 web服务器配置"></a>3.1.3 web服务器配置</h3><p>web01和web02均做同样配置，保持一致</p>
+<blockquote>
+<p>注意事项：</p>
+<p>nginx和php都要使用www用户和用户组</p>
+<p>nginx：</p>
+<ul>
+<li>主配置文件：&#x2F;etc&#x2F;nginx&#x2F;nginx.conf，其中的user</li>
+<li>站点目录，&#x2F;app&#x2F;code&#x2F;blog，修改用户和属组</li>
+</ul>
+<p>php:</p>
+<ul>
+<li>&#x2F;etc&#x2F;php-fpm.d&#x2F;<a target="_blank" rel="noopener" href="http://www.conf,修改user和group/">www.conf，修改user和group</a></li>
+</ul>
+</blockquote>
+<p>www用户相关配置</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 添加www用户和用户组</span><br>useradd -u 1999 -s /sbin/nologin -M www<br><span class="hljs-meta">#</span><span class="bash"> 查看用户</span><br>id www<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> nginx主配置文件修改user,由nginx改为www</span><br>[root@web01[ /app/code/blog]#cat /etc/nginx/nginx.conf<br>user  www;<br>...<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 修改php-fpm的用户</span><br>[root@web02[ /app/code/blog]#cat /etc/php-fpm.d/www.conf<br>...<br>user = www<br>group = www<br></code></pre></td></tr></table></figure>
+
+<p>子配置文件和挂载目录相关</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> blog.oldboylinux.cn子配置文件</span><br>[root@web01[ /etc/nginx/conf.d]#cat blog.oldboylinux.cn.conf<br>server &#123;<br>  listen 80;<br>  server_name blog.oldboylinux.cn;<br>  root /app/code/blog;<br>  error_log /var/log/nginx/blog-error.log notice;<br>  access_log /var/log/nginx/blog-access.log main;<br>  location / &#123;<br>    index index.php;<br>  &#125;<br>  location ~ \.php$ &#123;<br>    fastcgi_pass 127.0.0.1:9000;<br>    fastcgi_index index.php;<br>    fastcgi_buffering on;<br>    fastcgi_buffers 64 64k;<br>    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;<br>    include fastcgi_params;<br>  &#125;<br>&#125;<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> wordpress站点目录，创建uploads文件夹</span><br>[root@web01[ /app/code/blog]#mkdir wp-content/uploads<br><span class="hljs-meta">#</span><span class="bash"> 修改站点目录所有者是www</span><br>[root@web01[ /app/code]#chown -R www.www blog/<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> uploads文件夹挂载为nfs存储</span><br>[root@web01[ /etc/nginx/conf.d]#cat /etc/fstab<br>....<br>172.16.1.31:/nfs/wordpress /app/code/blog/wp-content/uploads nfs defaults 0 0<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 永久挂载</span><br>[root@web01[ /etc/nginx/conf.d]#mount -a<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 打包站点代码，排除上传目录</span><br>tar zcf ~/wordpress-no-uploads.tar.gz . --exclude=./wp-content/uploads/*<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 拷贝代码到web02部署，站点内容需保持一致</span><br>[root@web01[ /app/code/blog]#scp ~/wordpress-no-uploads.tar.gz 10.0.0.8:/app/code/blog<br><span class="hljs-meta">#</span><span class="bash"> 解压</span><br>[root@web02[ /app/code/blog]#ls<br>wordpress-no-uploads.tar.gz<br>[root@web02[ /app/code/blog]#tar -vxf wordpress-no-uploads.tar.gz<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 重启服务</span><br>[root@web01[ /app/code]#systemctl restart nginx php-fpm<br>[root@web01[ /app/code]#ps -ef | grep www<br>www        5478   5475  0 23:37 ?        00:00:00 php-fpm: pool www<br>www        5479   5475  0 23:37 ?        00:00:00 php-fpm: pool www<br>www        5480   5475  0 23:37 ?        00:00:00 php-fpm: pool www<br>www        5481   5475  0 23:37 ?        00:00:00 php-fpm: pool www<br>www        5482   5475  0 23:37 ?        00:00:00 php-fpm: pool www<br>www        5485   5484  0 23:37 ?        00:00:00 nginx: worker process<br>root       5487   1764  0 23:37 pts/0    00:00:00 grep --color=auto www<br></code></pre></td></tr></table></figure>
+
+<h3 id="3-1-4-接入负载均衡"><a href="#3-1-4-接入负载均衡" class="headerlink" title="3.1.4 接入负载均衡"></a>3.1.4 接入负载均衡</h3><p>lb01配置</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 创建自配置文件，接入负载均衡</span><br>[root@lb01[ /etc/nginx/conf.d]#cat blog.oldboylinux.cn.conf<br>upstream blog_spools&#123;<br>  server 10.0.0.7:80;<br>  server 10.0.0.8:80;<br>&#125;<br><br>server &#123;<br>  listen 80;<br>  server_name blog.oldboylinux.cn;<br>  error_log /var/log/nginx/blog-error.log notice;<br>  access_log /var/log/nginx/blog-acess.log main;<br>  location / &#123;<br>    proxy_pass http://blog_spools;<br>    proxy_set_header Host $http_host;<br>    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="3-1-5-测试"><a href="#3-1-5-测试" class="headerlink" title="3.1.5 测试"></a>3.1.5 测试</h3><h4 id="a-负载均衡测试"><a href="#a-负载均衡测试" class="headerlink" title="a) 负载均衡测试"></a>a) 负载均衡测试</h4><p>先是走10.0.0.7</p>
+<p><img src="/../../../img/image-20240509175210664.png" srcset="/img/loading.gif" lazyload alt="image-20240509175210664"></p>
+<p>把0.7的nginx关了，仍可以正常访问，该走0.8</p>
+<p><img src="/../../../img/image-20240509175315454.png" srcset="/img/loading.gif" lazyload alt="image-20240509175315454"></p>
+<h4 id="b-文件上传测试"><a href="#b-文件上传测试" class="headerlink" title="b) 文件上传测试"></a>b) 文件上传测试</h4><p>写一篇文章，上传图片</p>
+<p><img src="/../../../img/image-20240509175430280.png" srcset="/img/loading.gif" lazyload alt="image-20240509175430280"></p>
+<p>图片成功显示，且通过nfs上传到nfs01服务器中</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@nfs01[ /nfs/wordpress]#ls 2024/05/<br>自律即自由-1024x576.jpg  自律即自由-1536x864.jpg  自律即自由-768x432.jpg<br>自律即自由-150x150.jpg   自律即自由-300x169.jpg   自律即自由.jpg<br></code></pre></td></tr></table></figure>
+
+<h2 id="3-2-案例02-会话保持"><a href="#3-2-案例02-会话保持" class="headerlink" title="3.2 案例02-会话保持"></a>3.2 案例02-会话保持</h2><p>目前的站点虽然可以正常访问，但仍然存在问题：会话无法保持</p>
+<p>什么是会话？</p>
+<ul>
+<li>用户的登录状态，或者未来购物网站的购物车状态，都可以称之为对话。</li>
+<li>以登录状态为例，如果会话不能保持统一，可能造成用户频繁需要重新登录的问题，体验不好</li>
+</ul>
+<p>本节的目标： 实现会话保持&#x2F;会话共享。</p>
+<h3 id="3-2-1-cookie和session"><a href="#3-2-1-cookie和session" class="headerlink" title="3.2.1 cookie和session"></a>3.2.1 cookie和session</h3><p>需要大致知晓cookie和session的含义</p>
+<table>
+<thead>
+<tr>
+<th>技术点</th>
+<th>共同点</th>
+<th>区别</th>
+<th>其他</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>cookie</td>
+<td>存放用户的信息，如登录信息</td>
+<td>存放在客户端浏览器</td>
+<td>服务器给客户端响应，进行设置set-cookie，未来再次访问时，将携带着cookie访问服务端</td>
+</tr>
+<tr>
+<td>session</td>
+<td>存放用户的信息，如登录信息</td>
+<td>存放服务端(文件,数据 库…)</td>
+<td>浏览器cookie与服务端的session对应</td>
+</tr>
+</tbody></table>
+<p>浏览器F12查看网站cookie</p>
+<p><img src="/../../../img/image-20240509180842156.png" srcset="/img/loading.gif" lazyload alt="image-20240509180842156"></p>
+<h3 id="3-2-2-会话保持方案"><a href="#3-2-2-会话保持方案" class="headerlink" title="3.2.2 会话保持方案"></a>3.2.2 会话保持方案</h3><p>方案：</p>
+<ul>
+<li>cookie+session方式<ul>
+<li>登录状态写入cookie中</li>
+<li>需要有统一存放session服务器(会话保持服务器)</li>
+<li>客户端浏览器持cookie和服务器session对比</li>
+</ul>
+</li>
+<li>通过认证服务Oauth2.0实现 <ul>
+<li>使用token方式—token古代的令牌</li>
+<li>偏开发，了解即可</li>
+</ul>
+</li>
+<li>ip_hash方案<ul>
+<li>第一次认证的那台服务器，后续就一直选择那台</li>
+<li>跟负载均衡的作用有些冲突</li>
+</ul>
+</li>
+<li>通过redis实现<ul>
+<li>把认证信息存放在redis服务器中</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-2-3-redis方案极速上手"><a href="#3-2-3-redis方案极速上手" class="headerlink" title="3.2.3 redis方案极速上手"></a>3.2.3 redis方案极速上手</h3><blockquote>
+<p>案例：部署phpMyAdmin + redis会话保持</p>
+<p>phpMyadmin是一个基于PHP的web页面版本的数据库管理工具，可以执行SQL语句。</p>
+<p>只需要nginx + php，不需要创建库，只需在mysql添加用户(权限设大点).  </p>
+</blockquote>
+<p>流程如下：</p>
+<ul>
+<li>db: phpmyadmin用户,权限大一些.</li>
+<li>web: 部署代码,传输到另外一个web上</li>
+<li>准备redis环境(db01)</li>
+<li>修改php配置(创建新的端口)</li>
+<li>接入负载均衡.访问与测试</li>
+</ul>
+<h4 id="a）db01准备用户"><a href="#a）db01准备用户" class="headerlink" title="a）db01准备用户"></a>a）db01准备用户</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> Mysql中创建phpmyadmin用户</span><br>MariaDB [(none)]&gt; grant all on *.* to &#x27;phpmyadmin&#x27;@&#x27;172.16.1.%&#x27; identified by &#x27;redhat123&#x27;;<br>Query OK, 0 rows affected (0.00 sec)<br></code></pre></td></tr></table></figure>
+
+<h4 id="b）部署phpmyadmin"><a href="#b）部署phpmyadmin" class="headerlink" title="b）部署phpmyadmin"></a>b）部署phpmyadmin</h4><p>web01和web02做同样的操作</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 下载</span><br>wget https://files.phpmyadmin.net/phpMyAdmin/5.2.1/phpMyAdmin-5.2.1-all-languages.zip<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 创建站点文件夹，解压放入</span><br>[root@web01[ /etc/nginx/conf.d]#ls /app/code/phpmyadmin/<br>babel.config.json      CONTRIBUTING.md  js            README                  sql        yarn.lock<br>ChangeLog              doc              libraries     RELEASE-DATE-5.2.1      templates<br>composer.json          examples         LICENSE       robots.txt              themes<br>composer.lock          favicon.ico      locale        setup                   url.php<br>config.sample.inc.php  index.php        package.json  show_config_errors.php  vendor<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 子配置文件</span><br>[root@web01[ /etc/nginx/conf.d]#cat phpmyadmin.oldboylinux.cn.conf<br>server &#123;<br>  listen 80;<br>  server_name phpmyadmin.oldboylinux.cn;<br>  root /app/code/phpmyadmin;<br>  error_log /var/log/nginx/phpmyadmin-error.log notice;<br>  access_log /var/log/nginx/phpmyadmin-access.log main;<br>  location / &#123;<br>    index index.php;<br>  &#125;<br>  location ~ \.php$ &#123;<br>    # 传递给php<br>    fastcgi_pass 127.0.0.1:9000;<br>    fastcgi_index index.php;<br>    fastcgi_buffering on;<br>    fastcgi_buffers 64 64k;<br>    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;<br>    include fastcgi_params;<br>  &#125;<br>&#125;<br><span class="hljs-meta"></span><br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 检查语法，重新加载服务</span><br>[root@web01[ /etc/nginx/conf.d]#nginx -t<br>nginx: the configuration file /etc/nginx/nginx.conf syntax is ok<br>nginx: configuration file /etc/nginx/nginx.conf test is successful<br>[root@web01[ /etc/nginx/conf.d]#systemctl reload nginx<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p>配置文件vim编辑时的替换方法：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">&gt;</span><span class="bash">:%s<span class="hljs-comment">#blog#phpmyadmin#g</span></span><br></code></pre></td></tr></table></figure>
+</blockquote>
+<p>配置hosts，测试访问，报错<strong>Permission denied</strong></p>
+<p><img src="/../../../img/image-20240509223814652.png" srcset="/img/loading.gif" lazyload alt="image-20240509223814652"></p>
+<p>原因是因为session目录没有权限，解决方法：将session目录用户和属组修改为www</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 修改所有者</span><br>[root@web01[ /etc/nginx/conf.d]#chown -R www.www /var/lib/php/session<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p>这里的www用户和用户组是根据nginx的配置文件来的：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">&gt;</span><span class="bash">[root@web01[ /etc/nginx/conf.d]<span class="hljs-comment">#cat /etc/nginx/nginx.conf</span></span><br><span class="hljs-meta">&gt;</span><span class="bash">...</span><br><span class="hljs-meta">&gt;</span><span class="bash">user  nginx;</span><br><span class="hljs-meta">&gt;</span><span class="bash">...</span><br></code></pre></td></tr></table></figure>
+
+<p>user项里是什么，就改成什么，我的原来是nginx，后面改成www</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">&gt;</span><span class="bash">[root@web01[ /etc/nginx/conf.d]<span class="hljs-comment">#cat /etc/nginx/nginx.conf</span></span><br><span class="hljs-meta">&gt;</span><span class="bash">...</span><br><span class="hljs-meta">&gt;</span><span class="bash">user www;</span><br><span class="hljs-meta">&gt;</span><span class="bash">worker_processes  auto;</span><br><span class="hljs-meta">&gt;</span><span class="bash">...</span><br></code></pre></td></tr></table></figure>
+</blockquote>
+<p>再次访问，正常</p>
+<p><img src="/../../../img/image-20240510092319840.png" srcset="/img/loading.gif" lazyload alt="image-20240510092319840"></p>
+<p>phpmyadmin默认的数据库IP为localhost，因此需要在站点文件夹中，手动创建连接数据库的配置文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 拷贝一份</span><br>cp config.sample.inc.php config.inc.php<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 把host改成数据库的IP</span><br>grep -wn host config.inc.php<br>30:$cfg[&#x27;Servers&#x27;][$i][&#x27;host&#x27;] = &#x27;172.16.1.51&#x27;;<br></code></pre></td></tr></table></figure>
+
+<p>测试访问（10.0.0.8单机部署），帐号密码为mysql用户，用之前创建的phpmyadmin用户登录</p>
+<p><img src="/../../../img/image-20240510094005767.png" srcset="/img/loading.gif" lazyload alt="image-20240510094005767"></p>
+<p>访问成功，10.0.0.7也做相同配置，站点代码保持一致</p>
+<h4 id="c）部署负载均衡"><a href="#c）部署负载均衡" class="headerlink" title="c）部署负载均衡"></a>c）部署负载均衡</h4><p>lb01部署</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 子配置文件</span><br>[root@lb01[ /etc/nginx/conf.d]#cat phpmyadmin.oldboylinux.cn.conf<br>upstream phpmyadmin_spools&#123;<br>  server 10.0.0.7:80;<br>  server 10.0.0.8:80;<br>&#125;<br><br>server &#123;<br>  listen 80;<br>  server_name phpmyadmin.oldboylinux.cn;<br>  error_log /var/log/nginx/phpmyadmin-error.log notice;<br>  access_log /var/log/nginx/phpmyadmin-acess.log main;<br>  location / &#123;<br>    proxy_pass http://phpmyadmin_spools;<br>    proxy_set_header Host $http_host;<br>    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;<br>  &#125;<br>&#125;<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 重新加载</span><br>[root@lb01[ /etc/nginx/conf.d]#systemctl reload nginx<br></code></pre></td></tr></table></figure>
+
+<p>测试：经过负载均衡访问，无法正常登录了，报错</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">Failed to set session cookie. Maybe you are using HTTP instead of HTTPS to access phpMyAdmin.<br></code></pre></td></tr></table></figure>
+
+<p><img src="/../../../img/image-20240510094652072.png" srcset="/img/loading.gif" lazyload alt="image-20240510094652072"></p>
+<p>这是怎么回事？</p>
+<ul>
+<li>跟session cookie相关，想必就是会话保持的问题引起的！</li>
+<li>通过部署redis服务来保存会话，解决这个问题。</li>
+</ul>
+<h4 id="d）部署redis服务"><a href="#d）部署redis服务" class="headerlink" title="d）部署redis服务"></a>d）部署redis服务</h4><blockquote>
+<p>此操作在<font color=red>数据库服务器</font>操作（db01 - 10.0.0.51）</p>
+</blockquote>
+<p>部署redis</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 安装</span><br>yum install -y redis<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 修改配置文件</span><br>[root@db01[ ~]#grep -wn &#x27;bind&#x27; /etc/redis.conf<br>...<br>61:bind 127.0.0.1 172.16.1.51	# 绑定本地网卡IP<br>...<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 重启服务，--now就不需要额外的start reload了</span><br>systemctl enable --now redis<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 查看进程状态, 在6379端口</span><br>[root@db01[ ~]#ss -lntup | grep redis<br>tcp    LISTEN     0      128    172.16.1.51:6379                  *:*                   users:((&quot;redis-server&quot;,pid=9992,fd=5))<br>tcp    LISTEN     0      128    127.0.0.1:6379                  *:*                   users:((&quot;redis-server&quot;,pid=9992,fd=4))<br></code></pre></td></tr></table></figure>
+
+
+
+<h4 id="e）php配置文件指定会话存放位置"><a href="#e）php配置文件指定会话存放位置" class="headerlink" title="e）php配置文件指定会话存放位置"></a>e）php配置文件指定会话存放位置</h4><blockquote>
+<p>此操作在<font color=red>web服务器</font>操作（web01、web02）</p>
+<p>通知php指定会话保持位置：redis tcp:&#x2F;&#x2F;172.16.1.51:6379  </p>
+</blockquote>
+<p>创建php配置文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 原使用www.conf文件，9000端口，复制创建新的conf文件：session.conf，使用9001端口</span><br>cp /etc/php-fpm.d/www.conf /etc/php-fpm.d/session.conf<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 配置文件全部信息如下</span><br>[root@web01[ /etc/php-fpm.d]#egrep -v &#x27;^$|;&#x27; session.conf<br>[session]	# 会话名修改<br>user = www<br>group = www<br>listen = 127.0.0.1:9001	# 端口改成9001<br>listen.allowed_clients = 127.0.0.1<br>pm = dynamic<br>pm.max_children = 50<br>pm.start_servers = 5<br>pm.min_spare_servers = 5<br>pm.max_spare_servers = 35<br>slowlog = /var/log/php-fpm/www-slow.log<br>php_admin_value[error_log] = /var/log/php-fpm/www-error.log<br>php_admin_flag[log_errors] = on<br>php_value[session.save_handler] = redis		# files改为redis<br>php_value[session.save_path]    = tcp://172.16.1.51:6379	# 文件改成redis地址<br>php_value[soap.wsdl_cache_dir]  = /var/lib/php/wsdlcache<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 重启服务</span><br>systemctl restart php-fpm<br></code></pre></td></tr></table></figure>
+
+<p>修改nginx配置文件，转发到9001端口处理</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01[ /etc/php-fpm.d]#cat /etc/nginx/conf.d/phpmyadmin.oldboylinux.cn.conf<br>server &#123;<br>...<br>  location ~ \.php$ &#123;<br>    # 传递给php<br>    fastcgi_pass 127.0.0.1:9001;	# 9000改9001<br>...<br>  &#125;<br>&#125;<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 重启服务</span><br>systemctl restart nginx php-fpm<br></code></pre></td></tr></table></figure>
+
+<h4 id="d）最终测试"><a href="#d）最终测试" class="headerlink" title="d）最终测试"></a>d）最终测试</h4><p>再次登录正常</p>
+<p><img src="/../../../img/image-20240510102005704.png" srcset="/img/loading.gif" lazyload alt="image-20240510102005704"></p>
+<p>不断刷新，172.16.1.7和1.8都有，说明负载均衡生效，且不需要重新登录，会话保存成功</p>
+<p><img src="/../../../img/image-20240510102128652.png" srcset="/img/loading.gif" lazyload alt="image-20240510102128652"></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%BF%90%E7%BB%B4/" class="category-chain-item">运维</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" class="category-chain-item">（二）综合架构</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>15-Web集群-Nginx(五)</div>
+      <div>http://gsproj.github.io/2024/05/09/07_85期运维/02_综合架构/15-web集群-Nginx-5/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>GongSheng</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2024年5月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2024/05/10/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/02_%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/16-web%E9%9B%86%E7%BE%A4-Nginx-6/" title="16-Web集群-Nginx(六)">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">16-Web集群-Nginx(六)</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/05/09/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/02_%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/14-web%E9%9B%86%E7%BE%A4-Nginx-4/" title="14-Web集群-Nginx(四)">
+                        <span class="hidden-mobile">14-Web集群-Nginx(四)</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

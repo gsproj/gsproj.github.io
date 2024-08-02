@@ -1,0 +1,938 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="GongSheng">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="容器架构-Docker-05">
+<meta property="og:type" content="article">
+<meta property="og:title" content="day63-容器架构-Docker（五）">
+<meta property="og:url" content="http://gsproj.github.io/2024/05/29/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/03_%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9E%B6%E6%9E%84/day63-%E5%AE%B9%E5%99%A8%E6%9E%B6%E6%9E%84-docker-5/index.html">
+<meta property="og:site_name" content="迎风之豚的博客">
+<meta property="og:description" content="容器架构-Docker-05">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240530125740774.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240530165306409.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240530171048926.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240530183620025.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240530184607477.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240530191350136.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240530192036861.png">
+<meta property="article:published_time" content="2024-05-29T05:08:52.000Z">
+<meta property="article:modified_time" content="2024-08-02T01:48:34.361Z">
+<meta property="article:author" content="GongSheng">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://gsproj.github.io/img/image-20240530125740774.png">
+  
+  
+  
+  <title>day63-容器架构-Docker（五） - 迎风之豚的博客</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>&#34;迎风之豚的博客&#34;</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="day63-容器架构-Docker（五）"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-05-29 13:08" pubdate>
+          2024年5月29日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          13k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          108 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">day63-容器架构-Docker（五）</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="容器架构-Docker-05"><a href="#容器架构-Docker-05" class="headerlink" title="容器架构-Docker-05"></a>容器架构-Docker-05</h1><p>今日内容：</p>
+<ul>
+<li>容器编排</li>
+</ul>
+<h1 id="一、容器编排工具Compose"><a href="#一、容器编排工具Compose" class="headerlink" title="一、容器编排工具Compose"></a>一、容器编排工具Compose</h1><h2 id="1-1-容器编排介绍"><a href="#1-1-容器编排介绍" class="headerlink" title="1.1 容器编排介绍"></a>1.1 容器编排介绍</h2><p>目前存在的问题：docker容器的管理(启动,关闭,重启)，需要手动执行，如何自动管理多个容器？  就像docker镜像可以通过Dockerfile一键创建。</p>
+<p>这时，就是能使用容器编排技术。</p>
+<p>单机容器编排工具：</p>
+<ul>
+<li>docker compose</li>
+<li>需要单独安装(epel源中就有),语法yaml格式</li>
+</ul>
+<p>容器集群管理的方法：</p>
+<ul>
+<li>ansible + docker compose + dockerfile</li>
+<li>docker swarm实现集群管理.</li>
+<li>mesos</li>
+<li>未来我们通过k8s kubernetes实现集群管理</li>
+</ul>
+<p>了解：docker三剑客</p>
+<ul>
+<li>docker machine(管理虚拟机)</li>
+<li>docker compose(容器编排)</li>
+<li>docker swarm(集群)</li>
+</ul>
+<h2 id="1-2-compose初步上手"><a href="#1-2-compose初步上手" class="headerlink" title="1.2 compose初步上手"></a>1.2 compose初步上手</h2><h3 id="1-2-1-安装"><a href="#1-2-1-安装" class="headerlink" title="1.2.1 安装"></a>1.2.1 安装</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 安装</span><br>[root@docker02 /]#yum install -y docker-compose <br><span class="hljs-meta">#</span><span class="bash"> 准备工作目录</span><br>[root@docker02 /]#mkdir -p /server/compose/01-run-nginx<br></code></pre></td></tr></table></figure>
+
+<h3 id="1-2-1-书写配置文件"><a href="#1-2-1-书写配置文件" class="headerlink" title="1.2.1 书写配置文件"></a>1.2.1 书写配置文件</h3><p>书写格式参考：</p>
+<p><img src="/../../../img/image-20240530125740774.png" srcset="/img/loading.gif" lazyload alt="image-20240530125740774"></p>
+<p>编写一个简单的compose，部署nginx容器</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker02 /server/compose/01-run-nginx]#cat docker-compose.yml <br>version: &quot;3.3&quot;<br>services:<br>  nginx_compose:<br>    image: &quot;nginx:stable-alpine&quot;<br>    ports:<br>      - &quot;18848:80&quot;<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p>compose文件有一定的命名规则，建议按规范来</p>
+</blockquote>
+<h3 id="1-2-3-运行"><a href="#1-2-3-运行" class="headerlink" title="1.2.3 运行"></a>1.2.3 运行</h3><p>执行yaml文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker02 /server/compose/01-run-nginx]#docker-compose up -d<br>Creating 01runnginx_nginx_compose_1 ... done<br></code></pre></td></tr></table></figure>
+
+<p>查看，使用compose的ps</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 查看</span><br>[root@docker02 /server/compose/01-run-nginx]#docker-compose  ps<br>        Name                   Command          State           Ports        <br>-----------------------------------------------------------------------------<br>01runnginx_nginx_comp   /docker-entrypoint.sh   Up      0.0.0.0:18848-&gt;80/tcp<br>ose_1                   ngin ...                        ,:::18848-&gt;80/tcp <br></code></pre></td></tr></table></figure>
+
+<p>测试</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker02 /server/compose/01-run-nginx]#curl localhost:18848<br>&lt;!DOCTYPE html&gt;<br>&lt;html&gt;<br>&lt;head&gt;<br>&lt;title&gt;Welcome to nginx!&lt;/title&gt;<br>...<br></code></pre></td></tr></table></figure>
+
+
+
+<h2 id="1-3-docker-compose命令"><a href="#1-3-docker-compose命令" class="headerlink" title="1.3 docker-compose命令"></a>1.3 docker-compose命令</h2><p>docker-compose可以用于创建、运行容器、删除容器、查看容器情况等，包含多种功能。</p>
+<p>实际上这个命令包含了docker container和docker image命令</p>
+<table>
+<thead>
+<tr>
+<th>命令格式</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>up</td>
+<td>up &#x3D;&#x3D; run，创建并运行容器<br/>其中<code>up -d</code>代表后台运行</td>
+</tr>
+<tr>
+<td>down</td>
+<td>关闭容器、删除容器以及相关资源<font color=red>（慎用！！）</font></td>
+</tr>
+<tr>
+<td>stop&#x2F;start&#x2F;restart</td>
+<td>关闭、开启、重启容器</td>
+</tr>
+<tr>
+<td>ps</td>
+<td>查看容器运行情况，可选用<code>-q</code>选项</td>
+</tr>
+<tr>
+<td>top</td>
+<td>查看容器进程信息</td>
+</tr>
+<tr>
+<td>logs</td>
+<td>容器日志</td>
+</tr>
+<tr>
+<td>rm</td>
+<td>删除容器（需要容器已经关闭）</td>
+</tr>
+<tr>
+<td>images</td>
+<td>查看镜像</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>注意：</p>
+<p>docker-compose命令只能看到受compose编排的容器信息</p>
+</blockquote>
+<h2 id="1-4-修改docker-compose与生效"><a href="#1-4-修改docker-compose与生效" class="headerlink" title="1.4 修改docker-compose与生效"></a>1.4 修改docker-compose与生效</h2><p>如果docker-compose简单修改端口、数据卷</p>
+<ul>
+<li><code>docker-compose up -d</code>会自动识别，重新创建容器.</li>
+</ul>
+<p>如果容器的名字也改了，会造成新旧容器的端口冲突，会失败</p>
+<ul>
+<li>可以<code> docker-compose up -d --remove-orphans</code> 删除之前容器或失效容器</li>
+</ul>
+<h2 id="1-5-compose文件常用指令"><a href="#1-5-compose文件常用指令" class="headerlink" title="1.5 compose文件常用指令"></a>1.5 compose文件常用指令</h2><p>挂载数据卷、容器之间的依赖、先后顺序。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">depends_on: 依赖,先启动指定的容器然后再启动当前容器.<br>volumes: 数据卷<br>links: 容器连接,本质hosts解析<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p>建议到官网查找，按需求使用</p>
+</blockquote>
+<h2 id="1-6-案例-compose部署kodexp"><a href="#1-6-案例-compose部署kodexp" class="headerlink" title="1.6 案例:compose部署kodexp"></a>1.6 案例:compose部署kodexp</h2><p>把容器互联的案例，用compose再实现一遍</p>
+<p>文件目录</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker02 /app/docker/kodexp]#ls<br>code  conf  data  docker-compose.yml<br></code></pre></td></tr></table></figure>
+
+<p>原来的命令操作</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> php</span><br>[root@docker02 /app/docker]#docker run -d --name &quot;kodexp_php&quot; \<br>-v /app/docker/kodexp/conf/www.conf:/usr/local/etc/php-fpm.d/www.conf \<br>-v /app/docker/kodexp/code:/app/code/kodexp php:7-fpm-alpine <br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> nginx</span><br>[root@docker02 /app/docker/kodexp]#docker run -d --name &quot;kodexp_nginx&quot; -p 10086:80 \<br>--link kodexp_php:php \<br>-v `pwd`/conf/nginx.conf:/etc/nginx/nginx.conf \<br>-v `pwd`/conf/kodexp.conf:/etc/nginx/conf.d/kodexp.conf \<br>-v `pwd`/code:/app/code/kodexp/ \<br>nginx:stable-alpine<br></code></pre></td></tr></table></figure>
+
+<p>改用compose的yml文件：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker02 /app/docker/kodexp]#cat docker-compose.yml <br>version: &quot;3.3&quot;<br>services:<br>  kodexp_ngx:<br>    image: &quot;nginx:stable-alpine&quot;<br>    ports:<br>      - &quot;12580:80&quot;<br>    links:<br>      - &quot;kodexp_php:php&quot;<br>    depends_on:<br>      - &quot;kodexp_php&quot;<br>    volumes:<br>      - &quot;./conf/nginx.conf:/etc/nginx/nginx.conf&quot;<br>      - &quot;./conf/kodexp.conf:/etc/nginx/conf.d/kodexp.conf&quot;<br>      - &quot;./code:/app/code/kodexp&quot;<br>  kodexp_php:<br>    image: &quot;php:7-fpm-alpine&quot;<br>    volumes:<br>      - &quot;./conf/www.conf:/usr/local/etc/php-fpm/www.conf&quot;<br>      - &quot;./code:/app/code/kodexp&quot;<br></code></pre></td></tr></table></figure>
+
+<p>执行</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker02 /app/docker/kodexp]#docker-compose up -d <br>Creating kodexp_kodexp_php_1 ... done<br>Creating kodexp_kodexp_php_1 ... <br>Creating kodexp_kodexp_ngx_1 ... done<br></code></pre></td></tr></table></figure>
+
+<p>测试</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker02 /app/docker/kodexp]#docker-compose  ps<br>       Name                  Command           State           Ports         <br>-----------------------------------------------------------------------------<br>kodexp_kodexp_ngx_1   /docker-entrypoint.sh    Up      0.0.0.0:12580-&gt;80/tcp,<br>                      ngin ...                         :::12580-&gt;80/tcp      <br>kodexp_kodexp_php_1   docker-php-entrypoint    Up      9000/tcp    <br></code></pre></td></tr></table></figure>
+
+<p><img src="/../../../img/image-20240530165306409.png" srcset="/img/loading.gif" lazyload alt="image-20240530165306409"></p>
+<blockquote>
+<p>问题记录：</p>
+<p>在启动后容器后，nginx容器显示EXIT 1状态，不正常。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">&gt;</span><span class="bash">[root@docker02 /app/docker/kodexp]<span class="hljs-comment">#docker-compose ps</span></span> <br>      Name                      Command               State     Ports  <br><span class="hljs-meta">&gt;</span><span class="bash">------------------------------------------------------------------------</span><br><span class="hljs-meta">&gt;</span><span class="bash">kodexp_kodexp_ngx_1   /docker-entrypoint.sh ngin ...   Exit 1</span>           <br><span class="hljs-meta">&gt;</span><span class="bash">kodexp_kodexp_php_1   docker-php-entrypoint php-fpm    Up       9000/tcp</span><br><br></code></pre></td></tr></table></figure>
+
+<p>查看日志发现问题是由kodexp_php容器的别名引起的：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">&gt;</span><span class="bash">nginx: [emerg] host not found <span class="hljs-keyword">in</span> upstream <span class="hljs-string">&quot;php&quot;</span> <span class="hljs-keyword">in</span> /etc/nginx/conf.d/kodexp.conf:10</span><br></code></pre></td></tr></table></figure>
+
+<p>修改nginx配置文件，不使用别名即可</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">&gt;</span><span class="bash">[root@docker02 /app/docker/kodexp]<span class="hljs-comment">#!cat</span></span><br><span class="hljs-meta">&gt;</span><span class="bash">cat conf/kodexp.conf</span> <br><span class="hljs-meta">&gt;</span><span class="bash">server &#123;</span><br> listen 80;<br> server_name kodexp.oldboylinux.cn;<br> root /app/code/kodexp;<br><br> location / &#123;<br>   index index.php;<br> &#125;<br>   location ~ \.php$ &#123;<br>     fastcgi_pass kodexp_php:9000;	# 不用别名<br>     fastcgi_index index.php;<br>     fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;<br>     include fastcgi_params;<br> &#125;<br><span class="hljs-meta">&gt;</span><span class="bash">&#125;</span><br></code></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="1-7-案例：compose和dockerfile结合使用"><a href="#1-7-案例：compose和dockerfile结合使用" class="headerlink" title="1.7 案例：compose和dockerfile结合使用"></a>1.7 案例：compose和dockerfile结合使用</h2><p>通过dockerfile构建镜像，在通过compose启动容器</p>
+<p>以tengine的bird案例为基准，重构为：tengine+birds+compose</p>
+<p>目录结构</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker02 /server/dockerfile/01_bird]#ls<br>bird.tar.gz  docker-compose.yml  Dockerfile  tengine-2.3.3.tar.gz<br></code></pre></td></tr></table></figure>
+
+<p>yml内容</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker02 /server/dockerfile/01_bird]#cat docker-compose.yml <br>version: &quot;3.3&quot;<br>services:<br>  ngx_bird:<br>    build: .<br>    image: &quot;web:ngx_bird&quot;<br>    ports:<br>      - &quot;80:80&quot;<br></code></pre></td></tr></table></figure>
+
+<p>Dockerfile内容</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><code class="hljs shell">FROM ubuntu:20.04<br>LABEL author=&quot;Haris Gong&quot; \<br>	url=&#x27;gsproj.github.io&#x27;<br><br>ADD tengine-2.3.3.tar.gz /tmp/<br><br>ENV Web_User=&quot;nginx&quot;<br>ENV Web_Server=&quot;tengine&quot;<br>ENV Web_Version=&quot;2.3.2&quot;<br>ENV Server_Dir=&quot;/app/tools/tengine-2.3.2&quot;<br>ENV Server_Dir_Soft=&quot;/app/tools/tengine&quot;<br><br>RUN sed -ri &#x27;s#archive.ubuntu.com|security.ubuntu.com#mirrors.aliyun.com#g&#x27; /etc/apt/sources.list \<br>&amp;&amp; apt update &amp;&amp; apt-get install -y vim curl libssl-dev make gcc pcre2-utils libpcre3-dev zlib1g-dev \<br>&amp;&amp; cd /tmp/tengine-2.3.3/ \<br>&amp;&amp; ./configure --prefix=/app/tools/$&#123;Web_Server&#125;-$&#123;Web_Version&#125;/ \<br>--user=$&#123;Web_User&#125; \<br>--group=$&#123;Web_User&#125; \<br>--with-http_ssl_module \<br>--with-http_v2_module \<br>--with-http_realip_module \<br>--with-http_stub_status_module \<br>--with-http_mp4_module \<br>--with-stream \<br>--with-stream_ssl_module \<br>--with-stream_realip_module \<br>--add-module=modules/ngx_http_upstream_check_module/ \<br>--add-module=modules/ngx_http_upstream_session_sticky_module \<br>&amp;&amp; make -j 1 \<br>&amp;&amp; make install \<br>&amp;&amp; ln -s $&#123;Server_Dir&#125; $&#123;Server_Dir_Soft&#125; \<br>&amp;&amp; ln -s $&#123;Server_Dir_Soft&#125;/sbin/nginx /sbin/nginx \<br>&amp;&amp; groupadd $&#123;Web_User&#125; \<br>&amp;&amp; useradd -s /sbin/nologin -g $&#123;Web_User&#125; $&#123;Web_User&#125;<br><br>ADD bird.tar.gz $&#123;Server_Dir_Soft&#125;/html/<br><br>RUN rm -fr /tmp/* /var/cache/*<br><br>EXPOSE 80<br>CMD [ &quot;nginx&quot;,&quot;-g&quot;,&quot;daemon off;&quot; ]<br></code></pre></td></tr></table></figure>
+
+<p>执行compose，可见compose自动调用Dockerfile开始构建ngx_bird镜像。</p>
+<p>但是<strong>构建完之后有警告</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker02 /server/dockerfile/01_bird]#docker-compose up -d<br>Creating network &quot;01bird_default&quot; with the default driver<br>Building ngx_bird<br>Step 1/13 : FROM ubuntu:20.04<br>20.04: Pulling from library/ubuntu<br>7b1a6ab2e44d: Already exists<br>Digest: sha256:626ffe58f6e7566e00254b638eb7e0f3b11d4da9675088f4781a50ae288f3322<br>...<br>Successfully built 2642d663c8d5<br>Successfully tagged web:ngx_bird<br><span class="hljs-meta">#</span><span class="bash"> ！警告！</span><br>WARNING: Image for service ngx_bird was built because it did not already exist. To rebuild this image you must use `docker-compose build` or `docker-compose up --build`.<br>Creating 01bird_ngx_bird_1 ... done<br></code></pre></td></tr></table></figure>
+
+<p>按照警告的要求执行</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker02 /server/dockerfile/01_bird]#docker-compose up -d --build<br>Building ngx_bird<br>..<br>Successfully built 2642d663c8d5<br>Successfully tagged web:ngx_bird<br>01bird_ngx_bird_1 is up-to-date<br></code></pre></td></tr></table></figure>
+
+<p>已经运行起来了</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker02 /server/dockerfile/01_bird]#docker-compose ps<br>      Name                Command          State             Ports           <br>-----------------------------------------------------------------------------<br>01bird_ngx_bird_1   nginx -g daemon off;   Up      0.0.0.0:80-&gt;80/tcp,:::80-&gt;<br>                                                   80/tcp            <br></code></pre></td></tr></table></figure>
+
+<p>测试，访问：<a target="_blank" rel="noopener" href="http://10.0.0.82/">http://10.0.0.82:80</a></p>
+<p><img src="/../../../img/image-20240530171048926.png" srcset="/img/loading.gif" lazyload alt="image-20240530171048926"></p>
+<h1 id="二、Docker镜像仓库"><a href="#二、Docker镜像仓库" class="headerlink" title="二、Docker镜像仓库"></a>二、Docker镜像仓库</h1><p>Docker镜像仓库主要分为四种，具有各自的应用场景</p>
+<table>
+<thead>
+<tr>
+<th>仓库方案</th>
+<th>应用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>镜像保存为压缩包</td>
+<td>save&#x2F;load，仅适用于节点极少的情况，很不方便</td>
+</tr>
+<tr>
+<td>registry镜像仓库</td>
+<td>适用于小型网站集群（镜像不多，环境不复杂），命令行操作，使用方便</td>
+</tr>
+<tr>
+<td>harbor镜像仓库</td>
+<td>企业级镜像仓库（docker、k8s都可用），图形化页面</td>
+</tr>
+<tr>
+<td>公有云的镜像仓库</td>
+<td>在公有云上申请（个人、企业）</td>
+</tr>
+</tbody></table>
+<h2 id="2-1-registry仓库"><a href="#2-1-registry仓库" class="headerlink" title="2.1 registry仓库"></a>2.1 registry仓库</h2><h3 id="2-1-1-环境准备"><a href="#2-1-1-环境准备" class="headerlink" title="2.1.1 环境准备"></a>2.1.1 环境准备</h3><table>
+<thead>
+<tr>
+<th>主机名</th>
+<th>IP地址</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>docker01</td>
+<td>10.0.0.81</td>
+<td></td>
+</tr>
+<tr>
+<td>docker02</td>
+<td>10.0.0.82</td>
+<td>作为仓库</td>
+</tr>
+</tbody></table>
+<p>所有主机对应主机名能够解析  </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">cat &gt;&gt;/etc/hosts&lt;&lt;EOF<br>10.0.0.81 docker01<br>10.0.0.82 docker02<br>EOF<br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="2-1-2-极速上手"><a href="#2-1-2-极速上手" class="headerlink" title="2.1.2 极速上手"></a>2.1.2 极速上手</h3><h4 id="A-服务端部署"><a href="#A-服务端部署" class="headerlink" title="A.服务端部署"></a>A.服务端部署</h4><p>1、安装镜像仓库服务</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker02 /]#docker pull registry<br>Using default tag: latest<br></code></pre></td></tr></table></figure>
+
+<p>2、配置服务端，允许使用http（未来所有使用私有镜像仓库的节点都要配置）</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell">cat &gt; /etc/docker/daemon.json&lt;&lt;&#x27;EOF&#x27;<br>&#123;<br>  &quot;registry-mirrors&quot;:[&quot;https://bjjtv7cs.mirror.aliyuncs.com&quot;],<br>  &quot;insecure-registries&quot;: [&quot;docker02:5000&quot;]<br>&#125;<br>EOF<br></code></pre></td></tr></table></figure>
+
+<p>配置完重启docker</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">systemctl restart docker<br></code></pre></td></tr></table></figure>
+
+<p>3、启动registry容器（未来可以用compose实现）</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 创建数据卷</span><br>[root@docker02 /]#docker volume create registry<br>[root@docker02 /]#docker volume ls<br>DRIVER    VOLUME NAME<br>local     oldboydata<br>local     registry<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 映射端口，并启动</span><br>docker run -d --name &quot;oldboy_registry&quot;  \<br>-p 5000:5000 -v registry:/var/lib/registry \<br>--restart=always registry:latest<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> --restart表示容器异常退出,会自动重启容器</span><br></code></pre></td></tr></table></figure>
+
+<p>访问：<a target="_blank" rel="noopener" href="http://docker02:5000/v2/_catalog">http://docker02:5000/v2/_catalog</a></p>
+<p>查看私有仓库信息（默认没有什么有用信息）</p>
+<p><img src="/../../../img/image-20240530183620025.png" srcset="/img/loading.gif" lazyload alt="image-20240530183620025"></p>
+<h4 id="B-客户端上传镜像"><a href="#B-客户端上传镜像" class="headerlink" title="B.客户端上传镜像"></a>B.客户端上传镜像</h4><p>1、客户端docker02，上传镜像</p>
+<p>首先也得设置docker配置文件，并重启docker服务</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell">cat &gt; /etc/docker/daemon.json&lt;&lt;&#x27;EOF&#x27;<br>&#123;<br>  &quot;registry-mirrors&quot;:[&quot;https://bjjtv7cs.mirror.aliyuncs.com&quot;],<br>  &quot;insecure-registries&quot;: [&quot;docker02:5000&quot;]<br>&#125;<br>EOF<br></code></pre></td></tr></table></figure>
+
+<p>2、再镜像打标签</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker01 ~]#docker images<br>REPOSITORY   TAG                        IMAGE ID       CREATED       SIZE<br>...<br>nginx        stable-alpine              373f8d4d4c60   2 years ago   23.2MB<br>...<br><br>[root@docker01 ~]#docker tag nginx:stable-alpine docker02:5000/myimages/nginx:stable-alpine<br>[root@docker01 ~]#docker images<br>REPOSITORY                     TAG                        IMAGE ID       CREATED       SIZE<br>...<br>nginx                          stable-alpine              373f8d4d4c60   2 years ago   23.2MB<br>docker02:5000/myimages/nginx   stable-alpine              373f8d4d4c60   2 years ago   23.2MB<br>...<br></code></pre></td></tr></table></figure>
+
+<p>3、再上传</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker01 ~]#docker push docker02:5000/myimages/nginx:stable-alpine <br>The push refers to repository [docker02:5000/myimages/nginx]<br>6f44c5b5d074: Pushed <br>002fcf848e67: Pushed <br>e419fa208fe1: Pushed <br>112ee9c2903a: Pushed <br>68e5252d0d33: Pushed <br>1a058d5342cc: Pushed <br>stable-alpine: digest: sha256:f6609f898bcdad15047629edc4033d17f9f90e2339fb5ccb97da267f16902251 size: 1568<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p>如果没有提前进行docker配置，会报错</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">&gt;</span><span class="bash">[root@docker01 ~]<span class="hljs-comment">#docker push docker02:5000/myimages/nginx:stable-alpine</span></span> <br><span class="hljs-meta">&gt;</span><span class="bash">The push refers to repository [docker02:5000/myimages/nginx]</span><br><span class="hljs-meta">&gt;</span><span class="bash">Get <span class="hljs-string">&quot;https://docker02:5000/v2/&quot;</span>: http: server gave HTTP response to HTTPS client</span><br><span class="hljs-meta">&gt;</span><span class="bash">[root@docker01 ~]<span class="hljs-comment">#vim /etc/docker/daemon.json</span></span> <br></code></pre></td></tr></table></figure>
+</blockquote>
+<p>再次访问registry网页，可以看到上传到的镜像</p>
+<p><img src="/../../../img/image-20240530184607477.png" srcset="/img/loading.gif" lazyload alt="image-20240530184607477"></p>
+<h4 id="C-客户端下载镜像"><a href="#C-客户端下载镜像" class="headerlink" title="C.客户端下载镜像"></a>C.客户端下载镜像</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker01 ~]#docker pull docker02:5000/myimages/nginx:stable-alpine <br>stable-alpine: Pulling from myimages/nginx<br>Digest: sha256:f6609f898bcdad15047629edc4033d17f9f90e2339fb5ccb97da267f16902251<br>Status: Downloaded newer image for docker02:5000/myimages/nginx:stable-alpine<br>docker02:5000/myimages/nginx:stable-alpine<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-1-3-写成compose"><a href="#2-1-3-写成compose" class="headerlink" title="2.1.3 写成compose"></a>2.1.3 写成compose</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment">#registry-docker-compose</span><br><span class="hljs-attr">version:</span> <span class="hljs-string">&quot;3.3&quot;</span><br><span class="hljs-attr">services:</span><br>  <span class="hljs-attr">oldboy_registry:</span><br>    <span class="hljs-attr">container_name:</span> <span class="hljs-string">&quot;oldboy_reg&quot;</span><br>    <span class="hljs-attr">image:</span> <span class="hljs-string">&quot;registry:latest&quot;</span><br>    <span class="hljs-attr">ports:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&quot;5000:5000&quot;</span><br>    <span class="hljs-attr">restart:</span> <span class="hljs-string">always</span><br>    <span class="hljs-attr">volumes:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&quot;registry:/var/lib/registry&quot;</span><br><span class="hljs-attr">volumes:</span><br>  <span class="hljs-attr">registry:</span><br></code></pre></td></tr></table></figure>
+
+
+
+<h2 id="2-2-企业级镜像仓库–harbor"><a href="#2-2-企业级镜像仓库–harbor" class="headerlink" title="2.2 企业级镜像仓库–harbor"></a>2.2 企业级镜像仓库–harbor</h2><h3 id="2-2-1-极速上手"><a href="#2-2-1-极速上手" class="headerlink" title="2.2.1 极速上手"></a>2.2.1 极速上手</h3><h4 id="A-服务端部署-1"><a href="#A-服务端部署-1" class="headerlink" title="A.服务端部署"></a>A.服务端部署</h4><p>1、github下载harbor</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs she">https://github.com/goharbor/harbor/releases<br></code></pre></td></tr></table></figure>
+
+<p>2、解压</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker02 /app]#tar -vxf harbor-offline-installer-v2.9.4.tgz <br>harbor/harbor.v2.9.4.tar.gz<br>harbor/prepare<br>harbor/LICENSE<br>harbor/install.sh	# 每次修改配置，都需要执行下<br>harbor/common.sh<br>harbor/harbor.yml.tmpl	# 配置文件模板<br></code></pre></td></tr></table></figure>
+
+<p>3、hosts文件修改，添加harbor的域名</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">cat &gt;&gt;/etc/hosts&lt;&lt;EOF<br>10.0.0.81 docker01<br>10.0.0.82 docker02 harbor.gs.cn<br>EOF<br></code></pre></td></tr></table></figure>
+
+<p>4、编辑harbor配置文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 从模板复制一份</span><br>[root@docker02 /app/harbor]#cp harbor.yml.tmpl harbor.yml<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 修改主机名</span><br>hostname: harbor.gs.cn<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 禁用https功能</span><br><span class="hljs-meta">#</span><span class="bash">https:</span><br><span class="hljs-meta">  #</span><span class="bash"> https port <span class="hljs-keyword">for</span> harbor, default is 443</span><br><span class="hljs-meta">  #</span><span class="bash">port: 443</span><br><span class="hljs-meta">  #</span><span class="bash"> The path of cert and key files <span class="hljs-keyword">for</span> nginx</span><br><span class="hljs-meta">  #</span><span class="bash">certificate: /your/certificate/path</span><br><span class="hljs-meta">  #</span><span class="bash">private_key: /your/private/key/path</span><br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 修改默认密码</span><br>harbor_admin_password: redhat123<br></code></pre></td></tr></table></figure>
+
+<p>5、安装harbor</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker02 /app/harbor]#./install.sh <br><br>[Step 0]: checking if docker is installed ...<br><br>Note: docker version: 26.1.3<br>...<br> ✔ Container harbor-jobservice  Starte...                               3.1s <br> ✔ Container nginx              Started                                 3.1s <br>✔ ----Harbor has been installed and started successfully.----<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p>注意：</p>
+<p>​	要检查80端口是否被占用  </p>
+</blockquote>
+<p>浏览器访问：<a target="_blank" rel="noopener" href="http://harbor.gs.cn/">http://harbor.gs.cn</a></p>
+<p><img src="/../../../img/image-20240530191350136.png" srcset="/img/loading.gif" lazyload alt="image-20240530191350136"></p>
+<blockquote>
+<p>admin &#x2F; redhat123</p>
+</blockquote>
+<h4 id="B-客户端使用"><a href="#B-客户端使用" class="headerlink" title="B. 客户端使用"></a>B. 客户端使用</h4><p>1、配置docker</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker01 ~]#vim /etc/docker/daemon.json<br>&#123;<br>        &quot;registry-mirrors&quot;:[&quot;https://bjjtv7cs.mirror.aliyuncs.com&quot;],<br>        &quot;insecure-registries&quot;: [&quot;harbor.gs.cn&quot;]<br>&#125;<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 重启服务</span><br>systemctl restart docker<br></code></pre></td></tr></table></figure>
+
+<p>2、登录harbor</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker01 ~]#docker login -uadmin -predhat123 harbor.gs.cn<br>WARNING! Using --password via the CLI is insecure. Use --password-stdin.<br>WARNING! Your password will be stored unencrypted in /root/.docker/config.json.<br>Configure a credential helper to remove this warning. See<br>https://docs.docker.com/engine/reference/commandline/login/#credentials-store<br><br>Login Succeeded<br></code></pre></td></tr></table></figure>
+
+<p>3、打标签</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker01 ~]#docker images<br>REPOSITORY                     TAG                        IMAGE ID       CREATED       SIZE<br>tengine                        birds-v1                   403c22c533aa   2 days ago    427MB<br>...<br><br>[root@docker01 ~]#docker tag tengine:birds-v1 harbor.gs.cn/library/tengine:birds-v1<br>[root@docker01 ~]#docker images<br>REPOSITORY                     TAG                        IMAGE ID       CREATED       SIZE<br>tengine                        birds-v1                   403c22c533aa   2 days ago    427MB<br>harbor.gs.cn/library/tengine   birds-v1                   403c22c533aa   2 days ago    427MB<br>...<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p>tag的目录要跟harbor中的目录一致！</p>
+</blockquote>
+<p>4、上传</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker01 ~]#docker push harbor.gs.cn/library/tengine:birds-v1 <br>The push refers to repository [harbor.gs.cn/library/tengine]<br>6d3a7f85e089: Pushed <br>000e70118252: Pushed <br>910ec3ec43d0: Pushed <br>ee1e9dcd2d96: Pushed <br>9f54eef41275: Pushed <br>birds-v1: digest: sha256:aa0f126752929d60811c709bc5c3042e3dd3e4bb2200e893aee2b8cdede932c6 size: 1369<br></code></pre></td></tr></table></figure>
+
+<p>查看上传的镜像</p>
+<p><img src="/../../../img/image-20240530192036861.png" srcset="/img/loading.gif" lazyload alt="image-20240530192036861"></p>
+<h3 id="2-2-2-harbor高可用-（了解）"><a href="#2-2-2-harbor高可用-（了解）" class="headerlink" title="2.2.2 harbor高可用 （了解）"></a>2.2.2 harbor高可用 （了解）</h3><p>可以通过harbor自带的镜像同步工具实现.(搭建2个harbor服务器)，找出harbor的镜像目录(registry目录),目录备份&#x2F;同步  </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">/data/registry/docker/registry/v2/repositories<br></code></pre></td></tr></table></figure>
+
+
+
+<h2 id="2-3-Dockerr命令–脑图"><a href="#2-3-Dockerr命令–脑图" class="headerlink" title="2.3 Dockerr命令–脑图"></a>2.3 Dockerr命令–脑图</h2><p><a target="_blank" rel="noopener" href="https://www.processon.com/view/link/6347dbb207912921d8137498">https://www.processon.com/view/link/6347dbb207912921d8137498</a> </p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%BF%90%E7%BB%B4/" class="category-chain-item">运维</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" class="category-chain-item">（二）综合架构</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>day63-容器架构-Docker（五）</div>
+      <div>http://gsproj.github.io/2024/05/29/07_85期运维/03_自动化架构/day63-容器架构-docker-5/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>GongSheng</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2024年5月29日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2024/05/29/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/03_%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9E%B6%E6%9E%84/day62-%E5%AE%B9%E5%99%A8%E6%9E%B6%E6%9E%84-docker-4/" title="day62-容器架构-Docker（四）">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">day62-容器架构-Docker（四）</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/05/28/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/03_%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9E%B6%E6%9E%84/day61-%E5%AE%B9%E5%99%A8%E6%9E%B6%E6%9E%84-docker-3/" title="day61-容器架构-Docker（三）">
+                        <span class="hidden-mobile">day61-容器架构-Docker（三）</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

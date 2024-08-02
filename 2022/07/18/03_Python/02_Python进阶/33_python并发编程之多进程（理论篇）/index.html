@@ -1,0 +1,732 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="GongSheng">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="一 什么是进程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="33-并发编程（二）">
+<meta property="og:url" content="http://gsproj.github.io/2022/07/18/03_Python/02_Python%E8%BF%9B%E9%98%B6/33_python%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E4%B9%8B%E5%A4%9A%E8%BF%9B%E7%A8%8B%EF%BC%88%E7%90%86%E8%AE%BA%E7%AF%87%EF%BC%89/index.html">
+<meta property="og:site_name" content="迎风之豚的博客">
+<meta property="og:description" content="一 什么是进程">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://pic2.zhimg.com/80/v2-7137159d323204d49821595cb18e4729_720w.jpg">
+<meta property="og:image" content="https://pic1.zhimg.com/80/v2-1b816bea5d7900ca5faad9abdee1cec4_720w.jpg">
+<meta property="og:image" content="https://pic1.zhimg.com/80/v2-c7e653f1793ccc5d2aeed7d128459698_720w.jpg">
+<meta property="og:image" content="https://pic4.zhimg.com/v2-c64ada0dd06d0c57ed905be65d17acb7_180x120.jpg">
+<meta property="article:published_time" content="2022-07-18T02:11:22.000Z">
+<meta property="article:modified_time" content="2024-08-02T01:48:34.346Z">
+<meta property="article:author" content="GongSheng">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://pic2.zhimg.com/80/v2-7137159d323204d49821595cb18e4729_720w.jpg">
+  
+  
+  
+  <title>33-并发编程（二） - 迎风之豚的博客</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>&#34;迎风之豚的博客&#34;</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="33-并发编程（二）"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-07-18 10:11" pubdate>
+          2022年7月18日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          42 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">33-并发编程（二）</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h3 id="一-什么是进程"><a href="#一-什么是进程" class="headerlink" title="一 什么是进程"></a>一 什么是进程</h3><p>进程：正在进行的一个过程或者说一个任务。而负责执行任务则是cpu。</p>
+<p>举例（单核+多道，实现多个进程的并发执行）：</p>
+<p>egon在一个时间段内有很多任务要做：python备课的任务，写书的任务，交女朋友的任务，王者荣耀上分的任务，　　</p>
+<p>但egon同一时刻只能做一个任务（cpu同一时间只能干一个活），如何才能玩出多个任务并发执行的效果？</p>
+<p>egon备一会课，再去跟李杰的女朋友聊聊天，再去打一会王者荣耀….这就保证了每个任务都在进行中.</p>
+<h3 id="二-进程与程序的区别"><a href="#二-进程与程序的区别" class="headerlink" title="二 进程与程序的区别"></a>二 进程与程序的区别</h3><p>程序仅仅只是一堆代码而已，而进程指的是程序的运行过程。</p>
+<p>举例：</p>
+<p>想象一位有一手好厨艺的计算机科学家egon正在为他的女儿元昊烘制生日蛋糕。</p>
+<p>他有做生日蛋糕的食谱，</p>
+<p>厨房里有所需的原料:面粉、鸡蛋、韭菜，蒜泥等。</p>
+<p>在这个比喻中：</p>
+<p><strong>做蛋糕的食谱就是程序</strong>(即用适当形式描述的算法)</p>
+<p><strong>计算机科学家就是处理器(cpu)</strong></p>
+<p><strong>而做蛋糕的各种原料就是输入数据</strong>。</p>
+<p><strong>进程就是厨师阅读食谱、取来各种原料以及烘制蛋糕等一系列动作的总和</strong>。</p>
+<p>现在假设计算机科学家egon的儿子alex哭着跑了进来，说：<a href="https://link.zhihu.com/?target=http://fanyi.baidu.com/translate?aldtype=16047&query=%E5%98%BF%EF%BC%8C%E7%88%B8%E7%88%B8%EF%BC%8C%E6%88%91%E7%9A%84%E5%A4%B4%E8%A2%AB%E8%9C%9C%E8%9C%82%E8%9B%B0%E4%BA%86&keyfrom=baidu&smartresult=dict&lang=auto2zh%23zh/en/%E5%98%BF%EF%BC%8C%E7%88%B8%E7%88%B8%EF%BC%8C%E6%88%91%E7%9A%84%E5%A4%B4%E8%A2%AB%E8%9C%9C%E8%9C%82%E8%9B%B0%E4%BA%86">XXXXXXXXXXXXXX</a>。</p>
+<p>科学家egon想了想，处理儿子alex蛰伤的任务比给女儿元昊做蛋糕的任务更重要，于是</p>
+<p>计算机科学家就记录下他照着食谱做到哪儿了(保存进程的当前状态)，然后拿出一本急救手册，按照其中的指示处理蛰伤。这里，我们看到处理机从一个进程(做蛋糕)切换到另一个高优先级的进程(实施医疗救治)，每个进程拥有各自的程序(食谱和急救手册)。当蜜蜂蛰伤处理完之后，这位计算机科学家又回来做蛋糕，从他 离开时的那一步继续做下去。</p>
+<p><strong>需要强调的是：同一个程序执行两次，那也是两个进程，比如打开暴风影音，虽然都是同一个软件，但是一个可以播放苍井空，一个可以播放饭岛爱。</strong></p>
+<h3 id="三-并发与并行"><a href="#三-并发与并行" class="headerlink" title="三 并发与并行"></a>三 并发与并行</h3><p>无论是并行还是并发，在用户看来都是’同时’运行的，不管是进程还是线程，都只是一个任务而已，真是干活的是cpu，cpu来做这些任务，而一个cpu同一时刻只能执行一个任务</p>
+<p>一 并发：是伪并行，即看起来是同时运行。单个cpu+多道技术就可以实现并发，（并行也属于并发）</p>
+<p>单cpu，多进程，并发举例一</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs python">你是一个cpu，你同时谈了三个女朋友，每一个都可以是一个恋爱任务，你被这三个任务共享<br>要玩出并发恋爱的效果，<br>应该是你先跟女友<span class="hljs-number">1</span>去看电影，看了一会说：不好，我要拉肚子，然后跑去跟第二个女友吃饭，吃了一会说：那啥，我<br>去趟洗手间，然后跑去跟女友<span class="hljs-number">3</span>开了个房<br></code></pre></td></tr></table></figure>
+
+<p>单cpu，多进程，并发举例二</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs python">某天下午，egon，yuanhao，wupeiqi，alex约好了一起去嫖娼，但娼只有一个，cpu只有一个，但是却要‘同时’干<br>四个任务(嫖出并发的效果)，那就必须是干一会egon，再干一会yuanhao，再干一会wupeiqi，再干一会alex<br>egon：花了<span class="hljs-number">200</span>块钱，因为人美活好<br>yuanhao：<span class="hljs-number">500</span>块钱<br>wupeiqi：<span class="hljs-number">100</span>块钱，可能是不太行<br>alex：没要钱，为啥？？？因为大家刚刚嫖的是他女朋友<br></code></pre></td></tr></table></figure>
+
+<p>二 并行：同时运行，只有具备多个cpu才能实现并行</p>
+<p> 单核下，可以利用多道技术，多个核，每个核也都可以利用多道技术（<strong>多道技术是针对单核而言的</strong>）</p>
+<p> 有四个核，六个任务，这样同一时间有四个任务被执行，假设分别被分配给了cpu1，cpu2，cpu3，cpu4，</p>
+<p> 一旦任务1遇到I&#x2F;O就被迫中断执行，此时任务5就拿到cpu1的时间片去执行，这就是单核下的多道技术</p>
+<p> 而一旦任务1的I&#x2F;O结束了，操作系统会重新调用它(<strong>需知进程的调度、分配给哪个cpu运行，由操作系统说了算</strong>)，可能被分配给四个cpu中的任意一个去执行</p>
+<p><img src="https://pic2.zhimg.com/80/v2-7137159d323204d49821595cb18e4729_720w.jpg" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>所有现代计算机经常会在同一时间做很多件事，一个用户的PC（无论是单cpu还是多cpu），都可以同时运行多个任务（一个任务可以理解为一个进程）。</p>
+<p>启动一个进程来杀毒（360软件）</p>
+<p>启动一个进程来看电影（暴风影音）</p>
+<p>启动一个进程来聊天（腾讯QQ）</p>
+<p>所有的这些进程都需被管理，于是一个支持多进程的多道程序系统是至关重要的</p>
+<p>多道技术概念回顾：内存中同时存入多道（多个）程序，cpu从一个进程快速切换到另外一个，使每个进程各自运行几十或几百毫秒，这样，虽然在某一个瞬间，一个cpu只能执行一个任务，但在1秒内，cpu却可以运行多个进程，这就给人产生了并行的错觉，即伪并发，以此来区分多处理器操作系统的真正硬件并行（多个cpu共享同一个物理内存）</p>
+<h3 id="四-同步-异步and阻塞-非阻塞（重点）"><a href="#四-同步-异步and阻塞-非阻塞（重点）" class="headerlink" title="四 同步\异步and阻塞\非阻塞（重点）"></a>四 同步\异步and阻塞\非阻塞（重点）</h3><p><strong>同步：</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment">#所谓同步，就是在发出一个功能调用时，在没有得到结果之前，该调用就不会返回。按照这个定义，其实绝大多数函数都是同步调用。但是一般而言，我们在说同步、异步的时候，特指那些需要其他部件协作或者需要一定时间完成的任务。</span><br><span class="hljs-comment">#举例：</span><br><span class="hljs-comment">#1. multiprocessing.Pool下的apply #发起同步调用后，就在原地等着任务结束，根本不考虑任务是在计算还是在io阻塞，总之就是一股脑地等任务结束</span><br><span class="hljs-comment">#2. concurrent.futures.ProcessPoolExecutor().submit(func,).result()</span><br><span class="hljs-comment">#3. concurrent.futures.ThreadPoolExecutor().submit(func,).result()</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>异步：</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment">#异步的概念和同步相对。当一个异步功能调用发出后，调用者不能立刻得到结果。当该异步功能完成后，通过状态、通知或回调来通知调用者。如果异步功能用状态来通知，那么调用者就需要每隔一定时间检查一次，效率就很低（有些初学多线程编程的人，总喜欢用一个循环去检查某个变量的值，这其实是一 种很严重的错误）。如果是使用通知的方式，效率则很高，因为异步功能几乎不需要做额外的操作。至于回调函数，其实和通知没太多区别。</span><br><span class="hljs-comment">#举例：</span><br><span class="hljs-comment">#1. multiprocessing.Pool().apply_async() #发起异步调用后，并不会等待任务结束才返回，相反，会立即获取一个临时结果（并不是最终的结果，可能是封装好的一个对象）。</span><br><span class="hljs-comment">#2. concurrent.futures.ProcessPoolExecutor(3).submit(func,)</span><br><span class="hljs-comment">#3. concurrent.futures.ThreadPoolExecutor(3).submit(func,)</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>阻塞：</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment">#阻塞调用是指调用结果返回之前，当前线程会被挂起（如遇到io操作）。函数只有在得到结果之后才会将阻塞的线程激活。有人也许会把阻塞调用和同步调用等同起来，实际上他是不同的。对于同步调用来说，很多时候当前线程还是激活的，只是从逻辑上当前函数没有返回而已。</span><br><span class="hljs-comment">#举例：</span><br><span class="hljs-comment">#1. 同步调用：apply一个累计1亿次的任务，该调用会一直等待，直到任务返回结果为止，但并未阻塞住（即便是被抢走cpu的执行权限，那也是处于就绪态）;</span><br><span class="hljs-comment">#2. 阻塞调用：当socket工作在阻塞模式的时候，如果没有数据的情况下调用recv函数，则当前线程就会被挂起，直到有数据为止。</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>非阻塞：</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment">#非阻塞和阻塞的概念相对应，指在不能立刻得到结果之前也会立刻返回，同时该函数不会阻塞当前线程。</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>小结：</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment">#1. 同步与异步针对的是函数/任务的调用方式：同步就是当一个进程发起一个函数（任务）调用的时候，一直等到函数（任务）完成，而进程继续处于激活状态。而异步情况下是当一个进程发起一个函数（任务）调用的时候，不会等函数返回，而是继续往下执行当，函数返回的时候通过状态、通知、事件等方式通知进程任务完成。</span><br><br><span class="hljs-comment">#2. 阻塞与非阻塞针对的是进程或线程：阻塞是当请求不能满足的时候就将进程挂起，而非阻塞则不会阻塞当前进程</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="五-进程的创建（了解）"><a href="#五-进程的创建（了解）" class="headerlink" title="五 进程的创建（了解）"></a>五 进程的创建（了解）</h3><p>但凡是硬件，都需要有操作系统去管理，只要有操作系统，就有进程的概念，就需要有创建进程的方式，一些操作系统只为一个应用程序设计，比如微波炉中的控制器，一旦启动微波炉，所有的进程都已经存在。</p>
+<p>而对于通用系统（跑很多应用程序），需要有系统运行过程中创建或撤销进程的能力，主要分为4中形式创建新的进程</p>
+<p>\1. 系统初始化（查看进程linux中用ps命令，windows中用任务管理器，前台进程负责与用户交互，后台运行的进程与用户无关，运行在后台并且只在需要时才唤醒的进程，称为守护进程，如电子邮件、web页面、新闻、打印）</p>
+<p>\2. 一个进程在运行过程中开启了子进程（如nginx开启多进程，os.fork,subprocess.Popen等）</p>
+<p>\3. 用户的交互式请求，而创建一个新进程（如用户双击暴风影音）</p>
+<p>\4. 一个批处理作业的初始化（只在大型机的批处理系统中应用）</p>
+<p>无论哪一种，新进程的创建都是由一个已经存在的进程执行了一个用于创建进程的系统调用而创建的：</p>
+<p>\1. 在UNIX中该系统调用是：fork，fork会创建一个与父进程一模一样的副本，二者有相同的存储映像、同样的环境字符串和同样的打开文件（在shell解释器进程中，执行一个命令就会创建一个子进程）</p>
+<p>\2. 在windows中该系统调用是：CreateProcess，CreateProcess既处理进程的创建，也负责把正确的程序装入新进程。　</p>
+<p>关于创建的子进程，UNIX和windows</p>
+<p>1.相同的是：进程创建后，父进程和子进程有各自不同的地址空间（<strong>多道技术要求物理层面实现进程之间内存的隔离</strong>），任何一个进程的在其地址空间中的修改都不会影响到另外一个进程。</p>
+<p>2.不同的是：在UNIX中，子进程的初始地址空间是父进程的一个副本，提示：子进程和父进程是可以有只读的共享内存区的。但是对于windows系统来说，从一开始父进程与子进程的地址空间就是不同的。</p>
+<h3 id="六-进程的终止（了解）"><a href="#六-进程的终止（了解）" class="headerlink" title="六 进程的终止（了解）"></a>六 进程的终止（了解）</h3><p>\1. 正常退出（自愿，如用户点击交互式页面的叉号，或程序执行完毕调用发起系统调用正常退出，在linux中用exit，在windows中用ExitProcess）</p>
+<p>\2. 出错退出（自愿，python a.py中a.py不存在）</p>
+<p>\3. 严重错误（非自愿，执行非法指令，如引用不存在的内存，1&#x2F;0等，可以捕捉异常，try…except…）</p>
+<p>\4. 被其他进程杀死（非自愿，如kill -9）</p>
+<h3 id="七-进程的层次结构"><a href="#七-进程的层次结构" class="headerlink" title="七 进程的层次结构"></a>七 进程的层次结构</h3><p>无论UNIX还是windows，进程只有一个父进程，不同的是：</p>
+<p>\1. 在UNIX中所有的进程，都是以init进程为根，组成树形结构。父子进程共同组成一个进程组，这样，当从键盘发出一个信号时，该信号被送给当前与键盘相关的进程组中的所有成员。</p>
+<p>\2. 在windows中，没有进程层次的概念，所有的进程都是地位相同的，唯一类似于进程层次的暗示，是在创建进程时，父进程得到一个特别的令牌（<strong>称为句柄</strong>）,该句柄可以用来控制子进程，但是父进程有权把该句柄传给其他子进程，这样就没有层次了。</p>
+<h3 id="八-进程的状态"><a href="#八-进程的状态" class="headerlink" title="八 进程的状态"></a>八 进程的状态</h3><figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs pgsql">tail -f <span class="hljs-keyword">access</span>.<span class="hljs-keyword">log</span> |grep <span class="hljs-string">&#x27;404&#x27;</span><br></code></pre></td></tr></table></figure>
+
+<p>执行程序tail，开启一个子进程，执行程序grep，开启另外一个子进程，两个进程之间基于管道’|’通讯，将tail的结果作为grep的输入。</p>
+<p>进程grep在等待输入（即I&#x2F;O）时的状态称为阻塞，此时grep命令都无法运行</p>
+<p>其实在两种情况下会导致一个进程在逻辑上不能运行，</p>
+<p>\1. 进程挂起是自身原因，遇到I&#x2F;O阻塞，便要让出CPU让其他进程去执行，这样保证CPU一直在工作</p>
+<p>\2. 与进程无关，是操作系统层面，可能会因为一个进程占用时间过多，或者优先级等原因，而调用其他的进程去使用CPU。</p>
+<p>因而一个进程由三种状态</p>
+<p><img src="https://pic1.zhimg.com/80/v2-1b816bea5d7900ca5faad9abdee1cec4_720w.jpg" srcset="/img/loading.gif" lazyload alt="img"></p>
+<h3 id="九-进程并发的实现（了解）"><a href="#九-进程并发的实现（了解）" class="headerlink" title="九 进程并发的实现（了解）"></a>九 进程并发的实现（了解）</h3><p>进程并发的实现在于，硬件中断一个正在运行的进程，把此时进程运行的所有状态保存下来，为此，操作系统维护一张表格，即进程表（process table），每个进程占用一个进程表项（这些表项也称为进程控制块）</p>
+<p><img src="https://pic1.zhimg.com/80/v2-c7e653f1793ccc5d2aeed7d128459698_720w.jpg" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>该表存放了进程状态的重要信息：程序计数器、堆栈指针、内存分配状况、所有打开文件的状态、帐号和调度信息，以及其他在进程由运行态转为就绪态或阻塞态时，必须保存的信息，从而保证该进程在再次启动时，就像从未被中断过一样。<a href="https://link.zhihu.com/?target=https://www.cnblogs.com/linhaifeng/articles/7430066.html">python并发编程之多进程理论部分</a></p>
+<h2 id="视频链接："><a href="#视频链接：" class="headerlink" title="视频链接："></a>视频链接：</h2><p><a href="https://link.zhihu.com/?target=https://www.bilibili.com/video/av73342471?p=130">python快速入门（一）_哔哩哔哩 (゜-゜)つロ 干杯~-bilibiliwww.bilibili.com/video/av73342471?p=130<img src="https://pic4.zhimg.com/v2-c64ada0dd06d0c57ed905be65d17acb7_180x120.jpg" srcset="/img/loading.gif" lazyload alt="img"></a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Python/" class="category-chain-item">Python</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/Python/02-Python%E8%BF%9B%E9%98%B6/" class="category-chain-item">02_Python进阶</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>33-并发编程（二）</div>
+      <div>http://gsproj.github.io/2022/07/18/03_Python/02_Python进阶/33_python并发编程之多进程（理论篇）/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>GongSheng</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年7月18日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/07/18/03_Python/02_Python%E8%BF%9B%E9%98%B6/34_python%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E4%B9%8B%E5%A4%9A%E8%BF%9B%E7%A8%8B%EF%BC%88%E6%93%8D%E4%BD%9C%E7%AF%87%EF%BC%89/" title="34-并发编程（三）">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">34-并发编程（三）</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/07/18/03_Python/02_Python%E8%BF%9B%E9%98%B6/32_python%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E4%B9%8B%E8%83%8C%E6%99%AF%E7%9F%A5%E8%AF%86/" title="32-并发编程（一）">
+                        <span class="hidden-mobile">32-并发编程（一）</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
