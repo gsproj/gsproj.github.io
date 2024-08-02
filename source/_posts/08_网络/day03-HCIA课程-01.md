@@ -10,6 +10,113 @@ tags:
 
 # HCIA课程（一）
 
+
+
+# 零、设备基础配置
+
+网络拓扑
+
+![image-20240802101243434](C:\Users\z\AppData\Roaming\Typora\typora-user-images\image-20240802101243434.png)
+
+## 0.1 设备系统参数的配置方法
+
+> 设备名称、系统时间、时区
+
+查看系统信息
+
+```shell
+display version
+# 可以查看路由器的软件版本与设备名称
+# VRP...Version 5.1.60...
+# Huawei AR2220E ...
+```
+
+修改系统时间
+
+```shell
+# 修改方式一
+clock time zone Local add 08:00:00
+# 修改方式二
+clock datetime 12:00:00 2024-08-02
+
+# 查看时间
+display clock
+```
+
+帮助命令
+
+```shell
+display ?
+```
+
+进入系统视图
+
+```shell
+<Huawei>system view
+Enter system view, return user view with Crtl+Z.
+```
+
+修改设备名称
+
+```shell
+sysname R1
+```
+
+配置登录信息
+
+```shell
+header shell infomation "Welcome to the Huawei certification lab."
+```
+
+配置console口参数，需要密码登录，空闲20分钟自动退出 
+
+```shell
+[R1]user-interface console 0
+[R1]authentication-mode password
+[R1-ui-console0]set authtication password cipher
+Enter Password(<8-128>):
+
+# 空闲20分钟自动退出，默认是10分钟
+[R1-ui-console0]idel-timeout 20
+
+# 查看配置
+[R1-ui-console]display this
+```
+
+管理设备配置文件
+
+```shell
+# 保存当前配置文件
+save
+# 查看保存的配置文件
+display saved-configuration
+# 查看当前配置信息
+display current-configuration
+```
+
+查看下次启动时使用的配置文件
+
+```shell
+<R3>display startup
+...
+Next startup saved-configuration file:	flash:/vrpcfg.zip
+...
+```
+
+删除闪存中的配置文件
+
+```shell
+<R1>reset  saved-configuration
+```
+
+重启设备的方法
+
+```shell
+reboot
+```
+
+
+
 # 一、OSI七层模型
 
 | 模型层     | 作用                                     | 协议                   |
