@@ -223,7 +223,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          13k 字
+          15k 字
         
       </span>
     
@@ -234,7 +234,7 @@
         
         
         
-          105 分钟
+          126 分钟
         
       </span>
     
@@ -317,26 +317,26 @@
 </li>
 </ul>
 <h2 id="1-3-部署与配置"><a href="#1-3-部署与配置" class="headerlink" title="1.3 部署与配置"></a>1.3 部署与配置</h2><h3 id="1-3-1-安装"><a href="#1-3-1-安装" class="headerlink" title="1.3.1 安装"></a>1.3.1 安装</h3><p>在主控节点(mn01)安装ansible</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">yum <span class="token function">install</span> <span class="token parameter variable">-y</span> ansible<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">yum install -y ansible</code></pre></div></figure>
 
 <h3 id="1-3-2-初始配置"><a href="#1-3-2-初始配置" class="headerlink" title="1.3.2 初始配置"></a>1.3.2 初始配置</h3><p>修改ansible的配置文件：</p>
 <ul>
 <li>关闭主机Host_key_checking .</li>
 <li>开启日志功能</li>
 </ul>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts<span class="token punctuation">]</span><span class="token comment">#cp /eegrep -vn "^$|#" /etc/ansible/ansible.cfg</span>
-<span class="token number">10</span>:<span class="token punctuation">[</span>defaults<span class="token punctuation">]</span>
-<span class="token number">71</span>:host_key_checking <span class="token operator">=</span> False	<span class="token comment"># *</span>
-<span class="token number">111</span>:log_path <span class="token operator">=</span> /var/log/ansible.log		<span class="token comment"># *</span>
-<span class="token number">327</span>:<span class="token punctuation">[</span>inventory<span class="token punctuation">]</span>
-<span class="token number">340</span>:<span class="token punctuation">[</span>privilege_escalation<span class="token punctuation">]</span>
-<span class="token number">346</span>:<span class="token punctuation">[</span>paramiko_connection<span class="token punctuation">]</span>
-<span class="token number">370</span>:<span class="token punctuation">[</span>ssh_connection<span class="token punctuation">]</span>
-<span class="token number">431</span>:<span class="token punctuation">[</span>persistent_connection<span class="token punctuation">]</span>
-<span class="token number">445</span>:<span class="token punctuation">[</span>accelerate<span class="token punctuation">]</span>
-<span class="token number">460</span>:<span class="token punctuation">[</span>selinux<span class="token punctuation">]</span>
-<span class="token number">469</span>:<span class="token punctuation">[</span>colors<span class="token punctuation">]</span>
-<span class="token number">485</span>:<span class="token punctuation">[</span>diff<span class="token punctuation">]</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01[ &#x2F;server&#x2F;scripts]#cp &#x2F;eegrep -vn &quot;^$|#&quot; &#x2F;etc&#x2F;ansible&#x2F;ansible.cfg
+10:[defaults]
+71:host_key_checking &#x3D; False	# *
+111:log_path &#x3D; &#x2F;var&#x2F;log&#x2F;ansible.log		# *
+327:[inventory]
+340:[privilege_escalation]
+346:[paramiko_connection]
+370:[ssh_connection]
+431:[persistent_connection]
+445:[accelerate]
+460:[selinux]
+469:[colors]
+485:[diff]</code></pre></div></figure>
 
 <blockquote>
 <p>Host_key_checking如果没关闭，将造成如下报错：</p>
@@ -351,81 +351,81 @@
 <p>命令格式：<br>ansible [主机ip 或 分组 或 all]  -m [指定使用的模块名字]</p>
 </blockquote>
 <p>案例01-对主机分组并进行连接测试  </p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts<span class="token punctuation">]</span><span class="token comment">#cat /etc/ansible/hosts</span>
-<span class="token punctuation">[</span>web01<span class="token punctuation">]</span>
-<span class="token number">172.16</span>.1.7
-<span class="token punctuation">[</span>backup01<span class="token punctuation">]</span>
-<span class="token number">172.16</span>.1.41
-<span class="token punctuation">[</span>nfs01<span class="token punctuation">]</span>
-<span class="token number">172.16</span>.1.31
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01[ &#x2F;server&#x2F;scripts]#cat &#x2F;etc&#x2F;ansible&#x2F;hosts
+[web01]
+172.16.1.7
+[backup01]
+172.16.1.41
+[nfs01]
+172.16.1.31
 
-<span class="token comment"># 测试, 这里的ping模块用于检查被管理端是否可以访问.  </span>
-<span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts<span class="token punctuation">]</span><span class="token comment">#ansible all -m ping</span>
-<span class="token number">172.16</span>.1.41 <span class="token operator">|</span> SUCCESS <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">&#123;</span>
-    <span class="token string">"ansible_facts"</span><span class="token builtin class-name">:</span> <span class="token punctuation">&#123;</span>
-        <span class="token string">"discovered_interpreter_python"</span><span class="token builtin class-name">:</span> <span class="token string">"/usr/bin/python"</span>
-    <span class="token punctuation">&#125;</span>,
-    <span class="token string">"changed"</span><span class="token builtin class-name">:</span> false,
-    <span class="token string">"ping"</span><span class="token builtin class-name">:</span> <span class="token string">"pong"</span>
-<span class="token punctuation">&#125;</span>
-<span class="token number">172.16</span>.1.31 <span class="token operator">|</span> SUCCESS <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">&#123;</span>
-<span class="token punctuation">..</span><span class="token punctuation">..</span>
-<span class="token number">172.16</span>.1.7 <span class="token operator">|</span> SUCCESS <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">&#123;</span>
-<span class="token punctuation">..</span><span class="token punctuation">..</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+# 测试, 这里的ping模块用于检查被管理端是否可以访问.  
+[root@mn01[ &#x2F;server&#x2F;scripts]#ansible all -m ping
+172.16.1.41 | SUCCESS &#x3D;&gt; &#123;
+    &quot;ansible_facts&quot;: &#123;
+        &quot;discovered_interpreter_python&quot;: &quot;&#x2F;usr&#x2F;bin&#x2F;python&quot;
+    &#125;,
+    &quot;changed&quot;: false,
+    &quot;ping&quot;: &quot;pong&quot;
+&#125;
+172.16.1.31 | SUCCESS &#x3D;&gt; &#123;
+....
+172.16.1.7 | SUCCESS &#x3D;&gt; &#123;
+....</code></pre></div></figure>
 
 <h3 id="1-3-2-子组"><a href="#1-3-2-子组" class="headerlink" title="1.3.2 子组"></a>1.3.2 子组</h3><p>案例02: 我希望对backup01,nfs01两个主机分组,再创建个分区叫data分组 </p>
- <figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 使用children关键字，创建子组</span>
-<span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts<span class="token punctuation">]</span><span class="token comment">#cat /etc/ansible/hosts</span>
-<span class="token punctuation">[</span>web01<span class="token punctuation">]</span>
-<span class="token number">172.16</span>.1.7
-<span class="token punctuation">[</span>backup01<span class="token punctuation">]</span>
-<span class="token number">172.16</span>.1.41
-<span class="token punctuation">[</span>nfs01<span class="token punctuation">]</span>
-<span class="token number">172.16</span>.1.31
+ <figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 使用children关键字，创建子组
+[root@mn01[ &#x2F;server&#x2F;scripts]#cat &#x2F;etc&#x2F;ansible&#x2F;hosts
+[web01]
+172.16.1.7
+[backup01]
+172.16.1.41
+[nfs01]
+172.16.1.31
 
-<span class="token punctuation">[</span>data:children<span class="token punctuation">]</span>
+[data:children]
 nfs01
 backup01
 
-<span class="token comment"># 测试</span>
-<span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts<span class="token punctuation">]</span><span class="token comment">#ansible data -m ping</span>
-<span class="token number">172.16</span>.1.41 <span class="token operator">|</span> SUCCESS <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">&#123;</span>
-<span class="token punctuation">..</span>.
-<span class="token punctuation">&#125;</span>
-<span class="token number">172.16</span>.1.31 <span class="token operator">|</span> SUCCESS <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">&#123;</span>
-<span class="token punctuation">..</span>.
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+# 测试
+[root@mn01[ &#x2F;server&#x2F;scripts]#ansible data -m ping
+172.16.1.41 | SUCCESS &#x3D;&gt; &#123;
+...
+&#125;
+172.16.1.31 | SUCCESS &#x3D;&gt; &#123;
+...
+&#125;</code></pre></div></figure>
 
 <h3 id="1-3-3-指定用户名和密码"><a href="#1-3-3-指定用户名和密码" class="headerlink" title="1.3.3 指定用户名和密码"></a>1.3.3 指定用户名和密码</h3><p>如果没有实现进行<em>密钥认证</em>配置，也可以通过修改配置文件来指定<em>用户名和密码</em></p>
 <p>该方法<font color=red>不推荐</font></p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">172.16</span>.1.7 <span class="token assign-left variable">ansible_user</span><span class="token operator">=</span>root <span class="token assign-left variable">ansible_password</span><span class="token operator">=</span>redhat123	<span class="token assign-left variable">ansible_port</span><span class="token operator">=</span><span class="token number">22</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">172.16.1.7 ansible_user&#x3D;root ansible_password&#x3D;redhat123	ansible_port&#x3D;22</code></pre></div></figure>
 
 <p>案例：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 先删除172.16.1.7的密钥认证文件，再次ansible会失败</span>
-<span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts<span class="token punctuation">]</span><span class="token comment">#ansible 172.16.1.7 -m ping</span>
-<span class="token number">172.16</span>.1.7 <span class="token operator">|</span> UNREACHABLE<span class="token operator">!</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">&#123;</span>
-    <span class="token string">"changed"</span><span class="token builtin class-name">:</span> false,
-    <span class="token string">"msg"</span><span class="token builtin class-name">:</span> <span class="token string">"Failed to connect to the host via ssh: Permission denied (publickey,password)."</span>,
-    <span class="token string">"unreachable"</span><span class="token builtin class-name">:</span> <span class="token boolean">true</span>
-<span class="token punctuation">&#125;</span>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 先删除172.16.1.7的密钥认证文件，再次ansible会失败
+[root@mn01[ &#x2F;server&#x2F;scripts]#ansible 172.16.1.7 -m ping
+172.16.1.7 | UNREACHABLE! &#x3D;&gt; &#123;
+    &quot;changed&quot;: false,
+    &quot;msg&quot;: &quot;Failed to connect to the host via ssh: Permission denied (publickey,password).&quot;,
+    &quot;unreachable&quot;: true
+&#125;
 
-<span class="token comment"># 配置用户名和密码</span>
-<span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts<span class="token punctuation">]</span><span class="token comment">#cat /etc/ansible/hosts</span>
-<span class="token punctuation">[</span>web01<span class="token punctuation">]</span>
-<span class="token number">172.16</span>.1.7 <span class="token assign-left variable">ansible_user</span><span class="token operator">=</span>root <span class="token assign-left variable">ansible_password</span><span class="token operator">=</span>redhat123 <span class="token assign-left variable">ansible_port</span><span class="token operator">=</span><span class="token number">22</span>
-<span class="token punctuation">[</span>backup01<span class="token punctuation">]</span>
-<span class="token number">172.16</span>.1.41
-<span class="token punctuation">..</span>.
+# 配置用户名和密码
+[root@mn01[ &#x2F;server&#x2F;scripts]#cat &#x2F;etc&#x2F;ansible&#x2F;hosts
+[web01]
+172.16.1.7 ansible_user&#x3D;root ansible_password&#x3D;redhat123 ansible_port&#x3D;22
+[backup01]
+172.16.1.41
+...
 
-<span class="token comment"># 再次测试成功访问</span>
-<span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts<span class="token punctuation">]</span><span class="token comment">#ansible 172.16.1.7 -m ping</span>
-<span class="token number">172.16</span>.1.7 <span class="token operator">|</span> SUCCESS <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">&#123;</span>
-    <span class="token string">"ansible_facts"</span><span class="token builtin class-name">:</span> <span class="token punctuation">&#123;</span>
-        <span class="token string">"discovered_interpreter_python"</span><span class="token builtin class-name">:</span> <span class="token string">"/usr/bin/python"</span>
-    <span class="token punctuation">&#125;</span>,
-    <span class="token string">"changed"</span><span class="token builtin class-name">:</span> false,
-    <span class="token string">"ping"</span><span class="token builtin class-name">:</span> <span class="token string">"pong"</span>
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+# 再次测试成功访问
+[root@mn01[ &#x2F;server&#x2F;scripts]#ansible 172.16.1.7 -m ping
+172.16.1.7 | SUCCESS &#x3D;&gt; &#123;
+    &quot;ansible_facts&quot;: &#123;
+        &quot;discovered_interpreter_python&quot;: &quot;&#x2F;usr&#x2F;bin&#x2F;python&quot;
+    &#125;,
+    &quot;changed&quot;: false,
+    &quot;ping&quot;: &quot;pong&quot;
+&#125;</code></pre></div></figure>
 
 <h2 id="1-4-Ansible必知必会的模块"><a href="#1-4-Ansible必知必会的模块" class="headerlink" title="1.4 Ansible必知必会的模块"></a>1.4 Ansible必知必会的模块</h2><p>Ansible模块概述:<br>ansible中的模块就类似于Linux中的命令,我们Linux命令管理系统,我们通过ansible模块实现批量管理.<br>ansible中模块一般相当于Linux中的一些命令.yum模块,file模块,user模块.<br>ansible中的模块拥有不同的选项,这些选项一般都是一些单词,拥有自己的格式与要求.  </p>
 <table>
@@ -545,58 +545,58 @@ backup01
 </tbody></table>
 <h3 id="1-4-1-命令与脚本类模块"><a href="#1-4-1-命令与脚本类模块" class="headerlink" title="1.4.1 命令与脚本类模块"></a>1.4.1 命令与脚本类模块</h3><h4 id="a-command模块"><a href="#a-command模块" class="headerlink" title="a) command模块"></a>a) command模块</h4><p>command模块是ansible的默认模块，适用于执行简单的命令，不支持特殊符号</p>
 <p>案例：批量获取所有主机的ens33网卡信息</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">ansible all <span class="token parameter variable">-m</span> <span class="token builtin class-name">command</span> <span class="token parameter variable">-a</span> <span class="token string">'ip a s ens33'</span>
-<span class="token comment"># 因为command是默认模块，可以省略指定</span>
-ansible all <span class="token parameter variable">-a</span> <span class="token string">'ip a s ens33'</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">ansible all -m command -a &#39;ip a s ens33&#39;
+# 因为command是默认模块，可以省略指定
+ansible all -a &#39;ip a s ens33&#39;</code></pre></div></figure>
 
 <h4 id="b-shell模块"><a href="#b-shell模块" class="headerlink" title="b) shell模块"></a>b) shell模块</h4><p>与command模块类似，但是shell模块<em>支持特殊符号</em></p>
 <p>案例1：批量删除&#x2F;tmp下面的所有内容</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts<span class="token punctuation">]</span><span class="token comment">#ansible all -m shell -a 'rm -fr /tmp/*'</span>
-<span class="token punctuation">[</span>WARNING<span class="token punctuation">]</span>: Consider using the <span class="token function">file</span> module with <span class="token assign-left variable">state</span><span class="token operator">=</span>absent rather than running <span class="token string">'rm'</span><span class="token builtin class-name">.</span>  If you need to use <span class="token builtin class-name">command</span> because <span class="token function">file</span> is insufficient you can <span class="token function">add</span> <span class="token string">'warn: false'</span> to this <span class="token builtin class-name">command</span> task or <span class="token builtin class-name">set</span>
-<span class="token string">'command_warnings=False'</span> <span class="token keyword">in</span> ansible.cfg to get rid of this message.
-<span class="token number">172.16</span>.1.41 <span class="token operator">|</span> CHANGED <span class="token operator">|</span> <span class="token assign-left variable">rc</span><span class="token operator">=</span><span class="token number">0</span> <span class="token operator">>></span>
-<span class="token number">172.16</span>.1.31 <span class="token operator">|</span> CHANGED <span class="token operator">|</span> <span class="token assign-left variable">rc</span><span class="token operator">=</span><span class="token number">0</span> <span class="token operator">>></span>
-<span class="token number">172.16</span>.1.7 <span class="token operator">|</span> CHANGED <span class="token operator">|</span> <span class="token assign-left variable">rc</span><span class="token operator">=</span><span class="token number">0</span> <span class="token operator">>></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01[ &#x2F;server&#x2F;scripts]#ansible all -m shell -a &#39;rm -fr &#x2F;tmp&#x2F;*&#39;
+[WARNING]: Consider using the file module with state&#x3D;absent rather than running &#39;rm&#39;.  If you need to use command because file is insufficient you can add &#39;warn: false&#39; to this command task or set
+&#39;command_warnings&#x3D;False&#39; in ansible.cfg to get rid of this message.
+172.16.1.41 | CHANGED | rc&#x3D;0 &gt;&gt;
+172.16.1.31 | CHANGED | rc&#x3D;0 &gt;&gt;
+172.16.1.7 | CHANGED | rc&#x3D;0 &gt;&gt;</code></pre></div></figure>
 
 <blockquote>
 <p>删除文件会有warning提示，建议用file模块来操作</p>
 </blockquote>
 <p>案例2：批量获取IP地址</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts<span class="token punctuation">]</span><span class="token comment">#ansible all -m shell -a "ip a s ens33 | awk -F'[ /]+' 'NR==3&#123;print \$3&#125;'"</span>
-<span class="token number">172.16</span>.1.31 <span class="token operator">|</span> CHANGED <span class="token operator">|</span> <span class="token assign-left variable">rc</span><span class="token operator">=</span><span class="token number">0</span> <span class="token operator">>></span>
-<span class="token number">10.0</span>.0.31
-<span class="token number">172.16</span>.1.7 <span class="token operator">|</span> CHANGED <span class="token operator">|</span> <span class="token assign-left variable">rc</span><span class="token operator">=</span><span class="token number">0</span> <span class="token operator">>></span>
-<span class="token number">10.0</span>.0.7
-<span class="token number">172.16</span>.1.41 <span class="token operator">|</span> CHANGED <span class="token operator">|</span> <span class="token assign-left variable">rc</span><span class="token operator">=</span><span class="token number">0</span> <span class="token operator">>></span>
-<span class="token number">10.0</span>.0.41<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01[ &#x2F;server&#x2F;scripts]#ansible all -m shell -a &quot;ip a s ens33 | awk -F&#39;[ &#x2F;]+&#39; &#39;NR&#x3D;&#x3D;3&#123;print \$3&#125;&#39;&quot;
+172.16.1.31 | CHANGED | rc&#x3D;0 &gt;&gt;
+10.0.0.31
+172.16.1.7 | CHANGED | rc&#x3D;0 &gt;&gt;
+10.0.0.7
+172.16.1.41 | CHANGED | rc&#x3D;0 &gt;&gt;
+10.0.0.41</code></pre></div></figure>
 
 <h4 id="c-script-模块"><a href="#c-script-模块" class="headerlink" title="c) script 模块"></a>c) script 模块</h4><p>用于分发和执行脚本</p>
 <p>案例：在所有主机中执行指定脚本</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts<span class="token punctuation">]</span><span class="token comment">#cat /server/scripts/ansible-script.sh</span>
-<span class="token comment">#!/bin/bashh</span>
-<span class="token comment">#desc: 系统巡检脚本</span>
-<span class="token function">hostname</span>
-<span class="token function">hostname</span> <span class="token parameter variable">-I</span>
-<span class="token function">ip</span> a s ens33 <span class="token operator">|</span><span class="token function">awk</span> -F<span class="token string">'[ /]+'</span> <span class="token string">'NR==3&#123;print $3&#125;'</span>
-<span class="token function">uptime</span>
-<span class="token function">whoami</span>
-<span class="token function">date</span> +%F
-<span class="token function">sleep</span> <span class="token number">10</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01[ &#x2F;server&#x2F;scripts]#cat &#x2F;server&#x2F;scripts&#x2F;ansible-script.sh
+#!&#x2F;bin&#x2F;bashh
+#desc: 系统巡检脚本
+hostname
+hostname -I
+ip a s ens33 |awk -F&#39;[ &#x2F;]+&#39; &#39;NR&#x3D;&#x3D;3&#123;print $3&#125;&#39;
+uptime
+whoami
+date +%F
+sleep 10</code></pre></div></figure>
 
 <p>分发执行脚本</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts<span class="token punctuation">]</span><span class="token comment">#ansible all -m script -a '/server/scripts/ansible-script.sh'</span>
-<span class="token number">172.16</span>.1.7 <span class="token operator">|</span> CHANGED <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">&#123;</span>
-    <span class="token string">"changed"</span><span class="token builtin class-name">:</span> true,
-<span class="token punctuation">..</span><span class="token punctuation">..</span>
-    <span class="token string">"stdout_lines"</span><span class="token builtin class-name">:</span> <span class="token punctuation">[</span>
-        <span class="token string">"web01"</span>,
-        <span class="token string">"10.0.0.7 172.16.1.7 "</span>,
-        <span class="token string">"10.0.0.7"</span>,
-        <span class="token string">" 09:49:47 up 1 day, 17:52,  2 users,  load average: 0.00, 0.01, 0.05"</span>,
-        <span class="token string">"root"</span>,
-        <span class="token string">"2024-04-30"</span>
-    <span class="token punctuation">]</span>
-<span class="token number">172.16</span>.1.31 <span class="token punctuation">..</span><span class="token punctuation">..</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01[ &#x2F;server&#x2F;scripts]#ansible all -m script -a &#39;&#x2F;server&#x2F;scripts&#x2F;ansible-script.sh&#39;
+172.16.1.7 | CHANGED &#x3D;&gt; &#123;
+    &quot;changed&quot;: true,
+....
+    &quot;stdout_lines&quot;: [
+        &quot;web01&quot;,
+        &quot;10.0.0.7 172.16.1.7 &quot;,
+        &quot;10.0.0.7&quot;,
+        &quot; 09:49:47 up 1 day, 17:52,  2 users,  load average: 0.00, 0.01, 0.05&quot;,
+        &quot;root&quot;,
+        &quot;2024-04-30&quot;
+    ]
+172.16.1.31 ....</code></pre></div></figure>
 
 <h3 id="1-4-2-文件相关的模块"><a href="#1-4-2-文件相关的模块" class="headerlink" title="1.4.2 文件相关的模块"></a>1.4.2 文件相关的模块</h3><h4 id="a-file模块"><a href="#a-file模块" class="headerlink" title="a) file模块"></a>a) file模块</h4><p>作用：</p>
 <ul>
@@ -640,63 +640,63 @@ ansible all <span class="token parameter variable">-a</span> <span class="token 
 </tr>
 </tbody></table>
 <p>案例1：创建&#x2F;opt&#x2F;test.txt文件</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts<span class="token punctuation">]</span><span class="token comment">#ansible all -m file -a 'path=/opt/test.txt state=touch'</span>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01[ &#x2F;server&#x2F;scripts]#ansible all -m file -a &#39;path&#x3D;&#x2F;opt&#x2F;test.txt state&#x3D;touch&#39;
 
-<span class="token comment"># 查看是否创建成功</span>
-<span class="token punctuation">[</span>root@web01<span class="token punctuation">[</span> /upload<span class="token punctuation">]</span><span class="token comment">#tree /opt/</span>
-/opt/
-└── test.txt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+# 查看是否创建成功
+[root@web01[ &#x2F;upload]#tree &#x2F;opt&#x2F;
+&#x2F;opt&#x2F;
+└── test.txt</code></pre></div></figure>
 
 <p>案例2：创建目录（可以直接多级）</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts<span class="token punctuation">]</span><span class="token comment">#ansible all -m file -a 'path=/app/a/b/c/d state=directory'</span>
-<span class="token number">172.16</span>.1.41 <span class="token operator">|</span> CHANGED <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">&#123;</span>
-    <span class="token string">"ansible_facts"</span><span class="token builtin class-name">:</span> <span class="token punctuation">&#123;</span>
-        <span class="token string">"discovered_interpreter_python"</span><span class="token builtin class-name">:</span> <span class="token string">"/usr/bin/python"</span>
-    <span class="token punctuation">&#125;</span>,
-<span class="token punctuation">..</span>.
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01[ &#x2F;server&#x2F;scripts]#ansible all -m file -a &#39;path&#x3D;&#x2F;app&#x2F;a&#x2F;b&#x2F;c&#x2F;d state&#x3D;directory&#39;
+172.16.1.41 | CHANGED &#x3D;&gt; &#123;
+    &quot;ansible_facts&quot;: &#123;
+        &quot;discovered_interpreter_python&quot;: &quot;&#x2F;usr&#x2F;bin&#x2F;python&quot;
+    &#125;,
+...
 
-<span class="token comment"># 查看是否创建成功</span>
-<span class="token punctuation">[</span>root@web01<span class="token punctuation">[</span> /upload<span class="token punctuation">]</span><span class="token comment">#tree /app/</span>
-/app/
+# 查看是否创建成功
+[root@web01[ &#x2F;upload]#tree &#x2F;app&#x2F;
+&#x2F;app&#x2F;
 └── a
     └── b
         └── c
-            └── d<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+            └── d</code></pre></div></figure>
 
 <p>案例3：创建软连接</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># /etc/hosts软连接到/opt下</span>
-<span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts<span class="token punctuation">]</span><span class="token comment">#ansible all -m file -a 'src=/etc/hosts path=/opt/hosts state=link'</span>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># &#x2F;etc&#x2F;hosts软连接到&#x2F;opt下
+[root@mn01[ &#x2F;server&#x2F;scripts]#ansible all -m file -a &#39;src&#x3D;&#x2F;etc&#x2F;hosts path&#x3D;&#x2F;opt&#x2F;hosts state&#x3D;link&#39;
 
-<span class="token comment"># 查看是否创建成功</span>
-<span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts<span class="token punctuation">]</span><span class="token comment">#ansible all -a 'ls /opt -l'</span>
-<span class="token number">172.16</span>.1.31 <span class="token operator">|</span> CHANGED <span class="token operator">|</span> <span class="token assign-left variable">rc</span><span class="token operator">=</span><span class="token number">0</span> <span class="token operator">>></span>
-total <span class="token number">0</span>
-lrwxrwxrwx. <span class="token number">1</span> root root <span class="token number">10</span> Apr <span class="token number">30</span> 09:58 hosts -<span class="token operator">></span> /etc/hosts
--rw-r--r--. <span class="token number">1</span> root root  <span class="token number">0</span> Apr <span class="token number">30</span> 09:54 test.txt
-<span class="token number">172.16</span>.1.7 <span class="token operator">|</span> CHANGED <span class="token operator">|</span> <span class="token assign-left variable">rc</span><span class="token operator">=</span><span class="token number">0</span> <span class="token operator">>></span>
-total <span class="token number">0</span>
-lrwxrwxrwx. <span class="token number">1</span> root root <span class="token number">10</span> Apr <span class="token number">30</span> 09:58 hosts -<span class="token operator">></span> /etc/hosts
--rw-r--r--. <span class="token number">1</span> root root  <span class="token number">0</span> Apr <span class="token number">30</span> 09:54 test.txt
-<span class="token number">172.16</span>.1.41 <span class="token operator">|</span> CHANGED <span class="token operator">|</span> <span class="token assign-left variable">rc</span><span class="token operator">=</span><span class="token number">0</span> <span class="token operator">>></span>
-total <span class="token number">0</span>
-lrwxrwxrwx. <span class="token number">1</span> root root <span class="token number">10</span> Apr <span class="token number">30</span> 09:58 hosts -<span class="token operator">></span> /etc/hosts
--rw-r--r--. <span class="token number">1</span> root root  <span class="token number">0</span> Apr <span class="token number">30</span> 09:54 test.txt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+# 查看是否创建成功
+[root@mn01[ &#x2F;server&#x2F;scripts]#ansible all -a &#39;ls &#x2F;opt -l&#39;
+172.16.1.31 | CHANGED | rc&#x3D;0 &gt;&gt;
+total 0
+lrwxrwxrwx. 1 root root 10 Apr 30 09:58 hosts -&gt; &#x2F;etc&#x2F;hosts
+-rw-r--r--. 1 root root  0 Apr 30 09:54 test.txt
+172.16.1.7 | CHANGED | rc&#x3D;0 &gt;&gt;
+total 0
+lrwxrwxrwx. 1 root root 10 Apr 30 09:58 hosts -&gt; &#x2F;etc&#x2F;hosts
+-rw-r--r--. 1 root root  0 Apr 30 09:54 test.txt
+172.16.1.41 | CHANGED | rc&#x3D;0 &gt;&gt;
+total 0
+lrwxrwxrwx. 1 root root 10 Apr 30 09:58 hosts -&gt; &#x2F;etc&#x2F;hosts
+-rw-r--r--. 1 root root  0 Apr 30 09:54 test.txt</code></pre></div></figure>
 
 <p>案例4：创建&#x2F;ans-backup目录，所有者是oldboy，权限是700</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">ansible all <span class="token parameter variable">-m</span> <span class="token function">file</span> <span class="token parameter variable">-a</span> <span class="token string">'path=/ans-backup/
-owner=oldboy group=oldboy mode=700 state=directory'</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">ansible all -m file -a &#39;path&#x3D;&#x2F;ans-backup&#x2F;
+owner&#x3D;oldboy group&#x3D;oldboy mode&#x3D;700 state&#x3D;directory&#39;</code></pre></div></figure>
 
 <p>案例5：删除&#x2F;ans-backup目录</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts<span class="token punctuation">]</span><span class="token comment">#ansible all -m file -a 'path=/ans-backup/ state=absent'</span>
-<span class="token number">172.16</span>.1.41 <span class="token operator">|</span> CHANGED <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">&#123;</span>
-    <span class="token string">"ansible_facts"</span><span class="token builtin class-name">:</span> <span class="token punctuation">&#123;</span>
-        <span class="token string">"discovered_interpreter_python"</span><span class="token builtin class-name">:</span> <span class="token string">"/usr/bin/python"</span>
-<span class="token punctuation">..</span>.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01[ &#x2F;server&#x2F;scripts]#ansible all -m file -a &#39;path&#x3D;&#x2F;ans-backup&#x2F; state&#x3D;absent&#39;
+172.16.1.41 | CHANGED &#x3D;&gt; &#123;
+    &quot;ansible_facts&quot;: &#123;
+        &quot;discovered_interpreter_python&quot;: &quot;&#x2F;usr&#x2F;bin&#x2F;python&quot;
+...</code></pre></div></figure>
 
 <blockquote>
 <p>温馨提示:</p>
 <p>查看模块的帮助,可以通过<code>ansible-doc -s</code>模块名查看，如：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token operator">></span>ansible-doc <span class="token parameter variable">-s</span> <span class="token function">file</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">&gt;ansible-doc -s file</code></pre></div></figure>
 </blockquote>
 <h4 id="b-copy模块"><a href="#b-copy模块" class="headerlink" title="b) copy模块"></a>b) copy模块</h4><p>批量分发：类似于scp，1个节点(管理节点)发送文件或压缩包到所有被管理端. </p>
 <p>注意：copy是单向的传输。</p>
@@ -733,40 +733,40 @@ owner=oldboy group=oldboy mode=700 state=directory'</span><span aria-hidden="tru
 </tr>
 </tbody></table>
 <p>案例：分发书写好的&#x2F;etc&#x2F;hosts文件，如果文件存在则备份</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 查看文件内容</span>
-<span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> ~<span class="token punctuation">]</span><span class="token comment">#cat /etc/hosts</span>
-<span class="token number">127.0</span>.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 查看文件内容
+[root@mn01[ ~]#cat &#x2F;etc&#x2F;hosts
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
 ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
 
-<span class="token number">172.16</span>.1.7 web01
-<span class="token number">172.16</span>.1.31 nfs01
-<span class="token number">172.16</span>.1.41 backup01
+172.16.1.7 web01
+172.16.1.31 nfs01
+172.16.1.41 backup01
 
-<span class="token comment"># 分发</span>
-<span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> ~<span class="token punctuation">]</span><span class="token comment">#ansible all -m copy -a 'src=/etc/hosts dest=/etc/hosts backup=yes'</span>
-<span class="token number">172.16</span>.1.7 <span class="token operator">|</span> CHANGED <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">&#123;</span>
-    <span class="token string">"ansible_facts"</span><span class="token builtin class-name">:</span> <span class="token punctuation">&#123;</span>
-        <span class="token string">"discovered_interpreter_python"</span><span class="token builtin class-name">:</span> <span class="token string">"/usr/bin/python"</span>
-    <span class="token punctuation">&#125;</span>,
-    <span class="token string">"backup_file"</span><span class="token builtin class-name">:</span> <span class="token string">"/etc/hosts.28793.2024-04-30@10:11:37~"</span>,
-<span class="token punctuation">..</span><span class="token punctuation">..</span>
+# 分发
+[root@mn01[ ~]#ansible all -m copy -a &#39;src&#x3D;&#x2F;etc&#x2F;hosts dest&#x3D;&#x2F;etc&#x2F;hosts backup&#x3D;yes&#39;
+172.16.1.7 | CHANGED &#x3D;&gt; &#123;
+    &quot;ansible_facts&quot;: &#123;
+        &quot;discovered_interpreter_python&quot;: &quot;&#x2F;usr&#x2F;bin&#x2F;python&quot;
+    &#125;,
+    &quot;backup_file&quot;: &quot;&#x2F;etc&#x2F;hosts.28793.2024-04-30@10:11:37~&quot;,
+....
 
-<span class="token comment"># 查看</span>
-<span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> ~<span class="token punctuation">]</span><span class="token comment">#ansible all -m shell -a 'tree /etc | grep hosts'</span>
-<span class="token number">172.16</span>.1.7 <span class="token operator">|</span> CHANGED <span class="token operator">|</span> <span class="token assign-left variable">rc</span><span class="token operator">=</span><span class="token number">0</span> <span class="token operator">>></span>
+# 查看
+[root@mn01[ ~]#ansible all -m shell -a &#39;tree &#x2F;etc | grep hosts&#39;
+172.16.1.7 | CHANGED | rc&#x3D;0 &gt;&gt;
 ├── hosts
 ├── hosts.28793.2024-04-30@10:11:37~
-<span class="token punctuation">..</span>.
-│   │   │   │   │   ├── denyhosts
-<span class="token number">172.16</span>.1.31 <span class="token operator">|</span> CHANGED <span class="token operator">|</span> <span class="token assign-left variable">rc</span><span class="token operator">=</span><span class="token number">0</span> <span class="token operator">>></span>
+...
+│   │   │   │   │   ├── denyhosts
+172.16.1.31 | CHANGED | rc&#x3D;0 &gt;&gt;
 ├── hosts
 ├── hosts.39547.2024-04-30@10:11:37~
-<span class="token punctuation">..</span>.
-│   │   │   │   │   ├── denyhosts
-<span class="token number">172.16</span>.1.41 <span class="token operator">|</span> CHANGED <span class="token operator">|</span> <span class="token assign-left variable">rc</span><span class="token operator">=</span><span class="token number">0</span> <span class="token operator">>></span>
+...
+│   │   │   │   │   ├── denyhosts
+172.16.1.41 | CHANGED | rc&#x3D;0 &gt;&gt;
 ├── hosts
 ├── hosts.105718.2024-04-30@10:11:37~
-<span class="token punctuation">..</span>.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+...</code></pre></div></figure>
 
 <h4 id="c-lineinfile模块"><a href="#c-lineinfile模块" class="headerlink" title="c) lineinfile模块"></a>c) lineinfile模块</h4><p>未来修改配置文件使用,类似于sed -i ‘sg’和sed ‘cai’.<br>未来使用的时候讲解  </p>
 <h3 id="1-4-3-服务管理模块"><a href="#1-4-3-服务管理模块" class="headerlink" title="1.4.3 服务管理模块"></a>1.4.3 服务管理模块</h3><p>systemd模块相当于是linux systemctl命令：</p>
@@ -799,12 +799,12 @@ owner=oldboy group=oldboy mode=700 state=directory'</span><span aria-hidden="tru
 </tr>
 </tbody></table>
 <p>案例：开启crond服务并设置开机自启动；关闭firewalld服务并不让开机自启动  </p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#启动服务</span>
-ansible all <span class="token parameter variable">-m</span> systemd <span class="token parameter variable">-a</span> <span class="token string">'name=crond enabled=yes state=started'</span>
-<span class="token comment">#关闭服务</span>
-ansible all <span class="token parameter variable">-m</span> systemd <span class="token parameter variable">-a</span> <span class="token string">'name=firewalld enabled=no state=stopped'</span>
-<span class="token comment">#重启ssh</span>
-ansible all <span class="token parameter variable">-m</span> systemd <span class="token parameter variable">-a</span> <span class="token string">'name=sshd state=restarted'</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">#启动服务
+ansible all -m systemd -a &#39;name&#x3D;crond enabled&#x3D;yes state&#x3D;started&#39;
+#关闭服务
+ansible all -m systemd -a &#39;name&#x3D;firewalld enabled&#x3D;no state&#x3D;stopped&#39;
+#重启ssh
+ansible all -m systemd -a &#39;name&#x3D;sshd state&#x3D;restarted&#39;</code></pre></div></figure>
 
 <blockquote>
 <p>额外扩展:</p>
@@ -841,7 +841,7 @@ ansible all <span class="token parameter variable">-m</span> systemd <span class
 </tr>
 </tbody></table>
 <p>案例: 安装常用的软件htop,tree,lrzsz,sshpass</p>
-  <figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> ~<span class="token punctuation">]</span><span class="token comment">#ansible all -m yum -a 'name=htop,tree,lrzsz,sshpass'</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+  <figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01[ ~]#ansible all -m yum -a &#39;name&#x3D;htop,tree,lrzsz,sshpass&#39;</code></pre></div></figure>
 
 <h4 id="b-get-url模块"><a href="#b-get-url模块" class="headerlink" title="b) get_url模块"></a>b) get_url模块</h4><p>相当于是wget命令.所有主机能访问网络才行.<br>推荐在管理节点下载好,使用copy仅分发即可  </p>
 <table>
@@ -861,31 +861,31 @@ ansible all <span class="token parameter variable">-m</span> systemd <span class
 </tr>
 </tbody></table>
 <p>案例：下载zabbix。。。</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 创建目录</span>
-<span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> ~<span class="token punctuation">]</span><span class="token comment">#ansible all -m file -a "path=/app/tools state=directory"</span>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 创建目录
+[root@mn01[ ~]#ansible all -m file -a &quot;path&#x3D;&#x2F;app&#x2F;tools state&#x3D;directory&quot;
 
 
-<span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> ~<span class="token punctuation">]</span><span class="token comment">#ansible all -m get_url -a 'url="https://mirrors.aliyun.com/zabbix/zabbix/6.0/rhel/7/x86_64/zabbix-agent-6.0.13-release1.el7.x86_64.rpm" dest=/app/tools/'</span>
+[root@mn01[ ~]#ansible all -m get_url -a &#39;url&#x3D;&quot;https:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;zabbix&#x2F;zabbix&#x2F;6.0&#x2F;rhel&#x2F;7&#x2F;x86_64&#x2F;zabbix-agent-6.0.13-release1.el7.x86_64.rpm&quot; dest&#x3D;&#x2F;app&#x2F;tools&#x2F;&#39;
 
-<span class="token comment"># 后续可以调用yum模块安装本地的软件</span>
-<span class="token assign-left variable">name</span><span class="token operator">=</span>/app/tools/xxxxx.rpm即可.
+# 后续可以调用yum模块安装本地的软件
+name&#x3D;&#x2F;app&#x2F;tools&#x2F;xxxxx.rpm即可.
 
-<span class="token comment"># 查看</span>
-<span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> ~<span class="token punctuation">]</span><span class="token comment">#ansible all -a 'tree /app/tools'</span>
-<span class="token number">172.16</span>.1.41 <span class="token operator">|</span> CHANGED <span class="token operator">|</span> <span class="token assign-left variable">rc</span><span class="token operator">=</span><span class="token number">0</span> <span class="token operator">>></span>
-/app/tools
+# 查看
+[root@mn01[ ~]#ansible all -a &#39;tree &#x2F;app&#x2F;tools&#39;
+172.16.1.41 | CHANGED | rc&#x3D;0 &gt;&gt;
+&#x2F;app&#x2F;tools
 └── zabbix-agent-6.0.13-release1.el7.x86_64.rpm
 
-<span class="token number">0</span> directories, <span class="token number">1</span> <span class="token function">file</span>
-<span class="token number">172.16</span>.1.7 <span class="token operator">|</span> CHANGED <span class="token operator">|</span> <span class="token assign-left variable">rc</span><span class="token operator">=</span><span class="token number">0</span> <span class="token operator">>></span>
-/app/tools
+0 directories, 1 file
+172.16.1.7 | CHANGED | rc&#x3D;0 &gt;&gt;
+&#x2F;app&#x2F;tools
 └── zabbix-agent-6.0.13-release1.el7.x86_64.rpm
 
-<span class="token number">0</span> directories, <span class="token number">1</span> <span class="token function">file</span>
-<span class="token number">172.16</span>.1.31 <span class="token operator">|</span> CHANGED <span class="token operator">|</span> <span class="token assign-left variable">rc</span><span class="token operator">=</span><span class="token number">0</span> <span class="token operator">>></span>
-/app/tools
-<span class="token punctuation">..</span>.
-└── zabbix-agent-6.0.13-release1.el7.x86_64.rpm<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+0 directories, 1 file
+172.16.1.31 | CHANGED | rc&#x3D;0 &gt;&gt;
+&#x2F;app&#x2F;tools
+...
+└── zabbix-agent-6.0.13-release1.el7.x86_64.rpm</code></pre></div></figure>
 
 <h4 id="c-yum-repository模块"><a href="#c-yum-repository模块" class="headerlink" title="c) yum_repository模块"></a>c) yum_repository模块</h4><p>了解即可，建议未来书写好yum配置文件,copy分发过去即可  </p>
 <table>
@@ -921,13 +921,13 @@ ansible all <span class="token parameter variable">-m</span> systemd <span class
 </tr>
 </tbody></table>
 <p>例如，以下repo源</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">root@m01 ~<span class="token punctuation">]</span><span class="token comment"># cat /etc/yum.repos.d/epel.repo</span>
-<span class="token punctuation">[</span>epel<span class="token punctuation">]</span>
-<span class="token assign-left variable">name</span><span class="token operator">=</span>Extra Packages <span class="token keyword">for</span> Enterprise Linux <span class="token number">7</span> -
-<span class="token variable">$basearch</span>
-<span class="token assign-left variable">baseurl</span><span class="token operator">=</span>http:Վˌmirrors.aliyun.com/epel/7/<span class="token variable">$basearch</span>
-<span class="token assign-left variable">enabled</span><span class="token operator">=</span><span class="token number">1</span>
-<span class="token assign-left variable">gpgcheck</span><span class="token operator">=</span><span class="token number">0</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">root@m01 ~]# cat &#x2F;etc&#x2F;yum.repos.d&#x2F;epel.repo
+[epel]
+name&#x3D;Extra Packages for Enterprise Linux 7 -
+$basearch
+baseurl&#x3D;http:Վˌmirrors.aliyun.com&#x2F;epel&#x2F;7&#x2F;$basearch
+enabled&#x3D;1
+gpgcheck&#x3D;0</code></pre></div></figure>
 
 <p>使用ansible配置</p>
 <figure><div class="code-wrapper"><pre class="line-numbers language-she" data-language="she"><code class="language-she">-m yum_repository
@@ -935,7 +935,7 @@ ansible all <span class="token parameter variable">-m</span> systemd <span class
 7 - $basearch&quot; baseurl&#x3D;&quot;http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;epel&#x2F;7&#x2F;$basearch&quot;
 enabled&#x3D;yes
 gpgcheck&#x3D;no
-&#39;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+&#39;</code></pre></div></figure>
 
 <p>对比如下：</p>
 <table>
@@ -967,15 +967,15 @@ gpgcheck&#x3D;no
 </tr>
 </tbody></table>
 <p>案例：给web服务器配置nginx的yum源（http暂用test代替s）</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> ~<span class="token punctuation">]</span><span class="token comment">#ansible web01 -m yum_repository -a 'name=nginx-stable description=nginx-stable-repo baseurl=http:/test gpgcheck=yes enabled=yes'</span>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01[ ~]#ansible web01 -m yum_repository -a &#39;name&#x3D;nginx-stable description&#x3D;nginx-stable-repo baseurl&#x3D;http:&#x2F;test gpgcheck&#x3D;yes enabled&#x3D;yes&#39;
 
-<span class="token comment"># 查看效果</span>
-<span class="token punctuation">[</span>root@web01<span class="token punctuation">[</span> /upload<span class="token punctuation">]</span><span class="token comment">#cat /etc/yum.repos.d/nginx-stable.repo</span>
-<span class="token punctuation">[</span>nginx-stable<span class="token punctuation">]</span>
-baseurl <span class="token operator">=</span> http:/test
-enabled <span class="token operator">=</span> <span class="token number">1</span>
-gpgcheck <span class="token operator">=</span> <span class="token number">1</span>
-name <span class="token operator">=</span> nginx-stable-repo<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+# 查看效果
+[root@web01[ &#x2F;upload]#cat &#x2F;etc&#x2F;yum.repos.d&#x2F;nginx-stable.repo
+[nginx-stable]
+baseurl &#x3D; http:&#x2F;test
+enabled &#x3D; 1
+gpgcheck &#x3D; 1
+name &#x3D; nginx-stable-repo</code></pre></div></figure>
 
 <h3 id="1-4-5-用户管理模块"><a href="#1-4-5-用户管理模块" class="headerlink" title="1.4.5 用户管理模块"></a>1.4.5 用户管理模块</h3><p>分为：</p>
 <ul>
@@ -1019,17 +1019,17 @@ name <span class="token operator">=</span> nginx-stable-repo<span aria-hidden="t
 </tr>
 </tbody></table>
 <p>案例: 创建www-ans用户uid 2000虚拟用户 </p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">ansible all <span class="token parameter variable">-m</span> user <span class="token parameter variable">-a</span> <span class="token string">'name=www-ans uid=2000 shell=/sbin/nologin create_home=no state=present'</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">ansible all -m user -a &#39;name&#x3D;www-ans uid&#x3D;2000 shell&#x3D;&#x2F;sbin&#x2F;nologin create_home&#x3D;no state&#x3D;present&#39;</code></pre></div></figure>
 
 <p>案例：批量更新密码，更新用户gs的密码</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">ansible all <span class="token parameter variable">-m</span> user <span class="token parameter variable">-a</span> <span class="token string">"name=gs password=&#123;&#123;'1' | password_hash('sha512', 'lidao') &#125;&#125; state=present"</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">ansible all -m user -a &quot;name&#x3D;gs password&#x3D;&#123;&#123;&#39;1&#39; | password_hash(&#39;sha512&#39;, &#39;lidao&#39;) &#125;&#125; state&#x3D;present&quot;</code></pre></div></figure>
 
 <p>也可以用shell模块更新</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">ansible all <span class="token parameter variable">-m</span> shell <span class="token parameter variable">-a</span> <span class="token string">'echo 1 |passwd --stdin gs'</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">ansible all -m shell -a &#39;echo 1 |passwd --stdin gs&#39;</code></pre></div></figure>
 
 <blockquote>
 <p>关于<code>&#123;&#123;&#125;&#125;</code>相关的解释：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token operator">></span><span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> <span class="token string">'1'</span> <span class="token operator">|</span> password_hash<span class="token punctuation">(</span><span class="token string">'sha512'</span>, <span class="token string">'lidao'</span><span class="token punctuation">)</span> <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">&gt;&#123;&#123; &#39;1&#39; | password_hash(&#39;sha512&#39;, &#39;lidao&#39;) &#125;&#125;</code></pre></div></figure>
 
 <p>表示1是密码,经过管道,传递给了password_hash()插件, sha512加密算法，lidao是随机字符用于生成随机加密后的密码  </p>
 </blockquote>
@@ -1054,16 +1054,16 @@ name <span class="token operator">=</span> nginx-stable-repo<span aria-hidden="t
 </tr>
 </tbody></table>
 <p>案例：添加用户组gs</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 添加</span>
-<span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> ~<span class="token punctuation">]</span><span class="token comment">#ansible all -m group -a 'name=gs gid=1003 state=present'</span>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 添加
+[root@mn01[ ~]#ansible all -m group -a &#39;name&#x3D;gs gid&#x3D;1003 state&#x3D;present&#39;
 
-<span class="token comment"># 查看</span>
-<span class="token punctuation">[</span>root@nfs01<span class="token punctuation">[</span> /opt<span class="token punctuation">]</span><span class="token comment">#cat /etc/group</span>
-<span class="token punctuation">..</span>.
+# 查看
+[root@nfs01[ &#x2F;opt]#cat &#x2F;etc&#x2F;group
+...
 gs:x:1003:
 
-<span class="token comment"># 删除</span>
-<span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> ~<span class="token punctuation">]</span><span class="token comment">#ansible all -m group -a 'name=gs gid=1003 state=absent'</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+# 删除
+[root@mn01[ ~]#ansible all -m group -a &#39;name&#x3D;gs gid&#x3D;1003 state&#x3D;absent&#39;</code></pre></div></figure>
 
 <h3 id="1-4-6-mount模块"><a href="#1-4-6-mount模块" class="headerlink" title="1.4.6 mount模块"></a>1.4.6 mount模块</h3><p>mount模块，实现mount命令进行挂载可以修改&#x2F;etc&#x2F;fstab实现永久挂载.  </p>
 <table>
@@ -1119,24 +1119,24 @@ gs:x:1003:
 </tr>
 </tbody></table>
 <p>案例17: 通过ans管理在web01上挂载nfs:&#x2F;data挂载到web01的&#x2F;ans-upload&#x2F;  </p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#在web服务器上安装nfs</span>
-ansible web01 <span class="token parameter variable">-m</span> yum <span class="token parameter variable">-a</span> <span class="token string">'name=nfs-utils state=present'</span>
-<span class="token comment">#创建挂载点</span>
-ansible web01 <span class="token parameter variable">-m</span> <span class="token function">file</span> <span class="token parameter variable">-a</span> <span class="token string">'path=/ans-upload/ state=directory'</span>
-<span class="token comment">#挂载nfs</span>
-ansible web01 <span class="token parameter variable">-m</span> <span class="token function">mount</span> <span class="token parameter variable">-a</span> <span class="token string">'src=172.16.1.31:/data/ path=/ans-upload/ fstype=nfs state=mounted '</span>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">#在web服务器上安装nfs
+ansible web01 -m yum -a &#39;name&#x3D;nfs-utils state&#x3D;present&#39;
+#创建挂载点
+ansible web01 -m file -a &#39;path&#x3D;&#x2F;ans-upload&#x2F; state&#x3D;directory&#39;
+#挂载nfs
+ansible web01 -m mount -a &#39;src&#x3D;172.16.1.31:&#x2F;data&#x2F; path&#x3D;&#x2F;ans-upload&#x2F; fstype&#x3D;nfs state&#x3D;mounted &#39;
 
-<span class="token comment">#检查已挂载上</span>
-<span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> ~<span class="token punctuation">]</span><span class="token comment">#ansible web01 -a 'df -h'</span>
-<span class="token number">172.16</span>.1.7 <span class="token operator">|</span> CHANGED <span class="token operator">|</span> <span class="token assign-left variable">rc</span><span class="token operator">=</span><span class="token number">0</span> <span class="token operator">>></span>
+#检查已挂载上
+[root@mn01[ ~]#ansible web01 -a &#39;df -h&#39;
+172.16.1.7 | CHANGED | rc&#x3D;0 &gt;&gt;
 Filesystem               Size  Used Avail Use% Mounted on
-<span class="token punctuation">..</span>.
-<span class="token number">172.16</span>.1.31:/data         50G  <span class="token number">2</span>.5G   48G   <span class="token number">5</span>% /upload
+...
+172.16.1.31:&#x2F;data         50G  2.5G   48G   5% &#x2F;upload
 
-<span class="token comment"># fstab已写入</span>
-<span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> ~<span class="token punctuation">]</span><span class="token comment">#ansible web01 -a 'grep upload /etc/fstab '</span>
-<span class="token number">172.16</span>.1.7 <span class="token operator">|</span> CHANGED <span class="token operator">|</span> <span class="token assign-left variable">rc</span><span class="token operator">=</span><span class="token number">0</span> <span class="token operator">>></span>
-<span class="token number">172.16</span>.1.31:/data/ /ans-upload/ nfs defaults <span class="token number">0</span> <span class="token number">0</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+# fstab已写入
+[root@mn01[ ~]#ansible web01 -a &#39;grep upload &#x2F;etc&#x2F;fstab &#39;
+172.16.1.7 | CHANGED | rc&#x3D;0 &gt;&gt;
+172.16.1.31:&#x2F;data&#x2F; &#x2F;ans-upload&#x2F; nfs defaults 0 0</code></pre></div></figure>
 
 <h3 id="1-4-7-cron模块"><a href="#1-4-7-cron模块" class="headerlink" title="1.4.7 cron模块"></a>1.4.7 cron模块</h3><p>用于管理系统的定时任务,替代了<code>crontab -e</code>功能  </p>
 <table>
@@ -1180,17 +1180,17 @@ Filesystem               Size  Used Avail Use% Mounted on
 </tr>
 </tbody></table>
 <p>案例: 每3分钟同步时间.  </p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#1. sync time 原写法</span>
-*/3 * * * * /sbin/ntpdate ntp1.aliyun.com <span class="token operator">&amp;></span>/dev/null
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">#1. sync time 原写法
+*&#x2F;3 * * * * &#x2F;sbin&#x2F;ntpdate ntp1.aliyun.com &amp;&gt;&#x2F;dev&#x2F;null
 
-<span class="token comment"># 2.清理已有的定时任务</span>
-ansible all <span class="token parameter variable">-a</span> <span class="token string">"sed -i '/ntpdate/d' /var/spool/cron/root"</span>
+# 2.清理已有的定时任务
+ansible all -a &quot;sed -i &#39;&#x2F;ntpdate&#x2F;d&#39; &#x2F;var&#x2F;spool&#x2F;cron&#x2F;root&quot;
 
-<span class="token comment"># 3.重新添加定时任务</span>
-ansible all <span class="token parameter variable">-m</span> <span class="token function">cron</span> <span class="token parameter variable">-a</span> <span class="token string">'name="sync time by lidao996" minute="*/3" job="/sbin/ntpdate ntp1.aliyun.com &amp;>/dev/null" state=present'</span>
+# 3.重新添加定时任务
+ansible all -m cron -a &#39;name&#x3D;&quot;sync time by lidao996&quot; minute&#x3D;&quot;*&#x2F;3&quot; job&#x3D;&quot;&#x2F;sbin&#x2F;ntpdate ntp1.aliyun.com &amp;&gt;&#x2F;dev&#x2F;null&quot; state&#x3D;present&#39;
 
-<span class="token comment"># 4.删除</span>
-ansible all <span class="token parameter variable">-m</span> <span class="token function">cron</span> <span class="token parameter variable">-a</span> <span class="token string">' name="sync time by lidao996" state=absent'</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+# 4.删除
+ansible all -m cron -a &#39; name&#x3D;&quot;sync time by lidao996&quot; state&#x3D;absent&#39;</code></pre></div></figure>
 
 
                 
@@ -1487,6 +1487,10 @@ ansible all <span class="token parameter variable">-m</span> <span class="token 
   });
 </script>
 
+
+  <script  src="https://lib.baomitu.com/prism/1.28.0/components/prism-core.min.js" ></script>
+
+  <script  src="https://lib.baomitu.com/prism/1.28.0/plugins/autoloader/prism-autoloader.min.js" ></script>
 
   <script  src="https://lib.baomitu.com/prism/1.28.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
 

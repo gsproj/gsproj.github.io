@@ -224,7 +224,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.3k 字
+          1.4k 字
         
       </span>
     
@@ -235,7 +235,7 @@
         
         
         
-          11 分钟
+          12 分钟
         
       </span>
     
@@ -283,45 +283,45 @@
 <p> 在类中正常定义的函数默认是绑定到对象的，而为某个函数加上装饰器@classmethod后，该函数就绑定到了类。</p>
 <p><img src="https://pic1.zhimg.com/80/v2-a60b7d2829a72bfcca8dd8d0c74fb028_720w.jpg" srcset="/img/loading.gif" lazyload alt="img"></p>
 <p> 我们在之前的章节中已经介绍过对象方法了，本节我们主要介绍类方法。类方法通常用来在__init__的基础上提供额外的初始化实例的方式</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token comment"># 配置文件settings.py的内容</span>
-HOST<span class="token operator">=</span><span class="token string">'127.0.0.1'</span>
-PORT<span class="token operator">=</span><span class="token number">3306</span>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"># 配置文件settings.py的内容
+HOST&#x3D;&#39;127.0.0.1&#39;
+PORT&#x3D;3306
 
-<span class="token comment"># 类方法的应用</span>
-<span class="token keyword">import</span> settings
-<span class="token keyword">class</span> <span class="token class-name">MySQL</span><span class="token punctuation">:</span>
-    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span>host<span class="token punctuation">,</span>port<span class="token punctuation">)</span><span class="token punctuation">:</span>
-        self<span class="token punctuation">.</span>host<span class="token operator">=</span>host
-        self<span class="token punctuation">.</span>port<span class="token operator">=</span>port
-    <span class="token decorator annotation punctuation">@classmethod</span>
-    <span class="token keyword">def</span> <span class="token function">from_conf</span><span class="token punctuation">(</span>cls<span class="token punctuation">)</span><span class="token punctuation">:</span> <span class="token comment"># 从配置文件中读取配置进行初始化</span>
-        <span class="token keyword">return</span> cls<span class="token punctuation">(</span>settings<span class="token punctuation">.</span>HOST<span class="token punctuation">,</span>settings<span class="token punctuation">.</span>PORT<span class="token punctuation">)</span>
+# 类方法的应用
+import settings
+class MySQL:
+    def __init__(self,host,port):
+        self.host&#x3D;host
+        self.port&#x3D;port
+    @classmethod
+    def from_conf(cls): # 从配置文件中读取配置进行初始化
+        return cls(settings.HOST,settings.PORT)
 
-<span class="token operator">>></span><span class="token operator">></span> MySQL<span class="token punctuation">.</span>from_conf <span class="token comment"># 绑定到类的方法</span>
-<span class="token operator">&lt;</span>bound method MySQL<span class="token punctuation">.</span>from_conf of <span class="token operator">&lt;</span><span class="token keyword">class</span> ‘__main__<span class="token punctuation">.</span>MySQL'<span class="token operator">>></span>
-<span class="token operator">>></span><span class="token operator">></span> conn<span class="token operator">=</span>MySQL<span class="token punctuation">.</span>from_conf<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token comment"># 调用类方法，自动将类MySQL当作第一个参数传给cls</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+&gt;&gt;&gt; MySQL.from_conf # 绑定到类的方法
+&lt;bound method MySQL.from_conf of &lt;class ‘__main__.MySQL&#39;&gt;&gt;
+&gt;&gt;&gt; conn&#x3D;MySQL.from_conf() # 调用类方法，自动将类MySQL当作第一个参数传给cls</code></pre></div></figure>
 
 <p>绑定到类的方法就是专门给类用的，但其实对象也可以调用，只不过自动传入的第一个参数仍然是类，也就是说这种调用是没有意义的，并且容易引起混淆，这也是Python的对象系统与其他面向对象语言对象系统的区别之一，比如Smalltalk和Ruby中，绑定到类的方法与绑定到对象的方法是严格区分开的。</p>
 <p><img src="https://pic1.zhimg.com/80/v2-ac3327054b536d6be35c9664c05cf4ac_720w.jpg" srcset="/img/loading.gif" lazyload alt="img"></p>
 <h2 id="二-非绑定方法"><a href="#二-非绑定方法" class="headerlink" title="二 非绑定方法"></a>二 非绑定方法</h2><p>为类中某个函数加上装饰器@staticmethod后，该函数就变成了非绑定方法，也称为静态方法。该方法不与类或对象绑定，类与对象都可以来调用它，但它就是一个普通函数而已，因而没有自动传值那么一说</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">import</span> uuid
-<span class="token keyword">class</span> <span class="token class-name">MySQL</span><span class="token punctuation">:</span>
-    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span>host<span class="token punctuation">,</span>port<span class="token punctuation">)</span><span class="token punctuation">:</span>
-        self<span class="token punctuation">.</span><span class="token builtin">id</span><span class="token operator">=</span>self<span class="token punctuation">.</span>create_id<span class="token punctuation">(</span><span class="token punctuation">)</span>
-        self<span class="token punctuation">.</span>host<span class="token operator">=</span>host
-        self<span class="token punctuation">.</span>port<span class="token operator">=</span>port
-    <span class="token decorator annotation punctuation">@staticmethod</span>
-    <span class="token keyword">def</span> <span class="token function">create_id</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
-        <span class="token keyword">return</span> uuid<span class="token punctuation">.</span>uuid1<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">import uuid
+class MySQL:
+    def __init__(self,host,port):
+        self.id&#x3D;self.create_id()
+        self.host&#x3D;host
+        self.port&#x3D;port
+    @staticmethod
+    def create_id():
+        return uuid.uuid1()
 
-<span class="token operator">>></span><span class="token operator">></span> conn<span class="token operator">=</span>MySQL<span class="token punctuation">(</span>‘<span class="token number">127.0</span><span class="token number">.0</span><span class="token number">.1</span>'<span class="token punctuation">,</span><span class="token number">3306</span><span class="token punctuation">)</span>
-<span class="token operator">>></span><span class="token operator">></span> <span class="token keyword">print</span><span class="token punctuation">(</span>conn<span class="token punctuation">.</span><span class="token builtin">id</span><span class="token punctuation">)</span> <span class="token comment">#100365f6-8ae0-11e7-a51e-0088653ea1ec</span>
+&gt;&gt;&gt; conn&#x3D;MySQL(‘127.0.0.1&#39;,3306)
+&gt;&gt;&gt; print(conn.id) #100365f6-8ae0-11e7-a51e-0088653ea1ec
 
-<span class="token comment"># 类或对象来调用create_id发现都是普通函数，而非绑定到谁的方法</span>
-<span class="token operator">>></span><span class="token operator">></span> MySQL<span class="token punctuation">.</span>create_id
-<span class="token operator">&lt;</span>function MySQL<span class="token punctuation">.</span>create_id at <span class="token number">0x1025c16a8</span><span class="token operator">></span>
-<span class="token operator">>></span><span class="token operator">></span> conn<span class="token punctuation">.</span>create_id
-<span class="token operator">&lt;</span>function MySQL<span class="token punctuation">.</span>create_id at <span class="token number">0x1025c16a8</span><span class="token operator">></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+# 类或对象来调用create_id发现都是普通函数，而非绑定到谁的方法
+&gt;&gt;&gt; MySQL.create_id
+&lt;function MySQL.create_id at 0x1025c16a8&gt;
+&gt;&gt;&gt; conn.create_id
+&lt;function MySQL.create_id at 0x1025c16a8&gt;</code></pre></div></figure>
 
 <p>总结绑定方法与非绑定方法的使用：若类中需要一个功能，该功能的实现代码中需要引用对象则将其定义成对象方法、需要引用类则将其定义成类方法、无需引用类或对象则将其定义成静态方法。</p>
 <p><img src="https://pic4.zhimg.com/80/v2-66b5c969960fb21cd5d0f69ea6364e1f_720w.jpg" srcset="/img/loading.gif" lazyload alt="img"></p>
@@ -620,6 +620,10 @@ PORT<span class="token operator">=</span><span class="token number">3306</span>
   });
 </script>
 
+
+  <script  src="https://lib.baomitu.com/prism/1.28.0/components/prism-core.min.js" ></script>
+
+  <script  src="https://lib.baomitu.com/prism/1.28.0/plugins/autoloader/prism-autoloader.min.js" ></script>
 
   <script  src="https://lib.baomitu.com/prism/1.28.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
 
