@@ -1,7 +1,7 @@
 
 
 <!DOCTYPE html>
-<html lang="zh-CN" data-default-color-scheme=auto>
+<html lang="zh-CN" data-default-color-scheme=dark>
 
 
 
@@ -39,6 +39,8 @@
   <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/prism/1.28.0/plugins/line-numbers/prism-line-numbers.min.css" />
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
@@ -218,7 +220,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          3.8k 字
+          3.6k 字
         
       </span>
     
@@ -229,7 +231,7 @@
         
         
         
-          32 分钟
+          31 分钟
         
       </span>
     
@@ -273,10 +275,50 @@
               <div class="markdown-body">
                 
                 <h1 id="鲲鹏服务器性能测试最佳实践"><a href="#鲲鹏服务器性能测试最佳实践" class="headerlink" title="鲲鹏服务器性能测试最佳实践"></a>鲲鹏服务器性能测试最佳实践</h1><h1 id="配置清单"><a href="#配置清单" class="headerlink" title="配置清单"></a>配置清单</h1><p>操作系统：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@localhost ceshi]# cat /etc/openEuler-release<br>openEuler release 22.03 LTS<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-built_in">uname</span> -a</span><br>Linux localhost.localdomain 5.10.0-60.18.0.50.oe2203.aarch64 #1 SMP Wed Mar 30 02:43:08 UTC 2022 aarch64 aarch64 aarch64 GNU/Linux<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost ceshi<span class="token punctuation">]</span><span class="token comment"># cat /etc/openEuler-release</span>
+openEuler release <span class="token number">22.03</span> LTS
+
+<span class="token comment">#uname -a</span>
+Linux localhost.localdomain <span class="token number">5.10</span>.0-60.18.0.50.oe2203.aarch64 <span class="token comment">#1 SMP Wed Mar 30 02:43:08 UTC 2022 aarch64 aarch64 aarch64 GNU/Linux</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>CPU信息（鲲鹏920 &#x2F; 128核）：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><code class="hljs shell">Architecture:           aarch64<br>  CPU op-mode(s):       64-bit<br>  Byte Order:           Little Endian<br>CPU(s):                 128<br>  On-line CPU(s) list:  0-127<br>Vendor ID:              HiSilicon<br>  BIOS Vendor ID:       HiSilicon<br>  Model name:           Kunpeng-920<br>    BIOS Model name:    Kunpeng 920-6426<br>    Model:              0<br>    Thread(s) per core: 1<br>    Core(s) per socket: 64<br>    Socket(s):          2<br>    Stepping:           0x1<br>    BogoMIPS:           200.00<br>    Flags:              fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp cpuid asimdrdm jscvt fcma dcpop asimddp asimdfhm<br>Caches (sum of all):<br>  L1d:                  8 MiB (128 instances)<br>  L1i:                  8 MiB (128 instances)<br>  L2:                   64 MiB (128 instances)<br>  L3:                   256 MiB (4 instances)<br>NUMA:<br>  NUMA node(s):         4<br>  NUMA node0 CPU(s):    0-31<br>  NUMA node1 CPU(s):    32-63<br>  NUMA node2 CPU(s):    64-95<br>  NUMA node3 CPU(s):    96-127<br>Vulnerabilities:<br>  Itlb multihit:        Not affected<br>  L1tf:                 Not affected<br>  Mds:                  Not affected<br>  Meltdown:             Not affected<br>  Spec store bypass:    Vulnerable<br>  Spectre v1:           Mitigation; __user pointer sanitization<br>  Spectre v2:           Not affected<br>  Srbds:                Not affected<br>  Tsx async abort:      Not affected<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">Architecture:           aarch64
+  CPU op-mode<span class="token punctuation">(</span>s<span class="token punctuation">)</span>:       <span class="token number">64</span>-bit
+  Byte Order:           Little Endian
+CPU<span class="token punctuation">(</span>s<span class="token punctuation">)</span>:                 <span class="token number">128</span>
+  On-line CPU<span class="token punctuation">(</span>s<span class="token punctuation">)</span> list:  <span class="token number">0</span>-127
+Vendor ID:              HiSilicon
+  BIOS Vendor ID:       HiSilicon
+  Model name:           Kunpeng-920
+    BIOS Model name:    Kunpeng <span class="token number">920</span>-6426
+    Model:              <span class="token number">0</span>
+    Thread<span class="token punctuation">(</span>s<span class="token punctuation">)</span> per core: <span class="token number">1</span>
+    Core<span class="token punctuation">(</span>s<span class="token punctuation">)</span> per socket: <span class="token number">64</span>
+    Socket<span class="token punctuation">(</span>s<span class="token punctuation">)</span>:          <span class="token number">2</span>
+    Stepping:           0x1
+    BogoMIPS:           <span class="token number">200.00</span>
+    Flags:              fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp cpuid asimdrdm jscvt fcma dcpop asimddp asimdfhm
+Caches <span class="token punctuation">(</span>sum of all<span class="token punctuation">)</span>:
+  L1d:                  <span class="token number">8</span> MiB <span class="token punctuation">(</span><span class="token number">128</span> instances<span class="token punctuation">)</span>
+  L1i:                  <span class="token number">8</span> MiB <span class="token punctuation">(</span><span class="token number">128</span> instances<span class="token punctuation">)</span>
+  L2:                   <span class="token number">64</span> MiB <span class="token punctuation">(</span><span class="token number">128</span> instances<span class="token punctuation">)</span>
+  L3:                   <span class="token number">256</span> MiB <span class="token punctuation">(</span><span class="token number">4</span> instances<span class="token punctuation">)</span>
+NUMA:
+  NUMA node<span class="token punctuation">(</span>s<span class="token punctuation">)</span>:         <span class="token number">4</span>
+  NUMA node0 CPU<span class="token punctuation">(</span>s<span class="token punctuation">)</span>:    <span class="token number">0</span>-31
+  NUMA node1 CPU<span class="token punctuation">(</span>s<span class="token punctuation">)</span>:    <span class="token number">32</span>-63
+  NUMA node2 CPU<span class="token punctuation">(</span>s<span class="token punctuation">)</span>:    <span class="token number">64</span>-95
+  NUMA node3 CPU<span class="token punctuation">(</span>s<span class="token punctuation">)</span>:    <span class="token number">96</span>-127
+Vulnerabilities:
+  Itlb multihit:        Not affected
+  L1tf:                 Not affected
+  Mds:                  Not affected
+  Meltdown:             Not affected
+  Spec store bypass:    Vulnerable
+  Spectre v1:           Mitigation<span class="token punctuation">;</span> __user pointer sanitization
+  Spectre v2:           Not affected
+  Srbds:                Not affected
+  Tsx async abort:      Not affected<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>测试服务器软件配置清单</p>
 <table>
@@ -294,46 +336,110 @@
 </tr>
 </tbody></table>
 <p>内存512G（16 x 32G）：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@localhost ceshi]# free -m<br>               total        used        free      shared  buff/cache   available<br>Mem:          513391        9983      502466          27         941      501290<br>Swap:           4095           0        4095<br><br>[root@localhost ceshi]# dmidecode  | grep -i mem | grep 2666<br>        Configured Memory Speed: 2666 MT/s<br>        Configured Memory Speed: 2666 MT/s<br>        Configured Memory Speed: 2666 MT/s<br>        Configured Memory Speed: 2666 MT/s<br>        Configured Memory Speed: 2666 MT/s<br>        Configured Memory Speed: 2666 MT/s<br>        Configured Memory Speed: 2666 MT/s<br>        Configured Memory Speed: 2666 MT/s<br>        Configured Memory Speed: 2666 MT/s<br>        Configured Memory Speed: 2666 MT/s<br>        Configured Memory Speed: 2666 MT/s<br>        Configured Memory Speed: 2666 MT/s<br>        Configured Memory Speed: 2666 MT/s<br>        Configured Memory Speed: 2666 MT/s<br>        Configured Memory Speed: 2666 MT/s<br>        Configured Memory Speed: 2666 MT/s<br>[root@localhost ceshi]# dmidecode  | grep -i mem | grep 2666 | wc -l<br>16<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@localhost ceshi<span class="token punctuation">]</span><span class="token comment"># free -m</span>
+               total        used        <span class="token function">free</span>      shared  buff/cache   available
+Mem:          <span class="token number">513391</span>        <span class="token number">9983</span>      <span class="token number">502466</span>          <span class="token number">27</span>         <span class="token number">941</span>      <span class="token number">501290</span>
+Swap:           <span class="token number">4095</span>           <span class="token number">0</span>        <span class="token number">4095</span>
+
+<span class="token punctuation">[</span>root@localhost ceshi<span class="token punctuation">]</span><span class="token comment"># dmidecode  | grep -i mem | grep 2666</span>
+        Configured Memory Speed: <span class="token number">2666</span> MT/s
+        Configured Memory Speed: <span class="token number">2666</span> MT/s
+        Configured Memory Speed: <span class="token number">2666</span> MT/s
+        Configured Memory Speed: <span class="token number">2666</span> MT/s
+        Configured Memory Speed: <span class="token number">2666</span> MT/s
+        Configured Memory Speed: <span class="token number">2666</span> MT/s
+        Configured Memory Speed: <span class="token number">2666</span> MT/s
+        Configured Memory Speed: <span class="token number">2666</span> MT/s
+        Configured Memory Speed: <span class="token number">2666</span> MT/s
+        Configured Memory Speed: <span class="token number">2666</span> MT/s
+        Configured Memory Speed: <span class="token number">2666</span> MT/s
+        Configured Memory Speed: <span class="token number">2666</span> MT/s
+        Configured Memory Speed: <span class="token number">2666</span> MT/s
+        Configured Memory Speed: <span class="token number">2666</span> MT/s
+        Configured Memory Speed: <span class="token number">2666</span> MT/s
+        Configured Memory Speed: <span class="token number">2666</span> MT/s
+<span class="token punctuation">[</span>root@localhost ceshi<span class="token punctuation">]</span><span class="token comment"># dmidecode  | grep -i mem | grep 2666 | wc -l</span>
+<span class="token number">16</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <h1 id="1、SPEC-CPU2017测试"><a href="#1、SPEC-CPU2017测试" class="headerlink" title="1、SPEC CPU2017测试"></a>1、SPEC CPU2017测试</h1><h2 id="1-1-整型rate测试"><a href="#1-1-整型rate测试" class="headerlink" title="1.1 整型rate测试"></a>1.1 整型rate测试</h2><p>准备测试工具</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs she">spec镜像文件:cpu2017-1.0.5.iso<br>openEuler镜像文件:<br>毕昇编译器:<br>spec2017配置文件:<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-she" data-language="she"><code class="language-she">spec镜像文件:cpu2017-1.0.5.iso
+openEuler镜像文件:
+毕昇编译器:
+spec2017配置文件:<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>安装SPEC CPU 2017的依赖（如已有则忽略）</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell"><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
 
 <p>挂载镜像</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">mount cpu2017-1.0.5.iso /mnt<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">mount</span> cpu2017-1.0.5.iso /mnt<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
 
 <p>安装SPEC 2017，指定安装到<code>/home/spec2017</code></p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">cd /mnt<br>./install.sh -d /ceshi/SPEC2017/spectest<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">cd</span> /mnt
+./install.sh <span class="token parameter variable">-d</span> /ceshi/SPEC2017/spectest<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
 
 <p>安装毕昇编译器（1.3.3版本）</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">下载地址</span><br>https://mirrors.huaweicloud.com/kunpeng/archive/compiler/bisheng_compiler/bisheng-compiler-1.3.3-aarch64-linux.tar.gz<br><span class="hljs-meta prompt_"># </span><span class="language-bash">解压安装包</span><br>tar -vxf bisheng-compiler-1.3.3-aarch64-linux.tar.gz<br><span class="hljs-meta prompt_"># </span><span class="language-bash">查看目录</span><br>[root@localhost spectest]# ls /usr/local/BSC133/<br>bin  include  lib  libexec  share<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 下载地址</span>
+https://mirrors.huaweicloud.com/kunpeng/archive/compiler/bisheng_compiler/bisheng-compiler-1.3.3-aarch64-linux.tar.gz
+<span class="token comment"># 解压安装包</span>
+<span class="token function">tar</span> <span class="token parameter variable">-vxf</span> bisheng-compiler-1.3.3-aarch64-linux.tar.gz
+<span class="token comment"># 查看目录</span>
+<span class="token punctuation">[</span>root@localhost spectest<span class="token punctuation">]</span><span class="token comment"># ls /usr/local/BSC133/</span>
+bin  include  lib  libexec  share<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>设置编译器环境变量</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">export LLVM_DIR=/usr/local/BSC133/<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">export</span> <span class="token assign-left variable">LLVM_DIR</span><span class="token operator">=</span>/usr/local/BSC133/<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
 
 <p>安装鲲鹏数学库</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">下载地址</span> <br>https://www.hikunpeng.com/developer/boostkit/library/math<br><span class="hljs-meta prompt_"># </span><span class="language-bash">安装</span><br>[root@localhost iso]# rpm -ivh boostkit-kml-2.2.0-1.aarch64.rpm<br>Verifying...                          ################################# [100%]<br>Preparing...                          ################################# [100%]<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 下载地址 </span>
+https://www.hikunpeng.com/developer/boostkit/library/math
+<span class="token comment"># 安装</span>
+<span class="token punctuation">[</span>root@localhost iso<span class="token punctuation">]</span><span class="token comment"># rpm -ivh boostkit-kml-2.2.0-1.aarch64.rpm</span>
+Verifying<span class="token punctuation">..</span>.                          <span class="token comment">################################# [100%]</span>
+Preparing<span class="token punctuation">..</span>.                          <span class="token comment">################################# [100%]</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>安装大页内存编译包</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">下载地址</span><br>https://repo.almalinux.org/almalinux/8/BaseOS/aarch64/os/Packages/libhugetlbfs-2.21-17.el8.aarch64.rpm<br><span class="hljs-meta prompt_"># </span><span class="language-bash">安装</span><br>rpm -ivh libhugetlbfs-2.21-17.el8.aarch64.rpm<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 下载地址</span>
+https://repo.almalinux.org/almalinux/8/BaseOS/aarch64/os/Packages/libhugetlbfs-2.21-17.el8.aarch64.rpm
+<span class="token comment"># 安装</span>
+<span class="token function">rpm</span> <span class="token parameter variable">-ivh</span> libhugetlbfs-2.21-17.el8.aarch64.rpm<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>安装jemalloc</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">解压源码包</span><br>tar -xf jemalloc-5.3.0.tar.gz <br><span class="hljs-meta prompt_"># </span><span class="language-bash">编译</span><br>cd jemalloc-5.3.0 <br>bash autogen.sh <br>mkdir build <br>cd build <br>../configure  CFLAGS=&quot;-march=armv8.2-a+crc+fp+crypto -flto=32&quot; CXXFLAGS=&quot;-march=armv8.2-a+crc+fp+crypto -flto=32&quot; <br>make -j <br><span class="hljs-meta prompt_"># </span><span class="language-bash">安装</span><br>make install<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 解压源码包</span>
+<span class="token function">tar</span> <span class="token parameter variable">-xf</span> jemalloc-5.3.0.tar.gz 
+<span class="token comment"># 编译</span>
+<span class="token builtin class-name">cd</span> jemalloc-5.3.0 
+<span class="token function">bash</span> autogen.sh 
+<span class="token function">mkdir</span> build 
+<span class="token builtin class-name">cd</span> build 
+<span class="token punctuation">..</span>/configure  <span class="token assign-left variable">CFLAGS</span><span class="token operator">=</span><span class="token string">"-march=armv8.2-a+crc+fp+crypto -flto=32"</span> <span class="token assign-left variable">CXXFLAGS</span><span class="token operator">=</span><span class="token string">"-march=armv8.2-a+crc+fp+crypto -flto=32"</span> 
+<span class="token function">make</span> <span class="token parameter variable">-j</span> 
+<span class="token comment"># 安装</span>
+<span class="token function">make</span> <span class="token function">install</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>安装optimized-routines优化库</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">解压源码包</span><br>tar -xf optimized-routines-23.01.tar.gz <br>cd optimized-routines-23.01/<br><span class="hljs-meta prompt_"># </span><span class="language-bash">编译</span><br>make ARCH=aarch64 -j 8<br><span class="hljs-meta prompt_"># </span><span class="language-bash">拷贝库文件</span><br>cp -a build/lib/lib* /usr/local/lib<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 解压源码包</span>
+<span class="token function">tar</span> <span class="token parameter variable">-xf</span> optimized-routines-23.01.tar.gz 
+<span class="token builtin class-name">cd</span> optimized-routines-23.01/
+<span class="token comment"># 编译</span>
+<span class="token function">make</span> <span class="token assign-left variable">ARCH</span><span class="token operator">=</span>aarch64 <span class="token parameter variable">-j</span> <span class="token number">8</span>
+<span class="token comment"># 拷贝库文件</span>
+<span class="token function">cp</span> <span class="token parameter variable">-a</span> build/lib/lib* /usr/local/lib<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>拷贝cpu2017配置文件到config目录中</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">rate配置文件</span><br>cp cpu2017-kunpeng920-128-rate.cfg /ceshi/SPEC2017/spectest/config <br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># rate配置文件</span>
+<span class="token function">cp</span> cpu2017-kunpeng920-128-rate.cfg /ceshi/SPEC2017/spectest/config <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
 
 <p>拷贝flag文件</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">cp Bisheng-compiler-flags.xml /ceshi/SPEC2017/spectest/config/flag<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">cp</span> Bisheng-compiler-flags.xml /ceshi/SPEC2017/spectest/config/flag<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
 
 <p>开始测试</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">测试前优化</span><br>source shrc<br>echo 3 &gt; /proc/sys/vm/drop_caches<br>ulimit -s unlimited<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">rate测试</span><br>nohup runcpu -c cpu2017-kunpeng920-128-rate.cfg  --rebuild --copies 128 --reportable --define fastmath=0 --define jemalloc=1 --define hugepages=0 --nopower --runmode rate --tune base --size refrate intrate &amp;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 测试前优化</span>
+<span class="token builtin class-name">source</span> shrc
+<span class="token builtin class-name">echo</span> <span class="token number">3</span> <span class="token operator">></span> /proc/sys/vm/drop_caches
+<span class="token builtin class-name">ulimit</span> <span class="token parameter variable">-s</span> unlimited
+
+<span class="token comment"># rate测试</span>
+<span class="token function">nohup</span> runcpu <span class="token parameter variable">-c</span> cpu2017-kunpeng920-128-rate.cfg  <span class="token parameter variable">--rebuild</span> <span class="token parameter variable">--copies</span> <span class="token number">128</span> <span class="token parameter variable">--reportable</span> <span class="token parameter variable">--define</span> <span class="token assign-left variable">fastmath</span><span class="token operator">=</span><span class="token number">0</span> <span class="token parameter variable">--define</span> <span class="token assign-left variable">jemalloc</span><span class="token operator">=</span><span class="token number">1</span> <span class="token parameter variable">--define</span> <span class="token assign-left variable">hugepages</span><span class="token operator">=</span><span class="token number">0</span> <span class="token parameter variable">--nopower</span> <span class="token parameter variable">--runmode</span> rate <span class="token parameter variable">--tune</span> base <span class="token parameter variable">--size</span> refrate intrate <span class="token operator">&amp;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <h2 id="1-2-浮点测试"><a href="#1-2-浮点测试" class="headerlink" title="1.2 浮点测试"></a>1.2 浮点测试</h2><h2 id="1-3-测试数据"><a href="#1-3-测试数据" class="headerlink" title="1.3 测试数据"></a>1.3 测试数据</h2><table>
 <thead>
@@ -674,6 +780,8 @@
   });
 </script>
 
+
+  <script  src="https://lib.baomitu.com/prism/1.28.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
 
   <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
 

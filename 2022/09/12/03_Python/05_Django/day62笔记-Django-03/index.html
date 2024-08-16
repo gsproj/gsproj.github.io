@@ -1,7 +1,7 @@
 
 
 <!DOCTYPE html>
-<html lang="zh-CN" data-default-color-scheme=auto>
+<html lang="zh-CN" data-default-color-scheme=dark>
 
 
 
@@ -41,6 +41,8 @@
   <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/prism/1.28.0/plugins/line-numbers/prism-line-numbers.min.css" />
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
@@ -220,7 +222,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          7.7k 字
+          6.2k 字
         
       </span>
     
@@ -231,7 +233,7 @@
         
         
         
-          65 分钟
+          52 分钟
         
       </span>
     
@@ -280,33 +282,258 @@
 <p>​	基于上述的特点 django能够非常好的做到分组开发(每个人只写自己的app)</p>
 <p>利用路由分发来减轻总路由的压力，总路由统领各app里面的路由</p>
 <h3 id="1-2-2-路由分发案例"><a href="#1-2-2-路由分发案例" class="headerlink" title="1.2.2 路由分发案例"></a>1.2.2 路由分发案例</h3><p>1）新项目，创建两个app</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">python .\manage.py startapp app01<br>python .\manage.py startapp app02<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">python .<span class="token punctuation">\</span>manage.py startapp app01
+python .<span class="token punctuation">\</span>manage.py startapp app02<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
 
 <p>2）两个app配置子路由<code>urls.py</code>文件</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># app01</span><br><span class="hljs-keyword">from</span> django.urls <span class="hljs-keyword">import</span> path<br><span class="hljs-keyword">from</span> app01 <span class="hljs-keyword">import</span> views<br><br>urlpatterns = [<br>    path(<span class="hljs-string">&#x27;reg/&#x27;</span>, views.reg),<br>]<br><br><span class="hljs-comment"># app02</span><br><span class="hljs-keyword">from</span> django.urls <span class="hljs-keyword">import</span> path<br><span class="hljs-keyword">from</span> app02 <span class="hljs-keyword">import</span> views<br><br>urlpatterns = [<br>    path(<span class="hljs-string">&#x27;reg/&#x27;</span>, views.reg),<br>]<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token comment"># app01</span>
+<span class="token keyword">from</span> django<span class="token punctuation">.</span>urls <span class="token keyword">import</span> path
+<span class="token keyword">from</span> app01 <span class="token keyword">import</span> views
+
+urlpatterns <span class="token operator">=</span> <span class="token punctuation">[</span>
+    path<span class="token punctuation">(</span><span class="token string">'reg/'</span><span class="token punctuation">,</span> views<span class="token punctuation">.</span>reg<span class="token punctuation">)</span><span class="token punctuation">,</span>
+<span class="token punctuation">]</span>
+
+<span class="token comment"># app02</span>
+<span class="token keyword">from</span> django<span class="token punctuation">.</span>urls <span class="token keyword">import</span> path
+<span class="token keyword">from</span> app02 <span class="token keyword">import</span> views
+
+urlpatterns <span class="token operator">=</span> <span class="token punctuation">[</span>
+    path<span class="token punctuation">(</span><span class="token string">'reg/'</span><span class="token punctuation">,</span> views<span class="token punctuation">.</span>reg<span class="token punctuation">)</span><span class="token punctuation">,</span>
+<span class="token punctuation">]</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>3）两个app的views文件修改</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># app01</span><br><span class="hljs-keyword">from</span> django.shortcuts <span class="hljs-keyword">import</span> render, HttpResponse<br><br><span class="hljs-comment"># Create your views here.</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">reg</span>(<span class="hljs-params">request</span>):<br>    <span class="hljs-keyword">return</span> HttpResponse(<span class="hljs-string">&quot;app01:reg&quot;</span>)<br><br><span class="hljs-comment"># app02</span><br><span class="hljs-keyword">from</span> django.shortcuts <span class="hljs-keyword">import</span> render, HttpResponse<br><br><span class="hljs-comment"># Create your views here.</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">reg</span>(<span class="hljs-params">request</span>):<br>    <span class="hljs-keyword">return</span> HttpResponse(<span class="hljs-string">&quot;app01:reg&quot;</span>)<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token comment"># app01</span>
+<span class="token keyword">from</span> django<span class="token punctuation">.</span>shortcuts <span class="token keyword">import</span> render<span class="token punctuation">,</span> HttpResponse
+
+<span class="token comment"># Create your views here.</span>
+<span class="token keyword">def</span> <span class="token function">reg</span><span class="token punctuation">(</span>request<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> HttpResponse<span class="token punctuation">(</span><span class="token string">"app01:reg"</span><span class="token punctuation">)</span>
+
+<span class="token comment"># app02</span>
+<span class="token keyword">from</span> django<span class="token punctuation">.</span>shortcuts <span class="token keyword">import</span> render<span class="token punctuation">,</span> HttpResponse
+
+<span class="token comment"># Create your views here.</span>
+<span class="token keyword">def</span> <span class="token function">reg</span><span class="token punctuation">(</span>request<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> HttpResponse<span class="token punctuation">(</span><span class="token string">"app01:reg"</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>4）总路由<code>urls.py</code>配置路由分发</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> django.contrib <span class="hljs-keyword">import</span> admin<br><span class="hljs-keyword">from</span> django.conf.urls <span class="hljs-keyword">import</span> url, include<br><span class="hljs-comment"># 需要导入模块</span><br><span class="hljs-keyword">from</span> django.urls <span class="hljs-keyword">import</span> path, re_path<br><span class="hljs-keyword">from</span> app01 <span class="hljs-keyword">import</span> urls <span class="hljs-keyword">as</span> app01_urls<br><span class="hljs-keyword">from</span> app02 <span class="hljs-keyword">import</span> urls <span class="hljs-keyword">as</span> app02_urls<br><br>urlpatterns = [<br>    path(<span class="hljs-string">&#x27;admin/&#x27;</span>, admin.site.urls),<br>    <span class="hljs-comment"># 凡是app01开头的，都交给app01子路由处理</span><br>    re_path(<span class="hljs-string">r&#x27;^app01/&#x27;</span>, include(app01_urls)),<br>    <span class="hljs-comment"># 凡是app02开头的，都交给app02子路由处理</span><br>    re_path(<span class="hljs-string">r&#x27;^app02/&#x27;</span>, include(app02_urls)),<br>]<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">from</span> django<span class="token punctuation">.</span>contrib <span class="token keyword">import</span> admin
+<span class="token keyword">from</span> django<span class="token punctuation">.</span>conf<span class="token punctuation">.</span>urls <span class="token keyword">import</span> url<span class="token punctuation">,</span> include
+<span class="token comment"># 需要导入模块</span>
+<span class="token keyword">from</span> django<span class="token punctuation">.</span>urls <span class="token keyword">import</span> path<span class="token punctuation">,</span> re_path
+<span class="token keyword">from</span> app01 <span class="token keyword">import</span> urls <span class="token keyword">as</span> app01_urls
+<span class="token keyword">from</span> app02 <span class="token keyword">import</span> urls <span class="token keyword">as</span> app02_urls
+
+urlpatterns <span class="token operator">=</span> <span class="token punctuation">[</span>
+    path<span class="token punctuation">(</span><span class="token string">'admin/'</span><span class="token punctuation">,</span> admin<span class="token punctuation">.</span>site<span class="token punctuation">.</span>urls<span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token comment"># 凡是app01开头的，都交给app01子路由处理</span>
+    re_path<span class="token punctuation">(</span><span class="token string">r'^app01/'</span><span class="token punctuation">,</span> include<span class="token punctuation">(</span>app01_urls<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token comment"># 凡是app02开头的，都交给app02子路由处理</span>
+    re_path<span class="token punctuation">(</span><span class="token string">r'^app02/'</span><span class="token punctuation">,</span> include<span class="token punctuation">(</span>app02_urls<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+<span class="token punctuation">]</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>更推荐的写发，不需要重命名：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> django.contrib <span class="hljs-keyword">import</span> admin<br><span class="hljs-keyword">from</span> django.conf.urls <span class="hljs-keyword">import</span> url, include<br><span class="hljs-comment"># 需要导入模块</span><br><span class="hljs-keyword">from</span> django.urls <span class="hljs-keyword">import</span> path, re_path<br><br>urlpatterns = [<br>    path(<span class="hljs-string">&#x27;admin/&#x27;</span>, admin.site.urls),<br>    <span class="hljs-comment"># 凡是app01开头的，都交给app01子路由处理</span><br>    re_path(<span class="hljs-string">r&#x27;^app01/&#x27;</span>, include(<span class="hljs-string">&#x27;app01.urls&#x27;</span>)),<br>    <span class="hljs-comment"># 凡是app02开头的，都交给app02子路由处理</span><br>    re_path(<span class="hljs-string">r&#x27;^app02/&#x27;</span>, include(<span class="hljs-string">&#x27;app02.urls&#x27;</span>)),<br>]<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">from</span> django<span class="token punctuation">.</span>contrib <span class="token keyword">import</span> admin
+<span class="token keyword">from</span> django<span class="token punctuation">.</span>conf<span class="token punctuation">.</span>urls <span class="token keyword">import</span> url<span class="token punctuation">,</span> include
+<span class="token comment"># 需要导入模块</span>
+<span class="token keyword">from</span> django<span class="token punctuation">.</span>urls <span class="token keyword">import</span> path<span class="token punctuation">,</span> re_path
+
+urlpatterns <span class="token operator">=</span> <span class="token punctuation">[</span>
+    path<span class="token punctuation">(</span><span class="token string">'admin/'</span><span class="token punctuation">,</span> admin<span class="token punctuation">.</span>site<span class="token punctuation">.</span>urls<span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token comment"># 凡是app01开头的，都交给app01子路由处理</span>
+    re_path<span class="token punctuation">(</span><span class="token string">r'^app01/'</span><span class="token punctuation">,</span> include<span class="token punctuation">(</span><span class="token string">'app01.urls'</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token comment"># 凡是app02开头的，都交给app02子路由处理</span>
+    re_path<span class="token punctuation">(</span><span class="token string">r'^app02/'</span><span class="token punctuation">,</span> include<span class="token punctuation">(</span><span class="token string">'app02.urls'</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+<span class="token punctuation">]</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>测试访问成功：</p>
 <p><img src="/../../../img/image-20220913193027730.png" srcset="/img/loading.gif" lazyload alt="image-20220913193027730"></p>
-<h2 id="1-3-名称空间-了解"><a href="#1-3-名称空间-了解" class="headerlink" title="1.3 名称空间(了解)"></a>1.3 名称空间(了解)</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 当多个应用出现了相同的别名 我们研究反向解析会不会自动识别应用前缀</span><br><span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">正常情况下的反向解析是没有办法自动识别前缀的</span><br><span class="hljs-string">&quot;&quot;&quot;</span><br><br><span class="hljs-comment"># 名称空间</span><br>	<span class="hljs-comment"># 总路由</span><br>    url(<span class="hljs-string">r&#x27;^app01/&#x27;</span>,include(<span class="hljs-string">&#x27;app01.urls&#x27;</span>,namespace=<span class="hljs-string">&#x27;app01&#x27;</span>)),<br>    url(<span class="hljs-string">r&#x27;^app02/&#x27;</span>,include(<span class="hljs-string">&#x27;app02.urls&#x27;</span>,namespace=<span class="hljs-string">&#x27;app02&#x27;</span>))<br>  <span class="hljs-comment"># 解析的时候</span><br>  	<span class="hljs-comment"># app01</span><br>  	urlpatterns = [<br>    url(<span class="hljs-string">r&#x27;^reg/&#x27;</span>,views.reg,name=<span class="hljs-string">&#x27;reg&#x27;</span>)<br>		]<br>    <span class="hljs-comment"># app02</span><br>    urlpatterns = [<br>    url(<span class="hljs-string">r&#x27;^reg/&#x27;</span>,views.reg,name=<span class="hljs-string">&#x27;reg&#x27;</span>)<br>		]<br>    <br>  	reverse(<span class="hljs-string">&#x27;app01:reg&#x27;</span>)<br>    reverse(<span class="hljs-string">&#x27;app02:reg&#x27;</span>)<br>    <br>    &#123;% url <span class="hljs-string">&#x27;app01:reg&#x27;</span> %&#125;<br>    &#123;% url <span class="hljs-string">&#x27;app02:reg&#x27;</span> %&#125;<br><span class="hljs-comment"># 其实只要保证名字不冲突 就没有必要使用名称空间</span><br><span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">一般情况下 有多个app的时候我们在起别名的时候会加上app的前缀</span><br><span class="hljs-string">这样的话就能够确保多个app之间名字不冲突的问题</span><br><span class="hljs-string">&quot;&quot;&quot;</span><br>urlpatterns = [<br>    url(<span class="hljs-string">r&#x27;^reg/&#x27;</span>,views.reg,name=<span class="hljs-string">&#x27;app01_reg&#x27;</span>)<br>]<br>urlpatterns = [<br>    url(<span class="hljs-string">r&#x27;^reg/&#x27;</span>,views.reg,name=<span class="hljs-string">&#x27;app02_reg&#x27;</span>)<br>]<br></code></pre></td></tr></table></figure>
+<h2 id="1-3-名称空间-了解"><a href="#1-3-名称空间-了解" class="headerlink" title="1.3 名称空间(了解)"></a>1.3 名称空间(了解)</h2><figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token comment"># 当多个应用出现了相同的别名 我们研究反向解析会不会自动识别应用前缀</span>
+<span class="token triple-quoted-string string">"""
+正常情况下的反向解析是没有办法自动识别前缀的
+"""</span>
 
-<h2 id="1-4-伪静态-了解"><a href="#1-4-伪静态-了解" class="headerlink" title="1.4 伪静态(了解)"></a>1.4 伪静态(了解)</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">静态网页</span><br><span class="hljs-string">	数据是写死的 万年不变</span><br><span class="hljs-string">	</span><br><span class="hljs-string">伪静态</span><br><span class="hljs-string">	将一个动态网页伪装成静态网页</span><br><span class="hljs-string">	</span><br><span class="hljs-string">	为什么要伪装呢？</span><br><span class="hljs-string">		https://www.cnblogs.com/Dominic-Ji/p/9234099.html</span><br><span class="hljs-string">		伪装的目的在于增大本网站的seo查询力度</span><br><span class="hljs-string">		并且增加搜索引擎收藏本网上的概率</span><br><span class="hljs-string">	</span><br><span class="hljs-string">	搜索引擎本质上就是一个巨大的爬虫程序</span><br><span class="hljs-string">	</span><br><span class="hljs-string">	总结:</span><br><span class="hljs-string">		无论你怎么优化 怎么处理</span><br><span class="hljs-string">		始终还是干不过RMB玩家</span><br><span class="hljs-string">&quot;&quot;&quot;</span><br>urlpatterns = [<br>    url(<span class="hljs-string">r&#x27;^reg.html&#x27;</span>,views.reg,name=<span class="hljs-string">&#x27;app02_reg&#x27;</span>)<br>]<br></code></pre></td></tr></table></figure>
+<span class="token comment"># 名称空间</span>
+	<span class="token comment"># 总路由</span>
+    url<span class="token punctuation">(</span><span class="token string">r'^app01/'</span><span class="token punctuation">,</span>include<span class="token punctuation">(</span><span class="token string">'app01.urls'</span><span class="token punctuation">,</span>namespace<span class="token operator">=</span><span class="token string">'app01'</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    url<span class="token punctuation">(</span><span class="token string">r'^app02/'</span><span class="token punctuation">,</span>include<span class="token punctuation">(</span><span class="token string">'app02.urls'</span><span class="token punctuation">,</span>namespace<span class="token operator">=</span><span class="token string">'app02'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+  <span class="token comment"># 解析的时候</span>
+  	<span class="token comment"># app01</span>
+  	urlpatterns <span class="token operator">=</span> <span class="token punctuation">[</span>
+    url<span class="token punctuation">(</span><span class="token string">r'^reg/'</span><span class="token punctuation">,</span>views<span class="token punctuation">.</span>reg<span class="token punctuation">,</span>name<span class="token operator">=</span><span class="token string">'reg'</span><span class="token punctuation">)</span>
+		<span class="token punctuation">]</span>
+    <span class="token comment"># app02</span>
+    urlpatterns <span class="token operator">=</span> <span class="token punctuation">[</span>
+    url<span class="token punctuation">(</span><span class="token string">r'^reg/'</span><span class="token punctuation">,</span>views<span class="token punctuation">.</span>reg<span class="token punctuation">,</span>name<span class="token operator">=</span><span class="token string">'reg'</span><span class="token punctuation">)</span>
+		<span class="token punctuation">]</span>
+    
+  	reverse<span class="token punctuation">(</span><span class="token string">'app01:reg'</span><span class="token punctuation">)</span>
+    reverse<span class="token punctuation">(</span><span class="token string">'app02:reg'</span><span class="token punctuation">)</span>
+    
+    <span class="token punctuation">&#123;</span><span class="token operator">%</span> url <span class="token string">'app01:reg'</span> <span class="token operator">%</span><span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#123;</span><span class="token operator">%</span> url <span class="token string">'app02:reg'</span> <span class="token operator">%</span><span class="token punctuation">&#125;</span>
+<span class="token comment"># 其实只要保证名字不冲突 就没有必要使用名称空间</span>
+<span class="token triple-quoted-string string">"""
+一般情况下 有多个app的时候我们在起别名的时候会加上app的前缀
+这样的话就能够确保多个app之间名字不冲突的问题
+"""</span>
+urlpatterns <span class="token operator">=</span> <span class="token punctuation">[</span>
+    url<span class="token punctuation">(</span><span class="token string">r'^reg/'</span><span class="token punctuation">,</span>views<span class="token punctuation">.</span>reg<span class="token punctuation">,</span>name<span class="token operator">=</span><span class="token string">'app01_reg'</span><span class="token punctuation">)</span>
+<span class="token punctuation">]</span>
+urlpatterns <span class="token operator">=</span> <span class="token punctuation">[</span>
+    url<span class="token punctuation">(</span><span class="token string">r'^reg/'</span><span class="token punctuation">,</span>views<span class="token punctuation">.</span>reg<span class="token punctuation">,</span>name<span class="token operator">=</span><span class="token string">'app02_reg'</span><span class="token punctuation">)</span>
+<span class="token punctuation">]</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
-<h2 id="1-5-虚拟环境-了解"><a href="#1-5-虚拟环境-了解" class="headerlink" title="1.5 虚拟环境(了解)"></a>1.5 虚拟环境(了解)</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">在正常开发中 我们会给每一个项目配备一个该项目独有的解释器环境</span><br><span class="hljs-string">该环境内只有该项目用到的模块 用不到一概不装</span><br><span class="hljs-string"></span><br><span class="hljs-string">linux:缺什么才装什么</span><br><span class="hljs-string"></span><br><span class="hljs-string">虚拟环境</span><br><span class="hljs-string">	你每创建一个虚拟环境就类似于重新下载了一个纯净的python解释器</span><br><span class="hljs-string">	但是虚拟环境不要创建太多，是需要消耗硬盘空间的</span><br><span class="hljs-string"></span><br><span class="hljs-string">扩展:</span><br><span class="hljs-string">	每一个项目都需要用到很多模块 并且每个模块版本可能还不一样</span><br><span class="hljs-string">	那我该如何安装呢？ 一个个看一个个装？？？</span><br><span class="hljs-string">	</span><br><span class="hljs-string">	开发当中我们会给每一个项目配备一个requirements.txt文件</span><br><span class="hljs-string">	里面书写了该项目所有的模块即版本</span><br><span class="hljs-string">	你只需要直接输入一条命令即可一键安装所有模块即版本</span><br><span class="hljs-string">&quot;&quot;&quot;</span><br></code></pre></td></tr></table></figure>
+<h2 id="1-4-伪静态-了解"><a href="#1-4-伪静态-了解" class="headerlink" title="1.4 伪静态(了解)"></a>1.4 伪静态(了解)</h2><figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token triple-quoted-string string">"""
+静态网页
+	数据是写死的 万年不变
+	
+伪静态
+	将一个动态网页伪装成静态网页
+	
+	为什么要伪装呢？
+		https://www.cnblogs.com/Dominic-Ji/p/9234099.html
+		伪装的目的在于增大本网站的seo查询力度
+		并且增加搜索引擎收藏本网上的概率
+	
+	搜索引擎本质上就是一个巨大的爬虫程序
+	
+	总结:
+		无论你怎么优化 怎么处理
+		始终还是干不过RMB玩家
+"""</span>
+urlpatterns <span class="token operator">=</span> <span class="token punctuation">[</span>
+    url<span class="token punctuation">(</span><span class="token string">r'^reg.html'</span><span class="token punctuation">,</span>views<span class="token punctuation">.</span>reg<span class="token punctuation">,</span>name<span class="token operator">=</span><span class="token string">'app02_reg'</span><span class="token punctuation">)</span>
+<span class="token punctuation">]</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
-<h2 id="1-6-django版本区别"><a href="#1-6-django版本区别" class="headerlink" title="1.6 django版本区别"></a>1.6 django版本区别</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">1.django1.X路由层使用的是url方法</span><br><span class="hljs-string">	而在django2.Xhe3.X版本中路由层使用的是path方法</span><br><span class="hljs-string">	url()第一个参数支持正则</span><br><span class="hljs-string">	path()第一个参数是不支持正则的 写什么就匹配什么</span><br><span class="hljs-string">	</span><br><span class="hljs-string">	</span><br><span class="hljs-string">	如果你习惯使用path那么也给你提供了另外一个方法</span><br><span class="hljs-string">		from django.urls import path, re_path</span><br><span class="hljs-string">		from django.conf.urls import url</span><br><span class="hljs-string">		</span><br><span class="hljs-string">		re_path(r&#x27;^index/&#x27;,index),</span><br><span class="hljs-string">    url(r&#x27;^login/&#x27;,login)</span><br><span class="hljs-string">  2.X和3.X里面的re_path就等价于1.X里面的url</span><br><span class="hljs-string"> </span><br><span class="hljs-string"> </span><br><span class="hljs-string">2.虽然path不支持正则 但是它的内部支持五种转换器</span><br><span class="hljs-string">	path(&#x27;index/&lt;int:id&gt;/&#x27;,index)</span><br><span class="hljs-string">	# 将第二个路由里面的内容先转成整型然后以关键字的形式传递给后面的视图函数</span><br><span class="hljs-string"></span><br><span class="hljs-string">	def index(request,id):</span><br><span class="hljs-string">    print(id,type(id))</span><br><span class="hljs-string">    return HttpResponse(&#x27;index&#x27;)</span><br><span class="hljs-string">    </span><br><span class="hljs-string">  </span><br><span class="hljs-string">  </span><br><span class="hljs-string">  str,匹配除了路径分隔符（/）之外的非空字符串，这是默认的形式</span><br><span class="hljs-string">	int,匹配正整数，包含0。</span><br><span class="hljs-string">	slug,匹配字母、数字以及横杠、下划线组成的字符串。</span><br><span class="hljs-string">	uuid,匹配格式化的uuid，如 075194d3-6885-417e-a8a8-6c931e272f00。</span><br><span class="hljs-string">	path,匹配任何非空字符串，包含了路径分隔符（/）（不能用？）</span><br><span class="hljs-string">	</span><br><span class="hljs-string">3.除了有默认的五个转换器之外 还支持自定义转换器(了解)</span><br><span class="hljs-string">	class MonthConverter:</span><br><span class="hljs-string">    regex=&#x27;\d&#123;2&#125;&#x27; # 属性名必须为regex</span><br><span class="hljs-string"></span><br><span class="hljs-string">    def to_python(self, value):</span><br><span class="hljs-string">        return int(value)</span><br><span class="hljs-string"></span><br><span class="hljs-string">    def to_url(self, value):</span><br><span class="hljs-string">        return value # 匹配的regex是两个数字，返回的结果也必须是两个数字</span><br><span class="hljs-string">	</span><br><span class="hljs-string">	</span><br><span class="hljs-string">	from django.urls import path,register_converter</span><br><span class="hljs-string">	from app01.path_converts import MonthConverter</span><br><span class="hljs-string"></span><br><span class="hljs-string">	# 先注册转换器</span><br><span class="hljs-string">	register_converter(MonthConverter,&#x27;mon&#x27;)</span><br><span class="hljs-string"></span><br><span class="hljs-string">	from app01 import views</span><br><span class="hljs-string"></span><br><span class="hljs-string"></span><br><span class="hljs-string">	urlpatterns = [</span><br><span class="hljs-string">    path(&#x27;articles/&lt;int:year&gt;/&lt;mon:month&gt;/&lt;slug:other&gt;/&#x27;, 	views.article_detail, name=&#x27;aaa&#x27;),</span><br><span class="hljs-string"></span><br><span class="hljs-string">]</span><br><span class="hljs-string"></span><br><span class="hljs-string"></span><br><span class="hljs-string">4.模型层里面1.X外键默认都是级联更新删除的</span><br><span class="hljs-string">但是到了2.X和3.X中需要你自己手动配置参数</span><br><span class="hljs-string">	models.ForeignKey(to=&#x27;Publish&#x27;)</span><br><span class="hljs-string">	</span><br><span class="hljs-string">	models.ForeignKey(to=&#x27;Publish&#x27;,on_delete=models.CASCADE...)</span><br><span class="hljs-string">&quot;&quot;&quot;</span><br></code></pre></td></tr></table></figure>
+<h2 id="1-5-虚拟环境-了解"><a href="#1-5-虚拟环境-了解" class="headerlink" title="1.5 虚拟环境(了解)"></a>1.5 虚拟环境(了解)</h2><figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token triple-quoted-string string">"""
+在正常开发中 我们会给每一个项目配备一个该项目独有的解释器环境
+该环境内只有该项目用到的模块 用不到一概不装
 
-<h1 id="二、视图层"><a href="#二、视图层" class="headerlink" title="二、视图层"></a>二、视图层</h1><h2 id="2-1-三板斧"><a href="#2-1-三板斧" class="headerlink" title="2.1 三板斧"></a>2.1 三板斧</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">HttpResponse</span><br><span class="hljs-string">	返回字符串类型</span><br><span class="hljs-string">render</span><br><span class="hljs-string">	返回html页面 并且在返回给浏览器之前还可以给html文件传值</span><br><span class="hljs-string">redirect</span><br><span class="hljs-string">	重定向</span><br><span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-comment"># 视图函数必须要返回一个HttpResponse对象  正确   研究三者的源码即可得处结论</span><br>The view app01.views.index didn<span class="hljs-string">&#x27;t return an HttpResponse object. It returned None instead.</span><br><span class="hljs-string"></span><br><span class="hljs-string"># render简单内部原理</span><br><span class="hljs-string">		from django.template import Template,Context</span><br><span class="hljs-string">    res = Template(&#x27;</span>&lt;h1&gt;&#123;&#123; user &#125;&#125;&lt;/h1&gt;<span class="hljs-string">&#x27;)</span><br><span class="hljs-string">    con = Context(&#123;&#x27;</span>use<span class="hljs-string">r&#x27;:&#123;&#x27;</span>username<span class="hljs-string">&#x27;:&#x27;</span>jason<span class="hljs-string">&#x27;,&#x27;</span>password<span class="hljs-string">&#x27;:123&#125;&#125;)</span><br><span class="hljs-string">    ret = res.render(con)</span><br><span class="hljs-string">    print(ret)</span><br><span class="hljs-string">    return HttpResponse(ret)</span><br><span class="hljs-string"></span><br></code></pre></td></tr></table></figure>
+linux:缺什么才装什么
 
-<h2 id="2-2-JsonResponse对象"><a href="#2-2-JsonResponse对象" class="headerlink" title="2.2 JsonResponse对象"></a>2.2 JsonResponse对象</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">json格式的数据有什么用？</span><br><span class="hljs-string">	前后端数据交互需要使用到json作为过渡 实现跨语言传输数据</span><br><span class="hljs-string"></span><br><span class="hljs-string">前端序列化</span><br><span class="hljs-string">	JSON.stringify()					json.dumps()</span><br><span class="hljs-string">	JSON.parse()							json.loads()</span><br><span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-keyword">import</span> json<br><span class="hljs-keyword">from</span> django.http <span class="hljs-keyword">import</span> JsonResponse<br><span class="hljs-keyword">def</span> <span class="hljs-title function_">ab_json</span>(<span class="hljs-params">request</span>):<br>    user_dict = &#123;<span class="hljs-string">&#x27;username&#x27;</span>:<span class="hljs-string">&#x27;jason好帅哦,我好喜欢!&#x27;</span>,<span class="hljs-string">&#x27;password&#x27;</span>:<span class="hljs-string">&#x27;123&#x27;</span>,<span class="hljs-string">&#x27;hobby&#x27;</span>:<span class="hljs-string">&#x27;girl&#x27;</span>&#125;<br><br>    l = [<span class="hljs-number">111</span>,<span class="hljs-number">222</span>,<span class="hljs-number">333</span>,<span class="hljs-number">444</span>,<span class="hljs-number">555</span>]<br>    <span class="hljs-comment"># 先转成json格式字符串</span><br>    <span class="hljs-comment"># json_str = json.dumps(user_dict,ensure_ascii=False)</span><br>    <span class="hljs-comment"># 将该字符串返回</span><br>    <span class="hljs-comment"># return HttpResponse(json_str)</span><br>    <span class="hljs-comment"># 读源码掌握用法</span><br>    <span class="hljs-comment"># return JsonResponse(user_dict,json_dumps_params=&#123;&#x27;ensure_ascii&#x27;:False&#125;)</span><br>    <span class="hljs-comment"># In order to allow non-dict objects to be serialized set the safe parameter to False.</span><br>    <span class="hljs-comment"># return JsonResponse(l,safe=False)  </span><br>    <span class="hljs-comment"># 默认只能序列化字典 序列化其他需要加safe参数	</span><br></code></pre></td></tr></table></figure>
+虚拟环境
+	你每创建一个虚拟环境就类似于重新下载了一个纯净的python解释器
+	但是虚拟环境不要创建太多，是需要消耗硬盘空间的
+
+扩展:
+	每一个项目都需要用到很多模块 并且每个模块版本可能还不一样
+	那我该如何安装呢？ 一个个看一个个装？？？
+	
+	开发当中我们会给每一个项目配备一个requirements.txt文件
+	里面书写了该项目所有的模块即版本
+	你只需要直接输入一条命令即可一键安装所有模块即版本
+"""</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<h2 id="1-6-django版本区别"><a href="#1-6-django版本区别" class="headerlink" title="1.6 django版本区别"></a>1.6 django版本区别</h2><figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token triple-quoted-string string">"""
+1.django1.X路由层使用的是url方法
+	而在django2.Xhe3.X版本中路由层使用的是path方法
+	url()第一个参数支持正则
+	path()第一个参数是不支持正则的 写什么就匹配什么
+	
+	
+	如果你习惯使用path那么也给你提供了另外一个方法
+		from django.urls import path, re_path
+		from django.conf.urls import url
+		
+		re_path(r'^index/',index),
+    url(r'^login/',login)
+  2.X和3.X里面的re_path就等价于1.X里面的url
+ 
+ 
+2.虽然path不支持正则 但是它的内部支持五种转换器
+	path('index/&lt;int:id>/',index)
+	# 将第二个路由里面的内容先转成整型然后以关键字的形式传递给后面的视图函数
+
+	def index(request,id):
+    print(id,type(id))
+    return HttpResponse('index')
+    
+  
+  
+  str,匹配除了路径分隔符（/）之外的非空字符串，这是默认的形式
+	int,匹配正整数，包含0。
+	slug,匹配字母、数字以及横杠、下划线组成的字符串。
+	uuid,匹配格式化的uuid，如 075194d3-6885-417e-a8a8-6c931e272f00。
+	path,匹配任何非空字符串，包含了路径分隔符（/）（不能用？）
+	
+3.除了有默认的五个转换器之外 还支持自定义转换器(了解)
+	class MonthConverter:
+    regex='\d&#123;2&#125;' # 属性名必须为regex
+
+    def to_python(self, value):
+        return int(value)
+
+    def to_url(self, value):
+        return value # 匹配的regex是两个数字，返回的结果也必须是两个数字
+	
+	
+	from django.urls import path,register_converter
+	from app01.path_converts import MonthConverter
+
+	# 先注册转换器
+	register_converter(MonthConverter,'mon')
+
+	from app01 import views
+
+
+	urlpatterns = [
+    path('articles/&lt;int:year>/&lt;mon:month>/&lt;slug:other>/', 	views.article_detail, name='aaa'),
+
+]
+
+
+4.模型层里面1.X外键默认都是级联更新删除的
+但是到了2.X和3.X中需要你自己手动配置参数
+	models.ForeignKey(to='Publish')
+	
+	models.ForeignKey(to='Publish',on_delete=models.CASCADE...)
+"""</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<h1 id="二、视图层"><a href="#二、视图层" class="headerlink" title="二、视图层"></a>二、视图层</h1><h2 id="2-1-三板斧"><a href="#2-1-三板斧" class="headerlink" title="2.1 三板斧"></a>2.1 三板斧</h2><figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token triple-quoted-string string">"""
+HttpResponse
+	返回字符串类型
+render
+	返回html页面 并且在返回给浏览器之前还可以给html文件传值
+redirect
+	重定向
+"""</span>
+<span class="token comment"># 视图函数必须要返回一个HttpResponse对象  正确   研究三者的源码即可得处结论</span>
+The view app01<span class="token punctuation">.</span>views<span class="token punctuation">.</span>index didn't <span class="token keyword">return</span> an HttpResponse <span class="token builtin">object</span><span class="token punctuation">.</span> It returned <span class="token boolean">None</span> instead<span class="token punctuation">.</span>
+
+<span class="token comment"># render简单内部原理</span>
+		<span class="token keyword">from</span> django<span class="token punctuation">.</span>template <span class="token keyword">import</span> Template<span class="token punctuation">,</span>Context
+    res <span class="token operator">=</span> Template<span class="token punctuation">(</span><span class="token string">'&lt;h1>&#123;&#123; user &#125;&#125;&lt;/h1>'</span><span class="token punctuation">)</span>
+    con <span class="token operator">=</span> Context<span class="token punctuation">(</span><span class="token punctuation">&#123;</span><span class="token string">'user'</span><span class="token punctuation">:</span><span class="token punctuation">&#123;</span><span class="token string">'username'</span><span class="token punctuation">:</span><span class="token string">'jason'</span><span class="token punctuation">,</span><span class="token string">'password'</span><span class="token punctuation">:</span><span class="token number">123</span><span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span><span class="token punctuation">)</span>
+    ret <span class="token operator">=</span> res<span class="token punctuation">.</span>render<span class="token punctuation">(</span>con<span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>ret<span class="token punctuation">)</span>
+    <span class="token keyword">return</span> HttpResponse<span class="token punctuation">(</span>ret<span class="token punctuation">)</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<h2 id="2-2-JsonResponse对象"><a href="#2-2-JsonResponse对象" class="headerlink" title="2.2 JsonResponse对象"></a>2.2 JsonResponse对象</h2><figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token triple-quoted-string string">"""
+json格式的数据有什么用？
+	前后端数据交互需要使用到json作为过渡 实现跨语言传输数据
+
+前端序列化
+	JSON.stringify()					json.dumps()
+	JSON.parse()							json.loads()
+"""</span>
+<span class="token keyword">import</span> json
+<span class="token keyword">from</span> django<span class="token punctuation">.</span>http <span class="token keyword">import</span> JsonResponse
+<span class="token keyword">def</span> <span class="token function">ab_json</span><span class="token punctuation">(</span>request<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    user_dict <span class="token operator">=</span> <span class="token punctuation">&#123;</span><span class="token string">'username'</span><span class="token punctuation">:</span><span class="token string">'jason好帅哦,我好喜欢!'</span><span class="token punctuation">,</span><span class="token string">'password'</span><span class="token punctuation">:</span><span class="token string">'123'</span><span class="token punctuation">,</span><span class="token string">'hobby'</span><span class="token punctuation">:</span><span class="token string">'girl'</span><span class="token punctuation">&#125;</span>
+
+    l <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">111</span><span class="token punctuation">,</span><span class="token number">222</span><span class="token punctuation">,</span><span class="token number">333</span><span class="token punctuation">,</span><span class="token number">444</span><span class="token punctuation">,</span><span class="token number">555</span><span class="token punctuation">]</span>
+    <span class="token comment"># 先转成json格式字符串</span>
+    <span class="token comment"># json_str = json.dumps(user_dict,ensure_ascii=False)</span>
+    <span class="token comment"># 将该字符串返回</span>
+    <span class="token comment"># return HttpResponse(json_str)</span>
+    <span class="token comment"># 读源码掌握用法</span>
+    <span class="token comment"># return JsonResponse(user_dict,json_dumps_params=&#123;'ensure_ascii':False&#125;)</span>
+    <span class="token comment"># In order to allow non-dict objects to be serialized set the safe parameter to False.</span>
+    <span class="token comment"># return JsonResponse(l,safe=False)  </span>
+    <span class="token comment"># 默认只能序列化字典 序列化其他需要加safe参数	</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <h2 id="2-3-form表单上传文件及后端如何操作"><a href="#2-3-form表单上传文件及后端如何操作" class="headerlink" title="2.3 form表单上传文件及后端如何操作"></a>2.3 form表单上传文件及后端如何操作</h2><p>form表单上传文件类型的数据</p>
 <ol>
@@ -314,15 +541,80 @@
 <li>enctype必须换成formdata</li>
 </ol>
 <h3 id="2-3-1-案例："><a href="#2-3-1-案例：" class="headerlink" title="2.3.1 案例："></a>2.3.1 案例：</h3><p>HTML页面代码：</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs html"><span class="hljs-meta">&lt;!DOCTYPE <span class="hljs-keyword">html</span>&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">html</span> <span class="hljs-attr">lang</span>=<span class="hljs-string">&quot;en&quot;</span>&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">charset</span>=<span class="hljs-string">&quot;UTF-8&quot;</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>Title<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span><br>	# 必须设置<br>    <span class="hljs-tag">&lt;<span class="hljs-name">form</span> <span class="hljs-attr">action</span>=<span class="hljs-string">&quot;&quot;</span> <span class="hljs-attr">method</span>=<span class="hljs-string">&quot;post&quot;</span> <span class="hljs-attr">enctype</span>=<span class="hljs-string">&quot;multipart/form-data&quot;</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>选择文件：<span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;file&quot;</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;file&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;submit&quot;</span>&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">form</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-markup" data-language="markup"><code class="language-markup"><span class="token doctype"><span class="token punctuation">&lt;!</span><span class="token doctype-tag">DOCTYPE</span> <span class="token name">html</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>html</span> <span class="token attr-name">lang</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>en<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>head</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>meta</span> <span class="token attr-name">charset</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>UTF-8<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>title</span><span class="token punctuation">></span></span>Title<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>title</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>head</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>body</span><span class="token punctuation">></span></span>
+	# 必须设置
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>form</span> <span class="token attr-name">action</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span><span class="token punctuation">"</span></span> <span class="token attr-name">method</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>post<span class="token punctuation">"</span></span> <span class="token attr-name">enctype</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>multipart/form-data<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span>选择文件：<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>input</span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>file<span class="token punctuation">"</span></span> <span class="token attr-name">name</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>file<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>input</span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>submit<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>form</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>body</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>html</span><span class="token punctuation">></span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>views.py代码</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> django.shortcuts <span class="hljs-keyword">import</span> render, HttpResponse<br><br><br><span class="hljs-comment"># Create your views here.</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">reg</span>(<span class="hljs-params">request</span>):<br>    <span class="hljs-keyword">if</span> request.method == <span class="hljs-string">&quot;POST&quot;</span>:<br>        <span class="hljs-comment"># print(request.POST)  # 只能获取普通的简直对数据 文件不行</span><br>        <span class="hljs-built_in">print</span>(request.FILES)<br>        file_obj = request.FILES.get(<span class="hljs-string">&#x27;file&#x27;</span>)  <span class="hljs-comment"># 文件对象</span><br>        <span class="hljs-built_in">print</span>(file_obj.name)<br>        <span class="hljs-keyword">with</span> <span class="hljs-built_in">open</span>(file_obj.name, <span class="hljs-string">&#x27;wb&#x27;</span>) <span class="hljs-keyword">as</span> f:<br>            <span class="hljs-keyword">for</span> line <span class="hljs-keyword">in</span> file_obj.chunks():  <span class="hljs-comment"># 推荐加上chunks方法 其实跟不加是一样的都是一行行的读取</span><br>                f.write(line)<br>    <span class="hljs-keyword">return</span> render(request, <span class="hljs-string">&#x27;index.html&#x27;</span>)<br><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">from</span> django<span class="token punctuation">.</span>shortcuts <span class="token keyword">import</span> render<span class="token punctuation">,</span> HttpResponse
+
+
+<span class="token comment"># Create your views here.</span>
+<span class="token keyword">def</span> <span class="token function">reg</span><span class="token punctuation">(</span>request<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> request<span class="token punctuation">.</span>method <span class="token operator">==</span> <span class="token string">"POST"</span><span class="token punctuation">:</span>
+        <span class="token comment"># print(request.POST)  # 只能获取普通的简直对数据 文件不行</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>request<span class="token punctuation">.</span>FILES<span class="token punctuation">)</span>
+        file_obj <span class="token operator">=</span> request<span class="token punctuation">.</span>FILES<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token string">'file'</span><span class="token punctuation">)</span>  <span class="token comment"># 文件对象</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>file_obj<span class="token punctuation">.</span>name<span class="token punctuation">)</span>
+        <span class="token keyword">with</span> <span class="token builtin">open</span><span class="token punctuation">(</span>file_obj<span class="token punctuation">.</span>name<span class="token punctuation">,</span> <span class="token string">'wb'</span><span class="token punctuation">)</span> <span class="token keyword">as</span> f<span class="token punctuation">:</span>
+            <span class="token keyword">for</span> line <span class="token keyword">in</span> file_obj<span class="token punctuation">.</span>chunks<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>  <span class="token comment"># 推荐加上chunks方法 其实跟不加是一样的都是一行行的读取</span>
+                f<span class="token punctuation">.</span>write<span class="token punctuation">(</span>line<span class="token punctuation">)</span>
+    <span class="token keyword">return</span> render<span class="token punctuation">(</span>request<span class="token punctuation">,</span> <span class="token string">'index.html'</span><span class="token punctuation">)</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>测试：页面上传文件后，会保存到项目文件夹中</p>
-<h2 id="2-4-request对象方法"><a href="#2-4-request对象方法" class="headerlink" title="2.4 request对象方法"></a>2.4 request对象方法</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">request.method</span><br><span class="hljs-string">request.POST</span><br><span class="hljs-string">request.GET</span><br><span class="hljs-string">request.FILES</span><br><span class="hljs-string">request.body  # 原生的浏览器发过来的二进制数据  后面详细的讲</span><br><span class="hljs-string">request.path </span><br><span class="hljs-string">request.path_info</span><br><span class="hljs-string">request.get_full_path()  能过获取完整的url及问号后面的参数 </span><br><span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-built_in">print</span>(request.path)  <span class="hljs-comment"># /app01/ab_file/</span><br><span class="hljs-built_in">print</span>(request.path_info)  <span class="hljs-comment"># /app01/ab_file/</span><br><span class="hljs-built_in">print</span>(request.get_full_path())  <span class="hljs-comment"># /app01/ab_file/?username=jason</span><br></code></pre></td></tr></table></figure>
+<h2 id="2-4-request对象方法"><a href="#2-4-request对象方法" class="headerlink" title="2.4 request对象方法"></a>2.4 request对象方法</h2><figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token triple-quoted-string string">"""
+request.method
+request.POST
+request.GET
+request.FILES
+request.body  # 原生的浏览器发过来的二进制数据  后面详细的讲
+request.path 
+request.path_info
+request.get_full_path()  能过获取完整的url及问号后面的参数 
+"""</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>request<span class="token punctuation">.</span>path<span class="token punctuation">)</span>  <span class="token comment"># /app01/ab_file/</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>request<span class="token punctuation">.</span>path_info<span class="token punctuation">)</span>  <span class="token comment"># /app01/ab_file/</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>request<span class="token punctuation">.</span>get_full_path<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># /app01/ab_file/?username=jason</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
-<h2 id="2-5-FBV与CBV"><a href="#2-5-FBV与CBV" class="headerlink" title="2.5 FBV与CBV"></a>2.5 FBV与CBV</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 视图函数既可以是函数也可以是类</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">index</span>(<span class="hljs-params">request</span>):<br>  <span class="hljs-keyword">return</span> HttpResponse(<span class="hljs-string">&#x27;index&#x27;</span>)<br><br><span class="hljs-comment"># CBV</span><br>    <span class="hljs-comment"># CBV路由</span><br>    url(<span class="hljs-string">r&#x27;^login/&#x27;</span>,views.MyLogin.as_view())<br><br><br>    <span class="hljs-keyword">from</span> django.views <span class="hljs-keyword">import</span> View<br><br><br>    <span class="hljs-keyword">class</span> <span class="hljs-title class_">MyLogin</span>(<span class="hljs-title class_ inherited__">View</span>):<br>        <span class="hljs-keyword">def</span> <span class="hljs-title function_">get</span>(<span class="hljs-params">self,request</span>):<br>            <span class="hljs-keyword">return</span> render(request,<span class="hljs-string">&#x27;form.html&#x27;</span>)<br><br>        <span class="hljs-keyword">def</span> <span class="hljs-title function_">post</span>(<span class="hljs-params">self,request</span>):<br>            <span class="hljs-keyword">return</span> HttpResponse(<span class="hljs-string">&#x27;post方法&#x27;</span>)<br>      <br><span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">FBV和CBV各有千秋</span><br><span class="hljs-string">CBV特点</span><br><span class="hljs-string">	能够直接根据请求方式的不同直接匹配到对应的方法执行</span><br><span class="hljs-string">	</span><br><span class="hljs-string">	内部到底是怎么实现的？</span><br><span class="hljs-string">		CBV内部源码(******)</span><br><span class="hljs-string">&quot;&quot;&quot;</span><br></code></pre></td></tr></table></figure>
+<h2 id="2-5-FBV与CBV"><a href="#2-5-FBV与CBV" class="headerlink" title="2.5 FBV与CBV"></a>2.5 FBV与CBV</h2><figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token comment"># 视图函数既可以是函数也可以是类</span>
+<span class="token keyword">def</span> <span class="token function">index</span><span class="token punctuation">(</span>request<span class="token punctuation">)</span><span class="token punctuation">:</span>
+  <span class="token keyword">return</span> HttpResponse<span class="token punctuation">(</span><span class="token string">'index'</span><span class="token punctuation">)</span>
+
+<span class="token comment"># CBV</span>
+    <span class="token comment"># CBV路由</span>
+    url<span class="token punctuation">(</span><span class="token string">r'^login/'</span><span class="token punctuation">,</span>views<span class="token punctuation">.</span>MyLogin<span class="token punctuation">.</span>as_view<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+
+    <span class="token keyword">from</span> django<span class="token punctuation">.</span>views <span class="token keyword">import</span> View
+
+
+    <span class="token keyword">class</span> <span class="token class-name">MyLogin</span><span class="token punctuation">(</span>View<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">def</span> <span class="token function">get</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span>request<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> render<span class="token punctuation">(</span>request<span class="token punctuation">,</span><span class="token string">'form.html'</span><span class="token punctuation">)</span>
+
+        <span class="token keyword">def</span> <span class="token function">post</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span>request<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> HttpResponse<span class="token punctuation">(</span><span class="token string">'post方法'</span><span class="token punctuation">)</span>
+      
+<span class="token triple-quoted-string string">"""
+FBV和CBV各有千秋
+CBV特点
+	能够直接根据请求方式的不同直接匹配到对应的方法执行
+	
+	内部到底是怎么实现的？
+		CBV内部源码(******)
+"""</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 
                 
@@ -619,6 +911,8 @@
   });
 </script>
 
+
+  <script  src="https://lib.baomitu.com/prism/1.28.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
 
   <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
 

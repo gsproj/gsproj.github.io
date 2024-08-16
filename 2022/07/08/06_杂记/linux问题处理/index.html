@@ -1,7 +1,7 @@
 
 
 <!DOCTYPE html>
-<html lang="zh-CN" data-default-color-scheme=auto>
+<html lang="zh-CN" data-default-color-scheme=dark>
 
 
 
@@ -39,6 +39,8 @@
   <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/prism/1.28.0/plugins/line-numbers/prism-line-numbers.min.css" />
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
@@ -218,7 +220,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          361 字
+          348 字
         
       </span>
     
@@ -229,7 +231,7 @@
         
         
         
-          4 分钟
+          3 分钟
         
       </span>
     
@@ -273,16 +275,25 @@
               <div class="markdown-body">
                 
                 <h1 id="1、机器卡顿、慢"><a href="#1、机器卡顿、慢" class="headerlink" title="1、机器卡顿、慢"></a>1、机器卡顿、慢</h1><p>测试硬盘读写：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">测试写</span><br>time dd if=/dev/zero of=/tmp/test bs=8k count=1000000<br><span class="hljs-meta prompt_"># </span><span class="language-bash">测试读</span><br>time dd if=/tmp/test of=/dev/null bs=8k<br><span class="hljs-meta prompt_"># </span><span class="language-bash">测试读写</span><br>time dd if=/tmp/test of=/var/test bs=64k<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 测试写</span>
+<span class="token function">time</span> <span class="token function">dd</span> <span class="token assign-left variable">if</span><span class="token operator">=</span>/dev/zero <span class="token assign-left variable">of</span><span class="token operator">=</span>/tmp/test <span class="token assign-left variable">bs</span><span class="token operator">=</span>8k <span class="token assign-left variable">count</span><span class="token operator">=</span><span class="token number">1000000</span>
+<span class="token comment"># 测试读</span>
+<span class="token function">time</span> <span class="token function">dd</span> <span class="token assign-left variable">if</span><span class="token operator">=</span>/tmp/test <span class="token assign-left variable">of</span><span class="token operator">=</span>/dev/null <span class="token assign-left variable">bs</span><span class="token operator">=</span>8k
+<span class="token comment"># 测试读写</span>
+<span class="token function">time</span> <span class="token function">dd</span> <span class="token assign-left variable">if</span><span class="token operator">=</span>/tmp/test <span class="token assign-left variable">of</span><span class="token operator">=</span>/var/test <span class="token assign-left variable">bs</span><span class="token operator">=</span>64k<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>硬盘坏道测试：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">badblocks -s -o -v test.log /dev/sda<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">badblocks <span class="token parameter variable">-s</span> <span class="token parameter variable">-o</span> <span class="token parameter variable">-v</span> test.log /dev/sda<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
 
 <p>2、查看NVME硬盘使用时间，机器使用时间</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">nvme smart-log /dev/nvme0n1<br><span class="hljs-meta prompt_"># </span><span class="language-bash">看power_on_hour</span> <br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">nvme smart-log /dev/nvme0n1
+<span class="token comment"># 看power_on_hour </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
 
 <p>查看系统安装时间、文件系统创建时间、挂在次数（开机次数）</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">tune2fs -l /dev/sda2<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">Filesystem created: 文件系统创建时间即系统安装时间</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">Mount count：挂在次数，即开机次数</span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">tune2fs <span class="token parameter variable">-l</span> /dev/sda2
+
+<span class="token comment"># Filesystem created: 文件系统创建时间即系统安装时间</span>
+<span class="token comment"># Mount count：挂在次数，即开机次数</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 
                 
@@ -572,6 +583,8 @@
   });
 </script>
 
+
+  <script  src="https://lib.baomitu.com/prism/1.28.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
 
   <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
 

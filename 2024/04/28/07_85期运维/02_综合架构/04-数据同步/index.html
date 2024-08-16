@@ -1,7 +1,7 @@
 
 
 <!DOCTYPE html>
-<html lang="zh-CN" data-default-color-scheme=auto>
+<html lang="zh-CN" data-default-color-scheme=dark>
 
 
 
@@ -43,6 +43,8 @@
   <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/prism/1.28.0/plugins/line-numbers/prism-line-numbers.min.css" />
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
@@ -222,7 +224,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          3.2k 字
+          3k 字
         
       </span>
     
@@ -233,7 +235,7 @@
         
         
         
-          28 分钟
+          25 分钟
         
       </span>
     
@@ -292,32 +294,115 @@
 <li>inotify监控目录，通过rsync把变化的文件推送走</li>
 </ul>
 <h2 id="1-2-配置Sersync"><a href="#1-2-配置Sersync" class="headerlink" title="1.2 配置Sersync"></a>1.2 配置Sersync</h2><h3 id="1-2-1-rysnc服务准备"><a href="#1-2-1-rysnc服务准备" class="headerlink" title="1.2.1 rysnc服务准备"></a>1.2.1 rysnc服务准备</h3><p>备份服务器（作为服务端）</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">配置rsync服务端</span><br>[root@backup01[ /]#cat /etc/rsyncd.conf<br>...<br>[nfsbackup]<br>comment = 实时同步<br>path = /nfsbackup<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">创建目录</span><br>[root@backup01[ /]#mkdir /nfsbackup<br>[root@backup01[ /]#chown rsync.rsync /nfsbackup/<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 配置rsync服务端</span>
+<span class="token punctuation">[</span>root@backup01<span class="token punctuation">[</span> /<span class="token punctuation">]</span><span class="token comment">#cat /etc/rsyncd.conf</span>
+<span class="token punctuation">..</span>.
+<span class="token punctuation">[</span>nfsbackup<span class="token punctuation">]</span>
+comment <span class="token operator">=</span> 实时同步
+path <span class="token operator">=</span> /nfsbackup
+
+<span class="token comment"># 创建目录</span>
+<span class="token punctuation">[</span>root@backup01<span class="token punctuation">[</span> /<span class="token punctuation">]</span><span class="token comment">#mkdir /nfsbackup</span>
+<span class="token punctuation">[</span>root@backup01<span class="token punctuation">[</span> /<span class="token punctuation">]</span><span class="token comment">#chown rsync.rsync /nfsbackup/</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>nfs服务器（作为客户端）</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs shell">echo 123 &gt; /etc/client.rsync<br>chmod 600 /etc/client.rsync<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">测试传输，可以推送成功</span><br>[root@nfs01[ /]#rsync -av /etc/hosts rsync_backup@172.16.1.41::nfsbackup --password-file=/etc/client.rsync<br>sending incremental file list<br>hosts<br><br>sent 247 bytes  received 43 bytes  580.00 bytes/sec<br>total size is 158  speedup is 0.54<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">echo</span> <span class="token number">123</span> <span class="token operator">></span> /etc/client.rsync
+<span class="token function">chmod</span> <span class="token number">600</span> /etc/client.rsync
+
+<span class="token comment"># 测试传输，可以推送成功</span>
+<span class="token punctuation">[</span>root@nfs01<span class="token punctuation">[</span> /<span class="token punctuation">]</span><span class="token comment">#rsync -av /etc/hosts rsync_backup@172.16.1.41::nfsbackup --password-file=/etc/client.rsync</span>
+sending incremental <span class="token function">file</span> list
+hosts
+
+sent <span class="token number">247</span> bytes  received <span class="token number">43</span> bytes  <span class="token number">580.00</span> bytes/sec
+total size is <span class="token number">158</span>  speedup is <span class="token number">0.54</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <h3 id="1-2-2-sersync部署"><a href="#1-2-2-sersync部署" class="headerlink" title="1.2.2 sersync部署"></a>1.2.2 sersync部署</h3><p>在客户端（nfs）安装</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">github下载sersync</span><br>https://github.com/wsgzao/sersync<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">解压</span><br>tar -vxf sersync2.5.4_64bit_binary_stable_final.tar.gz<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">创建第三方app专用存放路径</span><br>/app/tools/sersync/<br>/app/tools/sersync/bin/<br>/app/tools/sersync/conf/<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">把解压后的文件放进去</span><br>[root@nfs01[ /app/GNU-Linux-x86]#mv sersync2 /app/tools/sersync/bin/<br>[root@nfs01[ /app/GNU-Linux-x86]#mv confxml.xml /app/tools/sersync/conf/<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">设置软链接</span><br>[root@nfs01[ /app/tools/sersync/bin]#ln /app/tools/sersync/bin/sersync2 -s /bin<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># github下载sersync</span>
+https://github.com/wsgzao/sersync
+
+<span class="token comment"># 解压</span>
+<span class="token function">tar</span> <span class="token parameter variable">-vxf</span> sersync2.5.4_64bit_binary_stable_final.tar.gz
+
+<span class="token comment"># 创建第三方app专用存放路径</span>
+/app/tools/sersync/
+/app/tools/sersync/bin/
+/app/tools/sersync/conf/
+
+<span class="token comment"># 把解压后的文件放进去</span>
+<span class="token punctuation">[</span>root@nfs01<span class="token punctuation">[</span> /app/GNU-Linux-x86<span class="token punctuation">]</span><span class="token comment">#mv sersync2 /app/tools/sersync/bin/</span>
+<span class="token punctuation">[</span>root@nfs01<span class="token punctuation">[</span> /app/GNU-Linux-x86<span class="token punctuation">]</span><span class="token comment">#mv confxml.xml /app/tools/sersync/conf/</span>
+
+<span class="token comment"># 设置软链接</span>
+<span class="token punctuation">[</span>root@nfs01<span class="token punctuation">[</span> /app/tools/sersync/bin<span class="token punctuation">]</span><span class="token comment">#ln /app/tools/sersync/bin/sersync2 -s /bin</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>修改配置文件config.xml</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs shell">&lt;sersync&gt;<br>	&lt;localpath watch=&quot;/data/&quot;&gt;<br>		&lt;remote ip=&quot;172.16.1.41&quot; name=&quot;nfsbackup&quot;/&gt;<br>...<br> 	&lt;rsync&gt;<br> 		&lt;commonParams params=&quot;-az&quot;/&gt;<br> 		&lt;auth start=&quot;true&quot; users=&quot;rsync_backup&quot; passwordfile=&quot;/etc/client.rsync&quot;/&gt;<br>...<br>	&lt;failLog path=&quot;/var/log/rsync_fail_log.sh&quot; timeToExecute=&quot;60&quot;/&gt;&lt;!--default every 60mins execute once--&gt;<br>...<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token operator">&lt;</span>sersync<span class="token operator">></span>
+	<span class="token operator">&lt;</span>localpath <span class="token assign-left variable">watch</span><span class="token operator">=</span><span class="token string">"/data/"</span><span class="token operator">></span>
+		<span class="token operator">&lt;</span>remote <span class="token assign-left variable">ip</span><span class="token operator">=</span><span class="token string">"172.16.1.41"</span> <span class="token assign-left variable">name</span><span class="token operator">=</span><span class="token string">"nfsbackup"</span>/<span class="token operator">></span>
+<span class="token punctuation">..</span>.
+ 	<span class="token operator">&lt;</span>rsync<span class="token operator">></span>
+ 		<span class="token operator">&lt;</span>commonParams <span class="token assign-left variable">params</span><span class="token operator">=</span><span class="token string">"-az"</span>/<span class="token operator">></span>
+ 		<span class="token operator">&lt;</span>auth <span class="token assign-left variable">start</span><span class="token operator">=</span><span class="token string">"true"</span> <span class="token assign-left variable">users</span><span class="token operator">=</span><span class="token string">"rsync_backup"</span> <span class="token assign-left variable">passwordfile</span><span class="token operator">=</span><span class="token string">"/etc/client.rsync"</span>/<span class="token operator">></span>
+<span class="token punctuation">..</span>.
+	<span class="token operator">&lt;</span>failLog <span class="token assign-left variable">path</span><span class="token operator">=</span><span class="token string">"/var/log/rsync_fail_log.sh"</span> <span class="token assign-left variable">timeToExecute</span><span class="token operator">=</span><span class="token string">"60"</span>/<span class="token operator">></span><span class="token operator">&lt;</span><span class="token operator">!</span>--default every 60mins execute once--<span class="token operator">></span>
+<span class="token punctuation">..</span>.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>参考如下：</p>
 <p><img src="/../../../img/image-20240428154558329.png" srcset="/img/loading.gif" lazyload alt="image-20240428154558329"></p>
 <p>配置文件的详细解析：</p>
 <p><img src="/../../../img/image-20240428154638896.png" srcset="/img/loading.gif" lazyload alt="image-20240428154638896"></p>
 <p>启动sersync</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@nfs01[ /data]#sersync2 -rdo /app/tools/sersync/conf/confxml.xml<br>set the system param<br>execute：echo 50000000 &gt; /proc/sys/fs/inotify/max_user_watches<br>execute：echo 327679 &gt; /proc/sys/fs/inotify/max_queued_events<br>parse the command param<br>option: -r      rsync all the local files to the remote servers before the sersync work<br>option: -d      run as a daemon<br>option: -o      config xml name：  /app/tools/sersync/conf/confxml.xml<br>daemon thread num: 10<br>parse xml config file<br>host ip : localhost     host port: 8008<br>daemon start，sersync run behind the console<br>use rsync password-file :<br>user is rsync_backup<br>passwordfile is         /etc/client.rsync<br>config xml parse success<br>please set /etc/rsyncd.conf max connections=0 Manually<br>sersync working thread 12  = 1(primary thread) + 1(fail retry thread) + 10(daemon sub threads)<br>Max threads numbers is: 22 = 12(Thread pool nums) + 10(Sub threads)<br>please according your cpu ，use -n param to adjust the cpu rate<br>------------------------------------------<br>rsync the directory recursivly to the remote servers once<br>working please wait...<br>execute command: cd /data &amp;&amp; rsync -az -R --delete ./ rsync_backup@172.16.1.41::nfsbackup --password-file=/etc/client.rsync &gt;/dev/null 2&gt;&amp;1<br>run the sersync:<br>watch path is: /data<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@nfs01<span class="token punctuation">[</span> /data<span class="token punctuation">]</span><span class="token comment">#sersync2 -rdo /app/tools/sersync/conf/confxml.xml</span>
+<span class="token builtin class-name">set</span> the system param
+execute：echo <span class="token number">50000000</span> <span class="token operator">></span> /proc/sys/fs/inotify/max_user_watches
+execute：echo <span class="token number">327679</span> <span class="token operator">></span> /proc/sys/fs/inotify/max_queued_events
+parse the <span class="token builtin class-name">command</span> param
+option: <span class="token parameter variable">-r</span>      <span class="token function">rsync</span> all the <span class="token builtin class-name">local</span> files to the remote servers before the sersync work
+option: <span class="token parameter variable">-d</span>      run as a daemon
+option: <span class="token parameter variable">-o</span>      config xml name：  /app/tools/sersync/conf/confxml.xml
+daemon thread num: <span class="token number">10</span>
+parse xml config <span class="token function">file</span>
+<span class="token function">host</span> <span class="token function">ip</span> <span class="token builtin class-name">:</span> localhost     <span class="token function">host</span> port: <span class="token number">8008</span>
+daemon start，sersync run behind the console
+use <span class="token function">rsync</span> password-file <span class="token builtin class-name">:</span>
+user is rsync_backup
+passwordfile is         /etc/client.rsync
+config xml parse success
+please <span class="token builtin class-name">set</span> /etc/rsyncd.conf max <span class="token assign-left variable">connections</span><span class="token operator">=</span><span class="token number">0</span> Manually
+sersync working thread <span class="token number">12</span>  <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">(</span>primary thread<span class="token punctuation">)</span> + <span class="token number">1</span><span class="token punctuation">(</span>fail retry thread<span class="token punctuation">)</span> + <span class="token number">10</span><span class="token punctuation">(</span>daemon sub threads<span class="token punctuation">)</span>
+Max threads numbers is: <span class="token number">22</span> <span class="token operator">=</span> <span class="token number">12</span><span class="token punctuation">(</span>Thread pool nums<span class="token punctuation">)</span> + <span class="token number">10</span><span class="token punctuation">(</span>Sub threads<span class="token punctuation">)</span>
+please according your cpu ，use <span class="token parameter variable">-n</span> param to adjust the cpu rate
+------------------------------------------
+<span class="token function">rsync</span> the directory recursivly to the remote servers once
+working please wait<span class="token punctuation">..</span>.
+execute command: <span class="token builtin class-name">cd</span> /data <span class="token operator">&amp;&amp;</span> <span class="token function">rsync</span> <span class="token parameter variable">-az</span> <span class="token parameter variable">-R</span> <span class="token parameter variable">--delete</span> ./ rsync_backup@172.16.1.41::nfsbackup --password-file<span class="token operator">=</span>/etc/client.rsync <span class="token operator">></span>/dev/null <span class="token operator"><span class="token file-descriptor important">2</span>></span><span class="token file-descriptor important">&amp;1</span>
+run the sersync:
+<span class="token function">watch</span> path is: /data<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>接入nfs服务</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@nfs01[ /app/tools/sersync/bin]#cat /etc/exports<br>/data/  172.16.1.0/24(rw)	# 用这个<br>/nfsdata/       172.16.1.0/24(rw,all_squash,anonuid=1999,anongid=1999)<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@nfs01<span class="token punctuation">[</span> /app/tools/sersync/bin<span class="token punctuation">]</span><span class="token comment">#cat /etc/exports</span>
+/data/  <span class="token number">172.16</span>.1.0/24<span class="token punctuation">(</span>rw<span class="token punctuation">)</span>	<span class="token comment"># 用这个</span>
+/nfsdata/       <span class="token number">172.16</span>.1.0/24<span class="token punctuation">(</span>rw,all_squash,anonuid<span class="token operator">=</span><span class="token number">1999</span>,anongid<span class="token operator">=</span><span class="token number">1999</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>web服务器挂载nfs盘</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01[ /]#mount -t nfs 172.16.1.31:/data /upload<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@web01<span class="token punctuation">[</span> /<span class="token punctuation">]</span><span class="token comment">#mount -t nfs 172.16.1.31:/data /upload</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
 
 <h3 id="1-2-3-联调"><a href="#1-2-3-联调" class="headerlink" title="1.2.3 联调"></a>1.2.3 联调</h3><p>测试实时同步情况</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">web01创建</span><br>[root@web01[ /upload]#&gt;web01.data<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">backup实时同步</span><br>Every 2.0s: tree -F /nfsbackup  <br>/nfsbackup<br>└── web01.data<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">web01删除</span><br>[root@web01[ /upload]#rm web01.data -fr<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">backup实时同步</span><br>Every 2.0s: tree -F /nfsbackup                                                                 <br>/nfsbackup<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># web01创建</span>
+<span class="token punctuation">[</span>root@web01<span class="token punctuation">[</span> /upload<span class="token punctuation">]</span><span class="token comment">#>web01.data</span>
+
+<span class="token comment"># backup实时同步</span>
+Every <span class="token number">2</span>.0s: tree <span class="token parameter variable">-F</span> /nfsbackup  
+/nfsbackup
+└── web01.data
+
+<span class="token comment"># web01删除</span>
+<span class="token punctuation">[</span>root@web01<span class="token punctuation">[</span> /upload<span class="token punctuation">]</span><span class="token comment">#rm web01.data -fr</span>
+
+<span class="token comment"># backup实时同步</span>
+Every <span class="token number">2</span>.0s: tree <span class="token parameter variable">-F</span> /nfsbackup                                                                 
+/nfsbackup<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 
 
@@ -616,6 +701,8 @@
   });
 </script>
 
+
+  <script  src="https://lib.baomitu.com/prism/1.28.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
 
   <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
 

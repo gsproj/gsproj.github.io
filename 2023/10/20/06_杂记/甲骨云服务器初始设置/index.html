@@ -1,7 +1,7 @@
 
 
 <!DOCTYPE html>
-<html lang="zh-CN" data-default-color-scheme=auto>
+<html lang="zh-CN" data-default-color-scheme=dark>
 
 
 
@@ -47,6 +47,8 @@
   <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/prism/1.28.0/plugins/line-numbers/prism-line-numbers.min.css" />
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
@@ -226,7 +228,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.3k 字
+          1.2k 字
         
       </span>
     
@@ -237,7 +239,7 @@
         
         
         
-          11 分钟
+          10 分钟
         
       </span>
     
@@ -293,14 +295,60 @@
 <p><img src="/../../../source/img/image-20231101150513350.png" srcset="/img/loading.gif" lazyload alt="image-20231101150513350"></p>
 <p>登录成功</p>
 <p><img src="/../../../source/img/image-20231101152306146.png" srcset="/img/loading.gif" lazyload alt="image-20231101152306146"></p>
-<h1 id="2-修改ssh服务"><a href="#2-修改ssh服务" class="headerlink" title="2 修改ssh服务"></a>2 修改ssh服务</h1><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">1、切换到root用户</span><br>sudo su<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">2、关闭SElinux。否则修改sshd端口会报错没权限</span><br>setenforce 0<br><span class="hljs-meta prompt_"># </span><span class="language-bash">永久关闭</span><br>vim /etc/selinux/config<br><span class="hljs-meta prompt_"># </span><span class="language-bash">改成disabled</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">This file controls the state of SELinux on the system.</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">SELINUX= can take one of these three values:</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">    enforcing - SELinux security policy is enforced.</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">    permissive - SELinux prints warnings instead of enforcing.</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">    disabled - No SELinux policy is loaded.</span><br>SELINUX=disabled<br><span class="hljs-meta prompt_"># </span><span class="language-bash">SELINUXTYPE= can take one of these three values:</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">    targeted - Targeted processes are protected,</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">    minimum - Modification of targeted policy. Only selected processes are protected.</span> <br><span class="hljs-meta prompt_"># </span><span class="language-bash">    mls - Multi Level Security protection.</span><br>SELINUXTYPE=targeted<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">2、编辑sshd_config文件</span><br>vim /etc/ssh/sshd_config<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">主要修改：</span><br>	Port：8822 # 防止简单端口扫描<br>	PermitRootLogin yes # 允许root登录<br>	PasswordAuthentication yes	# 允许使用密码登录<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">重启服务</span><br>systemctl restart ssh<br></code></pre></td></tr></table></figure>
+<h1 id="2-修改ssh服务"><a href="#2-修改ssh服务" class="headerlink" title="2 修改ssh服务"></a>2 修改ssh服务</h1><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 1、切换到root用户</span>
+<span class="token function">sudo</span> <span class="token function">su</span>
+
+<span class="token comment"># 2、关闭SElinux。否则修改sshd端口会报错没权限</span>
+setenforce <span class="token number">0</span>
+<span class="token comment"># 永久关闭</span>
+<span class="token function">vim</span> /etc/selinux/config
+<span class="token comment"># 改成disabled</span>
+<span class="token comment"># This file controls the state of SELinux on the system.</span>
+<span class="token comment"># SELINUX= can take one of these three values:</span>
+<span class="token comment">#     enforcing - SELinux security policy is enforced.</span>
+<span class="token comment">#     permissive - SELinux prints warnings instead of enforcing.</span>
+<span class="token comment">#     disabled - No SELinux policy is loaded.</span>
+<span class="token assign-left variable">SELINUX</span><span class="token operator">=</span>disabled
+<span class="token comment"># SELINUXTYPE= can take one of these three values:</span>
+<span class="token comment">#     targeted - Targeted processes are protected,</span>
+<span class="token comment">#     minimum - Modification of targeted policy. Only selected processes are protected. </span>
+<span class="token comment">#     mls - Multi Level Security protection.</span>
+<span class="token assign-left variable">SELINUXTYPE</span><span class="token operator">=</span>targeted
+
+
+<span class="token comment"># 2、编辑sshd_config文件</span>
+<span class="token function">vim</span> /etc/ssh/sshd_config
+
+<span class="token comment"># 主要修改：</span>
+	Port：8822 <span class="token comment"># 防止简单端口扫描</span>
+	PermitRootLogin <span class="token function">yes</span> <span class="token comment"># 允许root登录</span>
+	PasswordAuthentication <span class="token function">yes</span>	<span class="token comment"># 允许使用密码登录</span>
+
+<span class="token comment"># 重启服务</span>
+systemctl restart <span class="token function">ssh</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <h1 id="3-iptables设置开放端口"><a href="#3-iptables设置开放端口" class="headerlink" title="3 iptables设置开放端口"></a>3 iptables设置开放端口</h1><p>oracle的ubuntu系统默认带了iptables，需要放开</p>
 <p><img src="/../../../source/img/image-20231101153023460.png" srcset="/img/loading.gif" lazyload alt="image-20231101153023460"></p>
 <p>执行命令</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">1、全部放开</span><br>sudo iptables -P INPUT ACCEPT<br>sudo iptables -P FORWARD ACCEPT<br>sudo iptables -P OUTPUT ACCEPT<br>sudo iptables -F<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">2、卸载iptalbes相关应用</span><br>apt-get purge netfilter-persistent<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">3、卸载oracle cloud监控程序</span><br>snap remove oracle-cloud-agent<br>iptables -L<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">3、重启</span><br>reboot<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 1、全部放开</span>
+<span class="token function">sudo</span> iptables <span class="token parameter variable">-P</span> INPUT ACCEPT
+<span class="token function">sudo</span> iptables <span class="token parameter variable">-P</span> FORWARD ACCEPT
+<span class="token function">sudo</span> iptables <span class="token parameter variable">-P</span> OUTPUT ACCEPT
+<span class="token function">sudo</span> iptables <span class="token parameter variable">-F</span>
 
-<h1 id="4、修改密码"><a href="#4、修改密码" class="headerlink" title="4、修改密码"></a>4、修改密码</h1><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">echo &quot;ubuntu:xxxxx&quot; | chpasswd<br>echo &quot;root:xxxxx&quot; | chpasswd<br>history -c<br></code></pre></td></tr></table></figure>
+<span class="token comment"># 2、卸载iptalbes相关应用</span>
+<span class="token function">apt-get</span> purge netfilter-persistent
+
+<span class="token comment"># 3、卸载oracle cloud监控程序</span>
+snap remove oracle-cloud-agent
+iptables <span class="token parameter variable">-L</span>
+
+<span class="token comment"># 3、重启</span>
+<span class="token function">reboot</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<h1 id="4、修改密码"><a href="#4、修改密码" class="headerlink" title="4、修改密码"></a>4、修改密码</h1><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">echo</span> <span class="token string">"ubuntu:xxxxx"</span> <span class="token operator">|</span> chpasswd
+<span class="token builtin class-name">echo</span> <span class="token string">"root:xxxxx"</span> <span class="token operator">|</span> chpasswd
+<span class="token function">history</span> <span class="token parameter variable">-c</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></div></figure>
 
 
                 
@@ -590,6 +638,8 @@
   });
 </script>
 
+
+  <script  src="https://lib.baomitu.com/prism/1.28.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
 
   <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
 

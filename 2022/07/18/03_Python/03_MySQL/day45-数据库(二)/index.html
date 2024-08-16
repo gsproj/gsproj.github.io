@@ -1,7 +1,7 @@
 
 
 <!DOCTYPE html>
-<html lang="zh-CN" data-default-color-scheme=auto>
+<html lang="zh-CN" data-default-color-scheme=dark>
 
 
 
@@ -39,6 +39,8 @@
   <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/prism/1.28.0/plugins/line-numbers/prism-line-numbers.min.css" />
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
@@ -218,7 +220,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          7.3k 字
+          6.5k 字
         
       </span>
     
@@ -229,7 +231,7 @@
         
         
         
-          61 分钟
+          54 分钟
         
       </span>
     
@@ -294,32 +296,77 @@
 </li>
 </ul>
 <h2 id="1-2-查看和设置存储引擎："><a href="#1-2-查看和设置存储引擎：" class="headerlink" title="1.2 查看和设置存储引擎："></a>1.2 查看和设置存储引擎：</h2><p>1、查看所有存储引擎</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs mysql">mysql&gt; show engines;<br><br># 输出<br>+--------------------+---------+----------------------------------------------------------------+--------------+------+------------+<br>| Engine             | Support | Comment                                                        | Transactions | XA   | Savepoints |<br>+--------------------+---------+---------------------------------------------------------------<br>....<br>| MyISAM             | YES     | MyISAM storage engine                                          | NO           | NO   | NO         |<br>| InnoDB             | DEFAULT | Supports transactions, row-level locking, and foreign keys     | YES          | YES  | YES        |<br>| BLACKHOLE          | YES     | /dev/null storage engine (anything you write to it disappears) | NO           | NO   | NO         |<br>.....<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-mysql" data-language="mysql"><code class="language-mysql">mysql&gt; show engines;
+
+# 输出
++--------------------+---------+----------------------------------------------------------------+--------------+------+------------+
+| Engine             | Support | Comment                                                        | Transactions | XA   | Savepoints |
++--------------------+---------+---------------------------------------------------------------
+....
+| MyISAM             | YES     | MyISAM storage engine                                          | NO           | NO   | NO         |
+| InnoDB             | DEFAULT | Supports transactions, row-level locking, and foreign keys     | YES          | YES  | YES        |
+| BLACKHOLE          | YES     | &#x2F;dev&#x2F;null storage engine (anything you write to it disappears) | NO           | NO   | NO         |
+.....<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>2、设置存储引擎</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 设置存储引擎</span><br>create table t1(<span class="hljs-built_in">id</span> <span class="hljs-built_in">int</span>) engine=innodb;<br>create table t2(<span class="hljs-built_in">id</span> <span class="hljs-built_in">int</span>) engine=myisam;<br>create table t3(<span class="hljs-built_in">id</span> <span class="hljs-built_in">int</span>) engine=blackhole;<br>create table t4(<span class="hljs-built_in">id</span> <span class="hljs-built_in">int</span>) engine=memory;<br><br><span class="hljs-comment"># 存数据后的表现</span><br>insert into t1 values(<span class="hljs-number">1</span>);<br>insert into t2 values(<span class="hljs-number">1</span>);<br>insert into t3 values(<span class="hljs-number">1</span>);	<span class="hljs-comment"># 存进去后查不到数据：Empty set</span><br>insert into t4 values(<span class="hljs-number">1</span>);	<span class="hljs-comment"># 服务端重启后查不到数据，没重启之前可以（模拟断电）</span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token comment"># 设置存储引擎</span>
+create table t1<span class="token punctuation">(</span><span class="token builtin">id</span> <span class="token builtin">int</span><span class="token punctuation">)</span> engine<span class="token operator">=</span>innodb<span class="token punctuation">;</span>
+create table t2<span class="token punctuation">(</span><span class="token builtin">id</span> <span class="token builtin">int</span><span class="token punctuation">)</span> engine<span class="token operator">=</span>myisam<span class="token punctuation">;</span>
+create table t3<span class="token punctuation">(</span><span class="token builtin">id</span> <span class="token builtin">int</span><span class="token punctuation">)</span> engine<span class="token operator">=</span>blackhole<span class="token punctuation">;</span>
+create table t4<span class="token punctuation">(</span><span class="token builtin">id</span> <span class="token builtin">int</span><span class="token punctuation">)</span> engine<span class="token operator">=</span>memory<span class="token punctuation">;</span>
+
+<span class="token comment"># 存数据后的表现</span>
+insert into t1 values<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+insert into t2 values<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+insert into t3 values<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>	<span class="token comment"># 存进去后查不到数据：Empty set</span>
+insert into t4 values<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>	<span class="token comment"># 服务端重启后查不到数据，没重启之前可以（模拟断电）</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <h1 id="二、创建表的完整语法"><a href="#二、创建表的完整语法" class="headerlink" title="二、创建表的完整语法"></a>二、创建表的完整语法</h1><h2 id="2-1-创建表的语法"><a href="#2-1-创建表的语法" class="headerlink" title="2.1 创建表的语法"></a>2.1 创建表的语法</h2><p>创建表的基本语法为：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs python">create table 表名(<br>	字段名<span class="hljs-number">1</span> 类型(宽度) 约束条件,<br>    字段名<span class="hljs-number">2</span> 类型(宽度) 约束条件,<br>    字段名<span class="hljs-number">3</span> 类型(宽度) 约束条件<br>);<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">create table 表名<span class="token punctuation">(</span>
+	字段名<span class="token number">1</span> 类型<span class="token punctuation">(</span>宽度<span class="token punctuation">)</span> 约束条件<span class="token punctuation">,</span>
+    字段名<span class="token number">2</span> 类型<span class="token punctuation">(</span>宽度<span class="token punctuation">)</span> 约束条件<span class="token punctuation">,</span>
+    字段名<span class="token number">3</span> 类型<span class="token punctuation">(</span>宽度<span class="token punctuation">)</span> 约束条件
+<span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>案例：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs mysql">create table t5(id int, <br>                name char(12), <br>                age int);<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-mysql" data-language="mysql"><code class="language-mysql">create table t5(id int, 
+                name char(12), 
+                age int);<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <h2 id="2-2-创建表的注意事项"><a href="#2-2-创建表的注意事项" class="headerlink" title="2.2 创建表的注意事项"></a>2.2 创建表的注意事项</h2><p>1、在同一张表中字段名不能重复</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs mysql">mysql&gt; create table t6(id int, name char(12), id int);<br>ERROR 1060 (42S21): Duplicate column name &#x27;id&#x27;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-mysql" data-language="mysql"><code class="language-mysql">mysql&gt; create table t6(id int, name char(12), id int);
+ERROR 1060 (42S21): Duplicate column name &#39;id&#39;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
 
 <p>2、宽度和约束条件是可选的(可写可不写) 而<code>字段名和字段类型是必须</code>的，约束条件写的话 也支持写多个</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs python">字段名<span class="hljs-number">1</span> 类型(宽度) 约束条件<span class="hljs-number">1</span> 约束条件<span class="hljs-number">2.</span>..,<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">字段名<span class="token number">1</span> 类型<span class="token punctuation">(</span>宽度<span class="token punctuation">)</span> 约束条件<span class="token number">1</span> 约束条件<span class="token number">2.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">,</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
 
 <p>少些了会报错，例如：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs mysql">mysql&gt; create table t7(id);<br>ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near &#x27;)&#x27; at line 1<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-mysql" data-language="mysql"><code class="language-mysql">mysql&gt; create table t7(id);
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near &#39;)&#39; at line 1<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
 
 <p>3、最后一行不能有逗号，否则会报错：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs mysql">mysql&gt; create table t6(id int, <br>                       name char(12), <br>                       age int,);<br>ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near &#x27;)&#x27; at line 1<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-mysql" data-language="mysql"><code class="language-mysql">mysql&gt; create table t6(id int, 
+                       name char(12), 
+                       age int,);
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near &#39;)&#39; at line 1<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <h2 id="2-3-宽度和约束条件"><a href="#2-3-宽度和约束条件" class="headerlink" title="2.3 宽度和约束条件"></a>2.3 宽度和约束条件</h2><h3 id="2-3-1-宽度"><a href="#2-3-1-宽度" class="headerlink" title="2.3.1 宽度"></a>2.3.1 宽度</h3><p>宽度：一般情况下指的是对存储数据的限制</p>
 <p>比如：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs mysql"># 创建表<br>create table t7(name char);  默认宽度是1<br><br># 插入数据&#x27;jason&#x27;<br>insert into t7 values(&#x27;jason&#x27;);<br># 报错<br>ERROR 1406 (22001): Data too long for column &#x27;name&#x27; at row 1<br><br># 插入数据NULL<br>insert into t7 values(null);  关键字NULL<br>Query OK, 1 row affected (0.00 sec)<br><br># 插入数据&#x27;j&#x27;<br>insert into t7 values(&#x27;j&#x27;);<br>Query OK, 1 row affected (0.00 sec)<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-mysql" data-language="mysql"><code class="language-mysql"># 创建表
+create table t7(name char);  默认宽度是1
+
+# 插入数据&#39;jason&#39;
+insert into t7 values(&#39;jason&#39;);
+# 报错
+ERROR 1406 (22001): Data too long for column &#39;name&#39; at row 1
+
+# 插入数据NULL
+insert into t7 values(null);  关键字NULL
+Query OK, 1 row affected (0.00 sec)
+
+# 插入数据&#39;j&#39;
+insert into t7 values(&#39;j&#39;);
+Query OK, 1 row affected (0.00 sec)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>关于宽度的限制，跟<code>严格模式</code>有关，</p>
 <p>5.6版本默认没有开启严格模式 规定只能存一个字符你给了多个字符，那么我会自动帮你截取</p>
@@ -327,10 +374,24 @@
 <p>一旦超出范围立刻报错 Data too long for ….</p>
 <h3 id="2-3-2-约束条件"><a href="#2-3-2-约束条件" class="headerlink" title="2.3.2 约束条件"></a>2.3.2 约束条件</h3><p>约束条件：是指在宽度的基础之上增加的额外的约束</p>
 <p>比如限制是可以插入空值的约束条件</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs python">null：可以插入NULL<br><span class="hljs-keyword">not</span> null：不能插入NULL<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">null：可以插入NULL
+<span class="token keyword">not</span> null：不能插入NULL<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
 
 <p>案例：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 创建表</span><br>create table t6(<span class="hljs-built_in">id</span> <span class="hljs-built_in">int</span> null, name char(<span class="hljs-number">10</span>) <span class="hljs-keyword">not</span> null, age <span class="hljs-built_in">int</span>);<br><br><span class="hljs-comment"># 插入数据01，正常</span><br>mysql&gt; insert into t6 values(<span class="hljs-number">1</span>, <span class="hljs-string">&#x27;大蒜&#x27;</span>, <span class="hljs-number">10</span>);<br>Query OK, <span class="hljs-number">1</span> row affected (<span class="hljs-number">0.00</span> sec)<br><br><span class="hljs-comment"># 插入数据02，正常</span><br>mysql&gt; insert into t6 values(null, <span class="hljs-string">&#x27;小葱&#x27;</span>, <span class="hljs-number">10</span>);<br>Query OK, <span class="hljs-number">1</span> row affected (<span class="hljs-number">0.00</span> sec)<br><br><span class="hljs-comment"># 插入数据03，报错</span><br>mysql&gt; insert into t6 values(null, NULL, <span class="hljs-number">10</span>);<br>ERROR <span class="hljs-number">1048</span> (<span class="hljs-number">23000</span>): Column <span class="hljs-string">&#x27;name&#x27;</span> cannot be null<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token comment"># 创建表</span>
+create table t6<span class="token punctuation">(</span><span class="token builtin">id</span> <span class="token builtin">int</span> null<span class="token punctuation">,</span> name char<span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span> <span class="token keyword">not</span> null<span class="token punctuation">,</span> age <span class="token builtin">int</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment"># 插入数据01，正常</span>
+mysql<span class="token operator">></span> insert into t6 values<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token string">'大蒜'</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+Query OK<span class="token punctuation">,</span> <span class="token number">1</span> row affected <span class="token punctuation">(</span><span class="token number">0.00</span> sec<span class="token punctuation">)</span>
+
+<span class="token comment"># 插入数据02，正常</span>
+mysql<span class="token operator">></span> insert into t6 values<span class="token punctuation">(</span>null<span class="token punctuation">,</span> <span class="token string">'小葱'</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+Query OK<span class="token punctuation">,</span> <span class="token number">1</span> row affected <span class="token punctuation">(</span><span class="token number">0.00</span> sec<span class="token punctuation">)</span>
+
+<span class="token comment"># 插入数据03，报错</span>
+mysql<span class="token operator">></span> insert into t6 values<span class="token punctuation">(</span>null<span class="token punctuation">,</span> NULL<span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ERROR <span class="token number">1048</span> <span class="token punctuation">(</span><span class="token number">23000</span><span class="token punctuation">)</span><span class="token punctuation">:</span> Column <span class="token string">'name'</span> cannot be null<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 
 
@@ -373,22 +434,76 @@
 <p>超出会如何？ — 超出限制只存最大可接受值</p>
 <p>来验证这两个问题：</p>
 <p><strong>有符号插入：</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs mysql"># 创建表<br>create table t8(id tinyint, age tinyint);<br><br># 插入数据，过大会报错<br>mysql&gt; insert into t8 values(-129, 256);<br>ERROR 1264 (22003): Out of range value for column &#x27;id&#x27; at row 1<br><br># 正常范围可以插入<br>mysql&gt; insert into t8 values(-128, 127);<br>Query OK, 1 row affected (0.00 sec)<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-mysql" data-language="mysql"><code class="language-mysql"># 创建表
+create table t8(id tinyint, age tinyint);
+
+# 插入数据，过大会报错
+mysql&gt; insert into t8 values(-129, 256);
+ERROR 1264 (22003): Out of range value for column &#39;id&#39; at row 1
+
+# 正常范围可以插入
+mysql&gt; insert into t8 values(-128, 127);
+Query OK, 1 row affected (0.00 sec)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p><strong>无符号插入</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs mysql"># 修改为有符号<br>mysql&gt; alter table t8 change age age tinyint unsigned;<br>mysql&gt; alter table t8 change id id tinyint unsigned;<br><br># 插入数据，成功<br>mysql&gt; insert into t8 values(0, 255);<br>Query OK, 1 row affected (0.00 sec)<br><br># 插入数据，失败，超出范围<br>mysql&gt; insert into t8 values(-127, 128);<br>ERROR 1264 (22003): Out of range value for column &#x27;id&#x27; at row 1<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-mysql" data-language="mysql"><code class="language-mysql"># 修改为有符号
+mysql&gt; alter table t8 change age age tinyint unsigned;
+mysql&gt; alter table t8 change id id tinyint unsigned;
+
+# 插入数据，成功
+mysql&gt; insert into t8 values(0, 255);
+Query OK, 1 row affected (0.00 sec)
+
+# 插入数据，失败，超出范围
+mysql&gt; insert into t8 values(-127, 128);
+ERROR 1264 (22003): Out of range value for column &#39;id&#39; at row 1<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <blockquote>
 <p>☀️补充：</p>
 <p>整型也可以使用括号指定宽度，这个宽度到底是干嘛的？</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs mysql">&gt;# 创建表，并指定整型宽度<br>&gt;create table t12(id int(8));<br>&gt;insert into t12 values(123456789);<br><br>&gt;# 即使超过了8位，也能成功<br>&gt;mysql&gt; insert into t9 values(123456789);<br>&gt;Query OK, 1 row affected (0.00 sec)<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-mysql" data-language="mysql"><code class="language-mysql">&gt;# 创建表，并指定整型宽度
+&gt;create table t12(id int(8));
+&gt;insert into t12 values(123456789);
+
+&gt;# 即使超过了8位，也能成功
+&gt;mysql&gt; insert into t9 values(123456789);
+&gt;Query OK, 1 row affected (0.00 sec)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>这是因为：只有整型括号里面的数字不是表示限制位数<br>id int(8)<br>如果数字没有超出8位 那么默认用空格填充至8位<br>如果数字超出了8位 那么有几位就存几位(但是还是要遵守最大范围)</p>
 <p>可以在创建时设置<code>zerofill</code>,用0填充至8位</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs mysql">&gt;mysql&gt; create table t10(id int(8) unsigned zerofill);<br>&gt;Query OK, 0 rows affected, 2 warnings (0.01 sec)<br><br>&gt;mysql&gt; insert into t10 values(1);<br>&gt;Query OK, 1 row affected (0.00 sec)<br><br>&gt;mysql&gt; select * from t10;<br>&gt;+----------+<br>&gt;| id       |<br>&gt;+----------+<br>&gt;| 00000001 |<br>&gt;+----------+<br>&gt;1 row in set (0.00 sec)<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-mysql" data-language="mysql"><code class="language-mysql">&gt;mysql&gt; create table t10(id int(8) unsigned zerofill);
+&gt;Query OK, 0 rows affected, 2 warnings (0.01 sec)
+
+&gt;mysql&gt; insert into t10 values(1);
+&gt;Query OK, 1 row affected (0.00 sec)
+
+&gt;mysql&gt; select * from t10;
+&gt;+----------+
+&gt;| id       |
+&gt;+----------+
+&gt;| 00000001 |
+&gt;+----------+
+&gt;1 row in set (0.00 sec)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 </blockquote>
 <p>针对整型字段 括号内无需指定宽度 因为它默认的宽度以及足够显示所有的数据了</p>
-<h2 id="3-2-严格模式"><a href="#3-2-严格模式" class="headerlink" title="3.2 严格模式"></a>3.2 严格模式</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 1、如何查看严格模式</span><br>show variables like <span class="hljs-string">&quot;%mode&quot;</span>;<br>或者<br>select @@sql_mode<br><br>模糊匹配/查询<br>	关键字 like<br>		%:匹配任意多个字符<br>        _:匹配任意单个字符<br><br><span class="hljs-comment"># 2、修改严格模式</span><br>	<span class="hljs-built_in">set</span> session  只在当前窗口有效<br>    <span class="hljs-built_in">set</span> <span class="hljs-keyword">global</span>   全局有效<br>    <br>    <span class="hljs-comment"># 临时关闭严格模式（具体内容依据#1命令得到的结果为准，去除ONLY_FULL_GROUP_BY即可）</span><br>    <span class="hljs-built_in">set</span> <span class="hljs-keyword">global</span> sql_mode = <span class="hljs-string">&#x27;STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION&#x27;</span>;<br>    <br>	修改完之后 重新进入服务端即可<br></code></pre></td></tr></table></figure>
+<h2 id="3-2-严格模式"><a href="#3-2-严格模式" class="headerlink" title="3.2 严格模式"></a>3.2 严格模式</h2><figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token comment"># 1、如何查看严格模式</span>
+show variables like <span class="token string">"%mode"</span><span class="token punctuation">;</span>
+或者
+select @@sql_mode
+
+模糊匹配<span class="token operator">/</span>查询
+	关键字 like
+		<span class="token operator">%</span><span class="token punctuation">:</span>匹配任意多个字符
+        <span class="token keyword">_</span><span class="token punctuation">:</span>匹配任意单个字符
+
+<span class="token comment"># 2、修改严格模式</span>
+	<span class="token builtin">set</span> session  只在当前窗口有效
+    <span class="token builtin">set</span> <span class="token keyword">global</span>   全局有效
+    
+    <span class="token comment"># 临时关闭严格模式（具体内容依据#1命令得到的结果为准，去除ONLY_FULL_GROUP_BY即可）</span>
+    <span class="token builtin">set</span> <span class="token keyword">global</span> sql_mode <span class="token operator">=</span> <span class="token string">'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'</span><span class="token punctuation">;</span>
+    
+	修改完之后 重新进入服务端即可<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <h2 id="3-3-浮点型"><a href="#3-3-浮点型" class="headerlink" title="3.3 浮点型"></a>3.3 浮点型</h2><ul>
 <li><p>分类</p>
@@ -396,13 +511,73 @@
 </li>
 <li><p>作用</p>
 <p>身高、体重、薪资</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 存储限制</span><br><span class="hljs-built_in">float</span>(<span class="hljs-number">255</span>,<span class="hljs-number">30</span>)  <span class="hljs-comment"># 总共255位 小数部分占30位</span><br>double(<span class="hljs-number">255</span>,<span class="hljs-number">30</span>)  <span class="hljs-comment"># 总共255位 小数部分占30位</span><br>decimal(<span class="hljs-number">65</span>,<span class="hljs-number">30</span>)  <span class="hljs-comment"># 总共65位 小数部分占30位</span><br><br><span class="hljs-comment"># 精确度验证</span><br>create table t15(<span class="hljs-built_in">id</span> <span class="hljs-built_in">float</span>(<span class="hljs-number">255</span>,<span class="hljs-number">30</span>));<br>create table t16(<span class="hljs-built_in">id</span> double(<span class="hljs-number">255</span>,<span class="hljs-number">30</span>));<br>create table t17(<span class="hljs-built_in">id</span> decimal(<span class="hljs-number">65</span>,<span class="hljs-number">30</span>));<br><span class="hljs-string">&quot;&quot;&quot;你们在前期不要给我用反向键 所有的命令全部手敲！！！增加熟练度&quot;&quot;&quot;</span><br><br>insert into t15 values(<span class="hljs-number">1.111111111111111111111111111111</span>);<br>insert into t16 values(<span class="hljs-number">1.111111111111111111111111111111</span>);<br>insert into t17 values(<span class="hljs-number">1.111111111111111111111111111111</span>);<br><br><span class="hljs-built_in">float</span> &lt; double &lt; decimal<br><span class="hljs-comment"># 要结合实际应用场景 三者都能使用</span><br></code></pre></td></tr></table></figure></li>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token comment"># 存储限制</span>
+<span class="token builtin">float</span><span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">,</span><span class="token number">30</span><span class="token punctuation">)</span>  <span class="token comment"># 总共255位 小数部分占30位</span>
+double<span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">,</span><span class="token number">30</span><span class="token punctuation">)</span>  <span class="token comment"># 总共255位 小数部分占30位</span>
+decimal<span class="token punctuation">(</span><span class="token number">65</span><span class="token punctuation">,</span><span class="token number">30</span><span class="token punctuation">)</span>  <span class="token comment"># 总共65位 小数部分占30位</span>
+
+<span class="token comment"># 精确度验证</span>
+create table t15<span class="token punctuation">(</span><span class="token builtin">id</span> <span class="token builtin">float</span><span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">,</span><span class="token number">30</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+create table t16<span class="token punctuation">(</span><span class="token builtin">id</span> double<span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">,</span><span class="token number">30</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+create table t17<span class="token punctuation">(</span><span class="token builtin">id</span> decimal<span class="token punctuation">(</span><span class="token number">65</span><span class="token punctuation">,</span><span class="token number">30</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token triple-quoted-string string">"""你们在前期不要给我用反向键 所有的命令全部手敲！！！增加熟练度"""</span>
+
+insert into t15 values<span class="token punctuation">(</span><span class="token number">1.111111111111111111111111111111</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+insert into t16 values<span class="token punctuation">(</span><span class="token number">1.111111111111111111111111111111</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+insert into t17 values<span class="token punctuation">(</span><span class="token number">1.111111111111111111111111111111</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token builtin">float</span> <span class="token operator">&lt;</span> double <span class="token operator">&lt;</span> decimal
+<span class="token comment"># 要结合实际应用场景 三者都能使用</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure></li>
 </ul>
 <h2 id="3-4-字符类型"><a href="#3-4-字符类型" class="headerlink" title="3.4 字符类型"></a>3.4 字符类型</h2><ul>
 <li><p>分类</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">char</span><br><span class="hljs-string">	定长</span><br><span class="hljs-string">	char(4)	 数据超过四个字符直接报错 不够四个字符空格补全</span><br><span class="hljs-string">varchar</span><br><span class="hljs-string">	变长</span><br><span class="hljs-string">	varchar(4)  数据超过四个字符直接报错 不够有几个存几个</span><br><span class="hljs-string">&quot;&quot;&quot;</span><br>create table t18(name char(<span class="hljs-number">4</span>));<br>create table t19(name varchar(<span class="hljs-number">4</span>));<br><br>insert into t18 values(<span class="hljs-string">&#x27;a&#x27;</span>);<br>insert into t19 values(<span class="hljs-string">&#x27;a&#x27;</span>);<br><br><span class="hljs-comment"># 介绍一个小方法 char_length统计字段长度</span><br>select char_length(name) <span class="hljs-keyword">from</span> t18;<br>select char_length(name) <span class="hljs-keyword">from</span> t19;<br><span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">首先可以肯定的是 char硬盘上存的绝对是真正的数据 带有空格的</span><br><span class="hljs-string">但是在显示的时候MySQL会自动将多余的空格剔除</span><br><span class="hljs-string">&quot;&quot;&quot;</span><br><br><span class="hljs-comment"># 再次修改sql_mode 让MySQL不要做自动剔除操作</span><br><span class="hljs-built_in">set</span> <span class="hljs-keyword">global</span> sql_mode = <span class="hljs-string">&#x27;STRICT_TRANS_TABLES,PAD_CHAR_TO_FULL_LENGTH&#x27;</span>;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token triple-quoted-string string">"""
+char
+	定长
+	char(4)	 数据超过四个字符直接报错 不够四个字符空格补全
+varchar
+	变长
+	varchar(4)  数据超过四个字符直接报错 不够有几个存几个
+"""</span>
+create table t18<span class="token punctuation">(</span>name char<span class="token punctuation">(</span><span class="token number">4</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+create table t19<span class="token punctuation">(</span>name varchar<span class="token punctuation">(</span><span class="token number">4</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-<h4 id="char与varchar对比"><a href="#char与varchar对比" class="headerlink" title="char与varchar对比"></a>char与varchar对比</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">char</span><br><span class="hljs-string">	缺点:浪费空间</span><br><span class="hljs-string">	优点:存取都很简单</span><br><span class="hljs-string">		直接按照固定的字符存取数据即可</span><br><span class="hljs-string">		jason egon alex wusir tank </span><br><span class="hljs-string">		存按照五个字符存 取也直接按照五个字符取</span><br><span class="hljs-string">		</span><br><span class="hljs-string">varchar</span><br><span class="hljs-string">	优点:节省空间</span><br><span class="hljs-string">	缺点:存取较为麻烦</span><br><span class="hljs-string">		1bytes+jason 1bytes+egon 1bytes+alex 1bytes+tank </span><br><span class="hljs-string">		</span><br><span class="hljs-string">		存的时候需要制作报头</span><br><span class="hljs-string">		取的时候也需要先读取报头 之后才能读取真实数据</span><br><span class="hljs-string">		</span><br><span class="hljs-string">以前基本上都是用的char 其实现在用varchar的也挺多</span><br><span class="hljs-string">&quot;&quot;&quot;</span><br><br>补充:<br>    进来公司之后你完全不需要考虑字段类型和字段名<br>    因为产品经理给你发的邮件上已经全部指明了<br></code></pre></td></tr></table></figure></li>
+insert into t18 values<span class="token punctuation">(</span><span class="token string">'a'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+insert into t19 values<span class="token punctuation">(</span><span class="token string">'a'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment"># 介绍一个小方法 char_length统计字段长度</span>
+select char_length<span class="token punctuation">(</span>name<span class="token punctuation">)</span> <span class="token keyword">from</span> t18<span class="token punctuation">;</span>
+select char_length<span class="token punctuation">(</span>name<span class="token punctuation">)</span> <span class="token keyword">from</span> t19<span class="token punctuation">;</span>
+<span class="token triple-quoted-string string">"""
+首先可以肯定的是 char硬盘上存的绝对是真正的数据 带有空格的
+但是在显示的时候MySQL会自动将多余的空格剔除
+"""</span>
+
+<span class="token comment"># 再次修改sql_mode 让MySQL不要做自动剔除操作</span>
+<span class="token builtin">set</span> <span class="token keyword">global</span> sql_mode <span class="token operator">=</span> <span class="token string">'STRICT_TRANS_TABLES,PAD_CHAR_TO_FULL_LENGTH'</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<h4 id="char与varchar对比"><a href="#char与varchar对比" class="headerlink" title="char与varchar对比"></a>char与varchar对比</h4><figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token triple-quoted-string string">"""
+char
+	缺点:浪费空间
+	优点:存取都很简单
+		直接按照固定的字符存取数据即可
+		jason egon alex wusir tank 
+		存按照五个字符存 取也直接按照五个字符取
+		
+varchar
+	优点:节省空间
+	缺点:存取较为麻烦
+		1bytes+jason 1bytes+egon 1bytes+alex 1bytes+tank 
+		
+		存的时候需要制作报头
+		取的时候也需要先读取报头 之后才能读取真实数据
+		
+以前基本上都是用的char 其实现在用varchar的也挺多
+"""</span>
+
+补充<span class="token punctuation">:</span>
+    进来公司之后你完全不需要考虑字段类型和字段名
+    因为产品经理给你发的邮件上已经全部指明了<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure></li>
 </ul>
 <h2 id="3-5-时间类型"><a href="#3-5-时间类型" class="headerlink" title="3.5 时间类型"></a>3.5 时间类型</h2><ul>
 <li><p>分类</p>
@@ -411,16 +586,61 @@
 </ul>
 <p>| ——– | ——————————- |<br>  | date     | 年月日：2020-5-4                |<br>| datetime | 年月日时分秒：2020-5-4 11:11:11 |<br>  | time     | 时分秒：11:11:11                |<br>| year     | 年：2020                        |</p>
 <p>案例如下：</p>
-  <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs python">create table student(<br>	<span class="hljs-built_in">id</span> <span class="hljs-built_in">int</span>,<br>    name varchar(<span class="hljs-number">16</span>),<br>    born_year year,<br>    birth date,<br>    study_time time,<br>    reg_time datetime<br>);<br>insert into student values(<span class="hljs-number">1</span>,<span class="hljs-string">&#x27;egon&#x27;</span>,<span class="hljs-string">&#x27;1880&#x27;</span>,<span class="hljs-string">&#x27;1880-11-11&#x27;</span>,<span class="hljs-string">&#x27;11:11:11&#x27;</span>,<span class="hljs-string">&#x27;2020-11-11 11:11:11&#x27;</span>);<br></code></pre></td></tr></table></figure>
+  <figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">create table student<span class="token punctuation">(</span>
+	<span class="token builtin">id</span> <span class="token builtin">int</span><span class="token punctuation">,</span>
+    name varchar<span class="token punctuation">(</span><span class="token number">16</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    born_year year<span class="token punctuation">,</span>
+    birth date<span class="token punctuation">,</span>
+    study_time time<span class="token punctuation">,</span>
+    reg_time datetime
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+insert into student values<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token string">'egon'</span><span class="token punctuation">,</span><span class="token string">'1880'</span><span class="token punctuation">,</span><span class="token string">'1880-11-11'</span><span class="token punctuation">,</span><span class="token string">'11:11:11'</span><span class="token punctuation">,</span><span class="token string">'2020-11-11 11:11:11'</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <h2 id="3-6-枚举与集合类型"><a href="#3-6-枚举与集合类型" class="headerlink" title="3.6 枚举与集合类型"></a>3.6 枚举与集合类型</h2><ul>
 <li><p>分类</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">枚举(enum)  多选一</span><br><span class="hljs-string">集合(set)   多选多</span><br><span class="hljs-string">&quot;&quot;&quot;</span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token triple-quoted-string string">"""
+枚举(enum)  多选一
+集合(set)   多选多
+"""</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 </li>
 <li><p>具体使用</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs python">  <span class="hljs-comment"># 1、使用枚举</span><br>  create table user(<br>  	<span class="hljs-built_in">id</span> <span class="hljs-built_in">int</span>,<br>      name char(<span class="hljs-number">16</span>),<br>      gender enum(<span class="hljs-string">&#x27;male&#x27;</span>,<span class="hljs-string">&#x27;female&#x27;</span>,<span class="hljs-string">&#x27;others&#x27;</span>)<br>  );<br>  <span class="hljs-comment"># 插入数据，正常</span><br>  insert into user values(<span class="hljs-number">1</span>,<span class="hljs-string">&#x27;jason&#x27;</span>,<span class="hljs-string">&#x27;male&#x27;</span>);  <br>  <span class="hljs-comment"># 插入数据，报错</span><br>  insert into user values(<span class="hljs-number">2</span>,<span class="hljs-string">&#x27;egon&#x27;</span>,<span class="hljs-string">&#x27;xxxxooo&#x27;</span>); <br>  <span class="hljs-comment"># 枚举字段 后期在存数据的时候只能从枚举里面选择一个存储 </span><br>  <br>  <br>  <span class="hljs-comment"># 2、使用集合</span><br>  create table teacher(<br>  	<span class="hljs-built_in">id</span> <span class="hljs-built_in">int</span>,<br>      name char(<span class="hljs-number">16</span>),<br>      gender enum(<span class="hljs-string">&#x27;male&#x27;</span>,<span class="hljs-string">&#x27;female&#x27;</span>,<span class="hljs-string">&#x27;others&#x27;</span>),<br>      hobby <span class="hljs-built_in">set</span>(<span class="hljs-string">&#x27;read&#x27;</span>,<span class="hljs-string">&#x27;DBJ&#x27;</span>,<span class="hljs-string">&#x27;hecha&#x27;</span>)<br>  );<br>  insert into teacher values(<span class="hljs-number">1</span>,<span class="hljs-string">&#x27;jason&#x27;</span>,<span class="hljs-string">&#x27;male&#x27;</span>,<span class="hljs-string">&#x27;read&#x27;</span>);  <span class="hljs-comment"># 正常</span><br>insert into teacher values(<span class="hljs-number">2</span>,<span class="hljs-string">&#x27;egon&#x27;</span>,<span class="hljs-string">&#x27;female&#x27;</span>,<span class="hljs-string">&#x27;DBJ,hecha&#x27;</span>);  <span class="hljs-comment"># 正常</span><br>  insert into teacher values(<span class="hljs-number">3</span>,<span class="hljs-string">&#x27;tank&#x27;</span>,<span class="hljs-string">&#x27;others&#x27;</span>,<span class="hljs-string">&#x27;生蚝&#x27;</span>); <span class="hljs-comment"># 报错</span><br></code></pre></td></tr></table></figure></li>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">  <span class="token comment"># 1、使用枚举</span>
+  create table user<span class="token punctuation">(</span>
+  	<span class="token builtin">id</span> <span class="token builtin">int</span><span class="token punctuation">,</span>
+      name char<span class="token punctuation">(</span><span class="token number">16</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+      gender enum<span class="token punctuation">(</span><span class="token string">'male'</span><span class="token punctuation">,</span><span class="token string">'female'</span><span class="token punctuation">,</span><span class="token string">'others'</span><span class="token punctuation">)</span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment"># 插入数据，正常</span>
+  insert into user values<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token string">'jason'</span><span class="token punctuation">,</span><span class="token string">'male'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+  <span class="token comment"># 插入数据，报错</span>
+  insert into user values<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span><span class="token string">'egon'</span><span class="token punctuation">,</span><span class="token string">'xxxxooo'</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+  <span class="token comment"># 枚举字段 后期在存数据的时候只能从枚举里面选择一个存储 </span>
+  
+  
+  <span class="token comment"># 2、使用集合</span>
+  create table teacher<span class="token punctuation">(</span>
+  	<span class="token builtin">id</span> <span class="token builtin">int</span><span class="token punctuation">,</span>
+      name char<span class="token punctuation">(</span><span class="token number">16</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+      gender enum<span class="token punctuation">(</span><span class="token string">'male'</span><span class="token punctuation">,</span><span class="token string">'female'</span><span class="token punctuation">,</span><span class="token string">'others'</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+      hobby <span class="token builtin">set</span><span class="token punctuation">(</span><span class="token string">'read'</span><span class="token punctuation">,</span><span class="token string">'DBJ'</span><span class="token punctuation">,</span><span class="token string">'hecha'</span><span class="token punctuation">)</span>
+  <span class="token punctuation">)</span><span class="token punctuation">;</span>
+  insert into teacher values<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token string">'jason'</span><span class="token punctuation">,</span><span class="token string">'male'</span><span class="token punctuation">,</span><span class="token string">'read'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment"># 正常</span>
+insert into teacher values<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span><span class="token string">'egon'</span><span class="token punctuation">,</span><span class="token string">'female'</span><span class="token punctuation">,</span><span class="token string">'DBJ,hecha'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment"># 正常</span>
+  insert into teacher values<span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span><span class="token string">'tank'</span><span class="token punctuation">,</span><span class="token string">'others'</span><span class="token punctuation">,</span><span class="token string">'生蚝'</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment"># 报错</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure></li>
 </ul>
-<h1 id="集合可以只写一个-但是不能写没有列举的"><a href="#集合可以只写一个-但是不能写没有列举的" class="headerlink" title="集合可以只写一个  但是不能写没有列举的"></a>集合可以只写一个  但是不能写没有列举的</h1>  <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs">  <br><br><br><br><br><br><br><br><br><br><br><br><br></code></pre></td></tr></table></figure>
+<h1 id="集合可以只写一个-但是不能写没有列举的"><a href="#集合可以只写一个-但是不能写没有列举的" class="headerlink" title="集合可以只写一个  但是不能写没有列举的"></a>集合可以只写一个  但是不能写没有列举的</h1>  <figure><div class="code-wrapper"><pre class="line-numbers language-none"><code class="language-none">  
+
+
+
+
+
+
+
+
+
+
+
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
                 
               </div>
             
@@ -715,6 +935,8 @@
   });
 </script>
 
+
+  <script  src="https://lib.baomitu.com/prism/1.28.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
 
   <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
 

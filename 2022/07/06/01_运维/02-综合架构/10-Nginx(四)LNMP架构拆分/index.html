@@ -1,7 +1,7 @@
 
 
 <!DOCTYPE html>
-<html lang="zh-CN" data-default-color-scheme=auto>
+<html lang="zh-CN" data-default-color-scheme=dark>
 
 
 
@@ -39,6 +39,8 @@
   <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/prism/1.28.0/plugins/line-numbers/prism-line-numbers.min.css" />
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
@@ -218,7 +220,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          4.8k 字
+          4.2k 字
         
       </span>
     
@@ -229,7 +231,7 @@
         
         
         
-          40 分钟
+          36 分钟
         
       </span>
     
@@ -299,26 +301,154 @@
 </tr>
 </tbody></table>
 <h3 id="1-2-拆分过程"><a href="#1-2-拆分过程" class="headerlink" title="1.2 拆分过程"></a>1.2 拆分过程</h3><p>1、备份172.16.1.7服务器上mysql的数据</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01 ~]# mysqldump -uroot -p&#x27;Bgx123.com&#x27; --all-databases --single-transaction &gt; mysql-all.sql<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@web01 ~<span class="token punctuation">]</span><span class="token comment"># mysqldump -uroot -p'Bgx123.com' --all-databases --single-transaction > mysql-all.sql</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
 
 <p>2、传输172.16.1.7的备份数据至172.16.1.51的服务器上</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01 ~]# scp mysql-all.sql root@172.16.1.51:/tmp<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@web01 ~<span class="token punctuation">]</span><span class="token comment"># scp mysql-all.sql root@172.16.1.51:/tmp</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
 
 <p>3、需要先在172.16.1.51服务器上安装mysql服务，然后使用mysql命令进行还原。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@db01 ~]# yum install mariadb-server mariadb -y<br>[root@db01 ~]# systemctl enable mariadb<br>[root@db01 ~]# systemctl start mariadb<br>[root@db01 ~]# mysql &lt;/tmp/mysql-all.sql<br>[root@db01 ~]# systemctl restart mariadb<br>[root@db01 ~]# mysql -uroot -pBgx123.com<br>MariaDB [(none)]&gt; show databases;<br>+--------------------+<br>| Database           |<br>+--------------------+<br>| information_schema |<br>| edusoho            |<br>| mysql              |<br>| performance_schema |<br>| test               |<br>| wordpress          |<br>| zh                 |<br>+--------------------+<br>7 rows in set (0.00 sec)<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@db01 ~<span class="token punctuation">]</span><span class="token comment"># yum install mariadb-server mariadb -y</span>
+<span class="token punctuation">[</span>root@db01 ~<span class="token punctuation">]</span><span class="token comment"># systemctl enable mariadb</span>
+<span class="token punctuation">[</span>root@db01 ~<span class="token punctuation">]</span><span class="token comment"># systemctl start mariadb</span>
+<span class="token punctuation">[</span>root@db01 ~<span class="token punctuation">]</span><span class="token comment"># mysql &lt;/tmp/mysql-all.sql</span>
+<span class="token punctuation">[</span>root@db01 ~<span class="token punctuation">]</span><span class="token comment"># systemctl restart mariadb</span>
+<span class="token punctuation">[</span>root@db01 ~<span class="token punctuation">]</span><span class="token comment"># mysql -uroot -pBgx123.com</span>
+MariaDB <span class="token punctuation">[</span><span class="token punctuation">(</span>none<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token operator">></span> show databases<span class="token punctuation">;</span>
++--------------------+
+<span class="token operator">|</span> Database           <span class="token operator">|</span>
++--------------------+
+<span class="token operator">|</span> information_schema <span class="token operator">|</span>
+<span class="token operator">|</span> edusoho            <span class="token operator">|</span>
+<span class="token operator">|</span> mysql              <span class="token operator">|</span>
+<span class="token operator">|</span> performance_schema <span class="token operator">|</span>
+<span class="token operator">|</span> <span class="token builtin class-name">test</span>               <span class="token operator">|</span>
+<span class="token operator">|</span> wordpress          <span class="token operator">|</span>
+<span class="token operator">|</span> zh                 <span class="token operator">|</span>
++--------------------+
+<span class="token number">7</span> rows <span class="token keyword">in</span> <span class="token builtin class-name">set</span> <span class="token punctuation">(</span><span class="token number">0.00</span> sec<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>4、将web程序连接的本地数据库修改到远程数据库上。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs shell">1）先在本地172.16.1.7服务器上停止本地的数据库<br>[root@web01 ~]# systemctl disable mariadb<br>[root@web01 ~]# systemctl stop mariadb<br><br>2）在172.16.1.51的服务器上授权远程主机能够能连接mysql数据库<br>[root@db01 ~]# mysql -uroot -pBgx123.com<br>MariaDB [(none)]&gt; grant all privileges on *.* to oldboy@&#x27;%&#x27; identified by &#x27;Bgx123.com&#x27;;<br>解释：<br>*.*: 所有数据库下的所有表<br>oldboy@&#x27;%&#x27;: 允许所有网段的oldboy用户访问<br>identify: 设置密码<br><br>3）在172.16.1.7服务器上测试远程账户能否连接172.16.1.51的数据库<br>[root@web01 wordpress]# yum install mariadb -y<br>[root@web01 wordpress]# mysql -h 172.16.1.51 -uoldboy -pBgx123.com<br>MariaDB [(none)]&gt; <br><br>4）在172.16.1.7服务器上修改web程序连接数据库的配置文件<br>[root@web01 wordpress]# vim /code/wordpress/wp-config.php<br>// ** MySQL 设置 - 具体信息来自您正在使用的主机 ** //<br>/** WordPress数据库的名称 */<br>define(&#x27;DB_NAME&#x27;, &#x27;wordpress&#x27;);<br><br>/** MySQL数据库用户名 */<br>define(&#x27;DB_USER&#x27;, &#x27;oldboy&#x27;);<br><br>/** MySQL数据库密码 */<br>define(&#x27;DB_PASSWORD&#x27;, &#x27;Bgx123.com&#x27;);<br><br>/** MySQL主机 */<br>define(&#x27;DB_HOST&#x27;, &#x27;172.16.1.51&#x27;);<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>）先在本地172.16.1.7服务器上停止本地的数据库
+<span class="token punctuation">[</span>root@web01 ~<span class="token punctuation">]</span><span class="token comment"># systemctl disable mariadb</span>
+<span class="token punctuation">[</span>root@web01 ~<span class="token punctuation">]</span><span class="token comment"># systemctl stop mariadb</span>
+
+<span class="token number">2</span>）在172.16.1.51的服务器上授权远程主机能够能连接mysql数据库
+<span class="token punctuation">[</span>root@db01 ~<span class="token punctuation">]</span><span class="token comment"># mysql -uroot -pBgx123.com</span>
+MariaDB <span class="token punctuation">[</span><span class="token punctuation">(</span>none<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token operator">></span> grant all privileges on *.* to oldboy@<span class="token string">'%'</span> identified by <span class="token string">'Bgx123.com'</span><span class="token punctuation">;</span>
+解释：
+*.*: 所有数据库下的所有表
+oldboy@<span class="token string">'%'</span><span class="token builtin class-name">:</span> 允许所有网段的oldboy用户访问
+identify: 设置密码
+
+<span class="token number">3</span>）在172.16.1.7服务器上测试远程账户能否连接172.16.1.51的数据库
+<span class="token punctuation">[</span>root@web01 wordpress<span class="token punctuation">]</span><span class="token comment"># yum install mariadb -y</span>
+<span class="token punctuation">[</span>root@web01 wordpress<span class="token punctuation">]</span><span class="token comment"># mysql -h 172.16.1.51 -uoldboy -pBgx123.com</span>
+MariaDB <span class="token punctuation">[</span><span class="token punctuation">(</span>none<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token operator">></span> 
+
+<span class="token number">4</span>）在172.16.1.7服务器上修改web程序连接数据库的配置文件
+<span class="token punctuation">[</span>root@web01 wordpress<span class="token punctuation">]</span><span class="token comment"># vim /code/wordpress/wp-config.php</span>
+// ** MySQL 设置 - 具体信息来自您正在使用的主机 ** //
+/** WordPress数据库的名称 */
+define<span class="token punctuation">(</span><span class="token string">'DB_NAME'</span>, <span class="token string">'wordpress'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+/** MySQL数据库用户名 */
+define<span class="token punctuation">(</span><span class="token string">'DB_USER'</span>, <span class="token string">'oldboy'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+/** MySQL数据库密码 */
+define<span class="token punctuation">(</span><span class="token string">'DB_PASSWORD'</span>, <span class="token string">'Bgx123.com'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+/** MySQL主机 */
+define<span class="token punctuation">(</span><span class="token string">'DB_HOST'</span>, <span class="token string">'172.16.1.51'</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>5、拆分172.16.1.7wecenter连接远程172.16.1.51数据库信息</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01 zh]# grep -R &quot;Bgx123.com&quot; *<br>	system/config/database.php:  &#x27;password&#x27; =&gt; &#x27;Bgx123.com&#x27;,<br>[root@web01 zh]# vim /code/zh/system/config/database.php <br><span class="hljs-meta prompt_">	$</span><span class="language-bash">config[<span class="hljs-string">&#x27;driver&#x27;</span>] = <span class="hljs-string">&#x27;MySQLi&#x27;</span>;^M</span><br><span class="hljs-meta prompt_">	$</span><span class="language-bash">config[<span class="hljs-string">&#x27;master&#x27;</span>] = array (</span><br>	  &#x27;charset&#x27; =&gt; &#x27;utf8&#x27;,<br>	  &#x27;host&#x27; =&gt; &#x27;172.16.1.51&#x27;,<br>	  &#x27;username&#x27; =&gt; &#x27;oldboy&#x27;,<br>	  &#x27;password&#x27; =&gt; &#x27;Bgx123.com&#x27;,<br>	  &#x27;dbname&#x27; =&gt; &#x27;zh&#x27;,<br>	);^M<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@web01 zh<span class="token punctuation">]</span><span class="token comment"># grep -R "Bgx123.com" *</span>
+	system/config/database.php:  <span class="token string">'password'</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token string">'Bgx123.com'</span>,
+<span class="token punctuation">[</span>root@web01 zh<span class="token punctuation">]</span><span class="token comment"># vim /code/zh/system/config/database.php </span>
+	<span class="token variable">$config</span><span class="token punctuation">[</span><span class="token string">'driver'</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string">'MySQLi'</span><span class="token punctuation">;</span>^M
+	<span class="token variable">$config</span><span class="token punctuation">[</span><span class="token string">'master'</span><span class="token punctuation">]</span> <span class="token operator">=</span> array <span class="token punctuation">(</span>
+	  <span class="token string">'charset'</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token string">'utf8'</span>,
+	  <span class="token string">'host'</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token string">'172.16.1.51'</span>,
+	  <span class="token string">'username'</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token string">'oldboy'</span>,
+	  <span class="token string">'password'</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token string">'Bgx123.com'</span>,
+	  <span class="token string">'dbname'</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token string">'zh'</span>,
+	<span class="token punctuation">)</span><span class="token punctuation">;</span>^M<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>6、拆分172.16.1.7 edusoho连接远程172.16.1.51数据库信息</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01 edusoho]# vim /code/edusoho/app/config/parameters.yml<br>database_driver: pdo_mysql<br>database_host: 172.16.1.51<br>database_port: 3306<br>database_name: edusoho<br>database_user: oldboy<br>database_password: &#x27;Bgx123.com&#x27;<br><br>必须清理缓存<br>[root@web01 edusoho]# rm -rf /code/edusoho/app/cache/*<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@web01 edusoho<span class="token punctuation">]</span><span class="token comment"># vim /code/edusoho/app/config/parameters.yml</span>
+database_driver: pdo_mysql
+database_host: <span class="token number">172.16</span>.1.51
+database_port: <span class="token number">3306</span>
+database_name: edusoho
+database_user: oldboy
+database_password: <span class="token string">'Bgx123.com'</span>
 
-<h2 id="二、扩展多台web服务器"><a href="#二、扩展多台web服务器" class="headerlink" title="二、扩展多台web服务器"></a>二、扩展多台web服务器</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs shell">1.统一环境<br>    0）准备对应的www用户<br>    [root@web02 ~]# groupadd -g666 www<br>    [root@web02 ~]# useradd -u666 -g666 www<br><br>    1）拷贝web01上面的yum仓库<br>    [root@web02 ~]# scp root@172.16.1.7:/etc/yum.repos.d/*.repo /etc/yum.repos.d/<br><br>    2）安装nginx和php<br>    [root@web02 ~]# yum -y install nginx php71w php71w-cli php71w-common php71w-devel php71w-embedded php71w-gd php71w-mcrypt php71w-mbstring php71w-pdo php71w-xml php71w-fpm php71w-mysqlnd php71w-opcache php71w-pecl-memcached php71w-pecl-redis php71w-pecl-mongodb<br><br>2.统一配置（同步web01上面的配置到web02）<br>    1）同步nginx<br>    [root@web02 ~]# rsync  -avz --delete root@172.16.1.7:/etc/nginx/ /etc/nginx/<br>    [root@web02 ~]# nginx -t<br>    [root@web02 ~]# systemctl enable nginx<br>    [root@web02 ~]# systemctl start nginx<br><br>    2）同步php（/etc/php-fpm.conf /etc/php-fpm.d  /etc/php.ini）<br>    [root@web02 ~]# rsync  -avz --delete root@172.16.1.7:/etc/php* /etc/<br>    [root@web02 ~]# systemctl enable php-fpm<br>    [root@web02 ~]# systemctl start php-fpm<br><br>3.统一代码<br>    [root@web01 ~]# tar czf code.tar.gz /code				#在web01上打包站点<br>    [root@web01 ~]# scp code.tar.gz root@172.16.1.8:/tmp	#在web01上将打包好的代码发送给web02<br>    [root@web02 ~]# tar xf /tmp/code.tar.gz -C /			#在web02上进行解压，并解压到/目录下<br><br>4.配置解析，进行访问<br></code></pre></td></tr></table></figure>
+必须清理缓存
+<span class="token punctuation">[</span>root@web01 edusoho<span class="token punctuation">]</span><span class="token comment"># rm -rf /code/edusoho/app/cache/*</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
-<h2 id="三、NFS共享多台web的静态资源"><a href="#三、NFS共享多台web的静态资源" class="headerlink" title="三、NFS共享多台web的静态资源"></a>三、NFS共享多台web的静态资源</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><code class="hljs shell">1.准备172.16.1.31共享存储服务器，规划目录，配置好权限<br>    0）创建用户<br>    [root@nfs ~]# groupadd -g666 www<br>    [root@nfs ~]# useradd -u666 -g666 www	<br><br>    1）安装<br>    [root@nfs ~]# yum install nfs-utils -y<br><br>    2）配置<br>    [root@nfs ~]# cat /etc/exports<br>    /data/blog 172.16.1.0/24(rw,sync,all_squash,anonuid=666,anongid=666)<br>    /data/zh 172.16.1.0/24(rw,sync,all_squash,anonuid=666,anongid=666)<br>    /data/edu 172.16.1.0/24(rw,sync,all_squash,anonuid=666,anongid=666)<br><br>    3）根据配置，创建目录，准备用户，授权等等<br>    [root@nfs ~]# rm -rf /data/<br>    [root@nfs ~]# mkdir /data/&#123;blog,zh,edu&#125; -p<br>    [root@nfs ~]# chown -R www.www /data/<br><br>    4）启动<br>    [root@nfs ~]# systemctl enable nfs-utils <br>    [root@nfs ~]# systemctl restart nfs-utils<br><br>2.将图片较多的web02服务器，推送到nfs共享存储上<br>    http://blog.oldboy.com/wp-content/uploads/2019/01/timg.jpg<br><br>    [root@web02 ~]# cd /code/wordpress/wp-content<br>    [root@web02 wp-content]# scp -r uploads/* root@172.16.1.31:/data/blog/<br><br>    注意：需要上nfs服务器上进行重新的递归授权，否则会出现无法上传文件的错误<br>    [root@nfs ~]# chown -R www.www /data/<br><br>3.web01和web02分别都进行挂载，此时图片进行实现了共享<br>    mount -t nfs 172.16.1.31:/data/blog  /code/wordpress/wp-content/uploads/<br></code></pre></td></tr></table></figure>
+<h2 id="二、扩展多台web服务器"><a href="#二、扩展多台web服务器" class="headerlink" title="二、扩展多台web服务器"></a>二、扩展多台web服务器</h2><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>.统一环境
+    <span class="token number">0</span>）准备对应的www用户
+    <span class="token punctuation">[</span>root@web02 ~<span class="token punctuation">]</span><span class="token comment"># groupadd -g666 www</span>
+    <span class="token punctuation">[</span>root@web02 ~<span class="token punctuation">]</span><span class="token comment"># useradd -u666 -g666 www</span>
+
+    <span class="token number">1</span>）拷贝web01上面的yum仓库
+    <span class="token punctuation">[</span>root@web02 ~<span class="token punctuation">]</span><span class="token comment"># scp root@172.16.1.7:/etc/yum.repos.d/*.repo /etc/yum.repos.d/</span>
+
+    <span class="token number">2</span>）安装nginx和php
+    <span class="token punctuation">[</span>root@web02 ~<span class="token punctuation">]</span><span class="token comment"># yum -y install nginx php71w php71w-cli php71w-common php71w-devel php71w-embedded php71w-gd php71w-mcrypt php71w-mbstring php71w-pdo php71w-xml php71w-fpm php71w-mysqlnd php71w-opcache php71w-pecl-memcached php71w-pecl-redis php71w-pecl-mongodb</span>
+
+<span class="token number">2</span>.统一配置（同步web01上面的配置到web02）
+    <span class="token number">1</span>）同步nginx
+    <span class="token punctuation">[</span>root@web02 ~<span class="token punctuation">]</span><span class="token comment"># rsync  -avz --delete root@172.16.1.7:/etc/nginx/ /etc/nginx/</span>
+    <span class="token punctuation">[</span>root@web02 ~<span class="token punctuation">]</span><span class="token comment"># nginx -t</span>
+    <span class="token punctuation">[</span>root@web02 ~<span class="token punctuation">]</span><span class="token comment"># systemctl enable nginx</span>
+    <span class="token punctuation">[</span>root@web02 ~<span class="token punctuation">]</span><span class="token comment"># systemctl start nginx</span>
+
+    <span class="token number">2</span>）同步php（/etc/php-fpm.conf /etc/php-fpm.d  /etc/php.ini）
+    <span class="token punctuation">[</span>root@web02 ~<span class="token punctuation">]</span><span class="token comment"># rsync  -avz --delete root@172.16.1.7:/etc/php* /etc/</span>
+    <span class="token punctuation">[</span>root@web02 ~<span class="token punctuation">]</span><span class="token comment"># systemctl enable php-fpm</span>
+    <span class="token punctuation">[</span>root@web02 ~<span class="token punctuation">]</span><span class="token comment"># systemctl start php-fpm</span>
+
+<span class="token number">3</span>.统一代码
+    <span class="token punctuation">[</span>root@web01 ~<span class="token punctuation">]</span><span class="token comment"># tar czf code.tar.gz /code				#在web01上打包站点</span>
+    <span class="token punctuation">[</span>root@web01 ~<span class="token punctuation">]</span><span class="token comment"># scp code.tar.gz root@172.16.1.8:/tmp	#在web01上将打包好的代码发送给web02</span>
+    <span class="token punctuation">[</span>root@web02 ~<span class="token punctuation">]</span><span class="token comment"># tar xf /tmp/code.tar.gz -C /			#在web02上进行解压，并解压到/目录下</span>
+
+<span class="token number">4</span>.配置解析，进行访问<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<h2 id="三、NFS共享多台web的静态资源"><a href="#三、NFS共享多台web的静态资源" class="headerlink" title="三、NFS共享多台web的静态资源"></a>三、NFS共享多台web的静态资源</h2><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>.准备172.16.1.31共享存储服务器，规划目录，配置好权限
+    <span class="token number">0</span>）创建用户
+    <span class="token punctuation">[</span>root@nfs ~<span class="token punctuation">]</span><span class="token comment"># groupadd -g666 www</span>
+    <span class="token punctuation">[</span>root@nfs ~<span class="token punctuation">]</span><span class="token comment"># useradd -u666 -g666 www	</span>
+
+    <span class="token number">1</span>）安装
+    <span class="token punctuation">[</span>root@nfs ~<span class="token punctuation">]</span><span class="token comment"># yum install nfs-utils -y</span>
+
+    <span class="token number">2</span>）配置
+    <span class="token punctuation">[</span>root@nfs ~<span class="token punctuation">]</span><span class="token comment"># cat /etc/exports</span>
+    /data/blog <span class="token number">172.16</span>.1.0/24<span class="token punctuation">(</span>rw,sync,all_squash,anonuid<span class="token operator">=</span><span class="token number">666</span>,anongid<span class="token operator">=</span><span class="token number">666</span><span class="token punctuation">)</span>
+    /data/zh <span class="token number">172.16</span>.1.0/24<span class="token punctuation">(</span>rw,sync,all_squash,anonuid<span class="token operator">=</span><span class="token number">666</span>,anongid<span class="token operator">=</span><span class="token number">666</span><span class="token punctuation">)</span>
+    /data/edu <span class="token number">172.16</span>.1.0/24<span class="token punctuation">(</span>rw,sync,all_squash,anonuid<span class="token operator">=</span><span class="token number">666</span>,anongid<span class="token operator">=</span><span class="token number">666</span><span class="token punctuation">)</span>
+
+    <span class="token number">3</span>）根据配置，创建目录，准备用户，授权等等
+    <span class="token punctuation">[</span>root@nfs ~<span class="token punctuation">]</span><span class="token comment"># rm -rf /data/</span>
+    <span class="token punctuation">[</span>root@nfs ~<span class="token punctuation">]</span><span class="token comment"># mkdir /data/&#123;blog,zh,edu&#125; -p</span>
+    <span class="token punctuation">[</span>root@nfs ~<span class="token punctuation">]</span><span class="token comment"># chown -R www.www /data/</span>
+
+    <span class="token number">4</span>）启动
+    <span class="token punctuation">[</span>root@nfs ~<span class="token punctuation">]</span><span class="token comment"># systemctl enable nfs-utils </span>
+    <span class="token punctuation">[</span>root@nfs ~<span class="token punctuation">]</span><span class="token comment"># systemctl restart nfs-utils</span>
+
+<span class="token number">2</span>.将图片较多的web02服务器，推送到nfs共享存储上
+    http://blog.oldboy.com/wp-content/uploads/2019/01/timg.jpg
+
+    <span class="token punctuation">[</span>root@web02 ~<span class="token punctuation">]</span><span class="token comment"># cd /code/wordpress/wp-content</span>
+    <span class="token punctuation">[</span>root@web02 wp-content<span class="token punctuation">]</span><span class="token comment"># scp -r uploads/* root@172.16.1.31:/data/blog/</span>
+
+    注意：需要上nfs服务器上进行重新的递归授权，否则会出现无法上传文件的错误
+    <span class="token punctuation">[</span>root@nfs ~<span class="token punctuation">]</span><span class="token comment"># chown -R www.www /data/</span>
+
+<span class="token number">3</span>.web01和web02分别都进行挂载，此时图片进行实现了共享
+    <span class="token function">mount</span> <span class="token parameter variable">-t</span> nfs <span class="token number">172.16</span>.1.31:/data/blog  /code/wordpress/wp-content/uploads/<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 
                 
@@ -410,9 +540,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/11-Nginx(%E4%BA%94)Nginx%E4%BB%A3%E7%90%86/" title="运维之综合架构--07--Nginx(五)代理介绍">
+                      <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/07-Nginx(%E4%B8%80)%E5%AE%89%E8%A3%85%E4%B8%8E%E9%85%8D%E7%BD%AE/" title="运维之综合架构--07--Nginx(一)安装与配置">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">运维之综合架构--07--Nginx(五)代理介绍</span>
+                        <span class="hidden-mobile">运维之综合架构--07--Nginx(一)安装与配置</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -420,8 +550,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/13-Nginx(%E4%B8%83)Nginx%E4%B8%83%E5%B1%82%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E8%B0%83%E5%BA%A6%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5/" title="运维之综合架构--07--Nginx(七)均衡调度">
-                        <span class="hidden-mobile">运维之综合架构--07--Nginx(七)均衡调度</span>
+                      <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/11-Nginx(%E4%BA%94)Nginx%E4%BB%A3%E7%90%86/" title="运维之综合架构--07--Nginx(五)代理介绍">
+                        <span class="hidden-mobile">运维之综合架构--07--Nginx(五)代理介绍</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
@@ -615,6 +745,8 @@
   });
 </script>
 
+
+  <script  src="https://lib.baomitu.com/prism/1.28.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
 
   <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
 

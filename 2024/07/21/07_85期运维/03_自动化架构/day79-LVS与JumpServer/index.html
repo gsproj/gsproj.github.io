@@ -1,7 +1,7 @@
 
 
 <!DOCTYPE html>
-<html lang="zh-CN" data-default-color-scheme=auto>
+<html lang="zh-CN" data-default-color-scheme=dark>
 
 
 
@@ -44,6 +44,8 @@
   <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/prism/1.28.0/plugins/line-numbers/prism-line-numbers.min.css" />
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
@@ -223,7 +225,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.8k 字
+          1.7k 字
         
       </span>
     
@@ -412,15 +414,47 @@
 </tr>
 </tbody></table>
 <h3 id="2-2-2-前提处理"><a href="#2-2-2-前提处理" class="headerlink" title="2.2.2 前提处理"></a>2.2.2 前提处理</h3><p>1、web01和web02准备站点</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">站点文件</span> <br>[root@web01 /server/code/lvs]#cat index.html <br>lvs web01<br>[root@web02 ~]#cat /server/code/lvs/index.html <br>lvs web02<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">Nginx虚拟主机，web01/02相同</span><br>[root@web02 ~]#cat /etc/nginx/conf.d/lvs.test.cn.conf <br>server &#123;<br>  listen 80;<br>  server_name lvs.test.cn;<br>  root /server/code/lvs;<br>  location / &#123;<br>    index index.html;<br>  &#125;<br>&#125;<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">重启服务,设置HOSTS，并测试</span><br>[root@web01 /etc/nginx/conf.d]#curl -H Host:lvs.test.cn 10.0.0.7<br>lvs web01<br>[root@web02 ~]#curl -H Host:lvs.test.cn 10.0.0.8<br>lvs web02<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 站点文件 </span>
+<span class="token punctuation">[</span>root@web01 /server/code/lvs<span class="token punctuation">]</span><span class="token comment">#cat index.html </span>
+lvs web01
+<span class="token punctuation">[</span>root@web02 ~<span class="token punctuation">]</span><span class="token comment">#cat /server/code/lvs/index.html </span>
+lvs web02
+
+<span class="token comment"># Nginx虚拟主机，web01/02相同</span>
+<span class="token punctuation">[</span>root@web02 ~<span class="token punctuation">]</span><span class="token comment">#cat /etc/nginx/conf.d/lvs.test.cn.conf </span>
+server <span class="token punctuation">&#123;</span>
+  listen <span class="token number">80</span><span class="token punctuation">;</span>
+  server_name lvs.test.cn<span class="token punctuation">;</span>
+  root /server/code/lvs<span class="token punctuation">;</span>
+  location / <span class="token punctuation">&#123;</span>
+    index index.html<span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment"># 重启服务,设置HOSTS，并测试</span>
+<span class="token punctuation">[</span>root@web01 /etc/nginx/conf.d<span class="token punctuation">]</span><span class="token comment">#curl -H Host:lvs.test.cn 10.0.0.7</span>
+lvs web01
+<span class="token punctuation">[</span>root@web02 ~<span class="token punctuation">]</span><span class="token comment">#curl -H Host:lvs.test.cn 10.0.0.8</span>
+lvs web02<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>2、lb01和lb02关闭不需要的服务，安装LVS</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">关闭keepalived和nginx，防止影响负载均衡</span><br>[root@lb01 ~]#systemctl stop keepalived nginx<br>[root@lb01 ~]#systemctl disable keepalived nginx<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">安装LVS</span><br>[root@lb01 ~]#yum install -y ipvsadm<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">检查模块是否已加载</span><br>[root@lb01 ~]#lsmod | grep ip_vs<br>ip_vs                 145458  0 <br>nf_conntrack          139264  1 ip_vs<br>libcrc32c              12644  3 xfs,ip_vs,nf_conntrack<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 关闭keepalived和nginx，防止影响负载均衡</span>
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment">#systemctl stop keepalived nginx</span>
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment">#systemctl disable keepalived nginx</span>
+
+<span class="token comment"># 安装LVS</span>
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment">#yum install -y ipvsadm</span>
+
+<span class="token comment"># 检查模块是否已加载</span>
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment">#lsmod | grep ip_vs</span>
+ip_vs                 <span class="token number">145458</span>  <span class="token number">0</span> 
+nf_conntrack          <span class="token number">139264</span>  <span class="token number">1</span> ip_vs
+libcrc32c              <span class="token number">12644</span>  <span class="token number">3</span> xfs,ip_vs,nf_conntrack<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 
 
 <h3 id="2-2-3-DR模式配置流程"><a href="#2-2-3-DR模式配置流程" class="headerlink" title="2.2.3 DR模式配置流程"></a>2.2.3 DR模式配置流程</h3><h4 id="2-2-3-4-LVS服务端配置"><a href="#2-2-3-4-LVS服务端配置" class="headerlink" title="2.2.3.4 LVS服务端配置"></a>2.2.3.4 LVS服务端配置</h4><p>1、手动添加VIP，后面是由Keepalived生成</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell"><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
 
 
                 
@@ -717,6 +751,8 @@
   });
 </script>
 
+
+  <script  src="https://lib.baomitu.com/prism/1.28.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
 
   <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
 
