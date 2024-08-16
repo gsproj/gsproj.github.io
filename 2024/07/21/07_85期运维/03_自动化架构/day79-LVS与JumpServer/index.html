@@ -23,10 +23,15 @@
 <meta property="og:site_name" content="迎风之豚的博客">
 <meta property="og:description" content="Devops架构-Jenkins-04">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240816142138132.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240816144825521.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240816145003736.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240816151056982.png">
 <meta property="article:published_time" content="2024-07-21T03:08:52.000Z">
-<meta property="article:modified_time" content="2024-07-22T02:11:49.929Z">
+<meta property="article:modified_time" content="2024-08-16T08:01:30.114Z">
 <meta property="article:author" content="GongSheng">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://gsproj.github.io/img/image-20240816142138132.png">
   
   
   
@@ -218,7 +223,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          53 字
+          1.8k 字
         
       </span>
     
@@ -229,7 +234,7 @@
         
         
         
-          1 分钟
+          15 分钟
         
       </span>
     
@@ -274,9 +279,150 @@
                 
                 <h1 id="Devops架构-Jenkins-04"><a href="#Devops架构-Jenkins-04" class="headerlink" title="Devops架构-Jenkins-04"></a>Devops架构-Jenkins-04</h1><p>今日内容：</p>
 <ul>
-<li>案例07–jenkins+ansible实现项目自动化</li>
+<li>LVS负载均衡</li>
+<li>加密通信隧道</li>
+<li>JumpServer</li>
 </ul>
-<h1 id="一、"><a href="#一、" class="headerlink" title="一、"></a>一、</h1>
+<h1 id="一、负载均衡介绍"><a href="#一、负载均衡介绍" class="headerlink" title="一、负载均衡介绍"></a>一、负载均衡介绍</h1><h2 id="1-1-常见负载均衡对比"><a href="#1-1-常见负载均衡对比" class="headerlink" title="1.1 常见负载均衡对比"></a>1.1 常见负载均衡对比</h2><table>
+<thead>
+<tr>
+<th>常见负载均衡对比</th>
+<th>优势</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>硬件：如F5负载均衡</td>
+<td>性能好、购买有技术支持</td>
+<td>价格昂贵，且一次需要购买2台凑成1对。</td>
+</tr>
+<tr>
+<td>LVS</td>
+<td>工作在4层，效率极其高</td>
+<td>需要部署维护(运维成本较高)</td>
+</tr>
+<tr>
+<td>Nginx&#x2F;Tengine&#x2F;Openresty(lua)</td>
+<td>使用简单，支持4层(1.9版本后支持)和7层负载均衡、反向代理、缓存、流量镜像(mirror)</td>
+<td>处理数据为 “代理模式”，即替用户去查找，找到后发送给用户。在并发较大(1w以 上)时会卡</td>
+</tr>
+<tr>
+<td>Haproxy</td>
+<td>相对复杂 支持4层和7层 反向代理 动态加载配置文件.</td>
+<td>处理数据为“代理模式”，并发较大(1w以上，但比nginx多) 时会卡</td>
+</tr>
+<tr>
+<td>云服务：如clb(slb)</td>
+<td>支持4层和7层</td>
+<td>只能支持url或者域名的转发</td>
+</tr>
+<tr>
+<td>ALB</td>
+<td>支持更多的7层的转发功能 ，如基于用户请求头 http_user_agent、用户语言、 镜像流量(申请,深圳)</td>
+<td>只支持7层负载均衡</td>
+</tr>
+</tbody></table>
+<p>四层负载均衡和七层负载均衡的对比：</p>
+<ul>
+<li>四层负载均衡：在传输层，负载均衡最多到端口级别</li>
+<li>七层负载均衡，在应用层，URL、URI 转发、HTTP HTTPS</li>
+</ul>
+<h2 id="1-2-反向代理和负载均衡的区别"><a href="#1-2-反向代理和负载均衡的区别" class="headerlink" title="1.2 反向代理和负载均衡的区别"></a>1.2 反向代理和负载均衡的区别</h2><p>反向代理：Nginx &#x2F; Haproxy做<strong>代理</strong>，代替用户找，找到后发给用户</p>
+<p>负载均衡：VS对数据进行<strong>转发</strong></p>
+<p><img src="/../../../img/image-20240816142138132.png" srcset="/img/loading.gif" lazyload alt="image-20240816142138132"></p>
+<h2 id="1-3-ARP地址解析"><a href="#1-3-ARP地址解析" class="headerlink" title="1.3 ARP地址解析"></a>1.3 ARP地址解析</h2><p>DNS域名解析：域名 解析成 IP</p>
+<p>ARP地址解析：IP 解析成  Mac地址</p>
+<p><img src="/../../../img/image-20240816144825521.png" srcset="/img/loading.gif" lazyload alt="image-20240816144825521"></p>
+<h3 id="1-3-1-ARP欺骗"><a href="#1-3-1-ARP欺骗" class="headerlink" title="1.3.1 ARP欺骗"></a>1.3.1 ARP欺骗</h3><p><img src="/../../../img/image-20240816145003736.png" srcset="/img/loading.gif" lazyload alt="image-20240816145003736"></p>
+<h1 id="二、LVS快速上手"><a href="#二、LVS快速上手" class="headerlink" title="二、LVS快速上手"></a>二、LVS快速上手</h1><h2 id="2-1-LVS概述"><a href="#2-1-LVS概述" class="headerlink" title="2.1 LVS概述"></a>2.1 LVS概述</h2><p>LVS的工作模式：</p>
+<ul>
+<li>DR 模式</li>
+<li>NAT 模式</li>
+<li>TUN隧道模式</li>
+<li>FLL NAT 完全NAT模式</li>
+</ul>
+<p>关键词：</p>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>单词</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CIP</td>
+<td>client ip</td>
+<td>客户端ip地址</td>
+</tr>
+<tr>
+<td>VIP</td>
+<td>Virtual ip</td>
+<td>虚拟ip</td>
+</tr>
+<tr>
+<td>DIP</td>
+<td>director ip</td>
+<td>负载均衡本身的ip</td>
+</tr>
+<tr>
+<td>RS服务器</td>
+<td>real server</td>
+<td>真实服务器 处理用户请求.</td>
+</tr>
+<tr>
+<td>RIP</td>
+<td>Real erver IP</td>
+<td>real server ip 真实服务器的ip地址</td>
+</tr>
+</tbody></table>
+<p><img src="/../../../img/image-20240816151056982.png" srcset="/img/loading.gif" lazyload alt="image-20240816151056982"></p>
+<h2 id="2-2-LVS-DR模式上手"><a href="#2-2-LVS-DR模式上手" class="headerlink" title="2.2 LVS-DR模式上手"></a>2.2 LVS-DR模式上手</h2><h3 id="2-2-1-环境准备"><a href="#2-2-1-环境准备" class="headerlink" title="2.2.1 环境准备"></a>2.2.1 环境准备</h3><table>
+<thead>
+<tr>
+<th>主机</th>
+<th>服务</th>
+<th>ip</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>lb01</td>
+<td>lvs</td>
+<td>10.0.0.5</td>
+</tr>
+<tr>
+<td>vip</td>
+<td>vip</td>
+<td>10.0.0.3</td>
+</tr>
+<tr>
+<td>lb02</td>
+<td></td>
+<td>10.0.0.6</td>
+</tr>
+<tr>
+<td>web01</td>
+<td>nginx</td>
+<td>10.0.0.7</td>
+</tr>
+<tr>
+<td>web02</td>
+<td>nginx</td>
+<td>10.0.0.8</td>
+</tr>
+</tbody></table>
+<h3 id="2-2-2-前提处理"><a href="#2-2-2-前提处理" class="headerlink" title="2.2.2 前提处理"></a>2.2.2 前提处理</h3><p>1、web01和web02准备站点</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">站点文件</span> <br>[root@web01 /server/code/lvs]#cat index.html <br>lvs web01<br>[root@web02 ~]#cat /server/code/lvs/index.html <br>lvs web02<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">Nginx虚拟主机，web01/02相同</span><br>[root@web02 ~]#cat /etc/nginx/conf.d/lvs.test.cn.conf <br>server &#123;<br>  listen 80;<br>  server_name lvs.test.cn;<br>  root /server/code/lvs;<br>  location / &#123;<br>    index index.html;<br>  &#125;<br>&#125;<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">重启服务,设置HOSTS，并测试</span><br>[root@web01 /etc/nginx/conf.d]#curl -H Host:lvs.test.cn 10.0.0.7<br>lvs web01<br>[root@web02 ~]#curl -H Host:lvs.test.cn 10.0.0.8<br>lvs web02<br></code></pre></td></tr></table></figure>
+
+<p>2、lb01和lb02关闭不需要的服务，安装LVS</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">关闭keepalived和nginx，防止影响负载均衡</span><br>[root@lb01 ~]#systemctl stop keepalived nginx<br>[root@lb01 ~]#systemctl disable keepalived nginx<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">安装LVS</span><br>[root@lb01 ~]#yum install -y ipvsadm<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">检查模块是否已加载</span><br>[root@lb01 ~]#lsmod | grep ip_vs<br>ip_vs                 145458  0 <br>nf_conntrack          139264  1 ip_vs<br>libcrc32c              12644  3 xfs,ip_vs,nf_conntrack<br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="2-2-3-DR模式配置流程"><a href="#2-2-3-DR模式配置流程" class="headerlink" title="2.2.3 DR模式配置流程"></a>2.2.3 DR模式配置流程</h3><h4 id="2-2-3-4-LVS服务端配置"><a href="#2-2-3-4-LVS服务端配置" class="headerlink" title="2.2.3.4 LVS服务端配置"></a>2.2.3.4 LVS服务端配置</h4><p>1、手动添加VIP，后面是由Keepalived生成</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell"><br></code></pre></td></tr></table></figure>
+
+
                 
               </div>
             
@@ -366,9 +512,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2024/07/27/08_%E7%BD%91%E7%BB%9C/day01-%E7%BD%91%E5%B7%A5%E5%85%A5%E9%97%A8-01/" title="day01-网工入门（一）">
+                      <a href="/2024/07/27/08_%E7%BD%91%E7%BB%9C/day03-HCIA%E8%AF%BE%E7%A8%8B-01/" title="day03-HCIA课程(一)">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">day01-网工入门（一）</span>
+                        <span class="hidden-mobile">day03-HCIA课程(一)</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     

@@ -281,7 +281,7 @@
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">yum install openssh-server -y<br>service sshd restart<br></code></pre></td></tr></table></figure>
 
 <p>修改root密码(默认没有密码)</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">echo &#x27;123456&#x27; | passwd --stdin root<br><span class="hljs-meta">#</span><span class="bash"> 或者</span><br>echo root:123456 | chpassw<br></code></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">echo &#x27;123456&#x27; | passwd --stdin root<br><span class="hljs-meta prompt_"># </span><span class="language-bash">或者</span><br>echo root:123456 | chpassw<br></code></pre></td></tr></table></figure>
 
 <p>将已经安装好sshd服务的容器打包成镜像</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker container commit 981877f137c9 centos6.9_ssh:v1<br></code></pre></td></tr></table></figure>
@@ -290,7 +290,7 @@
 <blockquote>
 <p>sshd -D：以后台守护进程的方式运行服务</p>
 </blockquote>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 启动sshd并将22端口映射出来，可以使用xshell连接</span><br>docker run -d -p 1022:22 centos6.9_ssh:v1 /usr/sbin/sshd -D<br></code></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">启动sshd并将22端口映射出来，可以使用xshell连接</span><br>docker run -d -p 1022:22 centos6.9_ssh:v1 /usr/sbin/sshd -D<br></code></pre></td></tr></table></figure>
 
 <h2 id="二、小案例：创建一个ssh-nginx双服务的镜像"><a href="#二、小案例：创建一个ssh-nginx双服务的镜像" class="headerlink" title="二、小案例：创建一个ssh+nginx双服务的镜像"></a>二、小案例：创建一个ssh+nginx双服务的镜像</h2><p>创建容器</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker run -d -p 1023:22 centos6.9_ssh:v1 /usr/sbin/sshd -D<br></code></pre></td></tr></table></figure>
@@ -302,7 +302,7 @@
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">yum install nginx -y<br></code></pre></td></tr></table></figure>
 
 <p>创建运行服务的脚本</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">vim /root/init.sh<br><span class="hljs-meta">#</span><span class="bash">!/bin/bash</span><br>service sshd restart<br>nginx -g &#x27;daemon off;&#x27;<br></code></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">vim /root/init.sh<br><span class="hljs-meta prompt_">#</span><span class="language-bash">!/bin/bash</span><br>service sshd restart<br>nginx -g &#x27;daemon off;&#x27;<br></code></pre></td></tr></table></figure>
 
 <p>将容器封装成镜像</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker commit e6a6dsa6 centos6.9_ssh_nginx:v2<br></code></pre></td></tr></table></figure>
@@ -314,7 +314,7 @@
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker run -d -p 1025:22 -p 80:80 centos6.9_ssh_nginx:v2 /bin/bash /root/init.sh<br></code></pre></td></tr></table></figure>
 
 <h2 id="三、通过环境变量设置容器密码"><a href="#三、通过环境变量设置容器密码" class="headerlink" title="三、通过环境变量设置容器密码"></a>三、通过环境变量设置容器密码</h2><p>修改&#x2F;root&#x2F;init.sh文件</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash">!/bin/bash</span><br><br>if [ -z $SSH_PWD ];then<br>        SSH_PWD=123456<br>fi<br>echo &quot;$SSH_PWD&quot; | passwd --stdin root<br><br>service sshd restart<br>nginx -g &#x27;daemon off;&#x27;<br></code></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_">#</span><span class="language-bash">!/bin/bash</span><br><br>if [ -z $SSH_PWD ];then<br>        SSH_PWD=123456<br>fi<br>echo &quot;$SSH_PWD&quot; | passwd --stdin root<br><br>service sshd restart<br>nginx -g &#x27;daemon off;&#x27;<br></code></pre></td></tr></table></figure>
 
 <p>打包成镜像</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker commit 12386c6504d4 centos6.9_ssh_nginx_passwd<br></code></pre></td></tr></table></figure>

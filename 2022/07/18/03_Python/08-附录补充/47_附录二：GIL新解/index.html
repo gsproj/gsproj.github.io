@@ -278,7 +278,7 @@
 <p>注意，GIL存在的意义在于维护线程安全，x&#x3D;10涉及到io操作，如果也被当成普通的io操作，主动交出GIL，那么一定会出现数据不安全问题，所以x&#x3D;10一定是被区分对待了</p>
 <p>至于x&#x3D;10如何实现的被区分对待，这其实很好理解，任何的io操作都是向操作系统发送系统调用，即调用操作系统的某一接口实现的，比如变量赋值操作肯定是调用了一种接口，文件读写操作肯定也是调用了一种接口，网络io也是调用了某一种接口，这就给区分对待提供了实现的依据，即变量赋值操作并不属于主动释放的范畴，这样GIL在线程安全方面才会有所作为</p>
 <h3 id="2-2、被动释放"><a href="#2-2、被动释放" class="headerlink" title="2.2、被动释放"></a><strong>2.2、被动释放</strong></h3><p>python3.2之后定义了一个全局变量</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">/* Python/ceval.c */<br>...<br>static volatile int gil_drop_request = 0;<br></code></pre></td></tr></table></figure>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">/* Python/ceval.c */<br>...<br>static volatile int gil_drop_request = 0;<br></code></pre></td></tr></table></figure>
 
 <p>注意当只有一个线程时，该线程会一直运行，不会释放GIL，当有多个线程时</p>
 <p>例如thead1，thread2</p>
