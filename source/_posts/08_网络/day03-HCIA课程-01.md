@@ -585,3 +585,188 @@ mixed-rate link enable
 lacp priority 30000 # 系统默认优先级是32768，越小越优先
 ```
 
+
+
+# 八、STP和RSTP
+
+## 8.1 STP实验
+
+作用：避免网络中的环路问题
+
+### 8.1.1 配置根桥
+
+网络拓扑图
+
+![配置STP实验拓扑图](../../img/image-20240805145254611.png)
+
+S1配置为根桥
+
+```shell
+# 进入配置模式
+<Quidway>system-view
+Enter system view ...
+# 重命名
+[Quidway]sysname S1
+# S1配置为根桥
+[S1]stp mode stp
+[S1]stp root primary
+```
+
+S2配置为备桥
+
+```shell
+# 进入配置模式
+<Quidway>system-view
+Enter system view ...
+# 重命名
+[Quidway]sysname S2
+# 关闭无关端口
+[S2]int g0/0/1
+[S2]shutdown
+# S1配置为备桥
+[S2]stp mode stp
+[S2]stp root secondary
+```
+
+查看STP信息
+
+```shell
+# 查看STP信息
+display stp brief
+# 查看端口的STP状态
+display stp interface g0/0/10
+```
+
+![image-20240805150241870](../../img/image-20240805150241870.png)
+
+![image-20240805150248879](../../img/image-20240805150248879.png)
+
+### 8.1.2 控制根桥选举
+
+查看根桥信息，如果`CIST Bridge`和`CIST Roor/ERPC`字段相同，则为根桥
+
+```shell
+<S1>display stp
+...
+CIST Bridge	:0	.d0d0-4ba6-aab0
+...
+# 相同为根桥
+CIST Root/ERPC	:0	.d0d0-4ba6-aab0/0(This bridge is the root) 
+```
+
+再看S2的就不相同
+
+```shell
+<S2>display stp
+...
+CIST Bridge	:0	.d0d0-4ba6-ac20
+...
+# 不同不是根桥
+CIST Root/ERPC	:0	.d0d0-4ba6-aab0/2000
+```
+
+通过配置优先级，使S2成为根桥，S1成为备份根桥
+
+>值越小，优先级越高
+
+```shell
+# S1配置
+[S1]undo stp root
+[S1]stp priority 8192
+
+# S2配置
+[S1]undo stp root
+[S1]stp priority 4096
+```
+
+配置完，再通过`display stp`命令查看选举情况
+
+
+
+### 8.1.3 控制根端口选举
+
+查看端口角色
+
+```she
+<S1>display stop brief
+```
+
+设置端口stp优先级
+
+>值越小，优先级越高
+
+```shell
+[S2]int g0/0/9
+[S2-G/0/0/9]stp port priority 32
+[S2-G/0/0/9]quit
+# g0/0/10成为根端口
+[S2]int g0/0/10
+[S2-G/0/0/9]stp port priority 16
+```
+
+
+
+## 8.2 RSTP实验
+
+使用场景：
+
+- 公司使用二层网络结构，核心层和接入层，作为网络管理员，需要使用RSTP来避免网络中产生二层环路的问题。
+
+拓扑图
+
+![image-20240805153846100](../../img/image-20240805153846100.png)
+
+### 8.2.1 实验环境准备
+
+前提准备：
+
+- 设置设备名`sysname S1`
+- 关闭无用端口，确保实验准确性`int g0/0/1`和`shutdown`
+- 确保stp已经启用`stp enable`
+
+
+
+### 8.2.2 清除设备上已有的配置
+
+如：清除S1上配置的STP优先级和开销
+
+```she
+[S1]undo stp priority
+[S1]int g0/0/9
+[S1-G0/0/9]undo stp cost
+```
+
+
+
+### 8.2.3 配置RSTP并验证
+
+S1和S2的STP模式改为RSTP
+
+```shell
+[S1]stp mode rstp
+
+[S2]stp mode rstp
+```
+
+查看rstp的简要信息
+
+```shell
+[S1]display stp
+```
+
+
+
+### 8.2.4 配置边缘端口
+
+配置连接用户终端的端口为边缘端口，边缘端口可以不通过RSTP计算，直接由Discarding状态转变为Forwarding状态。如本例中，S1和S2的G0/0/1端口都连接的是一台路由器，可以配置为边缘端口，加快RSTP的收敛速度
+
+```shell
+[S1]int g0/0/1
+[S1-G0/0/1]undo shutdown
+[S1-G0/0/1]stp edged-port enable
+
+[S2]int g0/0/1
+[S2-G0/0/1]undo shutdown
+[S2-G0/0/1]stp edged-port enable
+```
+
