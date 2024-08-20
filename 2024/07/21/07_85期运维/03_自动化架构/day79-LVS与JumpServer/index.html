@@ -27,8 +27,9 @@
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240816144825521.png">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240816145003736.png">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240816151056982.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240820151554150.png">
 <meta property="article:published_time" content="2024-07-21T03:08:52.000Z">
-<meta property="article:modified_time" content="2024-08-16T09:18:34.655Z">
+<meta property="article:modified_time" content="2024-08-20T09:07:41.965Z">
 <meta property="article:author" content="GongSheng">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="http://gsproj.github.io/img/image-20240816142138132.png">
@@ -225,7 +226,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.8k 字
+          7.4k 字
         
       </span>
     
@@ -236,7 +237,7 @@
         
         
         
-          16 分钟
+          62 分钟
         
       </span>
     
@@ -383,34 +384,28 @@
 <thead>
 <tr>
 <th>主机</th>
-<th>服务</th>
-<th>ip</th>
+<th>作用</th>
+<th>真实ip</th>
+<th>虚拟IP（vip）</th>
 </tr>
 </thead>
 <tbody><tr>
 <td>lb01</td>
-<td>lvs</td>
+<td>LVS主服务器</td>
 <td>10.0.0.5</td>
-</tr>
-<tr>
-<td>vip</td>
-<td>vip</td>
 <td>10.0.0.3</td>
 </tr>
 <tr>
-<td>lb02</td>
-<td></td>
-<td>10.0.0.6</td>
-</tr>
-<tr>
 <td>web01</td>
-<td>nginx</td>
+<td>nginx-01</td>
 <td>10.0.0.7</td>
+<td>数据转向10.0.0.3</td>
 </tr>
 <tr>
 <td>web02</td>
-<td>nginx</td>
+<td>nginx-02</td>
 <td>10.0.0.8</td>
+<td>数据转向10.0.0.3</td>
 </tr>
 </tbody></table>
 <h3 id="2-2-2-前提处理"><a href="#2-2-2-前提处理" class="headerlink" title="2.2.2 前提处理"></a>2.2.2 前提处理</h3><p>1、web01和web02准备站点</p>
@@ -453,9 +448,268 @@ libcrc32c              12644  3 xfs,ip_vs,nf_conntrack</code></pre></div></figur
 
 
 
-<h3 id="2-2-3-DR模式配置流程"><a href="#2-2-3-DR模式配置流程" class="headerlink" title="2.2.3 DR模式配置流程"></a>2.2.3 DR模式配置流程</h3><h4 id="2-2-3-4-LVS服务端配置"><a href="#2-2-3-4-LVS服务端配置" class="headerlink" title="2.2.3.4 LVS服务端配置"></a>2.2.3.4 LVS服务端配置</h4><p>1、手动添加VIP，后面是由Keepalived生成</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"></code></pre></div></figure>
+<h3 id="2-2-3-DR模式配置流程"><a href="#2-2-3-DR模式配置流程" class="headerlink" title="2.2.3 DR模式配置流程"></a>2.2.3 DR模式配置流程</h3><h4 id="2-2-3-1-LVS服务器配置"><a href="#2-2-3-1-LVS服务器配置" class="headerlink" title="2.2.3.1 LVS服务器配置"></a>2.2.3.1 LVS服务器配置</h4><p>1、手动添加VIP，后面是由Keepalived生成（需先把网卡名改成eth0）</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@lb01 ~]#ifconfig eth0:0 10.0.0.3 netmask 255.255.255.0</code></pre></div></figure>
 
+<p>永久保存</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@lb01 &#x2F;etc&#x2F;sysconfig&#x2F;network-scripts]#cat ifcfg-eth0:0
+DEVICE&#x3D;eth0:0
+IPADDR&#x3D;10.0.0.3
+NETMASK&#x3D;255.255.255.0
+ONBOOT&#x3D;yes
+NAME&#x3D;eth0:0</code></pre></div></figure>
+
+<p>2、添加规则 (类似于nginx的upstream)</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">ipvsadm -A -t 10.0.0.3:80 -s wrr
+#-A --add-service 创建池塘
+#-t --tcp-service tcp协议
+# 10.0.0.3:80 组名称
+# -s scheduler 轮询算法 wrr weight 加权轮询 rrlc wlc
+# -p persistent 会话保持时间（时间别设置太长，不然测试xiao&#39;guo）</code></pre></div></figure>
+
+<p>3、添加规则（类似于向upstream中添加server）</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">ipvsadm -a -t 10.0.0.3:80 -r 10.0.0.7:80 -g -w 1
+ipvsadm -a -t 10.0.0.3:80 -r 10.0.0.8:80 -g -w 2
+
+# -a 添加 rs服务器
+# -t tcp协议
+# -r 指定rs服务器ip
+# -g --gatewaying dr模式 默认的
+# -w 权重</code></pre></div></figure>
+
+<blockquote>
+<p>类似于使用Nginx配置负载均衡</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">&gt;upstream web_pools &#123;
+server 10.0.0.7:80;
+server 10.0.0.8:80;
+&gt;&#125;
+&gt;server &#123;
+location &#x2F; &#123;
+	proxy_pass http:&#x2F;&#x2F;web_pools;
+&#125; 
+&gt;&#125;</code></pre></div></figure>
+</blockquote>
+<p>4、查看LVS规则</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@lb01 ~]#ipvsadm
+# 或者
+[root@lb01 ~]#ipvsadm -ln</code></pre></div></figure>
+
+
+
+<h4 id="2-2-3-2-后端web服务器配置"><a href="#2-2-3-2-后端web服务器配置" class="headerlink" title="2.2.3.2 后端web服务器配置"></a>2.2.3.2 后端web服务器配置</h4><p>1、lo网卡绑定</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web01 &#x2F;etc&#x2F;nginx&#x2F;conf.d]#ifconfig lo:1 10.0.0.3 netmask 255.255.255.255  </code></pre></div></figure>
+
+<p>永久保存</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web01 &#x2F;etc&#x2F;nginx&#x2F;conf.d]#cat &#x2F;etc&#x2F;sysconfig&#x2F;network-scripts&#x2F;ifcfg-lo:1
+DEVICE&#x3D;lo:1
+IPADDR&#x3D;10.0.0.3
+NETMASK&#x3D;255.255.255.255
+ONBOOT&#x3D;yes
+NAME&#x3D;loopback</code></pre></div></figure>
+
+<p>重启网络并查看</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web01 &#x2F;etc&#x2F;nginx&#x2F;conf.d]#systemctl restart network
+[root@web01 &#x2F;etc&#x2F;nginx&#x2F;conf.d]#ip a s lo
+1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link&#x2F;loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1&#x2F;8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet 10.0.0.3&#x2F;32 brd 10.0.0.3 scope global lo:1
+       valid_lft forever preferred_lft forever
+    inet6 ::1&#x2F;128 scope host 
+       valid_lft forever preferred_lft forever</code></pre></div></figure>
+
+<p>2、抑制ARP解析</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">cat &gt;&gt;&#x2F;etc&#x2F;sysctl.conf&lt;&lt;EOF
+net.ipv4.conf.all.arp_ignore &#x3D; 1
+net.ipv4.conf.all.arp_announce &#x3D; 2
+net.ipv4.conf.lo.arp_ignore &#x3D; 1
+net.ipv4.conf.lo.arp_announce &#x3D; 2
+EOF
+
+# 查看
+[root@web01 &#x2F;etc&#x2F;nginx&#x2F;conf.d]#sysctl -p
+net.ipv4.conf.all.arp_ignore &#x3D; 1
+net.ipv4.conf.all.arp_announce &#x3D; 2
+net.ipv4.conf.lo.arp_ignore &#x3D; 1
+net.ipv4.conf.lo.arp_announce &#x3D; 2</code></pre></div></figure>
+
+
+
+<h4 id="2-2-3-3-测试"><a href="#2-2-3-3-测试" class="headerlink" title="2.2.3.3 测试"></a>2.2.3.3 测试</h4><p>多次访问<a href="http://10.0.0.3:80，应该指向不同的web服务端">http://10.0.0.3:80，应该指向不同的web服务端</a></p>
+<p><img src="/../../../img/image-20240820151554150.png" srcset="/img/loading.gif" lazyload alt="image-20240820151554150"></p>
+<h3 id="2-2-4-LVS规则的备份和恢复"><a href="#2-2-4-LVS规则的备份和恢复" class="headerlink" title="2.2.4 LVS规则的备份和恢复"></a>2.2.4 LVS规则的备份和恢复</h3><p>1、保存配置和还原</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 导出配置
+ipvsadm-save -n &gt;&#x2F;root&#x2F;ipvs.txt
+# 还原配置
+ipvsadm-restore &lt;&#x2F;root&#x2F;ipvs.txt</code></pre></div></figure>
+
+<p>2、清空LVS规则，记得清空前备份</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@lb01 ~]#ipvsadm -C</code></pre></div></figure>
+
+
+
+<h2 id="2-3-LVS与keepalived结合"><a href="#2-3-LVS与keepalived结合" class="headerlink" title="2.3 LVS与keepalived结合"></a>2.3 LVS与keepalived结合</h2><h3 id="2-3-1-环境准备"><a href="#2-3-1-环境准备" class="headerlink" title="2.3.1 环境准备"></a>2.3.1 环境准备</h3><table>
+<thead>
+<tr>
+<th>主机</th>
+<th>作用</th>
+<th>真实ip</th>
+<th>虚拟IP（vip）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>lb01</td>
+<td>LVS主服务器</td>
+<td>10.0.0.5</td>
+<td>10.0.0.3</td>
+</tr>
+<tr>
+<td>lb01</td>
+<td>LVS备服务器</td>
+<td>10.0.0.6</td>
+<td>10.0.0.3</td>
+</tr>
+<tr>
+<td>web01</td>
+<td>nginx-01</td>
+<td>10.0.0.7</td>
+<td>数据转向10.0.0.3</td>
+</tr>
+<tr>
+<td>web02</td>
+<td>nginx-02</td>
+<td>10.0.0.8</td>
+<td>数据转向10.0.0.3</td>
+</tr>
+</tbody></table>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">                              |
+             +----------------+-----------------+
+             |                                  |
+10.0.0.5     |----       VIP:10.0.0.3       ----|     10.0.0.6
+     +-------+--------+                +--------+-------+
+     | 	    DS1       |                |       DS2      |
+     | LVS+Keepalived |                | LVS+Keepalived |
+     +-------+--------+                +--------+-------+
+             |			                |
+             +----------------+-----------------+
+                              |
+  +------------+              |               +------------+
+  |     RS1    |10.0.0.7      |       10.0.0.8|     RS2    |
+  | Web Server +--------------+---------------+ Web Server |
+  +------------+                              +------------+</code></pre></div></figure>
+
+
+
+<h3 id="2-3-2-DS服务器配置"><a href="#2-3-2-DS服务器配置" class="headerlink" title="2.3.2 DS服务器配置"></a>2.3.2 DS服务器配置</h3><h4 id="1）DS1配置LVS-Keepalived"><a href="#1）DS1配置LVS-Keepalived" class="headerlink" title="1）DS1配置LVS+Keepalived"></a>1）DS1配置LVS+Keepalived</h4><blockquote>
+<p>配置前，先清空LVS的规则和eth0:0接口，因为keepalived会自动创建</p>
+</blockquote>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">cat &#x2F;etc&#x2F;keepalived&#x2F;keepalived.conf
+! Configuration File for keepalived
+
+global_defs &#123;
+  router_id LVS_DEVEL
+&#125;
+
+
+vrrp_instance VI_1 &#123;
+    state MASTER            # 两个 DS，一个为 MASTER 一个为 BACKUP
+    interface eth0        # 当前 IP 对应的网络接口，通过 ifconfig 查询
+    virtual_router_id 62    # 虚拟路由 ID(0-255)，在一个 VRRP 实例中主备服务器 ID 必须一样
+    priority 200            # 优先级值设定：MASTER 要比 BACKUP 的值大
+    advert_int 1            # 通告时间间隔：单位秒，主备要一致
+    authentication &#123;        # 认证机制，主从节点保持一致即可
+        auth_type PASS
+        auth_pass 1111
+    &#125;
+    virtual_ipaddress &#123;
+        10.0.0.3       # VIP，可配置多个
+    &#125;
+&#125;
+
+# LB 配置
+virtual_server 10.0.0.3 80  &#123;
+    delay_loop 3                    # 设置健康状态检查时间
+    lb_algo rr                      # 调度算法，这里用了 rr 轮询算法
+    lb_kind DR                      # 这里测试用了 Direct Route 模式
+    persistence_timeout 50          # 持久连接超时时间
+    protocol TCP
+    real_server 10.0.0.7 80 &#123;
+        weight 1
+        TCP_CHECK &#123;
+            connect_timeout 10　　　
+            retry 3　　　　　　      # 旧版本为 nb_get_retry 
+            delay_before_retry 3　　　
+            connect_port 80
+        &#125;
+    &#125;
+    real_server 10.0.0.8 80 &#123;
+        weight 1
+        TCP_CHECK &#123;
+            connect_timeout 10
+            retry 3
+            delay_before_retry 3
+            connect_port 80
+        &#125;
+    &#125;
+&#125;</code></pre></div></figure>
+
+
+
+<h4 id="2）DS2配置LVS-Keepalived"><a href="#2）DS2配置LVS-Keepalived" class="headerlink" title="2）DS2配置LVS+Keepalived"></a>2）DS2配置LVS+Keepalived</h4><p>把配置文件中的<code>MASTER</code>改为<code>BACKUP</code>即可</p>
+<h3 id="2-3-3-RS服务器配置"><a href="#2-3-3-RS服务器配置" class="headerlink" title="2.3.3 RS服务器配置"></a>2.3.3 RS服务器配置</h3><p>两台服务器参考<code>2.2.3.2</code>章节配置即可</p>
+<h3 id="2-3-4-测试"><a href="#2-3-4-测试" class="headerlink" title="2.3.4 测试"></a>2.3.4 测试</h3><h4 id="1）-keepalived的主备切换"><a href="#1）-keepalived的主备切换" class="headerlink" title="1） keepalived的主备切换"></a>1） keepalived的主备切换</h4><p>启动服务后，默认lb01是主，并且有生成10.0.0.3的网络接口</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@lb01 &#x2F;etc&#x2F;sysconfig&#x2F;network-scripts]#systemctl status keepalived.service 
+● keepalived.service - LVS and VRRP High Availability Monitor
+...
+Aug 20 16:43:06 lb01 Keepalived_vrrp[5888]: Sending gratuitous ARP on eth0 for 10.0.0.3
+Aug 20 16:43:11 lb01 Keepalived_vrrp[5888]: VRRP_Instance(VI_1) Sending&#x2F;queueing gratuitous ARPs on eth0 for 10.0.0.3
+...</code></pre></div></figure>
+
+<p>lb02为备，不生成10.0.0.3网络接口</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@lb02 ~]#systemctl status keepalived.service 
+● keepalived.service - LVS and VRRP High Availability Monitor
+...
+Aug 20 16:43:06 lb02 Keepalived_vrrp[5049]: VRRP_Instance(VI_1) Entering BACKUP STATE
+...</code></pre></div></figure>
+
+<p>关闭lb01的keepalived服务，手动造成故障</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@lb01 &#x2F;etc&#x2F;sysconfig&#x2F;network-scripts]#systemctl stop keepalived.service </code></pre></div></figure>
+
+<p>lb02切换为主，验证成功</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@lb02 ~]#systemctl status keepalived.service 
+● keepalived.service - LVS and VRRP High Availability Monitor
+...
+Aug 20 16:55:14 lb02 Keepalived_vrrp[5162]: VRRP_Instance(VI_1) Transition to MASTER STATE
+Aug 20 16:55:15 lb02 Keepalived_vrrp[5162]: Sending gratuitous ARP on eth0 for 10.0.0.3
+Aug 20 16:55:15 lb02 Keepalived_vrrp[5162]: VRRP_Instance(VI_1) Sending&#x2F;queueing gratuitous ARPs on eth0 for 10.0.0.3
+Aug 20 16:55:15 lb02 Keepalived_vrrp[5162]: Sending gratuitous ARP on eth0 for 10.0.0.3</code></pre></div></figure>
+
+
+
+<h4 id="2）-LVS的负载均衡测试"><a href="#2）-LVS的负载均衡测试" class="headerlink" title="2） LVS的负载均衡测试"></a>2） LVS的负载均衡测试</h4><p>访问<a href="http://10.0.0.3:80，可见访问web01和web02循环。">http://10.0.0.3:80，可见访问web01和web02循环。</a></p>
+<p>查看LVS规则流量信息，确保两条路都有流量，验证成功</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@lb01 &#x2F;etc&#x2F;sysconfig&#x2F;network-scripts]#ipvsadm -ln --stats
+IP Virtual Server version 1.2.1 (size&#x3D;4096)
+Prot LocalAddress:Port               Conns   InPkts  OutPkts  InBytes OutBytes
+  -&gt; RemoteAddress:Port
+TCP  10.0.0.3:80                         8      132        0    34840        0
+  -&gt; 10.0.0.7:80                         4       90        0    24476        0
+  -&gt; 10.0.0.8:80                         4       42        0    10364        0</code></pre></div></figure>
+
+
+
+<h1 id="二、加密隧道服务"><a href="#二、加密隧道服务" class="headerlink" title="二、加密隧道服务"></a>二、加密隧道服务</h1><h2 id="2-1-应用场景"><a href="#2-1-应用场景" class="headerlink" title="2.1 应用场景"></a>2.1 应用场景</h2><p>两点之间如何传输数据最安全？</p>
+<ul>
+<li>方案1：铺设专线，成本高昂</li>
+<li>方案2：使用硬件3层路由、硬件VPN设备（如深信服VPN）</li>
+<li>方案3：使用公有云等商业产品，通过网络传输</li>
+<li>方案4：使用开源软件搭建VPN（如OpenVPN）</li>
+</ul>
+<p>加密隧道服务即是其中的方案4，OpenVPN有如下应用场景：</p>
+<p>运营：通过OpenVPN实现网站安全登录（后台地址，设置为只能通过VPN登录）</p>
+<p>开发：通过OpenVPN实现开发与测试人员连接网站，进行开发测试</p>
+<p>运维：通过OpenVPN连接内网服务器进行管理</p>
 
                 
               </div>
