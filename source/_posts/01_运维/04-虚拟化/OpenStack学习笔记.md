@@ -1,5 +1,6 @@
 ---
 title: OpenStack学习笔记
+date: 2021-4-12 15:23:52
 categories:
 - 运维
 - （四）虚拟化之OpenStack
@@ -72,7 +73,7 @@ OpenStack的结构介绍：
 >
 >Switft -- 对象存储（不是传统的文件夹存放，而是用数据库记录已上传的文件信息，当有文件上传，先查询数据库中是否有该文件的md5值，如果有，则不用重新上传，给个链接就是 --- 百度云盘）
 
-![image-20210615135957367](C:\Users\fr724\AppData\Roaming\Typora\typora-user-images\image-20210615135957367.png)
+![image-20210615135957367](../../../img/image-20210615135957367.png)
 
 ### 2.1 虚拟机准备
 
