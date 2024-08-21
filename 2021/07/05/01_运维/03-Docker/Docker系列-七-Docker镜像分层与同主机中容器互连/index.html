@@ -19,12 +19,12 @@
   <meta name="author" content="GongSheng">
   <meta name="keywords" content="">
   
-    <meta name="description" content="一、Docker镜像分层 镜像分层的好处： ​	复用、节省磁盘空间，相同的内容只需加载一份到内存 ​	修改dockerfile后，重新构建时可以用缓存，速度快  1 查看docker镜像分层通过导入镜像可以查看到镜像分层 1docker load -i [镜像文件]  通过查看镜像历史可以查看到分层 12345678910[root@docker01 ~]# docker image histor">
+    <meta name="description" content="一、Docker镜像分层 镜像分层的好处： ​	复用、节省磁盘空间，相同的内容只需加载一份到内存 ​	修改dockerfile后，重新构建时可以用缓存，速度快  1 查看docker镜像分层通过导入镜像可以查看到镜像分层 docker load -i [镜像文件]  通过查看镜像历史可以查看到分层 [root@docker01 ~]# docker image history centos6.9_">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Docker系列(七)-Docker镜像分层与同主机中容器互连">
 <meta property="og:url" content="http://gsproj.github.io/2021/07/05/01_%E8%BF%90%E7%BB%B4/03-Docker/Docker%E7%B3%BB%E5%88%97-%E4%B8%83-Docker%E9%95%9C%E5%83%8F%E5%88%86%E5%B1%82%E4%B8%8E%E5%90%8C%E4%B8%BB%E6%9C%BA%E4%B8%AD%E5%AE%B9%E5%99%A8%E4%BA%92%E8%BF%9E/index.html">
 <meta property="og:site_name" content="迎风之豚的博客">
-<meta property="og:description" content="一、Docker镜像分层 镜像分层的好处： ​	复用、节省磁盘空间，相同的内容只需加载一份到内存 ​	修改dockerfile后，重新构建时可以用缓存，速度快  1 查看docker镜像分层通过导入镜像可以查看到镜像分层 1docker load -i [镜像文件]  通过查看镜像历史可以查看到分层 12345678910[root@docker01 ~]# docker image histor">
+<meta property="og:description" content="一、Docker镜像分层 镜像分层的好处： ​	复用、节省磁盘空间，相同的内容只需加载一份到内存 ​	修改dockerfile后，重新构建时可以用缓存，速度快  1 查看docker镜像分层通过导入镜像可以查看到镜像分层 docker load -i [镜像文件]  通过查看镜像历史可以查看到分层 [root@docker01 ~]# docker image history centos6.9_">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2021-07-05T07:28:40.000Z">
 <meta property="article:modified_time" content="2022-08-31T14:00:33.242Z">
@@ -42,6 +42,8 @@
   <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" />
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
@@ -71,7 +73,7 @@
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
     Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"left","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
 
     if (CONFIG.web_analytics.follow_dnt) {
       var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
@@ -97,7 +99,7 @@
   <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand" href="/">
-      <strong>Fluid</strong>
+      <strong>Haris的博客</strong>
     </a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
@@ -222,7 +224,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          857 字
+          831 字
         
       </span>
     
@@ -233,7 +235,7 @@
         
         
         
-          8 分钟
+          7 分钟
         
       </span>
     
@@ -263,6 +265,19 @@
   <div class="row nomargin-x">
     <div class="side-col d-none d-lg-block col-lg-2">
       
+  <aside class="sidebar" style="padding-left: 2rem; margin-right: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
 
     </div>
 
@@ -281,13 +296,22 @@
 <p>​	修改dockerfile后，重新构建时可以用缓存，速度快</p>
 </blockquote>
 <h3 id="1-查看docker镜像分层"><a href="#1-查看docker镜像分层" class="headerlink" title="1 查看docker镜像分层"></a>1 查看docker镜像分层</h3><p>通过导入镜像可以查看到镜像分层</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker load -i [镜像文件]<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">docker</span> load <span class="token parameter variable">-i</span> <span class="token punctuation">[</span>镜像文件<span class="token punctuation">]</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
 
 <p>通过查看镜像历史可以查看到分层</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker01 ~]# docker image history centos6.9_ssh:v2<br>IMAGE          CREATED       CREATED BY                                      SIZE      COMMENT<br>57761235f898   2 days ago    /bin/sh -c #(nop)  CMD [&quot;/usr/sbin/sshd&quot; &quot;-D…   0B<br>c0a2c21457c4   2 days ago    /bin/sh -c echo &#x27;123456&#x27; | passwd --stdin ro…   537B<br>29d10ff8b8e0   2 days ago    /bin/sh -c service sshd restart                 4.91kB<br>666b9ddfff15   2 days ago    /bin/sh -c yum install openssh-server -y        154MB<br>5b00553af9fc   2 days ago    /bin/sh -c #(nop) ADD file:65a30e1b327fec80b…   1.18kB<br>2199b8eb8390   2 years ago   /bin/sh -c #(nop)  CMD [&quot;/bin/bash&quot;]            0B<br>&lt;missing&gt;      2 years ago   /bin/sh -c #(nop)  LABEL name=CentOS Base Im…   0B<br>&lt;missing&gt;      2 years ago   /bin/sh -c #(nop) ADD file:0e6d175401c5b4260…   195MB<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@docker01 ~<span class="token punctuation">]</span><span class="token comment"># docker image history centos6.9_ssh:v2</span>
+IMAGE          CREATED       CREATED BY                                      SIZE      COMMENT
+57761235f898   <span class="token number">2</span> days ago    /bin/sh <span class="token parameter variable">-c</span> <span class="token comment">#(nop)  CMD ["/usr/sbin/sshd" "-D…   0B</span>
+c0a2c21457c4   <span class="token number">2</span> days ago    /bin/sh <span class="token parameter variable">-c</span> <span class="token builtin class-name">echo</span> <span class="token string">'123456'</span> <span class="token operator">|</span> <span class="token function">passwd</span> <span class="token parameter variable">--stdin</span> ro…   537B
+29d10ff8b8e0   <span class="token number">2</span> days ago    /bin/sh <span class="token parameter variable">-c</span> <span class="token function">service</span> sshd restart                 <span class="token number">4</span>.91kB
+666b9ddfff15   <span class="token number">2</span> days ago    /bin/sh <span class="token parameter variable">-c</span> yum <span class="token function">install</span> openssh-server <span class="token parameter variable">-y</span>        154MB
+5b00553af9fc   <span class="token number">2</span> days ago    /bin/sh <span class="token parameter variable">-c</span> <span class="token comment">#(nop) ADD file:65a30e1b327fec80b…   1.18kB</span>
+2199b8eb8390   <span class="token number">2</span> years ago   /bin/sh <span class="token parameter variable">-c</span> <span class="token comment">#(nop)  CMD ["/bin/bash"]            0B</span>
+<span class="token operator">&lt;</span>missing<span class="token operator">></span>      <span class="token number">2</span> years ago   /bin/sh <span class="token parameter variable">-c</span> <span class="token comment">#(nop)  LABEL name=CentOS Base Im…   0B</span>
+<span class="token operator">&lt;</span>missing<span class="token operator">></span>      <span class="token number">2</span> years ago   /bin/sh <span class="token parameter variable">-c</span> <span class="token comment">#(nop) ADD file:0e6d175401c5b4260…   195MB</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>所有的这些层都会在<code>Docker</code>主机本地存储区域内存储，可以通过以下指令来列出：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">ls /var/lib/docker/overlay2/<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">ls</span> /var/lib/docker/overlay2/<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
 
 <h3 id="2-通过Dockerfile优化分层信息"><a href="#2-通过Dockerfile优化分层信息" class="headerlink" title="2  通过Dockerfile优化分层信息"></a>2  通过Dockerfile优化分层信息</h3><ul>
 <li>尽量合并RUN和ADD来减少镜像分层数</li>
@@ -298,34 +322,66 @@
 </blockquote>
 <h3 id="1-功能介绍"><a href="#1-功能介绍" class="headerlink" title="1 功能介绍"></a>1 功能介绍</h3><p>docker run –link可以用来链接2个容器，使得源容器（被链接的容器）和接受容器（主动去链接的容器）之间可以互相通信，并且接收容器可以获取源容器的一些数据，如源容器的环境变量。使用案例如下：</p>
 <p>源容器启动：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker run -d --name src_docker nginx <br>容器ID:xxxx01, IP:172.16.0.2<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">docker</span> run <span class="token parameter variable">-d</span> <span class="token parameter variable">--name</span> src_docker nginx 
+容器ID:xxxx01, IP:172.16.0.2<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
 
 <p>接受容器连接：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker run -d --name dest_docker --link src_docker:web centos7.9:v2<br>容器ID:xxxx02, IP:172.16.0.3<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">docker</span> run <span class="token parameter variable">-d</span> <span class="token parameter variable">--name</span> dest_docker <span class="token parameter variable">--link</span> src_docker:web centos7.9:v2
+容器ID:xxxx02, IP:172.16.0.3<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
 
 <p>进入接受容器测试，不需要ping IP，直接ping别名就可以，web和src_docker都指向172.16.0.2<font color=red>（单向）</font></p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker exec -it xxxx01 /bin/bash<br>ping web<br>ping src_docker<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">docker</span> <span class="token builtin class-name">exec</span> <span class="token parameter variable">-it</span> xxxx01 /bin/bash
+<span class="token function">ping</span> web
+<span class="token function">ping</span> src_docker<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <blockquote>
 <p>接受容器的&#x2F;etc&#x2F;hosts将更新</p>
 </blockquote>
 <h3 id="2-案例：构建zabbix-server"><a href="#2-案例：构建zabbix-server" class="headerlink" title="2 案例：构建zabbix-server"></a>2 案例：构建zabbix-server</h3><p>启动一个mysql的容器</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker run --name mysql-server -t \<br>      -e MYSQL_DATABASE=&quot;zabbix&quot; \<br>      -e MYSQL_USER=&quot;zabbix&quot; \<br>      -e MYSQL_PASSWORD=&quot;zabbix_pwd&quot; \<br>      -e MYSQL_ROOT_PASSWORD=&quot;root_pwd&quot; \<br>      -d mysql:5.7 \<br>      --character-set-server=utf8 --collation-server=utf8_bin <br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">docker</span> run <span class="token parameter variable">--name</span> mysql-server <span class="token parameter variable">-t</span> <span class="token punctuation">\</span>
+      <span class="token parameter variable">-e</span> <span class="token assign-left variable">MYSQL_DATABASE</span><span class="token operator">=</span><span class="token string">"zabbix"</span> <span class="token punctuation">\</span>
+      <span class="token parameter variable">-e</span> <span class="token assign-left variable">MYSQL_USER</span><span class="token operator">=</span><span class="token string">"zabbix"</span> <span class="token punctuation">\</span>
+      <span class="token parameter variable">-e</span> <span class="token assign-left variable">MYSQL_PASSWORD</span><span class="token operator">=</span><span class="token string">"zabbix_pwd"</span> <span class="token punctuation">\</span>
+      <span class="token parameter variable">-e</span> <span class="token assign-left variable">MYSQL_ROOT_PASSWORD</span><span class="token operator">=</span><span class="token string">"root_pwd"</span> <span class="token punctuation">\</span>
+      <span class="token parameter variable">-d</span> mysql:5.7 <span class="token punctuation">\</span>
+      --character-set-server<span class="token operator">=</span>utf8 --collation-server<span class="token operator">=</span>utf8_bin <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>启动java-gateway容器监控java服务</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker run --name zabbix-java-gateway -t \<br>      -d zabbix/zabbix-java-gateway:latest<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">docker</span> run <span class="token parameter variable">--name</span> zabbix-java-gateway <span class="token parameter variable">-t</span> <span class="token punctuation">\</span>
+      <span class="token parameter variable">-d</span> zabbix/zabbix-java-gateway:latest<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
 
 <p>启动zabbix-mysql容器使用link连接mysql与java-gateway</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker run --name zabbix-server-mysql -t \<br>      -e DB_SERVER_HOST=&quot;mysql-server&quot; \<br>      -e MYSQL_DATABASE=&quot;zabbix&quot; \<br>      -e MYSQL_USER=&quot;zabbix&quot; \<br>      -e MYSQL_PASSWORD=&quot;zabbix_pwd&quot; \<br>      -e MYSQL_ROOT_PASSWORD=&quot;root_pwd&quot; \<br>      -e ZBX_JAVAGATEWAY=&quot;zabbix-java-gateway&quot; \<br>      --link mysql-server:mysql \<br>      --link zabbix-java-gateway:zabbix-java-gateway \<br>      -p 10051:10051 \<br>      -d zabbix/zabbix-server-mysql:latest<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">docker</span> run <span class="token parameter variable">--name</span> zabbix-server-mysql <span class="token parameter variable">-t</span> <span class="token punctuation">\</span>
+      <span class="token parameter variable">-e</span> <span class="token assign-left variable">DB_SERVER_HOST</span><span class="token operator">=</span><span class="token string">"mysql-server"</span> <span class="token punctuation">\</span>
+      <span class="token parameter variable">-e</span> <span class="token assign-left variable">MYSQL_DATABASE</span><span class="token operator">=</span><span class="token string">"zabbix"</span> <span class="token punctuation">\</span>
+      <span class="token parameter variable">-e</span> <span class="token assign-left variable">MYSQL_USER</span><span class="token operator">=</span><span class="token string">"zabbix"</span> <span class="token punctuation">\</span>
+      <span class="token parameter variable">-e</span> <span class="token assign-left variable">MYSQL_PASSWORD</span><span class="token operator">=</span><span class="token string">"zabbix_pwd"</span> <span class="token punctuation">\</span>
+      <span class="token parameter variable">-e</span> <span class="token assign-left variable">MYSQL_ROOT_PASSWORD</span><span class="token operator">=</span><span class="token string">"root_pwd"</span> <span class="token punctuation">\</span>
+      <span class="token parameter variable">-e</span> <span class="token assign-left variable">ZBX_JAVAGATEWAY</span><span class="token operator">=</span><span class="token string">"zabbix-java-gateway"</span> <span class="token punctuation">\</span>
+      <span class="token parameter variable">--link</span> mysql-server:mysql <span class="token punctuation">\</span>
+      <span class="token parameter variable">--link</span> zabbix-java-gateway:zabbix-java-gateway <span class="token punctuation">\</span>
+      <span class="token parameter variable">-p</span> <span class="token number">10051</span>:10051 <span class="token punctuation">\</span>
+      <span class="token parameter variable">-d</span> zabbix/zabbix-server-mysql:latest<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>启动zabbix web显示，使用link连接zabbix-mysql与mysql</p>
 <blockquote>
 <p>zabbix的默认端口已有80改为8080，可见配置文件&#x2F;etc&#x2F;zabbix&#x2F;nginx.conf</p>
 </blockquote>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs she">docker run --name zabbix-web-nginx-mysql -t \<br>      -e DB_SERVER_HOST=&quot;mysql-server&quot; \<br>      -e MYSQL_DATABASE=&quot;zabbix&quot; \<br>      -e MYSQL_USER=&quot;zabbix&quot; \<br>      -e MYSQL_PASSWORD=&quot;zabbix_pwd&quot; \<br>      -e MYSQL_ROOT_PASSWORD=&quot;root_pwd&quot; \<br>      --link mysql-server:mysql \<br>      --link zabbix-server-mysql:zabbix-server \<br>      -p 8082:8080 \     <br>      -d zabbix/zabbix-web-nginx-mysql:latest<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-she" data-language="she"><code class="language-she">docker run --name zabbix-web-nginx-mysql -t \
+      -e DB_SERVER_HOST&#x3D;&quot;mysql-server&quot; \
+      -e MYSQL_DATABASE&#x3D;&quot;zabbix&quot; \
+      -e MYSQL_USER&#x3D;&quot;zabbix&quot; \
+      -e MYSQL_PASSWORD&#x3D;&quot;zabbix_pwd&quot; \
+      -e MYSQL_ROOT_PASSWORD&#x3D;&quot;root_pwd&quot; \
+      --link mysql-server:mysql \
+      --link zabbix-server-mysql:zabbix-server \
+      -p 8082:8080 \     
+      -d zabbix&#x2F;zabbix-web-nginx-mysql:latest<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>登录Zabbix</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs she">浏览器访问：10.0.0.11:8082<br>Admin<br>zabbix<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-she" data-language="she"><code class="language-she">浏览器访问：10.0.0.11:8082
+Admin
+zabbix<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>添加被监控节点-安装zabbix-agent</p>
 <blockquote>
@@ -334,13 +390,16 @@
 <p>web页面查看zabbix版本</p>
 <p><a target="_blank" rel="noopener" href="https://www.zabbix.com/download">https://www.zabbix.com/download</a> 获取对应agent的安装方法</p>
 </blockquote>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">rpm -Uvh https://repo.zabbix.com/zabbix/5.4/rhel/7/x86_64/zabbix-release-5.4-1.el7.noarch.rpm<br>yum clean all<br>yum install zabbix-agent<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">rpm</span> <span class="token parameter variable">-Uvh</span> https://repo.zabbix.com/zabbix/5.4/rhel/7/x86_64/zabbix-release-5.4-1.el7.noarch.rpm
+yum clean all
+yum <span class="token function">install</span> zabbix-agent<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>添加被监控节点-agent配置文件修改</p>
 <blockquote>
 <p>117行：Server&#x3D;10.0.0.11, 注意防火墙和selinux的阻挡</p>
 </blockquote>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">vim /etc/zabbix/zabbix_agentd.conf<br>systemctl restart zabbix-agent<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">vim</span> /etc/zabbix/zabbix_agentd.conf
+systemctl restart zabbix-agent<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
 
 <h2 id="三、docker重启后容器不退出"><a href="#三、docker重启后容器不退出" class="headerlink" title="三、docker重启后容器不退出"></a>三、docker重启后容器不退出</h2><blockquote>
 <p>默认情况下，systemctl restart docker之后，容器将处于Exited状态</p>
@@ -348,12 +407,14 @@
 <h3 id="1-添加容器启动参数"><a href="#1-添加容器启动参数" class="headerlink" title="1 添加容器启动参数"></a>1 添加容器启动参数</h3><blockquote>
 <p>docker重启后，容器先停止，再立即重新启动</p>
 </blockquote>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker run --restart=always<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">docker</span> run <span class="token parameter variable">--restart</span><span class="token operator">=</span>always<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
 
 <h3 id="2-daemon配置文件修改（不推荐）"><a href="#2-daemon配置文件修改（不推荐）" class="headerlink" title="2 daemon配置文件修改（不推荐）"></a>2 daemon配置文件修改（不推荐）</h3><blockquote>
 <p>docker重启后，容器不会停止，一直在运行，不推荐使用，不好控制</p>
 </blockquote>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">vim /etc/docker/daemon.json<br><span class="hljs-meta prompt_"># </span><span class="language-bash">添加一行，上行后面加逗号</span><br>&quot;live-restore&quot;:true<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">vim</span> /etc/docker/daemon.json
+<span class="token comment"># 添加一行，上行后面加逗号</span>
+<span class="token string">"live-restore"</span>:true<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></div></figure>
 
 
 
@@ -479,19 +540,6 @@
 
     <div class="side-col d-none d-lg-block col-lg-2">
       
-  <aside class="sidebar" style="margin-left: -1rem">
-    <div id="toc">
-  <p class="toc-header">
-    <i class="iconfont icon-list"></i>
-    <span>目录</span>
-  </p>
-  <div class="toc-body" id="toc-body"></div>
-</div>
-
-
-
-  </aside>
-
 
     </div>
   </div>
@@ -657,6 +705,8 @@
   });
 </script>
 
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
 
   <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
 

@@ -49,6 +49,8 @@
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
 
+  <link  rel="stylesheet" href="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" />
+
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
 
@@ -77,7 +79,7 @@
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
     Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"left","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
 
     if (CONFIG.web_analytics.follow_dnt) {
       var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
@@ -103,7 +105,7 @@
   <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand" href="/">
-      <strong>Fluid</strong>
+      <strong>Haris的博客</strong>
     </a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
@@ -269,6 +271,19 @@
   <div class="row nomargin-x">
     <div class="side-col d-none d-lg-block col-lg-2">
       
+  <aside class="sidebar" style="padding-left: 2rem; margin-right: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
 
     </div>
 
@@ -410,55 +425,143 @@
 </tr>
 </tbody></table>
 <h3 id="2-2-2-前提处理"><a href="#2-2-2-前提处理" class="headerlink" title="2.2.2 前提处理"></a>2.2.2 前提处理</h3><p>1、web01和web02准备站点</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">站点文件</span> <br>[root@web01 /server/code/lvs]#cat index.html <br>lvs web01<br>[root@web02 ~]#cat /server/code/lvs/index.html <br>lvs web02<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">Nginx虚拟主机，web01/02相同</span><br>[root@web02 ~]#cat /etc/nginx/conf.d/lvs.test.cn.conf <br>server &#123;<br>  listen 80;<br>  server_name lvs.test.cn;<br>  root /server/code/lvs;<br>  location / &#123;<br>    index index.html;<br>  &#125;<br>&#125;<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">重启服务,设置HOSTS，并测试</span><br>[root@web01 /etc/nginx/conf.d]#curl -H Host:lvs.test.cn 10.0.0.7<br>lvs web01<br>[root@web02 ~]#curl -H Host:lvs.test.cn 10.0.0.8<br>lvs web02<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 站点文件 </span>
+<span class="token punctuation">[</span>root@web01 /server/code/lvs<span class="token punctuation">]</span><span class="token comment">#cat index.html </span>
+lvs web01
+<span class="token punctuation">[</span>root@web02 ~<span class="token punctuation">]</span><span class="token comment">#cat /server/code/lvs/index.html </span>
+lvs web02
+
+<span class="token comment"># Nginx虚拟主机，web01/02相同</span>
+<span class="token punctuation">[</span>root@web02 ~<span class="token punctuation">]</span><span class="token comment">#cat /etc/nginx/conf.d/lvs.test.cn.conf </span>
+server <span class="token punctuation">&#123;</span>
+  listen <span class="token number">80</span><span class="token punctuation">;</span>
+  server_name lvs.test.cn<span class="token punctuation">;</span>
+  root /server/code/lvs<span class="token punctuation">;</span>
+  location / <span class="token punctuation">&#123;</span>
+    index index.html<span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment"># 重启服务,设置HOSTS，并测试</span>
+<span class="token punctuation">[</span>root@web01 /etc/nginx/conf.d<span class="token punctuation">]</span><span class="token comment">#curl -H Host:lvs.test.cn 10.0.0.7</span>
+lvs web01
+<span class="token punctuation">[</span>root@web02 ~<span class="token punctuation">]</span><span class="token comment">#curl -H Host:lvs.test.cn 10.0.0.8</span>
+lvs web02<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>2、lb01和lb02关闭不需要的服务，安装LVS</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">关闭keepalived和nginx，防止影响负载均衡</span><br>[root@lb01 ~]#systemctl stop keepalived nginx<br>[root@lb01 ~]#systemctl disable keepalived nginx<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">安装LVS</span><br>[root@lb01 ~]#yum install -y ipvsadm<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">检查模块是否已加载</span><br>[root@lb01 ~]#lsmod | grep ip_vs<br>ip_vs                 145458  0 <br>nf_conntrack          139264  1 ip_vs<br>libcrc32c              12644  3 xfs,ip_vs,nf_conntrack<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 关闭keepalived和nginx，防止影响负载均衡</span>
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment">#systemctl stop keepalived nginx</span>
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment">#systemctl disable keepalived nginx</span>
+
+<span class="token comment"># 安装LVS</span>
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment">#yum install -y ipvsadm</span>
+
+<span class="token comment"># 检查模块是否已加载</span>
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment">#lsmod | grep ip_vs</span>
+ip_vs                 <span class="token number">145458</span>  <span class="token number">0</span> 
+nf_conntrack          <span class="token number">139264</span>  <span class="token number">1</span> ip_vs
+libcrc32c              <span class="token number">12644</span>  <span class="token number">3</span> xfs,ip_vs,nf_conntrack<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 
 
 <h3 id="2-2-3-DR模式配置流程"><a href="#2-2-3-DR模式配置流程" class="headerlink" title="2.2.3 DR模式配置流程"></a>2.2.3 DR模式配置流程</h3><h4 id="2-2-3-1-LVS服务器配置"><a href="#2-2-3-1-LVS服务器配置" class="headerlink" title="2.2.3.1 LVS服务器配置"></a>2.2.3.1 LVS服务器配置</h4><p>1、手动添加VIP，后面是由Keepalived生成（需先把网卡名改成eth0）</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@lb01 ~]#ifconfig eth0:0 10.0.0.3 netmask 255.255.255.0<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment">#ifconfig eth0:0 10.0.0.3 netmask 255.255.255.0</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
 
 <p>永久保存</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@lb01 /etc/sysconfig/network-scripts]#cat ifcfg-eth0:0<br>DEVICE=eth0:0<br>IPADDR=10.0.0.3<br>NETMASK=255.255.255.0<br>ONBOOT=yes<br>NAME=eth0:0<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@lb01 /etc/sysconfig/network-scripts<span class="token punctuation">]</span><span class="token comment">#cat ifcfg-eth0:0</span>
+<span class="token assign-left variable">DEVICE</span><span class="token operator">=</span>eth0:0
+<span class="token assign-left variable">IPADDR</span><span class="token operator">=</span><span class="token number">10.0</span>.0.3
+<span class="token assign-left variable">NETMASK</span><span class="token operator">=</span><span class="token number">255.255</span>.255.0
+<span class="token assign-left variable">ONBOOT</span><span class="token operator">=</span>yes
+<span class="token assign-left variable">NAME</span><span class="token operator">=</span>eth0:0<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>2、添加规则 (类似于nginx的upstream)</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell">ipvsadm -A -t 10.0.0.3:80 -s wrr<br><span class="hljs-meta prompt_">#</span><span class="language-bash">-A --add-service 创建池塘</span><br><span class="hljs-meta prompt_">#</span><span class="language-bash">-t --tcp-service tcp协议</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">10.0.0.3:80 组名称</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">-s scheduler 轮询算法 wrr weight 加权轮询 rrlc wlc</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">-p persistent 会话保持时间（时间别设置太长，不然测试xiao<span class="hljs-string">&#x27;guo）</span></span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">ipvsadm <span class="token parameter variable">-A</span> <span class="token parameter variable">-t</span> <span class="token number">10.0</span>.0.3:80 <span class="token parameter variable">-s</span> wrr
+<span class="token comment">#-A --add-service 创建池塘</span>
+<span class="token comment">#-t --tcp-service tcp协议</span>
+<span class="token comment"># 10.0.0.3:80 组名称</span>
+<span class="token comment"># -s scheduler 轮询算法 wrr weight 加权轮询 rrlc wlc</span>
+<span class="token comment"># -p persistent 会话保持时间（时间别设置太长，不然测试xiao'guo）</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>3、添加规则（类似于向upstream中添加server）</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs shell">ipvsadm -a -t 10.0.0.3:80 -r 10.0.0.7:80 -g -w 1<br>ipvsadm -a -t 10.0.0.3:80 -r 10.0.0.8:80 -g -w 2<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">-a 添加 rs服务器</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">-t tcp协议</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">-r 指定rs服务器ip</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">-g --gatewaying dr模式 默认的</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">-w 权重</span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">ipvsadm <span class="token parameter variable">-a</span> <span class="token parameter variable">-t</span> <span class="token number">10.0</span>.0.3:80 <span class="token parameter variable">-r</span> <span class="token number">10.0</span>.0.7:80 <span class="token parameter variable">-g</span> <span class="token parameter variable">-w</span> <span class="token number">1</span>
+ipvsadm <span class="token parameter variable">-a</span> <span class="token parameter variable">-t</span> <span class="token number">10.0</span>.0.3:80 <span class="token parameter variable">-r</span> <span class="token number">10.0</span>.0.8:80 <span class="token parameter variable">-g</span> <span class="token parameter variable">-w</span> <span class="token number">2</span>
+
+<span class="token comment"># -a 添加 rs服务器</span>
+<span class="token comment"># -t tcp协议</span>
+<span class="token comment"># -r 指定rs服务器ip</span>
+<span class="token comment"># -g --gatewaying dr模式 默认的</span>
+<span class="token comment"># -w 权重</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <blockquote>
 <p>类似于使用Nginx配置负载均衡</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_">&gt;</span><span class="language-bash">upstream web_pools &#123;</span><br>server 10.0.0.7:80;<br>server 10.0.0.8:80;<br><span class="hljs-meta prompt_">&gt;</span><span class="language-bash">&#125;</span><br><span class="hljs-meta prompt_">&gt;</span><span class="language-bash">server &#123;</span><br>location / &#123;<br>	proxy_pass http://web_pools;<br>&#125; <br><span class="hljs-meta prompt_">&gt;</span><span class="language-bash">&#125;</span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token operator">></span>upstream web_pools <span class="token punctuation">&#123;</span>
+server <span class="token number">10.0</span>.0.7:80<span class="token punctuation">;</span>
+server <span class="token number">10.0</span>.0.8:80<span class="token punctuation">;</span>
+<span class="token operator">></span><span class="token punctuation">&#125;</span>
+<span class="token operator">></span>server <span class="token punctuation">&#123;</span>
+location / <span class="token punctuation">&#123;</span>
+	proxy_pass http://web_pools<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span> 
+<span class="token operator">></span><span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 </blockquote>
 <p>4、查看LVS规则</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@lb01 ~]#ipvsadm<br><span class="hljs-meta prompt_"># </span><span class="language-bash">或者</span><br>[root@lb01 ~]#ipvsadm -ln<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment">#ipvsadm</span>
+<span class="token comment"># 或者</span>
+<span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment">#ipvsadm -ln</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></div></figure>
 
 
 
 <h4 id="2-2-3-2-后端web服务器配置"><a href="#2-2-3-2-后端web服务器配置" class="headerlink" title="2.2.3.2 后端web服务器配置"></a>2.2.3.2 后端web服务器配置</h4><p>1、lo网卡绑定</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01 /etc/nginx/conf.d]#ifconfig lo:1 10.0.0.3 netmask 255.255.255.255  <br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@web01 /etc/nginx/conf.d<span class="token punctuation">]</span><span class="token comment">#ifconfig lo:1 10.0.0.3 netmask 255.255.255.255  </span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
 
 <p>永久保存</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01 /etc/nginx/conf.d]#cat /etc/sysconfig/network-scripts/ifcfg-lo:1<br>DEVICE=lo:1<br>IPADDR=10.0.0.3<br>NETMASK=255.255.255.255<br>ONBOOT=yes<br>NAME=loopback<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@web01 /etc/nginx/conf.d<span class="token punctuation">]</span><span class="token comment">#cat /etc/sysconfig/network-scripts/ifcfg-lo:1</span>
+<span class="token assign-left variable">DEVICE</span><span class="token operator">=</span>lo:1
+<span class="token assign-left variable">IPADDR</span><span class="token operator">=</span><span class="token number">10.0</span>.0.3
+<span class="token assign-left variable">NETMASK</span><span class="token operator">=</span><span class="token number">255.255</span>.255.255
+<span class="token assign-left variable">ONBOOT</span><span class="token operator">=</span>yes
+<span class="token assign-left variable">NAME</span><span class="token operator">=</span>loopback<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>重启网络并查看</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01 /etc/nginx/conf.d]#systemctl restart network<br>[root@web01 /etc/nginx/conf.d]#ip a s lo<br>1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000<br>    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00<br>    inet 127.0.0.1/8 scope host lo<br>       valid_lft forever preferred_lft forever<br>    inet 10.0.0.3/32 brd 10.0.0.3 scope global lo:1<br>       valid_lft forever preferred_lft forever<br>    inet6 ::1/128 scope host <br>       valid_lft forever preferred_lft forever<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@web01 /etc/nginx/conf.d<span class="token punctuation">]</span><span class="token comment">#systemctl restart network</span>
+<span class="token punctuation">[</span>root@web01 /etc/nginx/conf.d<span class="token punctuation">]</span><span class="token comment">#ip a s lo</span>
+<span class="token number">1</span>: lo: <span class="token operator">&lt;</span>LOOPBACK,UP,LOWER_UP<span class="token operator">></span> mtu <span class="token number">65536</span> qdisc noqueue state UNKNOWN group default qlen <span class="token number">1000</span>
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet <span class="token number">127.0</span>.0.1/8 scope <span class="token function">host</span> lo
+       valid_lft forever preferred_lft forever
+    inet <span class="token number">10.0</span>.0.3/32 brd <span class="token number">10.0</span>.0.3 scope global lo:1
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope <span class="token function">host</span> 
+       valid_lft forever preferred_lft forever<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>2、抑制ARP解析</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs shell">cat &gt;&gt;/etc/sysctl.conf&lt;&lt;EOF<br>net.ipv4.conf.all.arp_ignore = 1<br>net.ipv4.conf.all.arp_announce = 2<br>net.ipv4.conf.lo.arp_ignore = 1<br>net.ipv4.conf.lo.arp_announce = 2<br>EOF<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">查看</span><br>[root@web01 /etc/nginx/conf.d]#sysctl -p<br>net.ipv4.conf.all.arp_ignore = 1<br>net.ipv4.conf.all.arp_announce = 2<br>net.ipv4.conf.lo.arp_ignore = 1<br>net.ipv4.conf.lo.arp_announce = 2<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">cat</span> <span class="token operator">>></span>/etc/sysctl.conf<span class="token operator">&lt;&lt;</span><span class="token string">EOF
+net.ipv4.conf.all.arp_ignore = 1
+net.ipv4.conf.all.arp_announce = 2
+net.ipv4.conf.lo.arp_ignore = 1
+net.ipv4.conf.lo.arp_announce = 2
+EOF</span>
+
+<span class="token comment"># 查看</span>
+<span class="token punctuation">[</span>root@web01 /etc/nginx/conf.d<span class="token punctuation">]</span><span class="token comment">#sysctl -p</span>
+net.ipv4.conf.all.arp_ignore <span class="token operator">=</span> <span class="token number">1</span>
+net.ipv4.conf.all.arp_announce <span class="token operator">=</span> <span class="token number">2</span>
+net.ipv4.conf.lo.arp_ignore <span class="token operator">=</span> <span class="token number">1</span>
+net.ipv4.conf.lo.arp_announce <span class="token operator">=</span> <span class="token number">2</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 
 
 <h4 id="2-2-3-3-测试"><a href="#2-2-3-3-测试" class="headerlink" title="2.2.3.3 测试"></a>2.2.3.3 测试</h4><p>多次访问<a href="http://10.0.0.3:80，应该指向不同的web服务端">http://10.0.0.3:80，应该指向不同的web服务端</a></p>
 <p><img src="/../../../img/image-20240820151554150.png" srcset="/img/loading.gif" lazyload alt="image-20240820151554150"></p>
 <h3 id="2-2-4-LVS规则的备份和恢复"><a href="#2-2-4-LVS规则的备份和恢复" class="headerlink" title="2.2.4 LVS规则的备份和恢复"></a>2.2.4 LVS规则的备份和恢复</h3><p>1、保存配置和还原</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">导出配置</span><br>ipvsadm-save -n &gt;/root/ipvs.txt<br><span class="hljs-meta prompt_"># </span><span class="language-bash">还原配置</span><br>ipvsadm-restore &lt;/root/ipvs.txt<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 导出配置</span>
+ipvsadm-save <span class="token parameter variable">-n</span> <span class="token operator">></span>/root/ipvs.txt
+<span class="token comment"># 还原配置</span>
+ipvsadm-restore <span class="token operator">&lt;</span>/root/ipvs.txt<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>2、清空LVS规则，记得清空前备份</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@lb01 ~]#ipvsadm -C<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@lb01 ~<span class="token punctuation">]</span><span class="token comment">#ipvsadm -C</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
 
 
 
@@ -496,36 +599,119 @@
 <td>数据转向10.0.0.3</td>
 </tr>
 </tbody></table>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs shell">                              |<br>             +----------------+-----------------+<br>             |                                  |<br>10.0.0.5     |----       VIP:10.0.0.3       ----|     10.0.0.6<br>     +-------+--------+                +--------+-------+<br>     | 	    DS1       |                |       DS2      |<br>     | LVS+Keepalived |                | LVS+Keepalived |<br>     +-------+--------+                +--------+-------+<br>             |			                |<br>             +----------------+-----------------+<br>                              |<br>  +------------+              |               +------------+<br>  |     RS1    |10.0.0.7      |       10.0.0.8|     RS2    |<br>  | Web Server +--------------+---------------+ Web Server |<br>  +------------+                              +------------+<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">                              <span class="token operator">|</span>
+             +----------------+-----------------+
+             <span class="token operator">|</span>                                  <span class="token operator">|</span>
+<span class="token number">10.0</span>.0.5     <span class="token operator">|</span>----       VIP:10.0.0.3       ----<span class="token operator">|</span>     <span class="token number">10.0</span>.0.6
+     +-------+--------+                +--------+-------+
+     <span class="token operator">|</span> 	    DS1       <span class="token operator">|</span>                <span class="token operator">|</span>       DS2      <span class="token operator">|</span>
+     <span class="token operator">|</span> LVS+Keepalived <span class="token operator">|</span>                <span class="token operator">|</span> LVS+Keepalived <span class="token operator">|</span>
+     +-------+--------+                +--------+-------+
+             <span class="token operator">|</span>			                <span class="token operator">|</span>
+             +----------------+-----------------+
+                              <span class="token operator">|</span>
+  +------------+              <span class="token operator">|</span>               +------------+
+  <span class="token operator">|</span>     RS1    <span class="token operator">|</span><span class="token number">10.0</span>.0.7      <span class="token operator">|</span>       <span class="token number">10.0</span>.0.8<span class="token operator">|</span>     RS2    <span class="token operator">|</span>
+  <span class="token operator">|</span> Web Server +--------------+---------------+ Web Server <span class="token operator">|</span>
+  +------------+                              +------------+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 
 
 <h3 id="2-3-2-DS服务器配置"><a href="#2-3-2-DS服务器配置" class="headerlink" title="2.3.2 DS服务器配置"></a>2.3.2 DS服务器配置</h3><h4 id="1）DS1配置LVS-Keepalived"><a href="#1）DS1配置LVS-Keepalived" class="headerlink" title="1）DS1配置LVS+Keepalived"></a>1）DS1配置LVS+Keepalived</h4><blockquote>
 <p>配置前，先清空LVS的规则和eth0:0接口，因为keepalived会自动创建</p>
 </blockquote>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><code class="hljs shell">cat /etc/keepalived/keepalived.conf<br>! Configuration File for keepalived<br><br>global_defs &#123;<br>  router_id LVS_DEVEL<br>&#125;<br><br><br>vrrp_instance VI_1 &#123;<br>    state MASTER            # 两个 DS，一个为 MASTER 一个为 BACKUP<br>    interface eth0        # 当前 IP 对应的网络接口，通过 ifconfig 查询<br>    virtual_router_id 62    # 虚拟路由 ID(0-255)，在一个 VRRP 实例中主备服务器 ID 必须一样<br>    priority 200            # 优先级值设定：MASTER 要比 BACKUP 的值大<br>    advert_int 1            # 通告时间间隔：单位秒，主备要一致<br>    authentication &#123;        # 认证机制，主从节点保持一致即可<br>        auth_type PASS<br>        auth_pass 1111<br>    &#125;<br>    virtual_ipaddress &#123;<br>        10.0.0.3       # VIP，可配置多个<br>    &#125;<br>&#125;<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">LB 配置</span><br>virtual_server 10.0.0.3 80  &#123;<br>    delay_loop 3                    # 设置健康状态检查时间<br>    lb_algo rr                      # 调度算法，这里用了 rr 轮询算法<br>    lb_kind DR                      # 这里测试用了 Direct Route 模式<br>    persistence_timeout 50          # 持久连接超时时间<br>    protocol TCP<br>    real_server 10.0.0.7 80 &#123;<br>        weight 1<br>        TCP_CHECK &#123;<br>            connect_timeout 10　　　<br>            retry 3　　　　　　      # 旧版本为 nb_get_retry <br>            delay_before_retry 3　　　<br>            connect_port 80<br>        &#125;<br>    &#125;<br>    real_server 10.0.0.8 80 &#123;<br>        weight 1<br>        TCP_CHECK &#123;<br>            connect_timeout 10<br>            retry 3<br>            delay_before_retry 3<br>            connect_port 80<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">cat</span> /etc/keepalived/keepalived.conf
+<span class="token operator">!</span> Configuration File <span class="token keyword">for</span> keepalived
+
+global_defs <span class="token punctuation">&#123;</span>
+  router_id LVS_DEVEL
+<span class="token punctuation">&#125;</span>
+
+
+vrrp_instance VI_1 <span class="token punctuation">&#123;</span>
+    state MASTER            <span class="token comment"># 两个 DS，一个为 MASTER 一个为 BACKUP</span>
+    interface eth0        <span class="token comment"># 当前 IP 对应的网络接口，通过 ifconfig 查询</span>
+    virtual_router_id <span class="token number">62</span>    <span class="token comment"># 虚拟路由 ID(0-255)，在一个 VRRP 实例中主备服务器 ID 必须一样</span>
+    priority <span class="token number">200</span>            <span class="token comment"># 优先级值设定：MASTER 要比 BACKUP 的值大</span>
+    advert_int <span class="token number">1</span>            <span class="token comment"># 通告时间间隔：单位秒，主备要一致</span>
+    authentication <span class="token punctuation">&#123;</span>        <span class="token comment"># 认证机制，主从节点保持一致即可</span>
+        auth_type PASS
+        auth_pass <span class="token number">1111</span>
+    <span class="token punctuation">&#125;</span>
+    virtual_ipaddress <span class="token punctuation">&#123;</span>
+        <span class="token number">10.0</span>.0.3       <span class="token comment"># VIP，可配置多个</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment"># LB 配置</span>
+virtual_server <span class="token number">10.0</span>.0.3 <span class="token number">80</span>  <span class="token punctuation">&#123;</span>
+    delay_loop <span class="token number">3</span>                    <span class="token comment"># 设置健康状态检查时间</span>
+    lb_algo rr                      <span class="token comment"># 调度算法，这里用了 rr 轮询算法</span>
+    lb_kind DR                      <span class="token comment"># 这里测试用了 Direct Route 模式</span>
+    persistence_timeout <span class="token number">50</span>          <span class="token comment"># 持久连接超时时间</span>
+    protocol TCP
+    real_server <span class="token number">10.0</span>.0.7 <span class="token number">80</span> <span class="token punctuation">&#123;</span>
+        weight <span class="token number">1</span>
+        TCP_CHECK <span class="token punctuation">&#123;</span>
+            connect_timeout <span class="token number">10</span>　　　
+            retry <span class="token number">3</span>　　　　　　      <span class="token comment"># 旧版本为 nb_get_retry </span>
+            delay_before_retry <span class="token number">3</span>　　　
+            connect_port <span class="token number">80</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+    real_server <span class="token number">10.0</span>.0.8 <span class="token number">80</span> <span class="token punctuation">&#123;</span>
+        weight <span class="token number">1</span>
+        TCP_CHECK <span class="token punctuation">&#123;</span>
+            connect_timeout <span class="token number">10</span>
+            retry <span class="token number">3</span>
+            delay_before_retry <span class="token number">3</span>
+            connect_port <span class="token number">80</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 
 
 <h4 id="2）DS2配置LVS-Keepalived"><a href="#2）DS2配置LVS-Keepalived" class="headerlink" title="2）DS2配置LVS+Keepalived"></a>2）DS2配置LVS+Keepalived</h4><p>把配置文件中的<code>MASTER</code>改为<code>BACKUP</code>即可</p>
 <h3 id="2-3-3-RS服务器配置"><a href="#2-3-3-RS服务器配置" class="headerlink" title="2.3.3 RS服务器配置"></a>2.3.3 RS服务器配置</h3><p>两台服务器参考<code>2.2.3.2</code>章节配置即可</p>
 <h3 id="2-3-4-测试"><a href="#2-3-4-测试" class="headerlink" title="2.3.4 测试"></a>2.3.4 测试</h3><h4 id="1）-keepalived的主备切换"><a href="#1）-keepalived的主备切换" class="headerlink" title="1） keepalived的主备切换"></a>1） keepalived的主备切换</h4><p>启动服务后，默认lb01是主，并且有生成10.0.0.3的网络接口</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@lb01 /etc/sysconfig/network-scripts]#systemctl status keepalived.service <br>● keepalived.service - LVS and VRRP High Availability Monitor<br>...<br>Aug 20 16:43:06 lb01 Keepalived_vrrp[5888]: Sending gratuitous ARP on eth0 for 10.0.0.3<br>Aug 20 16:43:11 lb01 Keepalived_vrrp[5888]: VRRP_Instance(VI_1) Sending/queueing gratuitous ARPs on eth0 for 10.0.0.3<br>...<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@lb01 /etc/sysconfig/network-scripts<span class="token punctuation">]</span><span class="token comment">#systemctl status keepalived.service </span>
+● keepalived.service - LVS and VRRP High Availability Monitor
+<span class="token punctuation">..</span>.
+Aug <span class="token number">20</span> <span class="token number">16</span>:43:06 lb01 Keepalived_vrrp<span class="token punctuation">[</span><span class="token number">5888</span><span class="token punctuation">]</span>: Sending gratuitous ARP on eth0 <span class="token keyword">for</span> <span class="token number">10.0</span>.0.3
+Aug <span class="token number">20</span> <span class="token number">16</span>:43:11 lb01 Keepalived_vrrp<span class="token punctuation">[</span><span class="token number">5888</span><span class="token punctuation">]</span>: VRRP_Instance<span class="token punctuation">(</span>VI_1<span class="token punctuation">)</span> Sending/queueing gratuitous ARPs on eth0 <span class="token keyword">for</span> <span class="token number">10.0</span>.0.3
+<span class="token punctuation">..</span>.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>lb02为备，不生成10.0.0.3网络接口</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@lb02 ~]#systemctl status keepalived.service <br>● keepalived.service - LVS and VRRP High Availability Monitor<br>...<br>Aug 20 16:43:06 lb02 Keepalived_vrrp[5049]: VRRP_Instance(VI_1) Entering BACKUP STATE<br>...<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@lb02 ~<span class="token punctuation">]</span><span class="token comment">#systemctl status keepalived.service </span>
+● keepalived.service - LVS and VRRP High Availability Monitor
+<span class="token punctuation">..</span>.
+Aug <span class="token number">20</span> <span class="token number">16</span>:43:06 lb02 Keepalived_vrrp<span class="token punctuation">[</span><span class="token number">5049</span><span class="token punctuation">]</span>: VRRP_Instance<span class="token punctuation">(</span>VI_1<span class="token punctuation">)</span> Entering BACKUP STATE
+<span class="token punctuation">..</span>.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>关闭lb01的keepalived服务，手动造成故障</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@lb01 /etc/sysconfig/network-scripts]#systemctl stop keepalived.service <br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@lb01 /etc/sysconfig/network-scripts<span class="token punctuation">]</span><span class="token comment">#systemctl stop keepalived.service </span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
 
 <p>lb02切换为主，验证成功</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@lb02 ~]#systemctl status keepalived.service <br>● keepalived.service - LVS and VRRP High Availability Monitor<br>...<br>Aug 20 16:55:14 lb02 Keepalived_vrrp[5162]: VRRP_Instance(VI_1) Transition to MASTER STATE<br>Aug 20 16:55:15 lb02 Keepalived_vrrp[5162]: Sending gratuitous ARP on eth0 for 10.0.0.3<br>Aug 20 16:55:15 lb02 Keepalived_vrrp[5162]: VRRP_Instance(VI_1) Sending/queueing gratuitous ARPs on eth0 for 10.0.0.3<br>Aug 20 16:55:15 lb02 Keepalived_vrrp[5162]: Sending gratuitous ARP on eth0 for 10.0.0.3<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@lb02 ~<span class="token punctuation">]</span><span class="token comment">#systemctl status keepalived.service </span>
+● keepalived.service - LVS and VRRP High Availability Monitor
+<span class="token punctuation">..</span>.
+Aug <span class="token number">20</span> <span class="token number">16</span>:55:14 lb02 Keepalived_vrrp<span class="token punctuation">[</span><span class="token number">5162</span><span class="token punctuation">]</span>: VRRP_Instance<span class="token punctuation">(</span>VI_1<span class="token punctuation">)</span> Transition to MASTER STATE
+Aug <span class="token number">20</span> <span class="token number">16</span>:55:15 lb02 Keepalived_vrrp<span class="token punctuation">[</span><span class="token number">5162</span><span class="token punctuation">]</span>: Sending gratuitous ARP on eth0 <span class="token keyword">for</span> <span class="token number">10.0</span>.0.3
+Aug <span class="token number">20</span> <span class="token number">16</span>:55:15 lb02 Keepalived_vrrp<span class="token punctuation">[</span><span class="token number">5162</span><span class="token punctuation">]</span>: VRRP_Instance<span class="token punctuation">(</span>VI_1<span class="token punctuation">)</span> Sending/queueing gratuitous ARPs on eth0 <span class="token keyword">for</span> <span class="token number">10.0</span>.0.3
+Aug <span class="token number">20</span> <span class="token number">16</span>:55:15 lb02 Keepalived_vrrp<span class="token punctuation">[</span><span class="token number">5162</span><span class="token punctuation">]</span>: Sending gratuitous ARP on eth0 <span class="token keyword">for</span> <span class="token number">10.0</span>.0.3<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 
 
 <h4 id="2）-LVS的负载均衡测试"><a href="#2）-LVS的负载均衡测试" class="headerlink" title="2） LVS的负载均衡测试"></a>2） LVS的负载均衡测试</h4><p>访问<a href="http://10.0.0.3:80，可见访问web01和web02循环。">http://10.0.0.3:80，可见访问web01和web02循环。</a></p>
 <p>查看LVS规则流量信息，确保两条路都有流量，验证成功</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@lb01 /etc/sysconfig/network-scripts]#ipvsadm -ln --stats<br>IP Virtual Server version 1.2.1 (size=4096)<br>Prot LocalAddress:Port               Conns   InPkts  OutPkts  InBytes OutBytes<br><span class="hljs-meta prompt_">  -&gt; </span><span class="language-bash">RemoteAddress:Port</span><br>TCP  10.0.0.3:80                         8      132        0    34840        0<br><span class="hljs-meta prompt_">  -&gt; </span><span class="language-bash">10.0.0.7:80                         4       90        0    24476        0</span><br><span class="hljs-meta prompt_">  -&gt; </span><span class="language-bash">10.0.0.8:80                         4       42        0    10364        0</span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@lb01 /etc/sysconfig/network-scripts<span class="token punctuation">]</span><span class="token comment">#ipvsadm -ln --stats</span>
+IP Virtual Server version <span class="token number">1.2</span>.1 <span class="token punctuation">(</span>size<span class="token operator">=</span><span class="token number">4096</span><span class="token punctuation">)</span>
+Prot LocalAddress:Port               Conns   InPkts  OutPkts  InBytes OutBytes
+  -<span class="token operator">></span> RemoteAddress:Port
+TCP  <span class="token number">10.0</span>.0.3:80                         <span class="token number">8</span>      <span class="token number">132</span>        <span class="token number">0</span>    <span class="token number">34840</span>        <span class="token number">0</span>
+  -<span class="token operator">></span> <span class="token number">10.0</span>.0.7:80                         <span class="token number">4</span>       <span class="token number">90</span>        <span class="token number">0</span>    <span class="token number">24476</span>        <span class="token number">0</span>
+  -<span class="token operator">></span> <span class="token number">10.0</span>.0.8:80                         <span class="token number">4</span>       <span class="token number">42</span>        <span class="token number">0</span>    <span class="token number">10364</span>        <span class="token number">0</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 
 
@@ -661,19 +847,6 @@
 
     <div class="side-col d-none d-lg-block col-lg-2">
       
-  <aside class="sidebar" style="margin-left: -1rem">
-    <div id="toc">
-  <p class="toc-header">
-    <i class="iconfont icon-list"></i>
-    <span>目录</span>
-  </p>
-  <div class="toc-body" id="toc-body"></div>
-</div>
-
-
-
-  </aside>
-
 
     </div>
   </div>
@@ -839,6 +1012,8 @@
   });
 </script>
 
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
 
   <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
 

@@ -19,12 +19,12 @@
   <meta name="author" content="GongSheng">
   <meta name="keywords" content="">
   
-    <meta name="description" content="容器架构-Docker-04今日内容：  容器互联  一、容器互联容器互联使用--link选项 1.1 分离式nginx + phpdocker镜像架构分层次  基础:系统 服务:nginx,php,tomcat,jdk,….. 业务:kodexp   实现： 1.1.1 准备项目代码目录1234567891011[root@docker02 &#x2F;app&#x2F;docker&#x2F;kodexp]#lscode">
+    <meta name="description" content="容器架构-Docker-04今日内容：  容器互联  一、容器互联容器互联使用--link选项 1.1 分离式nginx + phpdocker镜像架构分层次  基础:系统 服务:nginx,php,tomcat,jdk,….. 业务:kodexp   实现： 1.1.1 准备项目代码目录[root@docker02 &#x2F;app&#x2F;docker&#x2F;kodexp]#ls code  conf  data">
 <meta property="og:type" content="article">
 <meta property="og:title" content="day62-容器架构-Docker（四）">
 <meta property="og:url" content="http://gsproj.github.io/2024/05/29/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/03_%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9E%B6%E6%9E%84/day62-%E5%AE%B9%E5%99%A8%E6%9E%B6%E6%9E%84-docker-4/index.html">
 <meta property="og:site_name" content="迎风之豚的博客">
-<meta property="og:description" content="容器架构-Docker-04今日内容：  容器互联  一、容器互联容器互联使用--link选项 1.1 分离式nginx + phpdocker镜像架构分层次  基础:系统 服务:nginx,php,tomcat,jdk,….. 业务:kodexp   实现： 1.1.1 准备项目代码目录1234567891011[root@docker02 &#x2F;app&#x2F;docker&#x2F;kodexp]#lscode">
+<meta property="og:description" content="容器架构-Docker-04今日内容：  容器互联  一、容器互联容器互联使用--link选项 1.1 分离式nginx + phpdocker镜像架构分层次  基础:系统 服务:nginx,php,tomcat,jdk,….. 业务:kodexp   实现： 1.1.1 准备项目代码目录[root@docker02 &#x2F;app&#x2F;docker&#x2F;kodexp]#ls code  conf  data">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240530104417170.png">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240530114344355.png">
@@ -45,6 +45,8 @@
   <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" />
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
@@ -74,7 +76,7 @@
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
     Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"left","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
 
     if (CONFIG.web_analytics.follow_dnt) {
       var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
@@ -100,7 +102,7 @@
   <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand" href="/">
-      <strong>Fluid</strong>
+      <strong>Haris的博客</strong>
     </a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
@@ -225,7 +227,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          601 字
+          581 字
         
       </span>
     
@@ -236,7 +238,7 @@
         
         
         
-          6 分钟
+          5 分钟
         
       </span>
     
@@ -266,6 +268,19 @@
   <div class="row nomargin-x">
     <div class="side-col d-none d-lg-block col-lg-2">
       
+  <aside class="sidebar" style="padding-left: 2rem; margin-right: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
 
     </div>
 
@@ -291,29 +306,117 @@
 </ul>
 <p><img src="/../../../img/image-20240530104417170.png" srcset="/img/loading.gif" lazyload alt="image-20240530104417170"></p>
 <p>实现：</p>
-<h3 id="1-1-1-准备项目代码目录"><a href="#1-1-1-准备项目代码目录" class="headerlink" title="1.1.1 准备项目代码目录"></a>1.1.1 准备项目代码目录</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker02 /app/docker/kodexp]#ls<br>code  conf  data<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">code存放kodexp的代码</span><br>[root@docker02 /app/docker/kodexp]#ls code/<br>app  Changelog.md  config  data  index.php  plugins  static<br><span class="hljs-meta prompt_"># </span><span class="language-bash">代码权限修改</span><br>[root@docker02 /app/docker/kodexp]#chmod -R 777 code<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">conf存放配置文件</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">data存放数据文件</span><br></code></pre></td></tr></table></figure>
+<h3 id="1-1-1-准备项目代码目录"><a href="#1-1-1-准备项目代码目录" class="headerlink" title="1.1.1 准备项目代码目录"></a>1.1.1 准备项目代码目录</h3><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@docker02 /app/docker/kodexp<span class="token punctuation">]</span><span class="token comment">#ls</span>
+code  conf  data
+
+<span class="token comment"># code存放kodexp的代码</span>
+<span class="token punctuation">[</span>root@docker02 /app/docker/kodexp<span class="token punctuation">]</span><span class="token comment">#ls code/</span>
+app  Changelog.md  config  data  index.php  plugins  static
+<span class="token comment"># 代码权限修改</span>
+<span class="token punctuation">[</span>root@docker02 /app/docker/kodexp<span class="token punctuation">]</span><span class="token comment">#chmod -R 777 code</span>
+
+<span class="token comment"># conf存放配置文件</span>
+<span class="token comment"># data存放数据文件</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <h3 id="1-1-2-启动php容器"><a href="#1-1-2-启动php容器" class="headerlink" title="1.1.2 启动php容器"></a>1.1.2 启动php容器</h3><ul>
 <li>配置文件挂载：&#x2F;app&#x2F;docker&#x2F;kodexp&#x2F;conf&#x2F;<a target="_blank" rel="noopener" href="http://www.conf/">www.conf</a>  –&gt; &#x2F;usr&#x2F;local&#x2F;etc&#x2F;php-fpm.d&#x2F;<a target="_blank" rel="noopener" href="http://www.conf/">www.conf</a></li>
 <li>kodexp代码挂载：&#x2F;app&#x2F;docker&#x2F;code&#x2F;kodexp&#x2F; –&gt; &#x2F;app&#x2F;code&#x2F;kodexp</li>
 </ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">准备php配置文件</span><br>[root@docker02 /app/docker]#cat www.conf <br>[www]<br>user = www-data<br>group = www-data<br>listen = 0.0.0.0:9000<br>pm = dynamic<br>pm.max_children = 5<br>pm.start_servers = 2<br>pm.min_spare_servers = 1<br>pm.max_spare_servers = 3<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">运行php容器，挂载配置文件和code目录</span><br>[root@docker02 /app/docker]#docker run -d --name &quot;kodexp_php&quot; \<br>-v /app/docker/kodexp/conf/www.conf:/usr/local/etc/php-fpm.d/www.conf \<br>-v /app/docker/kodexp/code:/app/code/kodexp php:7-fpm-alpine <br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 准备php配置文件</span>
+<span class="token punctuation">[</span>root@docker02 /app/docker<span class="token punctuation">]</span><span class="token comment">#cat www.conf </span>
+<span class="token punctuation">[</span>www<span class="token punctuation">]</span>
+user <span class="token operator">=</span> www-data
+group <span class="token operator">=</span> www-data
+listen <span class="token operator">=</span> <span class="token number">0.0</span>.0.0:9000
+pm <span class="token operator">=</span> dynamic
+pm.max_children <span class="token operator">=</span> <span class="token number">5</span>
+pm.start_servers <span class="token operator">=</span> <span class="token number">2</span>
+pm.min_spare_servers <span class="token operator">=</span> <span class="token number">1</span>
+pm.max_spare_servers <span class="token operator">=</span> <span class="token number">3</span>
+
+<span class="token comment"># 运行php容器，挂载配置文件和code目录</span>
+<span class="token punctuation">[</span>root@docker02 /app/docker<span class="token punctuation">]</span><span class="token comment">#docker run -d --name "kodexp_php" \</span>
+<span class="token parameter variable">-v</span> /app/docker/kodexp/conf/www.conf:/usr/local/etc/php-fpm.d/www.conf <span class="token punctuation">\</span>
+<span class="token parameter variable">-v</span> /app/docker/kodexp/code:/app/code/kodexp php:7-fpm-alpine <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <blockquote>
 <p>nginx与php，代码目录一致</p>
 </blockquote>
-<h3 id="1-1-3-启动nginx容器，互联php"><a href="#1-1-3-启动nginx容器，互联php" class="headerlink" title="1.1.3 启动nginx容器，互联php"></a>1.1.3 启动nginx容器，互联php</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">nginx配置</span><br>[root@docker02 /app/docker/kodexp/conf]#cat nginx.conf <br>user nginx;<br>worker_processes auto;<br>error_log /var/log/nginx/error.log notice;<br>pid /var/run/nginx.pid;<br><br>events &#123;<br>  worker_connections 1024;<br>&#125;<br><br>http &#123;<br>  include /etc/nginx/mime.types;<br>  default_type application/octet-stream;<br><br>  log_format  main  &#x27;$remote_addr - $remote_user [$time_local] &quot;$request&quot; &#x27;<br>                    &#x27;$status $body_bytes_sent &quot;$http_referer&quot; &#x27;<br>                    &#x27;&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;&#x27;;<br><br>  access_log /var/log/nginx/access.log main;<br>  sendfile on;<br><span class="hljs-meta prompt_">  #</span><span class="language-bash">tcp_nopush on;</span><br>  keepalive_timeout 65;<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">  #</span><span class="language-bash">gzip on;</span><br>  include /etc/nginx/conf.d/*.conf;<br>&#125;<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">kodexp的配置</span><br>[root@docker02 /app/docker/kodexp/conf]#cat kodexp.conf <br>server &#123;<br>  listen 80;<br>  server_name kodexp.oldboylinux.cn;<br>  root /app/code/kodexp;<br><br>  location / &#123;<br>    index index.php;<br>  &#125;<br>    location ~ \.php$ &#123;<br>      # php是容器的名字，或者--link指定的容器别名<br>      fastcgi_pass php:9000;<br>      fastcgi_index index.php;<br>      fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;<br>      include fastcgi_params;<br>  &#125;<br>&#125;<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">启动容器</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">--<span class="hljs-built_in">link</span> 容器名字:别名</span><br>[root@docker02 /app/docker/kodexp]#docker run -d --name &quot;kodexp_nginx&quot; -p 10086:80 \<br>--link kodexp_php:php \<br>-v `pwd`/conf/nginx.conf:/etc/nginx/nginx.conf \<br>-v `pwd`/conf/kodexp.conf:/etc/nginx/conf.d/kodexp.conf \<br>-v `pwd`/code:/app/code/kodexp/ \<br>nginx:stable-alpine<br></code></pre></td></tr></table></figure>
+<h3 id="1-1-3-启动nginx容器，互联php"><a href="#1-1-3-启动nginx容器，互联php" class="headerlink" title="1.1.3 启动nginx容器，互联php"></a>1.1.3 启动nginx容器，互联php</h3><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># nginx配置</span>
+<span class="token punctuation">[</span>root@docker02 /app/docker/kodexp/conf<span class="token punctuation">]</span><span class="token comment">#cat nginx.conf </span>
+user nginx<span class="token punctuation">;</span>
+worker_processes auto<span class="token punctuation">;</span>
+error_log /var/log/nginx/error.log notice<span class="token punctuation">;</span>
+pid /var/run/nginx.pid<span class="token punctuation">;</span>
+
+events <span class="token punctuation">&#123;</span>
+  worker_connections <span class="token number">1024</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+http <span class="token punctuation">&#123;</span>
+  include /etc/nginx/mime.types<span class="token punctuation">;</span>
+  default_type application/octet-stream<span class="token punctuation">;</span>
+
+  log_format  main  <span class="token string">'$remote_addr - $remote_user [$time_local] "$request" '</span>
+                    <span class="token string">'$status $body_bytes_sent "$http_referer" '</span>
+                    <span class="token string">'"$http_user_agent" "$http_x_forwarded_for"'</span><span class="token punctuation">;</span>
+
+  access_log /var/log/nginx/access.log main<span class="token punctuation">;</span>
+  sendfile on<span class="token punctuation">;</span>
+  <span class="token comment">#tcp_nopush on;</span>
+  keepalive_timeout <span class="token number">65</span><span class="token punctuation">;</span>
+
+  <span class="token comment">#gzip on;</span>
+  include /etc/nginx/conf.d/*.conf<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment"># kodexp的配置</span>
+<span class="token punctuation">[</span>root@docker02 /app/docker/kodexp/conf<span class="token punctuation">]</span><span class="token comment">#cat kodexp.conf </span>
+server <span class="token punctuation">&#123;</span>
+  listen <span class="token number">80</span><span class="token punctuation">;</span>
+  server_name kodexp.oldboylinux.cn<span class="token punctuation">;</span>
+  root /app/code/kodexp<span class="token punctuation">;</span>
+
+  location / <span class="token punctuation">&#123;</span>
+    index index.php<span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+    location ~ <span class="token punctuation">\</span>.php$ <span class="token punctuation">&#123;</span>
+      <span class="token comment"># php是容器的名字，或者--link指定的容器别名</span>
+      fastcgi_pass php:9000<span class="token punctuation">;</span>
+      fastcgi_index index.php<span class="token punctuation">;</span>
+      fastcgi_param SCRIPT_FILENAME <span class="token variable">$document_root</span><span class="token variable">$fastcgi_script_name</span><span class="token punctuation">;</span>
+      include fastcgi_params<span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment"># 启动容器</span>
+<span class="token comment"># --link 容器名字:别名</span>
+<span class="token punctuation">[</span>root@docker02 /app/docker/kodexp<span class="token punctuation">]</span><span class="token comment">#docker run -d --name "kodexp_nginx" -p 10086:80 \</span>
+<span class="token parameter variable">--link</span> kodexp_php:php <span class="token punctuation">\</span>
+<span class="token parameter variable">-v</span> <span class="token variable"><span class="token variable">`</span><span class="token builtin class-name">pwd</span><span class="token variable">`</span></span>/conf/nginx.conf:/etc/nginx/nginx.conf <span class="token punctuation">\</span>
+<span class="token parameter variable">-v</span> <span class="token variable"><span class="token variable">`</span><span class="token builtin class-name">pwd</span><span class="token variable">`</span></span>/conf/kodexp.conf:/etc/nginx/conf.d/kodexp.conf <span class="token punctuation">\</span>
+<span class="token parameter variable">-v</span> <span class="token variable"><span class="token variable">`</span><span class="token builtin class-name">pwd</span><span class="token variable">`</span></span>/code:/app/code/kodexp/ <span class="token punctuation">\</span>
+nginx:stable-alpine<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>测试，设置hosts访问：<a target="_blank" rel="noopener" href="http://kodexp.oldboylinux.cn:10086/">http://kodexp.oldboylinux.cn:10086/</a></p>
 <p><img src="/../../../img/image-20240530114344355.png" srcset="/img/loading.gif" lazyload alt="image-20240530114344355"></p>
 <h3 id="1-1-4-解决GD扩展的问题"><a href="#1-1-4-解决GD扩展的问题" class="headerlink" title="1.1.4 解决GD扩展的问题"></a>1.1.4 解决GD扩展的问题</h3><p>访问显示建议开启GD扩展，可以通过Dockerfile来定制php镜像</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_">#</span><span class="language-bash">debian系统</span><br>FROM php:7.4-fpm<br>RUN apt-get update &amp;&amp; apt-get install -y \<br>libfreetype6-dev \<br>libjpeg62-turbo-dev \<br>libpng-dev \<br>&amp;&amp; docker-php-ext-configure gd --with-freetype --with-jpeg \<br>&amp;&amp; docker-php-ext-install -j$(nproc) gd<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#debian系统</span>
+FROM php:7.4-fpm
+RUN <span class="token function">apt-get</span> update <span class="token operator">&amp;&amp;</span> <span class="token function">apt-get</span> <span class="token function">install</span> <span class="token parameter variable">-y</span> <span class="token punctuation">\</span>
+libfreetype6-dev <span class="token punctuation">\</span>
+libjpeg62-turbo-dev <span class="token punctuation">\</span>
+libpng-dev <span class="token punctuation">\</span>
+<span class="token operator">&amp;&amp;</span> docker-php-ext-configure gd --with-freetype --with-jpeg <span class="token punctuation">\</span>
+<span class="token operator">&amp;&amp;</span> docker-php-ext-install -j<span class="token variable"><span class="token variable">$(</span>nproc<span class="token variable">)</span></span> gd<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>构建镜像</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker02 /server/dockerfile/05_link_nginx_php]#docker build -t php_gd:7.4-fpm .<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@docker02 /server/dockerfile/05_link_nginx_php<span class="token punctuation">]</span><span class="token comment">#docker build -t php_gd:7.4-fpm .</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
 
 <p>再使用新建的镜像启动php</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker02 /app/docker]#docker run -d --name &quot;kodexp_php&quot; \<br>-v /app/docker/kodexp/conf/www.conf:/usr/local/etc/php-fpm.d/www.conf \<br>-v /app/docker/kodexp/code:/app/code/kodexp php_gd:7.4-fpm <br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@docker02 /app/docker<span class="token punctuation">]</span><span class="token comment">#docker run -d --name "kodexp_php" \</span>
+<span class="token parameter variable">-v</span> /app/docker/kodexp/conf/www.conf:/usr/local/etc/php-fpm.d/www.conf <span class="token punctuation">\</span>
+<span class="token parameter variable">-v</span> /app/docker/kodexp/code:/app/code/kodexp php_gd:7.4-fpm <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></div></figure>
 
 
                 
@@ -434,19 +537,6 @@
 
     <div class="side-col d-none d-lg-block col-lg-2">
       
-  <aside class="sidebar" style="margin-left: -1rem">
-    <div id="toc">
-  <p class="toc-header">
-    <i class="iconfont icon-list"></i>
-    <span>目录</span>
-  </p>
-  <div class="toc-body" id="toc-body"></div>
-</div>
-
-
-
-  </aside>
-
 
     </div>
   </div>
@@ -612,6 +702,8 @@
   });
 </script>
 
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
 
   <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
 

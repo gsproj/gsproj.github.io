@@ -19,12 +19,12 @@
   <meta name="author" content="GongSheng">
   <meta name="keywords" content="">
   
-    <meta name="description" content="Ansible集群自动化维护（三）主要内容：Ansible流程控制和调试方法 1 流程控制流程控制分为  handler when loop&#x2F;with_items  1.1 handler触发器应用场景：  一般用于分发配置文件的时候. 如果配置文件发生变化则重启服务,如果没有变化则重启  案例01：没有使用触发器，无论下发文件有没有改变，都需要重启服务 1234567891011- h">
+    <meta name="description" content="Ansible集群自动化维护（三）主要内容：Ansible流程控制和调试方法 1 流程控制流程控制分为  handler when loop&#x2F;with_items  1.1 handler触发器应用场景：  一般用于分发配置文件的时候. 如果配置文件发生变化则重启服务,如果没有变化则重启  案例01：没有使用触发器，无论下发文件有没有改变，都需要重启服务 - hosts: backup">
 <meta property="og:type" content="article">
 <meta property="og:title" content="09-集群自动化维护-Ansible(三)">
 <meta property="og:url" content="http://gsproj.github.io/2024/05/06/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/02_%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/09-%E9%9B%86%E7%BE%A4%E8%87%AA%E5%8A%A8%E5%8C%96%E7%BB%B4%E6%8A%A4-Ansible-3/index.html">
 <meta property="og:site_name" content="迎风之豚的博客">
-<meta property="og:description" content="Ansible集群自动化维护（三）主要内容：Ansible流程控制和调试方法 1 流程控制流程控制分为  handler when loop&#x2F;with_items  1.1 handler触发器应用场景：  一般用于分发配置文件的时候. 如果配置文件发生变化则重启服务,如果没有变化则重启  案例01：没有使用触发器，无论下发文件有没有改变，都需要重启服务 1234567891011- h">
+<meta property="og:description" content="Ansible集群自动化维护（三）主要内容：Ansible流程控制和调试方法 1 流程控制流程控制分为  handler when loop&#x2F;with_items  1.1 handler触发器应用场景：  一般用于分发配置文件的时候. 如果配置文件发生变化则重启服务,如果没有变化则重启  案例01：没有使用触发器，无论下发文件有没有改变，都需要重启服务 - hosts: backup">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240506163401162.png">
 <meta property="article:published_time" content="2024-05-06T08:35:52.000Z">
@@ -44,6 +44,8 @@
   <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" />
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
@@ -73,7 +75,7 @@
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
     Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"left","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
 
     if (CONFIG.web_analytics.follow_dnt) {
       var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
@@ -99,7 +101,7 @@
   <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand" href="/">
-      <strong>Fluid</strong>
+      <strong>Haris的博客</strong>
     </a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
@@ -224,7 +226,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          2.6k 字
+          2.5k 字
         
       </span>
     
@@ -235,7 +237,7 @@
         
         
         
-          22 分钟
+          21 分钟
         
       </span>
     
@@ -265,6 +267,19 @@
   <div class="row nomargin-x">
     <div class="side-col d-none d-lg-block col-lg-2">
       
+  <aside class="sidebar" style="padding-left: 2rem; margin-right: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
 
     </div>
 
@@ -290,17 +305,66 @@
 <li>如果配置文件发生变化则重启服务,如果没有变化则重启</li>
 </ul>
 <p>案例01：没有使用触发器，无论下发文件有没有改变，都需要重启服务</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs shell">- hosts: backup<br>  tasks:<br>  - name: 分发配置文件<br>    copy:<br>    src: files/exports<br>    dest: /etc/exports<br>    backup: yes<br>  - name: 重启服务<br>    systemd:<br>    name: nfs<br>    state: reloaded<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">- hosts: backup
+  tasks:
+  - name: 分发配置文件
+    copy:
+    src: files/exports
+    dest: /etc/exports
+    backup: <span class="token function">yes</span>
+  - name: 重启服务
+    systemd:
+    name: nfs
+    state: reloaded<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>使用触发器之后</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn01[ /server/scripts/playbook]#cat 10-handler.yml<br>- hosts: backup01<br>  gather_facts: no<br>  tasks:<br>    - name: 分发配置文件<br>      copy:<br>        src: /server/files/exports<br>        dest: /etc/exports<br>        backup: yes<br>      notify:<br>        - 重启服务<br>  handlers:<br>    - name: 重启服务<br>      systemd:<br>        name: nfs<br>        state: reloaded<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts/playbook<span class="token punctuation">]</span><span class="token comment">#cat 10-handler.yml</span>
+- hosts: backup01
+  gather_facts: no
+  tasks:
+    - name: 分发配置文件
+      copy:
+        src: /server/files/exports
+        dest: /etc/exports
+        backup: <span class="token function">yes</span>
+      notify:
+        - 重启服务
+  handlers:
+    - name: 重启服务
+      systemd:
+        name: nfs
+        state: reloaded<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>执行效果：</p>
 <ul>
 <li>下发下去的文件识别“有改变”，则触发handler重启服务。</li>
 <li>如文件没有改变，则不触发重启服务的handler</li>
 </ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn01[ /server/scripts/playbook]#ansible-playbook 10-handler.yml<br> _________________<br>&lt; PLAY [backup01] &gt;<br>...<br> _______________<br>&lt; TASK [分发配置文件] &gt;<br> ---------------<br>        \   ^__^<br>         \  (oo)\_______<br>            (__)\       )\/\<br>                ||----w |<br>                ||     ||<br><br>changed: [172.16.1.41]<br> ________________________<br>&lt; RUNNING HANDLER [重启服务] &gt;<br> ------------------------<br>        \   ^__^<br>         \  (oo)\_______<br>            (__)\       )\/\<br>                ||----w |<br>                ||     ||<br><br>changed: [172.16.1.41]<br>...<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts/playbook<span class="token punctuation">]</span><span class="token comment">#ansible-playbook 10-handler.yml</span>
+ _________________
+<span class="token operator">&lt;</span> PLAY <span class="token punctuation">[</span>backup01<span class="token punctuation">]</span> <span class="token operator">></span>
+<span class="token punctuation">..</span>.
+ _______________
+<span class="token operator">&lt;</span> TASK <span class="token punctuation">[</span>分发配置文件<span class="token punctuation">]</span> <span class="token operator">></span>
+ ---------------
+        <span class="token punctuation">\</span>   ^__^
+         <span class="token punctuation">\</span>  <span class="token punctuation">(</span>oo<span class="token punctuation">)</span><span class="token punctuation">\</span>_______
+            <span class="token punctuation">(</span>__<span class="token punctuation">)</span><span class="token punctuation">\</span>       <span class="token punctuation">)</span><span class="token punctuation">\</span>/<span class="token punctuation">\</span>
+                <span class="token operator">||</span>----w <span class="token operator">|</span>
+                <span class="token operator">||</span>     <span class="token operator">||</span>
+
+changed: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span>
+ ________________________
+<span class="token operator">&lt;</span> RUNNING HANDLER <span class="token punctuation">[</span>重启服务<span class="token punctuation">]</span> <span class="token operator">></span>
+ ------------------------
+        <span class="token punctuation">\</span>   ^__^
+         <span class="token punctuation">\</span>  <span class="token punctuation">(</span>oo<span class="token punctuation">)</span><span class="token punctuation">\</span>_______
+            <span class="token punctuation">(</span>__<span class="token punctuation">)</span><span class="token punctuation">\</span>       <span class="token punctuation">)</span><span class="token punctuation">\</span>/<span class="token punctuation">\</span>
+                <span class="token operator">||</span>----w <span class="token operator">|</span>
+                <span class="token operator">||</span>     <span class="token operator">||</span>
+
+changed: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span>
+<span class="token punctuation">..</span>.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <h2 id="1-2-when判断"><a href="#1-2-when判断" class="headerlink" title="1.2 when判断"></a>1.2 when判断</h2><p>作用：</p>
 <ul>
@@ -312,22 +376,89 @@
 <li>when条件一般与facts变量或register变量一起使用</li>
 </ul>
 <h3 id="1-2-1-单个条件"><a href="#1-2-1-单个条件" class="headerlink" title="1.2.1 单个条件"></a>1.2.1 单个条件</h3><p>案例：只想在web01上执行软件安装操作（以Debug msg方式模拟）</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn01[ /server/scripts/playbook]#cat 11-when.yml<br>- hosts: all<br>  tasks:<br>    - name: 只有web01安装软件（输出信息）<br>      debug:<br>        msg: &quot;这是web01，正在安装软件&quot;<br>      when: ansible_hostname == &quot;web01&quot;<br>      <br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts/playbook<span class="token punctuation">]</span><span class="token comment">#cat 11-when.yml</span>
+- hosts: all
+  tasks:
+    - name: 只有web01安装软件（输出信息）
+      debug:
+        msg: <span class="token string">"这是web01，正在安装软件"</span>
+      when: ansible_hostname <span class="token operator">==</span> <span class="token string">"web01"</span>
+      <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>执行效果：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn01[ /server/scripts/playbook]#ansible-playbook 11-when.yml<br> ____________<br>&lt; PLAY [all] &gt;<br> ------------<br>...<br> ________________________<br>&lt; TASK [Gathering Facts] &gt;<br>...<br>ok: [172.16.1.41]<br>ok: [172.16.1.7]<br>ok: [172.16.1.31]<br> __________________________<br>&lt; TASK [只有web01安装软件（输出信息）] &gt;<br> --------------------------<br>        \   ^__^<br>         \  (oo)\_______<br>            (__)\       )\/\<br>                ||----w |<br>                ||     ||<br><br>ok: [172.16.1.7] =&gt; &#123;<br>    &quot;msg&quot;: &quot;这是web01，正在安装软件&quot;<br>&#125;<br>skipping: [172.16.1.31]<br>skipping: [172.16.1.41]<br>...<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts/playbook<span class="token punctuation">]</span><span class="token comment">#ansible-playbook 11-when.yml</span>
+ ____________
+<span class="token operator">&lt;</span> PLAY <span class="token punctuation">[</span>all<span class="token punctuation">]</span> <span class="token operator">></span>
+ ------------
+<span class="token punctuation">..</span>.
+ ________________________
+<span class="token operator">&lt;</span> TASK <span class="token punctuation">[</span>Gathering Facts<span class="token punctuation">]</span> <span class="token operator">></span>
+<span class="token punctuation">..</span>.
+ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span>
+ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.7<span class="token punctuation">]</span>
+ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.31<span class="token punctuation">]</span>
+ __________________________
+<span class="token operator">&lt;</span> TASK <span class="token punctuation">[</span>只有web01安装软件（输出信息）<span class="token punctuation">]</span> <span class="token operator">></span>
+ --------------------------
+        <span class="token punctuation">\</span>   ^__^
+         <span class="token punctuation">\</span>  <span class="token punctuation">(</span>oo<span class="token punctuation">)</span><span class="token punctuation">\</span>_______
+            <span class="token punctuation">(</span>__<span class="token punctuation">)</span><span class="token punctuation">\</span>       <span class="token punctuation">)</span><span class="token punctuation">\</span>/<span class="token punctuation">\</span>
+                <span class="token operator">||</span>----w <span class="token operator">|</span>
+                <span class="token operator">||</span>     <span class="token operator">||</span>
+
+ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.7<span class="token punctuation">]</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">&#123;</span>
+    <span class="token string">"msg"</span><span class="token builtin class-name">:</span> <span class="token string">"这是web01，正在安装软件"</span>
+<span class="token punctuation">&#125;</span>
+skipping: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.31<span class="token punctuation">]</span>
+skipping: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span>
+<span class="token punctuation">..</span>.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <blockquote>
 <p>扩展1：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">也可以做系统方面的判断，如</span><br>	  when: ansible_distribution == &quot;CentOS&quot;<br><span class="hljs-meta prompt_"># </span><span class="language-bash">具体参数，可以通过以下命令获取</span><br>[root@mn01[ /server/scripts/playbook]#ansible web01 -m setup | grep ansible<br>&quot;ansible_facts&quot;: &#123;<br>    &quot;ansible_all_ipv4_addresses&quot;: [<br>    &quot;ansible_all_ipv6_addresses&quot;: [<br>    &quot;ansible_apparmor&quot;: &#123;<br>    &quot;ansible_architecture&quot;: &quot;x86_64&quot;,<br>    &quot;ansible_bios_date&quot;: &quot;11/12/2020&quot;,<br>    &quot;ansible_bios_version&quot;: &quot;6.00&quot;,<br>    &quot;ansible_cmdline&quot;: &#123;<br>    &quot;ansible_date_time&quot;: &#123;<br>    &quot;ansible_default_ipv4&quot;: &#123;<br>    &quot;ansible_default_ipv6&quot;: &#123;&#125;,<br>    &quot;ansible_device_links&quot;: &#123;<br>    &quot;ansible_devices&quot;: &#123;<br>    &quot;ansible_distribution&quot;: &quot;CentOS&quot;,<br>    &quot;ansible_distribution_file_parsed&quot;: true,<br>    &quot;ansible_distribution_file_path&quot;: &quot;/etc/redhat-release&quot;,<br>    &quot;ansible_distribution_file_variety&quot;: &quot;RedHat&quot;,<br>    &quot;ansible_distribution_major_version&quot;: &quot;7&quot;,<br>    &quot;ansible_distribution_release&quot;: &quot;Core&quot;,<br>    &quot;ansible_distribution_version&quot;: &quot;7.9&quot;,<br>...<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 也可以做系统方面的判断，如</span>
+	  when: ansible_distribution <span class="token operator">==</span> <span class="token string">"CentOS"</span>
+<span class="token comment"># 具体参数，可以通过以下命令获取</span>
+<span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts/playbook<span class="token punctuation">]</span><span class="token comment">#ansible web01 -m setup | grep ansible</span>
+<span class="token string">"ansible_facts"</span><span class="token builtin class-name">:</span> <span class="token punctuation">&#123;</span>
+    <span class="token string">"ansible_all_ipv4_addresses"</span><span class="token builtin class-name">:</span> <span class="token punctuation">[</span>
+    <span class="token string">"ansible_all_ipv6_addresses"</span><span class="token builtin class-name">:</span> <span class="token punctuation">[</span>
+    <span class="token string">"ansible_apparmor"</span><span class="token builtin class-name">:</span> <span class="token punctuation">&#123;</span>
+    <span class="token string">"ansible_architecture"</span><span class="token builtin class-name">:</span> <span class="token string">"x86_64"</span>,
+    <span class="token string">"ansible_bios_date"</span><span class="token builtin class-name">:</span> <span class="token string">"11/12/2020"</span>,
+    <span class="token string">"ansible_bios_version"</span><span class="token builtin class-name">:</span> <span class="token string">"6.00"</span>,
+    <span class="token string">"ansible_cmdline"</span><span class="token builtin class-name">:</span> <span class="token punctuation">&#123;</span>
+    <span class="token string">"ansible_date_time"</span><span class="token builtin class-name">:</span> <span class="token punctuation">&#123;</span>
+    <span class="token string">"ansible_default_ipv4"</span><span class="token builtin class-name">:</span> <span class="token punctuation">&#123;</span>
+    <span class="token string">"ansible_default_ipv6"</span><span class="token builtin class-name">:</span> <span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span>,
+    <span class="token string">"ansible_device_links"</span><span class="token builtin class-name">:</span> <span class="token punctuation">&#123;</span>
+    <span class="token string">"ansible_devices"</span><span class="token builtin class-name">:</span> <span class="token punctuation">&#123;</span>
+    <span class="token string">"ansible_distribution"</span><span class="token builtin class-name">:</span> <span class="token string">"CentOS"</span>,
+    <span class="token string">"ansible_distribution_file_parsed"</span><span class="token builtin class-name">:</span> true,
+    <span class="token string">"ansible_distribution_file_path"</span><span class="token builtin class-name">:</span> <span class="token string">"/etc/redhat-release"</span>,
+    <span class="token string">"ansible_distribution_file_variety"</span><span class="token builtin class-name">:</span> <span class="token string">"RedHat"</span>,
+    <span class="token string">"ansible_distribution_major_version"</span><span class="token builtin class-name">:</span> <span class="token string">"7"</span>,
+    <span class="token string">"ansible_distribution_release"</span><span class="token builtin class-name">:</span> <span class="token string">"Core"</span>,
+    <span class="token string">"ansible_distribution_version"</span><span class="token builtin class-name">:</span> <span class="token string">"7.9"</span>,
+<span class="token punctuation">..</span>.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 </blockquote>
 <blockquote>
 <p>扩展2：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_">&gt;</span><span class="language-bash">when中使用的符号</span><br><span class="hljs-meta prompt_">&gt;</span><span class="language-bash">== 等于</span><br><span class="hljs-meta prompt_">&gt;</span><span class="language-bash">!= 不等于</span><br><span class="hljs-meta prompt_">&gt;</span><span class="language-bash">is match(web)</span><br><span class="hljs-meta prompt_">&gt;</span><span class="language-bash">ansible_hostname is match(<span class="hljs-string">&quot;web|backup&quot;</span>) <span class="hljs-comment">#类似于grep,正则.</span></span><br><span class="hljs-meta prompt_">&gt;</span><span class="language-bash">ansible_hostname is not match(<span class="hljs-string">&quot;web|backup&quot;</span>) <span class="hljs-comment">#取反,排除.</span></span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token operator">></span>when中使用的符号
+<span class="token operator">>=</span><span class="token operator">=</span> 等于
+<span class="token operator">></span><span class="token operator">!=</span> 不等于
+<span class="token operator">></span>is match<span class="token punctuation">(</span>web<span class="token punctuation">)</span>
+<span class="token operator">></span>ansible_hostname is match<span class="token punctuation">(</span><span class="token string">"web|backup"</span><span class="token punctuation">)</span> <span class="token comment">#类似于grep,正则.</span>
+<span class="token operator">></span>ansible_hostname is not match<span class="token punctuation">(</span><span class="token string">"web|backup"</span><span class="token punctuation">)</span> <span class="token comment">#取反,排除.</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 </blockquote>
 <h3 id="1-2-3-多个条件"><a href="#1-2-3-多个条件" class="headerlink" title="1.2.3 多个条件"></a>1.2.3 多个条件</h3><p>当存在多个条件时，可以使用and和or</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">方法一</span><br>when: #条件1 条件2 同时成立 相当于使用and.<br>  - ansible_distribution == &quot;CentOS&quot;<br>  - ansible_hostname is match(&quot;web|backup&quot;)<br><span class="hljs-meta prompt_">  </span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">方法二：</span><br>when: ansible_distribution == &quot;CentOS&quot; and ansible_hostname is match(&quot;web|backup&quot;)<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 方法一</span>
+when: <span class="token comment">#条件1 条件2 同时成立 相当于使用and.</span>
+  - ansible_distribution <span class="token operator">==</span> <span class="token string">"CentOS"</span>
+  - ansible_hostname is match<span class="token punctuation">(</span><span class="token string">"web|backup"</span><span class="token punctuation">)</span>
+  
+<span class="token comment"># 方法二：</span>
+when: ansible_distribution <span class="token operator">==</span> <span class="token string">"CentOS"</span> and ansible_hostname is match<span class="token punctuation">(</span><span class="token string">"web|backup"</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 
 
@@ -338,16 +469,60 @@
 </ul>
 <p>常用于批量创建用户、文件夹、重启服务等</p>
 <p>案例01：批量启动服务，rpcbind然后nfs</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs shell">- hosts: backup01<br>  gather_facts: false<br>  tasks:<br>    - name: restared rpcbind and nfs<br>      systemd:<br>        name: &quot;&#123;&#123; item &#125;&#125;&quot;<br>        state: restarted<br>      loop:	# 或者with_items<br>        - rpcbind<br>        - nfs<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">- hosts: backup01
+  gather_facts: <span class="token boolean">false</span>
+  tasks:
+    - name: restared rpcbind and nfs
+      systemd:
+        name: <span class="token string">"&#123;&#123; item &#125;&#125;"</span>
+        state: restarted
+      loop:	<span class="token comment"># 或者with_items</span>
+        - rpcbind
+        - nfs<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>执行效果：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs she">[root@mn01[ /server/scripts/playbook]#ansible-playbook 12-loop.yml<br> _________________<br>&lt; PLAY [backup01] &gt;<br> -----------------<br> _________________________________<br>&lt; TASK [restared rpcbind and nfs] &gt;<br> ---------------------------------<br>changed: [172.16.1.41] =&gt; (item=rpcbind)<br>changed: [172.16.1.41] =&gt; (item=nfs)<br> ____________<br>...<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-she" data-language="she"><code class="language-she">[root@mn01[ &#x2F;server&#x2F;scripts&#x2F;playbook]#ansible-playbook 12-loop.yml
+ _________________
+&lt; PLAY [backup01] &gt;
+ -----------------
+ _________________________________
+&lt; TASK [restared rpcbind and nfs] &gt;
+ ---------------------------------
+changed: [172.16.1.41] &#x3D;&gt; (item&#x3D;rpcbind)
+changed: [172.16.1.41] &#x3D;&gt; (item&#x3D;nfs)
+ ____________
+...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <h3 id="1-3-2-循环多个变量"><a href="#1-3-2-循环多个变量" class="headerlink" title="1.3.2 循环多个变量"></a>1.3.2 循环多个变量</h3><p>循环多个变量的例子：批量添加用户</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn01[ /server/scripts/playbook]#cat 13-loop-adduser.yml<br>- hosts: backup01<br>  tasks:<br>    - name: 批量添加用户<br>      user:<br>        name: &quot;&#123;&#123; item.name &#125;&#125;&quot;<br>        uid: &quot;&#123;&#123; item.uid &#125;&#125;&quot;<br>        state: present<br>      with_items:<br>        - &#123; name: &#x27;user01&#x27;, uid: 2020 &#125;<br>        - &#123; name: &#x27;user02&#x27;, uid: 2021 &#125;<br>        - &#123; name: &#x27;user03&#x27;, uid: 2022 &#125;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts/playbook<span class="token punctuation">]</span><span class="token comment">#cat 13-loop-adduser.yml</span>
+- hosts: backup01
+  tasks:
+    - name: 批量添加用户
+      user:
+        name: <span class="token string">"&#123;&#123; item.name &#125;&#125;"</span>
+        uid: <span class="token string">"&#123;&#123; item.uid &#125;&#125;"</span>
+        state: present
+      with_items:
+        - <span class="token punctuation">&#123;</span> name: <span class="token string">'user01'</span>, uid: <span class="token number">2020</span> <span class="token punctuation">&#125;</span>
+        - <span class="token punctuation">&#123;</span> name: <span class="token string">'user02'</span>, uid: <span class="token number">2021</span> <span class="token punctuation">&#125;</span>
+        - <span class="token punctuation">&#123;</span> name: <span class="token string">'user03'</span>, uid: <span class="token number">2022</span> <span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>执行效果：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn01[ /server/scripts/playbook]#ansible-playbook 13-loop-adduser.yml<br> _________________<br>&lt; PLAY [backup01] &gt;<br> -----------------<br> ________________________<br>&lt; TASK [Gathering Facts] &gt;<br> ------------------------<br>ok: [172.16.1.41]<br> _______________<br>&lt; TASK [批量添加用户] &gt;<br> ---------------<br>changed: [172.16.1.41] =&gt; (item=&#123;u&#x27;name&#x27;: u&#x27;user01&#x27;, u&#x27;uid&#x27;: 2020&#125;)<br>changed: [172.16.1.41] =&gt; (item=&#123;u&#x27;name&#x27;: u&#x27;user02&#x27;, u&#x27;uid&#x27;: 2021&#125;)<br>changed: [172.16.1.41] =&gt; (item=&#123;u&#x27;name&#x27;: u&#x27;user03&#x27;, u&#x27;uid&#x27;: 2022&#125;)<br>...<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts/playbook<span class="token punctuation">]</span><span class="token comment">#ansible-playbook 13-loop-adduser.yml</span>
+ _________________
+<span class="token operator">&lt;</span> PLAY <span class="token punctuation">[</span>backup01<span class="token punctuation">]</span> <span class="token operator">></span>
+ -----------------
+ ________________________
+<span class="token operator">&lt;</span> TASK <span class="token punctuation">[</span>Gathering Facts<span class="token punctuation">]</span> <span class="token operator">></span>
+ ------------------------
+ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span>
+ _______________
+<span class="token operator">&lt;</span> TASK <span class="token punctuation">[</span>批量添加用户<span class="token punctuation">]</span> <span class="token operator">></span>
+ ---------------
+changed: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">(</span>item<span class="token operator">=</span><span class="token punctuation">&#123;</span>u<span class="token string">'name'</span><span class="token builtin class-name">:</span> u<span class="token string">'user01'</span>, u<span class="token string">'uid'</span><span class="token builtin class-name">:</span> <span class="token number">2020</span><span class="token punctuation">&#125;</span><span class="token punctuation">)</span>
+changed: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">(</span>item<span class="token operator">=</span><span class="token punctuation">&#123;</span>u<span class="token string">'name'</span><span class="token builtin class-name">:</span> u<span class="token string">'user02'</span>, u<span class="token string">'uid'</span><span class="token builtin class-name">:</span> <span class="token number">2021</span><span class="token punctuation">&#125;</span><span class="token punctuation">)</span>
+changed: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">(</span>item<span class="token operator">=</span><span class="token punctuation">&#123;</span>u<span class="token string">'name'</span><span class="token builtin class-name">:</span> u<span class="token string">'user03'</span>, u<span class="token string">'uid'</span><span class="token builtin class-name">:</span> <span class="token number">2022</span><span class="token punctuation">&#125;</span><span class="token punctuation">)</span>
+<span class="token punctuation">..</span>.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 
 
@@ -364,27 +539,135 @@
 <li><font color=blue><strong>-step</strong></font> 单步运行. y执行这个task,n忽略这个task,c自动运行</li>
 </ul>
 <h2 id="2-2-tag标签"><a href="#2-2-tag标签" class="headerlink" title="2.2 tag标签"></a>2.2 tag标签</h2><p>以部署nfs服务的playbool为例，剧本中打上了几处tags，代码如下：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn01[ /server/scripts/playbook]#cat 14-deploy-nfs.yml<br><span class="hljs-meta prompt_"># </span><span class="language-bash">服务端</span><br>- hosts: backup01<br>  tasks:<br>    - name: 01. 安装服务<br>      yum:<br>        name: nfs-utils, rpcbind<br>        state: present<br>      # 打标签tag<br>      tags:<br>        - 01.install<br>    - name: 02. 修改配置文件<br>      lineinfile:<br>        path: /etc/exports<br>        line: &quot;/backup-nfs 172.16.1.0/24(rw, all_squash)&quot;<br>        create: true<br>      tags:<br>        - 02.conf<br>    - name: 03. 创建共享目录并修改所有者<br>      file:<br>        path: /backup-nfs<br>        owner: nfsnobody<br>        group: nfsnobody<br>        state: directory<br>      tags:<br>        - 03.dir<br>    - name: 04. 启动服务<br>      systemd:<br>        name: &quot;&#123;&#123; item &#125;&#125;&quot;<br>        state: started<br>        enabled: yes<br>      loop:<br>        - rpcbind<br>        - nfs<br>      tags:<br>        - 04.start_srv<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">客户端</span><br>- hosts: web01<br>  tasks:<br>    - name: 01. 部署nfs-utils<br>      yum:<br>        name: nfs-utils<br>        state: present<br>    - name: 02. 挂载nfs<br>      mount:<br>        src: 172.16.1.41:/backup-nfs<br>        path: /ans-upload<br>        fstype: nfs<br>        state: mounted<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts/playbook<span class="token punctuation">]</span><span class="token comment">#cat 14-deploy-nfs.yml</span>
+<span class="token comment"># 服务端</span>
+- hosts: backup01
+  tasks:
+    - name: 01. 安装服务
+      yum:
+        name: nfs-utils, rpcbind
+        state: present
+      <span class="token comment"># 打标签tag</span>
+      tags:
+        - 01.install
+    - name: 02. 修改配置文件
+      lineinfile:
+        path: /etc/exports
+        line: <span class="token string">"/backup-nfs 172.16.1.0/24(rw, all_squash)"</span>
+        create: <span class="token boolean">true</span>
+      tags:
+        - 02.conf
+    - name: 03. 创建共享目录并修改所有者
+      file:
+        path: /backup-nfs
+        owner: nfsnobody
+        group: nfsnobody
+        state: directory
+      tags:
+        - 03.dir
+    - name: 04. 启动服务
+      systemd:
+        name: <span class="token string">"&#123;&#123; item &#125;&#125;"</span>
+        state: started
+        enabled: <span class="token function">yes</span>
+      loop:
+        - rpcbind
+        - nfs
+      tags:
+        - 04.start_srv
+
+
+
+<span class="token comment"># 客户端</span>
+- hosts: web01
+  tasks:
+    - name: 01. 部署nfs-utils
+      yum:
+        name: nfs-utils
+        state: present
+    - name: 02. 挂载nfs
+      mount:
+        src: <span class="token number">172.16</span>.1.41:/backup-nfs
+        path: /ans-upload
+        fstype: nfs
+        state: mounted<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>在运行剧本的时候，可以通过：</p>
 <ul>
 <li>-t 运行指定的标签,如果多个标签通过”,”分割</li>
 </ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn01[ /server/scripts/playbook]#ansible-playbook -t 02.conf 14-deploy-nfs.yml<br> _________________<br>&lt; PLAY [backup01] &gt;<br> -----------------<br>...<br>ok: [172.16.1.41]<br> ___________________<br>&lt; TASK [02. 修改配置文件] &gt;<br> -------------------<br>ok: [172.16.1.41]<br> ______________<br>&lt; PLAY [web01] &gt;<br> --------------<br> ________________________<br>&lt; TASK [Gathering Facts] &gt;<br> ------------------------<br>...<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts/playbook<span class="token punctuation">]</span><span class="token comment">#ansible-playbook -t 02.conf 14-deploy-nfs.yml</span>
+ _________________
+<span class="token operator">&lt;</span> PLAY <span class="token punctuation">[</span>backup01<span class="token punctuation">]</span> <span class="token operator">></span>
+ -----------------
+<span class="token punctuation">..</span>.
+ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span>
+ ___________________
+<span class="token operator">&lt;</span> TASK <span class="token punctuation">[</span>02. 修改配置文件<span class="token punctuation">]</span> <span class="token operator">></span>
+ -------------------
+ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span>
+ ______________
+<span class="token operator">&lt;</span> PLAY <span class="token punctuation">[</span>web01<span class="token punctuation">]</span> <span class="token operator">></span>
+ --------------
+ ________________________
+<span class="token operator">&lt;</span> TASK <span class="token punctuation">[</span>Gathering Facts<span class="token punctuation">]</span> <span class="token operator">></span>
+ ------------------------
+<span class="token punctuation">..</span>.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <ul>
 <li>–skip-tags 排除指定的tags,如果多个标签通过”,”分割</li>
 </ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn01[ /server/scripts/playbook]#ansible-playbook --skip-tags 01.install,02.conf 14-deploy-nfs.yml<br> _________________<br>&lt; PLAY [backup01] &gt;<br> -----------------<br> ________________________<br>&lt; TASK [Gathering Facts] &gt;<br> ------------------------<br>ok: [172.16.1.41]<br> _________________________<br>&lt; TASK [03. 创建共享目录并修改所有者] &gt;<br> -------------------------<br>ok: [172.16.1.41]<br> _________________<br>&lt; TASK [04. 启动服务] &gt;<br> -----------------<br> ______________<br>&lt; PLAY [web01] &gt;<br> --------------<br> ________________________<br>&lt; TASK [Gathering Facts] &gt;<br> ------------------------<br>ok: [172.16.1.7]<br> ________________________<br>&lt; TASK [01. 部署nfs-utils] &gt;<br> ------------------------<br>ok: [172.16.1.7]<br> __________________<br>&lt; TASK [02. 挂载nfs] &gt;<br> ------------------<br>ok: [172.16.1.7]<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts/playbook<span class="token punctuation">]</span><span class="token comment">#ansible-playbook --skip-tags 01.install,02.conf 14-deploy-nfs.yml</span>
+ _________________
+<span class="token operator">&lt;</span> PLAY <span class="token punctuation">[</span>backup01<span class="token punctuation">]</span> <span class="token operator">></span>
+ -----------------
+ ________________________
+<span class="token operator">&lt;</span> TASK <span class="token punctuation">[</span>Gathering Facts<span class="token punctuation">]</span> <span class="token operator">></span>
+ ------------------------
+ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span>
+ _________________________
+<span class="token operator">&lt;</span> TASK <span class="token punctuation">[</span>03. 创建共享目录并修改所有者<span class="token punctuation">]</span> <span class="token operator">></span>
+ -------------------------
+ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span>
+ _________________
+<span class="token operator">&lt;</span> TASK <span class="token punctuation">[</span>04. 启动服务<span class="token punctuation">]</span> <span class="token operator">></span>
+ -----------------
+ ______________
+<span class="token operator">&lt;</span> PLAY <span class="token punctuation">[</span>web01<span class="token punctuation">]</span> <span class="token operator">></span>
+ --------------
+ ________________________
+<span class="token operator">&lt;</span> TASK <span class="token punctuation">[</span>Gathering Facts<span class="token punctuation">]</span> <span class="token operator">></span>
+ ------------------------
+ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.7<span class="token punctuation">]</span>
+ ________________________
+<span class="token operator">&lt;</span> TASK <span class="token punctuation">[</span>01. 部署nfs-utils<span class="token punctuation">]</span> <span class="token operator">></span>
+ ------------------------
+ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.7<span class="token punctuation">]</span>
+ __________________
+<span class="token operator">&lt;</span> TASK <span class="token punctuation">[</span>02. 挂载nfs<span class="token punctuation">]</span> <span class="token operator">></span>
+ ------------------
+ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.7<span class="token punctuation">]</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <ul>
 <li>–list-tags显示剧本中所有的tags标签</li>
 </ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs she">[root@mn01[ /server/scripts/playbook]#ansible-playbook --list-tags 14-deploy-nfs.yml<br><br>playbook: 14-deploy-nfs.yml<br><br>  play #1 (backup01): backup01  TAGS: []<br>      TASK TAGS: [01.install, 02.conf, 03.dir, 04.start_srv]<br><br>  play #2 (web01): web01        TAGS: []<br>      TASK TAGS: []<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-she" data-language="she"><code class="language-she">[root@mn01[ &#x2F;server&#x2F;scripts&#x2F;playbook]#ansible-playbook --list-tags 14-deploy-nfs.yml
+
+playbook: 14-deploy-nfs.yml
+
+  play #1 (backup01): backup01  TAGS: []
+      TASK TAGS: [01.install, 02.conf, 03.dir, 04.start_srv]
+
+  play #2 (web01): web01        TAGS: []
+      TASK TAGS: []<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <h2 id="2-3-忽略错误"><a href="#2-3-忽略错误" class="headerlink" title="2.3 忽略错误"></a>2.3 忽略错误</h2><p>运行剧本的时候，可能存在<strong>因为重复运行导致的错误提示</strong>，这些提示并非是真的错误，比如：目录已经存在，用</p>
 <p>户已经存在。在这种情况下,我们可以通过使用<code>ignore_errors</code>忽略错误，让剧本可以继续运行。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs shell">- hosts: backup01<br>  ignore_errors: true<br>  tasks:<br>    - name: 批量添加用户<br>    ...<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">- hosts: backup01
+  ignore_errors: <span class="token boolean">true</span>
+  tasks:
+    - name: 批量添加用户
+    <span class="token punctuation">..</span>.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 
 
@@ -393,18 +676,181 @@
 <p><img src="/../../../img/image-20240506163401162.png" srcset="/img/loading.gif" lazyload alt="image-20240506163401162"></p>
 <h2 id="3-1-基本使用"><a href="#3-1-基本使用" class="headerlink" title="3.1 基本使用"></a>3.1 基本使用</h2><p>案例: 分发motd文件，motd文件中包含ans变量(目标文件是&#x2F;etc&#x2F;motd)</p>
 <p>motd文件</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn01[ /server/scripts/playbook]#cat templates/motd.j2<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">######################################</span></span><br>welcome to oldboy elastic linux system<br>操作需谨慎,删根弹指间.<br>主机名: &#123;&#123; ansible_hostname &#125;&#125;<br>ip地址: &#123;&#123; ansible_default_ipv4.address &#125;&#125;<br>内存大小: &#123;&#123; ansible_memtotal_mb &#125;&#125;<br>CPU数量: &#123;&#123; ansible_processor_vcpus &#125;&#125;<br>核心总数: &#123;&#123; ansible_processor_cores &#125;&#125;<br>发行版本: &#123;&#123; ansible_distribution &#125;&#125;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts/playbook<span class="token punctuation">]</span><span class="token comment">#cat templates/motd.j2</span>
+<span class="token comment">#######################################</span>
+welcome to oldboy elastic linux system
+操作需谨慎,删根弹指间.
+主机名: <span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> ansible_hostname <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>
+ip地址: <span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> ansible_default_ipv4.address <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>
+内存大小: <span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> ansible_memtotal_mb <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>
+CPU数量: <span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> ansible_processor_vcpus <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>
+核心总数: <span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> ansible_processor_cores <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>
+发行版本: <span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> ansible_distribution <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>剧本分发，分别使用templates和copy两种方法</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs she">[root@mn01[ /server/scripts/playbook]#cat 15-changemotd.yml<br>- hosts: all<br>  gather_facts: yes<br>  tasks:<br>    - name: template分发motd文件<br>      template:<br>        src: templates/motd.j2<br>        dest: /etc/motd<br>        backup: yes<br>    - name: copy分发motd文件<br>      copy:<br>        src: templates/motd.j2<br>        dest: /tmp/motd<br>        backup: yes<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-she" data-language="she"><code class="language-she">[root@mn01[ &#x2F;server&#x2F;scripts&#x2F;playbook]#cat 15-changemotd.yml
+- hosts: all
+  gather_facts: yes
+  tasks:
+    - name: template分发motd文件
+      template:
+        src: templates&#x2F;motd.j2
+        dest: &#x2F;etc&#x2F;motd
+        backup: yes
+    - name: copy分发motd文件
+      copy:
+        src: templates&#x2F;motd.j2
+        dest: &#x2F;tmp&#x2F;motd
+        backup: yes<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <p>查看执行结果：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">剧本执行</span><br>[root@mn01[ /server/scripts/playbook]#ansible-playbook 15-changemotd.yml<br> ____________<br>&lt; PLAY [all] &gt;<br> ------------<br> ________________________<br>&lt; TASK [Gathering Facts] &gt;<br> ------------------------<br>ok: [172.16.1.41]<br>ok: [172.16.1.31]<br>ok: [172.16.1.7]<br> _________________________<br>&lt; TASK [template分发motd文件] &gt;<br> -------------------------<br>ok: [172.16.1.7]<br>ok: [172.16.1.41]<br>ok: [172.16.1.31]<br> _____________________<br>&lt; TASK [copy分发motd文件] &gt;<br> ---------------------<br>ok: [172.16.1.31]<br>ok: [172.16.1.7]<br>ok: [172.16.1.41]<br> ____________<br>&lt; PLAY RECAP &gt;<br> ------------<br>...<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">目标机器/etc/motd，得到解析</span><br>[root@mn01[ /server/scripts/playbook]#ansible all -m shell -a  &quot;cat /etc/motd&quot;<br>172.16.1.41 | CHANGED | rc=0 &gt;&gt;<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">######################################</span></span><br>welcome to oldboy elastic linux system<br>操作需谨慎,删根弹指间.<br>主机名: backup01<br>ip地址: 10.0.0.41<br>内存大小: 1980<br>CPU数量: 1<br>核心总数: 1<br>发行版本: CentOS<br>172.16.1.31 | CHANGED | rc=0 &gt;&gt;<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">######################################</span></span><br>welcome to oldboy elastic linux system<br>操作需谨慎,删根弹指间.<br>主机名: nfs01<br>ip地址: 10.0.0.31<br>内存大小: 1980<br>CPU数量: 1<br>核心总数: 1<br>发行版本: CentOS<br>172.16.1.7 | CHANGED | rc=0 &gt;&gt;<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">######################################</span></span><br>welcome to oldboy elastic linux system<br>操作需谨慎,删根弹指间.<br>主机名: web01<br>ip地址: 10.0.0.7<br>内存大小: 1980<br>CPU数量: 1<br>核心总数: 1<br>发行版本: CentOS<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">目标机器/tmp/motd</span><br>[root@mn01[ /server/scripts/playbook]#ansible all -m shell -a  &quot;cat /tmp/motd&quot;<br>172.16.1.41 | CHANGED | rc=0 &gt;&gt;<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">######################################</span></span><br>welcome to oldboy elastic linux system<br>操作需谨慎,删根弹指间.<br>主机名: &#123;&#123; ansible_hostname &#125;&#125;<br>ip地址: &#123;&#123; ansible_default_ipv4.address &#125;&#125;<br>内存大小: &#123;&#123; ansible_memtotal_mb &#125;&#125;<br>CPU数量: &#123;&#123; ansible_processor_vcpus &#125;&#125;<br>核心总数: &#123;&#123; ansible_processor_cores &#125;&#125;<br>发行版本: &#123;&#123; ansible_distribution &#125;&#125;<br>172.16.1.31 | CHANGED | rc=0 &gt;&gt;<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">######################################</span></span><br>welcome to oldboy elastic linux system<br>操作需谨慎,删根弹指间.<br>主机名: &#123;&#123; ansible_hostname &#125;&#125;<br>ip地址: &#123;&#123; ansible_default_ipv4.address &#125;&#125;<br>内存大小: &#123;&#123; ansible_memtotal_mb &#125;&#125;<br>CPU数量: &#123;&#123; ansible_processor_vcpus &#125;&#125;<br>核心总数: &#123;&#123; ansible_processor_cores &#125;&#125;<br>发行版本: &#123;&#123; ansible_distribution &#125;&#125;<br>172.16.1.7 | CHANGED | rc=0 &gt;&gt;<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">######################################</span></span><br>welcome to oldboy elastic linux system<br>操作需谨慎,删根弹指间.<br>主机名: &#123;&#123; ansible_hostname &#125;&#125;<br>ip地址: &#123;&#123; ansible_default_ipv4.address &#125;&#125;<br>内存大小: &#123;&#123; ansible_memtotal_mb &#125;&#125;<br>CPU数量: &#123;&#123; ansible_processor_vcpus &#125;&#125;<br>核心总数: &#123;&#123; ansible_processor_cores &#125;&#125;<br>发行版本: &#123;&#123; ansible_distribution &#125;&#125;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 剧本执行</span>
+<span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts/playbook<span class="token punctuation">]</span><span class="token comment">#ansible-playbook 15-changemotd.yml</span>
+ ____________
+<span class="token operator">&lt;</span> PLAY <span class="token punctuation">[</span>all<span class="token punctuation">]</span> <span class="token operator">></span>
+ ------------
+ ________________________
+<span class="token operator">&lt;</span> TASK <span class="token punctuation">[</span>Gathering Facts<span class="token punctuation">]</span> <span class="token operator">></span>
+ ------------------------
+ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span>
+ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.31<span class="token punctuation">]</span>
+ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.7<span class="token punctuation">]</span>
+ _________________________
+<span class="token operator">&lt;</span> TASK <span class="token punctuation">[</span>template分发motd文件<span class="token punctuation">]</span> <span class="token operator">></span>
+ -------------------------
+ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.7<span class="token punctuation">]</span>
+ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span>
+ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.31<span class="token punctuation">]</span>
+ _____________________
+<span class="token operator">&lt;</span> TASK <span class="token punctuation">[</span>copy分发motd文件<span class="token punctuation">]</span> <span class="token operator">></span>
+ ---------------------
+ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.31<span class="token punctuation">]</span>
+ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.7<span class="token punctuation">]</span>
+ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span>
+ ____________
+<span class="token operator">&lt;</span> PLAY RECAP <span class="token operator">></span>
+ ------------
+<span class="token punctuation">..</span>.
+
+<span class="token comment"># 目标机器/etc/motd，得到解析</span>
+<span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts/playbook<span class="token punctuation">]</span><span class="token comment">#ansible all -m shell -a  "cat /etc/motd"</span>
+<span class="token number">172.16</span>.1.41 <span class="token operator">|</span> CHANGED <span class="token operator">|</span> <span class="token assign-left variable">rc</span><span class="token operator">=</span><span class="token number">0</span> <span class="token operator">>></span>
+<span class="token comment">#######################################</span>
+welcome to oldboy elastic linux system
+操作需谨慎,删根弹指间.
+主机名: backup01
+ip地址: <span class="token number">10.0</span>.0.41
+内存大小: <span class="token number">1980</span>
+CPU数量: <span class="token number">1</span>
+核心总数: <span class="token number">1</span>
+发行版本: CentOS
+<span class="token number">172.16</span>.1.31 <span class="token operator">|</span> CHANGED <span class="token operator">|</span> <span class="token assign-left variable">rc</span><span class="token operator">=</span><span class="token number">0</span> <span class="token operator">>></span>
+<span class="token comment">#######################################</span>
+welcome to oldboy elastic linux system
+操作需谨慎,删根弹指间.
+主机名: nfs01
+ip地址: <span class="token number">10.0</span>.0.31
+内存大小: <span class="token number">1980</span>
+CPU数量: <span class="token number">1</span>
+核心总数: <span class="token number">1</span>
+发行版本: CentOS
+<span class="token number">172.16</span>.1.7 <span class="token operator">|</span> CHANGED <span class="token operator">|</span> <span class="token assign-left variable">rc</span><span class="token operator">=</span><span class="token number">0</span> <span class="token operator">>></span>
+<span class="token comment">#######################################</span>
+welcome to oldboy elastic linux system
+操作需谨慎,删根弹指间.
+主机名: web01
+ip地址: <span class="token number">10.0</span>.0.7
+内存大小: <span class="token number">1980</span>
+CPU数量: <span class="token number">1</span>
+核心总数: <span class="token number">1</span>
+发行版本: CentOS
+
+<span class="token comment"># 目标机器/tmp/motd</span>
+<span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts/playbook<span class="token punctuation">]</span><span class="token comment">#ansible all -m shell -a  "cat /tmp/motd"</span>
+<span class="token number">172.16</span>.1.41 <span class="token operator">|</span> CHANGED <span class="token operator">|</span> <span class="token assign-left variable">rc</span><span class="token operator">=</span><span class="token number">0</span> <span class="token operator">>></span>
+<span class="token comment">#######################################</span>
+welcome to oldboy elastic linux system
+操作需谨慎,删根弹指间.
+主机名: <span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> ansible_hostname <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>
+ip地址: <span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> ansible_default_ipv4.address <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>
+内存大小: <span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> ansible_memtotal_mb <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>
+CPU数量: <span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> ansible_processor_vcpus <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>
+核心总数: <span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> ansible_processor_cores <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>
+发行版本: <span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> ansible_distribution <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>
+<span class="token number">172.16</span>.1.31 <span class="token operator">|</span> CHANGED <span class="token operator">|</span> <span class="token assign-left variable">rc</span><span class="token operator">=</span><span class="token number">0</span> <span class="token operator">>></span>
+<span class="token comment">#######################################</span>
+welcome to oldboy elastic linux system
+操作需谨慎,删根弹指间.
+主机名: <span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> ansible_hostname <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>
+ip地址: <span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> ansible_default_ipv4.address <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>
+内存大小: <span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> ansible_memtotal_mb <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>
+CPU数量: <span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> ansible_processor_vcpus <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>
+核心总数: <span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> ansible_processor_cores <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>
+发行版本: <span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> ansible_distribution <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>
+<span class="token number">172.16</span>.1.7 <span class="token operator">|</span> CHANGED <span class="token operator">|</span> <span class="token assign-left variable">rc</span><span class="token operator">=</span><span class="token number">0</span> <span class="token operator">>></span>
+<span class="token comment">#######################################</span>
+welcome to oldboy elastic linux system
+操作需谨慎,删根弹指间.
+主机名: <span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> ansible_hostname <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>
+ip地址: <span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> ansible_default_ipv4.address <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>
+内存大小: <span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> ansible_memtotal_mb <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>
+CPU数量: <span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> ansible_processor_vcpus <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>
+核心总数: <span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> ansible_processor_cores <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>
+发行版本: <span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> ansible_distribution <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 <h2 id="3-2-条件判断（未实践）"><a href="#3-2-条件判断（未实践）" class="headerlink" title="3.2 条件判断（未实践）"></a>3.2 条件判断（未实践）</h2><p>根据主机名或ip或其他条件，生成不同的配置文件</p>
-  <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs shell">/tmp/keepalived.conf<br>lb01<br>lb02<br>配置文件内容<br>/tmp/keepalived.conf<br>web01 配置文件内容<br>state MASTER<br>/tmp/keepalived.conf<br>backup 配置文件内容<br>state BACKUP<br><br>[root@m01 /server/scripts/playbook]# cat 15.jinja2-if.yml<br>- hosts: all<br>tasks:<br>- name: 分发配置文件<br>template:<br>src: templates/keepalived.conf.j2<br>dest: /tmp/keepalived.conf<br>[root@m01 /server/scripts/playbook]# tree templates/<br>templates/<br>├── keepalived.conf.j2<br>└── motd.j2<br>0 directories, 2 files<br>[root@m01 /server/scripts/playbook]# cat<br>templates/keepalived.conf.j2<br><span class="hljs-meta prompt_">#</span><span class="language-bash">this is keepalived.conf</span><br>&#123;% if ansible_hostname == &quot;web01&quot; %&#125;<br>state 主节点<br>&#123;% elif ansible_hostname == &quot;backup&quot; %&#125;<br>state 备节点<br>&#123;% endif %&#125;<br></code></pre></td></tr></table></figure>
+  <figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">/tmp/keepalived.conf
+lb01
+lb02
+配置文件内容
+/tmp/keepalived.conf
+web01 配置文件内容
+state MASTER
+/tmp/keepalived.conf
+backup 配置文件内容
+state BACKUP
 
-<h2 id="3-3-循环语句（未实践）"><a href="#3-3-循环语句（未实践）" class="headerlink" title="3.3 循环语句（未实践）"></a>3.3 循环语句（未实践）</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs shell">配置文件 server.conf web服务器的/tmp/目录下<br>10.0.0.5<br>10.0.0.6<br>10.0.0.7<br>10.0.0.8<br>10.0.0.9<br>10.0.0.10<br><br>&#123;% for ip in [1,2,3,4,5,6] %&#125;<br>  10.0.0.&#123;&#123; ip &#125;&#125;<br>&#123;% endfor %&#125;<br><br>&#123;% for ip in range(2,11) %&#125;<br>  10.0.0.&#123;&#123; ip &#125;&#125;<br>&#123;%endfor%&#125;<br><br><br>&#123;% for ip in [&quot;lidao&quot;,&quot;oldwang&quot;] %&#125;<br>  10.0.0.&#123;&#123; ip &#125;&#125;<br>&#123;%endfor%&#125;<br></code></pre></td></tr></table></figure>
+<span class="token punctuation">[</span>root@m01 /server/scripts/playbook<span class="token punctuation">]</span><span class="token comment"># cat 15.jinja2-if.yml</span>
+- hosts: all
+tasks:
+- name: 分发配置文件
+template:
+src: templates/keepalived.conf.j2
+dest: /tmp/keepalived.conf
+<span class="token punctuation">[</span>root@m01 /server/scripts/playbook<span class="token punctuation">]</span><span class="token comment"># tree templates/</span>
+templates/
+├── keepalived.conf.j2
+└── motd.j2
+<span class="token number">0</span> directories, <span class="token number">2</span> files
+<span class="token punctuation">[</span>root@m01 /server/scripts/playbook<span class="token punctuation">]</span><span class="token comment"># cat</span>
+templates/keepalived.conf.j2
+<span class="token comment">#this is keepalived.conf</span>
+<span class="token punctuation">&#123;</span>% <span class="token keyword">if</span> ansible_hostname <span class="token operator">==</span> <span class="token string">"web01"</span> %<span class="token punctuation">&#125;</span>
+state 主节点
+<span class="token punctuation">&#123;</span>% <span class="token keyword">elif</span> ansible_hostname <span class="token operator">==</span> <span class="token string">"backup"</span> %<span class="token punctuation">&#125;</span>
+state 备节点
+<span class="token punctuation">&#123;</span>% endif %<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+
+<h2 id="3-3-循环语句（未实践）"><a href="#3-3-循环语句（未实践）" class="headerlink" title="3.3 循环语句（未实践）"></a>3.3 循环语句（未实践）</h2><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">配置文件 server.conf web服务器的/tmp/目录下
+<span class="token number">10.0</span>.0.5
+<span class="token number">10.0</span>.0.6
+<span class="token number">10.0</span>.0.7
+<span class="token number">10.0</span>.0.8
+<span class="token number">10.0</span>.0.9
+<span class="token number">10.0</span>.0.10
+
+<span class="token punctuation">&#123;</span>% <span class="token keyword">for</span> <span class="token for-or-select variable">ip</span> <span class="token keyword">in</span> <span class="token punctuation">[</span><span class="token number">1,2</span>,3,4,5,6<span class="token punctuation">]</span> %<span class="token punctuation">&#125;</span>
+  <span class="token number">10.0</span>.0.<span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> <span class="token function">ip</span> <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#123;</span>% endfor %<span class="token punctuation">&#125;</span>
+
+<span class="token punctuation">&#123;</span>% <span class="token keyword">for</span> <span class="token for-or-select variable">ip</span> <span class="token keyword">in</span> range<span class="token punctuation">(</span><span class="token number">2,11</span><span class="token punctuation">)</span> %<span class="token punctuation">&#125;</span>
+  <span class="token number">10.0</span>.0.<span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> <span class="token function">ip</span> <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#123;</span>%endfor%<span class="token punctuation">&#125;</span>
+
+
+<span class="token punctuation">&#123;</span>% <span class="token keyword">for</span> <span class="token for-or-select variable">ip</span> <span class="token keyword">in</span> <span class="token punctuation">[</span><span class="token string">"lidao"</span>,<span class="token string">"oldwang"</span><span class="token punctuation">]</span> %<span class="token punctuation">&#125;</span>
+  <span class="token number">10.0</span>.0.<span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> <span class="token function">ip</span> <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#123;</span>%endfor%<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
 
 
 
@@ -527,19 +973,6 @@
 
     <div class="side-col d-none d-lg-block col-lg-2">
       
-  <aside class="sidebar" style="margin-left: -1rem">
-    <div id="toc">
-  <p class="toc-header">
-    <i class="iconfont icon-list"></i>
-    <span>目录</span>
-  </p>
-  <div class="toc-body" id="toc-body"></div>
-</div>
-
-
-
-  </aside>
-
 
     </div>
   </div>
@@ -705,6 +1138,8 @@
   });
 </script>
 
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
 
   <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
 
