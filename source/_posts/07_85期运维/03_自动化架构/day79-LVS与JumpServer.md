@@ -475,3 +475,539 @@ TCP  10.0.0.3:80                         8      132        0    34840        0
 - 开发：通过OpenVPN实现开发与测试人员连接网站，进行开发测试
 - 运维：通过OpenVPN连接内网服务器进行管理
 
+
+
+## 2.2 OpenVPN原理图
+
+![image-20240821133723790](C:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821133723790.png)
+
+
+
+## 2.3 OpenVPN快速上手
+
+### 2.3.1 环境准备
+
+| 主机           | ip                       | 作用                 |
+| -------------- | ------------------------ | -------------------- |
+| m01            | 10.0.0.61  / 172.16.1.61 | openvpn server服务端 |
+| db01           | 10.0.0.51 / 172.16.1.51  | 内网服务器           |
+| windows 笔记本 | 192.168.1.103            | openvpn客户端        |
+
+
+
+### 2.3.2 服务端创建证书
+
+#### 1）安装工具
+
+```shell
+# 安装
+[root@mn01 ~]#yum install -y openvpn easy-rsa
+```
+
+#### 2）创建CA证书
+
+修改vars文件，配置证书参数
+
+```shell
+# 充当权威机构,修改vars文件
+mkdir -p /opt/easy-rsa
+cp -a /usr/share/easy-rsa/3.0.8/* /opt/easy-rsa/
+cp /usr/share/doc/easy-rsa-3.0.8/vars.example /opt/easy-rsa/vars
+
+
+cat >/opt/easy-rsa/vars<<'EOF'
+if [ -z "$EASYRSA_CALLER" ]; then
+	echo "You appear to be sourcing an Easy-RSA 'vars' file." >&2
+	echo "This is no longer necessary and is disallowed. See the section called" >&2
+	echo "'How to use this file' near the top comments for more details." >&2
+	return 1
+fi
+
+set_var EASYRSA_DN "cn_only"
+set_var EASYRSA_REQ_COUNTRY "CN"
+set_var EASYRSA_REQ_PROVINCE "Beijing"
+set_var EASYRSA_REQ_CITY "Beijing"
+set_var EASYRSA_REQ_ORG "oldboylinux"
+set_var EASYRSA_REQ_EMAIL "oldboy@qq.com"
+set_var EASYRSA_NS_SUPPORT "yes"
+EOF
+```
+
+初始化
+
+```shell
+[root@mn01 /opt/easy-rsa]#./easyrsa init-pki
+
+# 初始化完成，显示可以创建CA证书
+Note: using Easy-RSA configuration from: /opt/easy-rsa/vars
+# 初始化后的目录，在pki里面
+init-pki complete; you may now create a CA or requests.
+Your newly created PKI dir is: /opt/easy-rsa/pki
+```
+
+生成证书
+
+```shell
+[root@mn01 /opt/easy-rsa]#./easyrsa build-ca
+# 需要输入密码和姓名信息
+```
+
+生成后的证书文件
+
+```shell
+[root@mn01 /opt/easy-rsa]#tree
+...
+├── pki
+│   ├── ca.crt	# ca证书文件
+....
+│   ├── private
+│   │   └── ca.key	# ca私钥
+....
+14 directories, 18 files
+```
+
+
+
+#### 3）创建server证书
+
+1、创建server证书请求文件与服务器私钥，nopass表示不加密私钥文件，其他默认即可
+
+```shell
+[root@mn01 /opt/easy-rsa]#./easyrsa gen-req server nopass
+...
+Keypair and certificate request completed. Your files are:
+# req文件为请求文件，用于请求创建证书
+req: /opt/easy-rsa/pki/reqs/server.req	
+# key文件为server私钥文件
+key: /opt/easy-rsa/pki/private/server.key
+```
+
+2、给server端证书签名，并生成server证书文件
+
+```shell
+[root@mn01 /opt/easy-rsa]#./easyrsa sign server server
+...
+Certificate created at: /opt/easy-rsa/pki/issued/server.crt
+
+# 需要输入yes和前面设置的密码
+```
+
+
+
+#### 4）创建client证书
+
+1、创建client证书请求文件和私钥
+
+```shell
+[root@mn01 /opt/easy-rsa]#./easyrsa gen-req client nopass
+...
+req: /opt/easy-rsa/pki/reqs/client.req
+key: /opt/easy-rsa/pki/private/client.key
+```
+
+2、给client端证书签名，生成client证书文件
+
+```shell
+[root@mn01 /opt/easy-rsa]#./easyrsa sign client client
+...
+Certificate created at: /opt/easy-rsa/pki/issued/client.crt
+```
+
+
+
+#### 5）创建dh-pem算法文件
+
+密钥交换时的认证方法
+
+```shell
+[root@mn01 /opt/easy-rsa]#./easyrsa gen-dh
+...
+DH parameters of size 2048 created at /opt/easy-rsa/pki/dh.pem
+```
+
+
+
+#### 6）目录汇总
+
+服务端生成文件的作用
+
+```shell
+[root@mn01 /opt/easy-rsa]#tree
+.
+├── easyrsa
+├── openssl-easyrsa.cnf
+├── pki
+│   ├── ca.crt	# CA证书
+│   ├── certs_by_serial
+│   │   ├── C3D54868BA8E3E17F9B7413AC6B14344.pem
+│   │   └── DDF5E7679F3F220F3BB2466868D040F3.pem
+│   ├── dh.pem	# dh算法文件
+│   ├── index.txt
+│   ├── index.txt.attr
+│   ├── index.txt.attr.old
+│   ├── index.txt.old
+│   ├── issued
+│   │   ├── client.crt	# client证书
+│   │   └── server.crt	# server证书
+│   ├── openssl-easyrsa.cnf
+│   ├── private
+│   │   ├── ca.key
+│   │   ├── client.key	# server私钥
+│   │   └── server.key	# client私钥
+...
+14 directories, 30 files
+```
+
+
+
+### 2.3.3 服务端配置文件，启动服务
+
+openvpn安装完之后的目录
+
+```shell
+[root@mn01 /opt/easy-rsa]#cd /etc/openvpn/
+[root@mn01 /etc/openvpn]#tree
+.
+├── client
+└── server
+```
+
+创建服务端配置文件
+
+```shell
+[root@mn01 /etc/openvpn]#cat server/server.conf
+port 1194 #端口
+proto udp #协议
+dev tun #采用路由隧道模式tun
+ca ca.crt #ca证书文件位置，放在/etc/opnevpnr中
+cert server.crt # 服务端公钥文件
+key server.key #服务端私钥文件
+dh dh.pem #加密算法文件
+server 10.8.0.0 255.255.255.0 #给客户端分配地址池(ip地址范围)，注意：不能和VPN服务器内网网段有相同
+push "route 172.16.1.0 255.255.255.0" #客户端连接后,推送给客户端的路由规则
+#ifconfig-pool-persist ipp.txt #地址池记录文件位置 未来让openvpn 客户端固定ip地址使用的.
+keepalive 10 120 #存活时间，10秒ping一次,120 如未收到响应则视为断线
+max-clients 100 #最多允许100个客户端连接
+
+status /var/log/openvpn-status.log # 服务状态文件存放路径
+log /var/log/openvpn.log # openvpn日志记录位置
+verb 3 # verbose日志输出级别 数字越大越详细 最多11(debug)
+client-to-client # 客户端与客户端之间支持通信
+persist-key # 通过keepalive检测超时后，重新启动VPN，不重新读取keys，保留第一次使用的keys 对私钥进行缓存.
+persist-tun #检测超时后，重新启动VPN，一直保持tun是linkup的。否则网络会先linkdown然后再linkup
+duplicate-cn #客户端密钥(证书和私钥)是否可以重复
+```
+
+拷贝证书到对应目录中
+
+```shell
+[root@mn01 /etc/openvpn]#cd /opt/easy-rsa/pki/
+[root@mn01 /opt/easy-rsa/pki]#cp  ca.crt  /etc/openvpn/server/
+[root@mn01 /opt/easy-rsa/pki]#cp dh.pem /etc/openvpn/server/
+[root@mn01 /opt/easy-rsa/pki]#cp issued/server.crt private/server.key /etc/openvpn/server/
+```
+
+启动服务
+
+```shell
+[root@mn01 /]#systemctl daemon-reload 
+[root@mn01 /]#systemctl enable --now openvpn-server@server
+```
+
+启动后如果设置了密码，需要输入
+
+```shell
+[root@mn01 /etc/openvpn]#ss -lntup |grep 1194
+Broadcast message from root@mn01 (Wed 2024-08-21 15:35:54 CST):
+
+Password entry required for 'Enter Private Key Password:' (PID 4787).
+Please enter password with the systemd-tty-ask-password-agent tool!
+
+[root@mn01 /etc/openvpn]#systemd-tty-ask-password-agent
+Enter Private Key Password: *********
+```
+
+查看进程状态
+
+```shell
+[root@mn01 /etc/openvpn]#ss -lntup |grep 1194
+udp    UNCONN     0      0         *:1194                  *:*                   users:(("openvpn",pid=4786,fd=5))
+[root@mn01 /etc/openvpn]#ip a s tun0
+4: tun0: <POINTOPOINT,MULTICAST,NOARP,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UNKNOWN group default qlen 100
+    link/none 
+    inet 10.8.0.1 peer 10.8.0.2/32 scope global tun0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::34d5:c7f6:e5ac:1b53/64 scope link flags 800 
+       valid_lft forever preferred_lft forever
+```
+
+查看路由状态
+
+```shell
+[root@mn01 /etc/openvpn]#route -n
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+0.0.0.0         10.0.0.2        0.0.0.0         UG    102    0        0 ens33
+10.0.0.0        0.0.0.0         255.255.255.0   U     102    0        0 ens33
+10.8.0.0        10.8.0.2        255.255.255.0   UG    0      0        0 tun0
+10.8.0.2        0.0.0.0         255.255.255.255 UH    0      0        0 tun0
+172.16.1.0      0.0.0.0         255.255.255.0   U     101    0        0 ens36
+```
+
+
+
+### 2.3.4 客户端配置文件，连接访问
+
+#### 1）安装OpenVPN客户端
+
+windows下载安装OpenVPN-GUI
+
+```shell
+https://openvpn.net/community-downloads/
+```
+
+#### 2）准备配置文件
+
+将客户端需要的文件拷贝出来，放到一起
+
+```shell
+[root@mn01 /tmp]#ls client-gs/
+ca.crt  client.crt  client.key
+```
+
+创建ovpn文件
+
+```shell
+client #指定当前VPN是客户端
+dev tun #使用tun隧道传输协议
+proto udp #使用udp协议传输数据
+remote 10.0.0.61 1194 #openvpn服务器IP地址端口号
+resolv-retry infinite #断线自动重新连接，在网络不稳定的情况下非常有用
+nobind #不绑定本地特定的端口号
+ca ca.crt #指定CA证书的文件路径
+cert client.crt #指定当前客户端的证书文件路径
+key client.key #指定当前客户端的私钥文件路径
+verb 3 #指定日志文件的记录详细级别，可选0-9，等级越高日志内容越详细
+persist-key #通过keepalive检测超时后，重新启动VPN，不重新读取keys，保留第一次使用的keys
+```
+
+存放的目录可以在OpenVPN客户端中指定
+
+![image-20240821155451333](C:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821155451333.png)
+
+全部文件如下
+
+![image-20240821155504577](C:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821155504577.png)
+
+
+
+#### 3）连接OpenVPN和测试
+
+右键小图标 --- 连接，成功后变为绿色状态
+
+![image-20240821155626815](C:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821155626815.png)
+
+测试访问服务端内网的172网段，测试成功
+
+```shell
+# 开启VPN可以访问
+C:\Users\gs>ping 172.16.1.61
+正在 Ping 172.16.1.61 具有 32 字节的数据:
+来自 172.16.1.61 的回复: 字节=32 时间<1ms TTL=64
+来自 172.16.1.61 的回复: 字节=32 时间<1ms TTL=64
+来自 172.16.1.61 的回复: 字节=32 时间=6ms TTL=64
+来自 172.16.1.61 的回复: 字节=32 时间=1ms TTL=64
+
+# 关闭VPN无法访问
+C:\Users\gs>ping 172.16.1.61
+正在 Ping 172.16.1.61 具有 32 字节的数据:
+请求超时。
+```
+
+
+
+## 2.4 OpenVPN连接内网
+
+应用场景：
+
+​	目前我们可以已经可以通过OpenVPN来连接内网的mn01服务器（172.16.1.61），但是内网的其他的服务器仍是访问不到的，比如db01（172.16.1.51）
+
+```shell
+[C:\~]$ ping 172.16.1.51
+正在 Ping 172.16.1.51 具有 32 字节的数据:
+请求超时。
+请求超时。
+```
+
+原因是什么？
+
+- 流量可以过去，但是回来没有路由，过不来
+
+让我们来解决这个问题吧！
+
+
+
+1、服务端mn01：开启内核转发功能
+
+```shell
+[root@mn01 /tmp]#echo 'net.ipv4.ip_forward = 1' >>/etc/sysctl.conf
+[root@mn01 /tmp]#sysctl -p
+net.ipv4.ip_forward = 1
+```
+
+2、内网服务器db01：添加路由规则（回来的路由）
+
+```shell
+[root@db01 ~]#route add -net 10.8.0.0/24 gw 172.16.1.61
+```
+
+
+
+OK，再试试，已经通了！
+
+```shell
+[C:\~]$ ping 172.16.1.51
+正在 Ping 172.16.1.51 具有 32 字节的数据:
+来自 172.16.1.51 的回复: 字节=32 时间=1ms TTL=63
+来自 172.16.1.51 的回复: 字节=32 时间=1ms TTL=63
+来自 172.16.1.51 的回复: 字节=32 时间=5ms TTL=63
+来自 172.16.1.51 的回复: 字节=32 时间<1ms TTL=63
+```
+
+
+
+## 2.5 OpenVPN密码认证
+
+方便设置客户端帐号，如：
+
+| 用户分离              |
+| --------------------- |
+| **服务端**            |
+| ca.crt                |
+| server.key            |
+| server.crt            |
+| **客户端-张三**       |
+| ca.crt                |
+| zhangsan.key          |
+| zhangsan.crt          |
+| zhagnsan.ovpn         |
+| **客户端-托马斯-gao** |
+| ca.crt                |
+| tomcat-gao.key        |
+| tomcat-gao.crt        |
+| tomcat-gao.ovpn       |
+
+
+
+### 2.5.1 服务端开启密码认证功能
+
+1、修改配置文件，添加四行
+
+```shell
+script-security 3 # 允许使用自定义脚本
+auth-user-pass-verify /etc/openvpn/check.sh via-env # 指定认证脚本
+username-as-common-name # 开启用户密码登陆方式验证
+client-cert-not-required # 只使用用户密码方式验证登录，不加则代表需要证书和用户名密码双重验证登录
+```
+
+2、创建check.sh脚本文件
+
+```she
+#!/bin/bash
+##############################################################
+# File Name:check.sh
+# Version:V1.0
+# Author:Haris Gong
+# Organization:gsproj.github.io
+# Desc:
+##############################################################
+
+PASSFILE="/etc/openvpn/openvpnfile" #密码文件 用户名 密码明文
+LOG_FILE="/var/log/openvpn-password.log" #用户登录情况的日志
+TIME_STAMP=`date "+%Y-%m-%d %T"`
+
+if [ ! -r "${PASSFILE}" ]; then
+  echo "${TIME_STAMP}: Could not open password file \"${PASSFILE}\" for reading." >> ${LOG_FILE}
+  exit 1
+fi
+
+CORRECT_PASSWORD=`awk '!/^;/&&!/^#/&&$1=="'${username}'"{print $2;exit}' ${PASSFILE}`
+
+if [ "${CORRECT_PASSWORD}" = "" ]; then 
+  echo "${TIME_STAMP}: User does not exist: username=\"${username}\", password=\"${password}\"." >> ${LOG_FILE}
+  exit 1
+fi
+
+if [ "${password}" = "${CORRECT_PASSWORD}" ]; then 
+  echo "${TIME_STAMP}: Successful authentication: username=\"${username}\"." >> ${LOG_FILE}
+  exit 0
+fi
+
+echo "${TIME_STAMP}: Incorrect password: username=\"${username}\", password=\"${password}\"." >> ${LOG_FILE}
+exit 1
+
+```
+
+3、脚本设置执行权限
+
+```shell
+chmod 700 check.sh
+```
+
+4、创建用户和密码文件
+
+```shell
+[root@mn01 /etc/openvpn]#cat openvpnfile 
+xiaoming 123
+xiaozhou 223
+```
+
+5、重启服务
+
+```shell
+systemctl restart openvpn-server@server.service
+```
+
+
+
+### 2.5.2 客户端连接
+
+#### 1）手动输入帐号密码的方式
+
+修改配置文件，关闭秘钥认证，开启密码认证
+
+```shell
+client #指定当前VPN是客户端
+dev tun #使用tun隧道传输协议
+proto udp #使用udp协议传输数据
+remote 10.0.0.61 1194 #openvpn服务器IP地址端口号
+resolv-retry infinite #断线自动重新连接，在网络不稳定的情况下非常有用
+nobind #不绑定本地特定的端口号
+ca ca.crt #指定CA证书的文件路径
+;cert client.crt # 注释，因为不需要密钥认证了
+;key client.key # 注释，因为不需要密钥认证了
+verb 3 #指定日志文件的记录详细级别，可选0-9，等级越高日志内容越详细
+persist-key #通过keepalive检测超时后，重新启动VPN，不重新读取keys，保留第一次使用的keys
+auth-user-pass # 开启密码认证
+```
+
+测试连接，会弹出输入帐号密码的框
+
+![image-20240821171242085](C:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821171242085.png)
+
+连接成功
+
+![image-20240821171312095](C:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821171312095.png)
+
+#### 2）保存到文件的方式
+
+创建一个保存帐号密码的文件
+
+![image-20240821171537460](C:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821171537460.png)
+
+在ovpn配置文件中指定即可
+
+```shell
+auth-user-pass login.conf
+```
+
