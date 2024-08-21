@@ -239,7 +239,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          2.9k 字
+          3.2k 字
         
       </span>
     
@@ -250,7 +250,7 @@
         
         
         
-          25 分钟
+          27 分钟
         
       </span>
     
@@ -345,11 +345,11 @@
 <p>图示如下：</p>
 <p><img src="/../../../img/image-20240509170011620.png" srcset="/img/loading.gif" lazyload alt="image-20240509170011620"></p>
 <h2 id="2-2-负载均衡模块的选项"><a href="#2-2-负载均衡模块的选项" class="headerlink" title="2.2 负载均衡模块的选项"></a>2.2 负载均衡模块的选项</h2><p>upstream模块 sever 指令支持的选项 </p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">upstrem pools <span class="token punctuation">&#123;</span>
-  server <span class="token number">10.0</span>.0.7:80 <span class="token assign-left variable">weight</span><span class="token operator">=</span><span class="token number">1</span> <span class="token assign-left variable">max_fails</span><span class="token operator">=</span><span class="token number">3</span> <span class="token assign-left variable">fail_timeout</span><span class="token operator">=</span>10s<span class="token punctuation">;</span>
-  server <span class="token number">10.0</span>.0.8:80 <span class="token assign-left variable">weight</span><span class="token operator">=</span><span class="token number">1</span> <span class="token assign-left variable">max_fails</span><span class="token operator">=</span><span class="token number">3</span> <span class="token assign-left variable">fail_timeout</span><span class="token operator">=</span>10s<span class="token punctuation">;</span>
-  server <span class="token number">10.0</span>.0.8:80 backup<span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">upstrem pools &#123;
+  server 10.0.0.7:80 weight&#x3D;1 max_fails&#x3D;3 fail_timeout&#x3D;10s;
+  server 10.0.0.8:80 weight&#x3D;1 max_fails&#x3D;3 fail_timeout&#x3D;10s;
+  server 10.0.0.8:80 backup;
+&#125;</code></pre></div></figure>
 
 <p>选项说明：</p>
 <table>
@@ -395,50 +395,50 @@
 <p>注意事项：</p>
 <p>共享的&#x2F;nfs&#x2F;wordpress文件夹，所属用户和组都是www</p>
 </blockquote>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 添加www用户和用户组</span>
-<span class="token function">useradd</span> <span class="token parameter variable">-u</span> <span class="token number">1999</span> <span class="token parameter variable">-s</span> /sbin/nologin <span class="token parameter variable">-M</span> www
-<span class="token comment"># 查看用户</span>
-<span class="token function">id</span> www
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 添加www用户和用户组
+useradd -u 1999 -s &#x2F;sbin&#x2F;nologin -M www
+# 查看用户
+id www
 
-<span class="token comment"># 修改nfs配置文件，指定文件夹用户</span>
-<span class="token punctuation">[</span>root@nfs01<span class="token punctuation">[</span> ~<span class="token punctuation">]</span><span class="token comment">#cat /etc/exports</span>
-<span class="token punctuation">..</span>.
-/nfs/wordpress/ <span class="token number">172.16</span>.1.0/24<span class="token punctuation">(</span>rw, all_squash, <span class="token assign-left variable">anonuid</span><span class="token operator">=</span><span class="token number">1999</span>, <span class="token assign-left variable">anongid</span><span class="token operator">=</span><span class="token number">1999</span><span class="token punctuation">)</span>
+# 修改nfs配置文件，指定文件夹用户
+[root@nfs01[ ~]#cat &#x2F;etc&#x2F;exports
+...
+&#x2F;nfs&#x2F;wordpress&#x2F; 172.16.1.0&#x2F;24(rw, all_squash, anonuid&#x3D;1999, anongid&#x3D;1999)
 
-<span class="token comment"># 重启服务</span>
+# 重启服务
 systemctl restart rpcbind nfs
 
-<span class="token comment"># 查看nfs是否正常</span>
-<span class="token punctuation">[</span>root@nfs01<span class="token punctuation">[</span> /<span class="token punctuation">]</span><span class="token comment">#showmount -e 172.16.1.31</span>
-Export list <span class="token keyword">for</span> <span class="token number">172.16</span>.1.31:
-/nfs/wordpress/ <span class="token number">172.16</span>.1.0/24
+# 查看nfs是否正常
+[root@nfs01[ &#x2F;]#showmount -e 172.16.1.31
+Export list for 172.16.1.31:
+&#x2F;nfs&#x2F;wordpress&#x2F; 172.16.1.0&#x2F;24
 
-<span class="token comment"># 创建目录，修改所有者</span>
-<span class="token punctuation">[</span>root@nfs01<span class="token punctuation">[</span> ~<span class="token punctuation">]</span><span class="token comment">#mkdir -p /nfs/wordpress</span>
-<span class="token punctuation">[</span>root@nfs01<span class="token punctuation">[</span> ~<span class="token punctuation">]</span><span class="token comment">#chown -R www.www /nfs/wordpress</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+# 创建目录，修改所有者
+[root@nfs01[ ~]#mkdir -p &#x2F;nfs&#x2F;wordpress
+[root@nfs01[ ~]#chown -R www.www &#x2F;nfs&#x2F;wordpress</code></pre></div></figure>
 
 <h3 id="3-1-2-数据库配置"><a href="#3-1-2-数据库配置" class="headerlink" title="3.1.2 数据库配置"></a>3.1.2 数据库配置</h3><p>db01服务器，10.0.0.51配置，为wordpress创建专门的数据库，以及数据库用户</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 创建wordpress数据库</span>
-MariaDB <span class="token punctuation">[</span><span class="token punctuation">(</span>none<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token operator">></span> create database wordpress<span class="token punctuation">;</span>
-Query OK, <span class="token number">1</span> row affected <span class="token punctuation">(</span><span class="token number">0.00</span> sec<span class="token punctuation">)</span>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 创建wordpress数据库
+MariaDB [(none)]&gt; create database wordpress;
+Query OK, 1 row affected (0.00 sec)
 
-<span class="token comment"># 创建wp用户</span>
-MariaDB <span class="token punctuation">[</span><span class="token punctuation">(</span>none<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token operator">></span> grant all on wordpress.* to <span class="token string">'wp'</span>@<span class="token string">'172.16.1.%'</span> identified by <span class="token string">'redhat123'</span><span class="token punctuation">;</span>
-Query OK, <span class="token number">0</span> rows affected <span class="token punctuation">(</span><span class="token number">0.00</span> sec<span class="token punctuation">)</span>
+# 创建wp用户
+MariaDB [(none)]&gt; grant all on wordpress.* to &#39;wp&#39;@&#39;172.16.1.%&#39; identified by &#39;redhat123&#39;;
+Query OK, 0 rows affected (0.00 sec)
 
-<span class="token comment"># 查看用户</span>
-MariaDB <span class="token punctuation">[</span><span class="token punctuation">(</span>none<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token operator">></span> <span class="token keyword">select</span> user,host from mysql.user<span class="token punctuation">;</span>
+# 查看用户
+MariaDB [(none)]&gt; select user,host from mysql.user;
 +-----------+------------+
-<span class="token operator">|</span> user      <span class="token operator">|</span> <span class="token function">host</span>       <span class="token operator">|</span>
+| user      | host       |
 +-----------+------------+
-<span class="token operator">|</span> root      <span class="token operator">|</span> <span class="token number">127.0</span>.0.1  <span class="token operator">|</span>
-<span class="token operator">|</span> wordpress <span class="token operator">|</span> <span class="token number">172.16</span>.1.% <span class="token operator">|</span>
-<span class="token operator">|</span> wp        <span class="token operator">|</span> <span class="token number">172.16</span>.1.% <span class="token operator">|</span>	<span class="token comment"># 存在</span>
-<span class="token operator">|</span> root      <span class="token operator">|</span> ::1        <span class="token operator">|</span>
-<span class="token operator">|</span> root      <span class="token operator">|</span> localhost  <span class="token operator">|</span>
-<span class="token operator">|</span> wordpress <span class="token operator">|</span> localhost  <span class="token operator">|</span>
+| root      | 127.0.0.1  |
+| wordpress | 172.16.1.% |
+| wp        | 172.16.1.% |	# 存在
+| root      | ::1        |
+| root      | localhost  |
+| wordpress | localhost  |
 +-----------+------------+
-<span class="token number">6</span> rows <span class="token keyword">in</span> <span class="token builtin class-name">set</span> <span class="token punctuation">(</span><span class="token number">0.00</span> sec<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+6 rows in set (0.00 sec)</code></pre></div></figure>
 
 <h3 id="3-1-3-web服务器配置"><a href="#3-1-3-web服务器配置" class="headerlink" title="3.1.3 web服务器配置"></a>3.1.3 web服务器配置</h3><p>web01和web02均做同样配置，保持一致</p>
 <blockquote>
@@ -455,97 +455,97 @@ MariaDB <span class="token punctuation">[</span><span class="token punctuation">
 </ul>
 </blockquote>
 <p>www用户相关配置</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 添加www用户和用户组</span>
-<span class="token function">useradd</span> <span class="token parameter variable">-u</span> <span class="token number">1999</span> <span class="token parameter variable">-s</span> /sbin/nologin <span class="token parameter variable">-M</span> www
-<span class="token comment"># 查看用户</span>
-<span class="token function">id</span> www
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 添加www用户和用户组
+useradd -u 1999 -s &#x2F;sbin&#x2F;nologin -M www
+# 查看用户
+id www
 
-<span class="token comment"># nginx主配置文件修改user,由nginx改为www</span>
-<span class="token punctuation">[</span>root@web01<span class="token punctuation">[</span> /app/code/blog<span class="token punctuation">]</span><span class="token comment">#cat /etc/nginx/nginx.conf</span>
-user  www<span class="token punctuation">;</span>
-<span class="token punctuation">..</span>.
+# nginx主配置文件修改user,由nginx改为www
+[root@web01[ &#x2F;app&#x2F;code&#x2F;blog]#cat &#x2F;etc&#x2F;nginx&#x2F;nginx.conf
+user  www;
+...
 
-<span class="token comment"># 修改php-fpm的用户</span>
-<span class="token punctuation">[</span>root@web02<span class="token punctuation">[</span> /app/code/blog<span class="token punctuation">]</span><span class="token comment">#cat /etc/php-fpm.d/www.conf</span>
-<span class="token punctuation">..</span>.
-user <span class="token operator">=</span> www
-group <span class="token operator">=</span> www<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+# 修改php-fpm的用户
+[root@web02[ &#x2F;app&#x2F;code&#x2F;blog]#cat &#x2F;etc&#x2F;php-fpm.d&#x2F;www.conf
+...
+user &#x3D; www
+group &#x3D; www</code></pre></div></figure>
 
 <p>子配置文件和挂载目录相关</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># blog.oldboylinux.cn子配置文件</span>
-<span class="token punctuation">[</span>root@web01<span class="token punctuation">[</span> /etc/nginx/conf.d<span class="token punctuation">]</span><span class="token comment">#cat blog.oldboylinux.cn.conf</span>
-server <span class="token punctuation">&#123;</span>
-  listen <span class="token number">80</span><span class="token punctuation">;</span>
-  server_name blog.oldboylinux.cn<span class="token punctuation">;</span>
-  root /app/code/blog<span class="token punctuation">;</span>
-  error_log /var/log/nginx/blog-error.log notice<span class="token punctuation">;</span>
-  access_log /var/log/nginx/blog-access.log main<span class="token punctuation">;</span>
-  location / <span class="token punctuation">&#123;</span>
-    index index.php<span class="token punctuation">;</span>
-  <span class="token punctuation">&#125;</span>
-  location ~ <span class="token punctuation">\</span>.php$ <span class="token punctuation">&#123;</span>
-    fastcgi_pass <span class="token number">127.0</span>.0.1:9000<span class="token punctuation">;</span>
-    fastcgi_index index.php<span class="token punctuation">;</span>
-    fastcgi_buffering on<span class="token punctuation">;</span>
-    fastcgi_buffers <span class="token number">64</span> 64k<span class="token punctuation">;</span>
-    fastcgi_param SCRIPT_FILENAME <span class="token variable">$document_root</span><span class="token variable">$fastcgi_script_name</span><span class="token punctuation">;</span>
-    include fastcgi_params<span class="token punctuation">;</span>
-  <span class="token punctuation">&#125;</span>
-<span class="token punctuation">&#125;</span>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># blog.oldboylinux.cn子配置文件
+[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#cat blog.oldboylinux.cn.conf
+server &#123;
+  listen 80;
+  server_name blog.oldboylinux.cn;
+  root &#x2F;app&#x2F;code&#x2F;blog;
+  error_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;blog-error.log notice;
+  access_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;blog-access.log main;
+  location &#x2F; &#123;
+    index index.php;
+  &#125;
+  location ~ \.php$ &#123;
+    fastcgi_pass 127.0.0.1:9000;
+    fastcgi_index index.php;
+    fastcgi_buffering on;
+    fastcgi_buffers 64 64k;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    include fastcgi_params;
+  &#125;
+&#125;
 
-<span class="token comment"># wordpress站点目录，创建uploads文件夹</span>
-<span class="token punctuation">[</span>root@web01<span class="token punctuation">[</span> /app/code/blog<span class="token punctuation">]</span><span class="token comment">#mkdir wp-content/uploads</span>
-<span class="token comment"># 修改站点目录所有者是www</span>
-<span class="token punctuation">[</span>root@web01<span class="token punctuation">[</span> /app/code<span class="token punctuation">]</span><span class="token comment">#chown -R www.www blog/</span>
+# wordpress站点目录，创建uploads文件夹
+[root@web01[ &#x2F;app&#x2F;code&#x2F;blog]#mkdir wp-content&#x2F;uploads
+# 修改站点目录所有者是www
+[root@web01[ &#x2F;app&#x2F;code]#chown -R www.www blog&#x2F;
 
-<span class="token comment"># uploads文件夹挂载为nfs存储</span>
-<span class="token punctuation">[</span>root@web01<span class="token punctuation">[</span> /etc/nginx/conf.d<span class="token punctuation">]</span><span class="token comment">#cat /etc/fstab</span>
-<span class="token punctuation">..</span><span class="token punctuation">..</span>
-<span class="token number">172.16</span>.1.31:/nfs/wordpress /app/code/blog/wp-content/uploads nfs defaults <span class="token number">0</span> <span class="token number">0</span>
+# uploads文件夹挂载为nfs存储
+[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#cat &#x2F;etc&#x2F;fstab
+....
+172.16.1.31:&#x2F;nfs&#x2F;wordpress &#x2F;app&#x2F;code&#x2F;blog&#x2F;wp-content&#x2F;uploads nfs defaults 0 0
 
-<span class="token comment"># 永久挂载</span>
-<span class="token punctuation">[</span>root@web01<span class="token punctuation">[</span> /etc/nginx/conf.d<span class="token punctuation">]</span><span class="token comment">#mount -a</span>
+# 永久挂载
+[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#mount -a
 
-<span class="token comment"># 打包站点代码，排除上传目录</span>
-<span class="token function">tar</span> zcf ~/wordpress-no-uploads.tar.gz <span class="token builtin class-name">.</span> <span class="token parameter variable">--exclude</span><span class="token operator">=</span>./wp-content/uploads/*
+# 打包站点代码，排除上传目录
+tar zcf ~&#x2F;wordpress-no-uploads.tar.gz . --exclude&#x3D;.&#x2F;wp-content&#x2F;uploads&#x2F;*
 
-<span class="token comment"># 拷贝代码到web02部署，站点内容需保持一致</span>
-<span class="token punctuation">[</span>root@web01<span class="token punctuation">[</span> /app/code/blog<span class="token punctuation">]</span><span class="token comment">#scp ~/wordpress-no-uploads.tar.gz 10.0.0.8:/app/code/blog</span>
-<span class="token comment"># 解压</span>
-<span class="token punctuation">[</span>root@web02<span class="token punctuation">[</span> /app/code/blog<span class="token punctuation">]</span><span class="token comment">#ls</span>
+# 拷贝代码到web02部署，站点内容需保持一致
+[root@web01[ &#x2F;app&#x2F;code&#x2F;blog]#scp ~&#x2F;wordpress-no-uploads.tar.gz 10.0.0.8:&#x2F;app&#x2F;code&#x2F;blog
+# 解压
+[root@web02[ &#x2F;app&#x2F;code&#x2F;blog]#ls
 wordpress-no-uploads.tar.gz
-<span class="token punctuation">[</span>root@web02<span class="token punctuation">[</span> /app/code/blog<span class="token punctuation">]</span><span class="token comment">#tar -vxf wordpress-no-uploads.tar.gz</span>
+[root@web02[ &#x2F;app&#x2F;code&#x2F;blog]#tar -vxf wordpress-no-uploads.tar.gz
 
-<span class="token comment"># 重启服务</span>
-<span class="token punctuation">[</span>root@web01<span class="token punctuation">[</span> /app/code<span class="token punctuation">]</span><span class="token comment">#systemctl restart nginx php-fpm</span>
-<span class="token punctuation">[</span>root@web01<span class="token punctuation">[</span> /app/code<span class="token punctuation">]</span><span class="token comment">#ps -ef | grep www</span>
-www        <span class="token number">5478</span>   <span class="token number">5475</span>  <span class="token number">0</span> <span class="token number">23</span>:37 ?        00:00:00 php-fpm: pool www
-www        <span class="token number">5479</span>   <span class="token number">5475</span>  <span class="token number">0</span> <span class="token number">23</span>:37 ?        00:00:00 php-fpm: pool www
-www        <span class="token number">5480</span>   <span class="token number">5475</span>  <span class="token number">0</span> <span class="token number">23</span>:37 ?        00:00:00 php-fpm: pool www
-www        <span class="token number">5481</span>   <span class="token number">5475</span>  <span class="token number">0</span> <span class="token number">23</span>:37 ?        00:00:00 php-fpm: pool www
-www        <span class="token number">5482</span>   <span class="token number">5475</span>  <span class="token number">0</span> <span class="token number">23</span>:37 ?        00:00:00 php-fpm: pool www
-www        <span class="token number">5485</span>   <span class="token number">5484</span>  <span class="token number">0</span> <span class="token number">23</span>:37 ?        00:00:00 nginx: worker process
-root       <span class="token number">5487</span>   <span class="token number">1764</span>  <span class="token number">0</span> <span class="token number">23</span>:37 pts/0    00:00:00 <span class="token function">grep</span> <span class="token parameter variable">--color</span><span class="token operator">=</span>auto www<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+# 重启服务
+[root@web01[ &#x2F;app&#x2F;code]#systemctl restart nginx php-fpm
+[root@web01[ &#x2F;app&#x2F;code]#ps -ef | grep www
+www        5478   5475  0 23:37 ?        00:00:00 php-fpm: pool www
+www        5479   5475  0 23:37 ?        00:00:00 php-fpm: pool www
+www        5480   5475  0 23:37 ?        00:00:00 php-fpm: pool www
+www        5481   5475  0 23:37 ?        00:00:00 php-fpm: pool www
+www        5482   5475  0 23:37 ?        00:00:00 php-fpm: pool www
+www        5485   5484  0 23:37 ?        00:00:00 nginx: worker process
+root       5487   1764  0 23:37 pts&#x2F;0    00:00:00 grep --color&#x3D;auto www</code></pre></div></figure>
 
 <h3 id="3-1-4-接入负载均衡"><a href="#3-1-4-接入负载均衡" class="headerlink" title="3.1.4 接入负载均衡"></a>3.1.4 接入负载均衡</h3><p>lb01配置</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 创建自配置文件，接入负载均衡</span>
-<span class="token punctuation">[</span>root@lb01<span class="token punctuation">[</span> /etc/nginx/conf.d<span class="token punctuation">]</span><span class="token comment">#cat blog.oldboylinux.cn.conf</span>
-upstream blog_spools<span class="token punctuation">&#123;</span>
-  server <span class="token number">10.0</span>.0.7:80<span class="token punctuation">;</span>
-  server <span class="token number">10.0</span>.0.8:80<span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 创建自配置文件，接入负载均衡
+[root@lb01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#cat blog.oldboylinux.cn.conf
+upstream blog_spools&#123;
+  server 10.0.0.7:80;
+  server 10.0.0.8:80;
+&#125;
 
-server <span class="token punctuation">&#123;</span>
-  listen <span class="token number">80</span><span class="token punctuation">;</span>
-  server_name blog.oldboylinux.cn<span class="token punctuation">;</span>
-  error_log /var/log/nginx/blog-error.log notice<span class="token punctuation">;</span>
-  access_log /var/log/nginx/blog-acess.log main<span class="token punctuation">;</span>
-  location / <span class="token punctuation">&#123;</span>
-    proxy_pass http://blog_spools<span class="token punctuation">;</span>
-    proxy_set_header Host <span class="token variable">$http_host</span><span class="token punctuation">;</span>
-    proxy_set_header X-Forwarded-For <span class="token variable">$proxy_add_x_forwarded_for</span><span class="token punctuation">;</span>
-  <span class="token punctuation">&#125;</span>
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+server &#123;
+  listen 80;
+  server_name blog.oldboylinux.cn;
+  error_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;blog-error.log notice;
+  access_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;blog-acess.log main;
+  location &#x2F; &#123;
+    proxy_pass http:&#x2F;&#x2F;blog_spools;
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  &#125;
+&#125;</code></pre></div></figure>
 
 
 
@@ -556,9 +556,9 @@ server <span class="token punctuation">&#123;</span>
 <h4 id="b-文件上传测试"><a href="#b-文件上传测试" class="headerlink" title="b) 文件上传测试"></a>b) 文件上传测试</h4><p>写一篇文章，上传图片</p>
 <p><img src="/../../../img/image-20240509175430280.png" srcset="/img/loading.gif" lazyload alt="image-20240509175430280"></p>
 <p>图片成功显示，且通过nfs上传到nfs01服务器中</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@nfs01<span class="token punctuation">[</span> /nfs/wordpress<span class="token punctuation">]</span><span class="token comment">#ls 2024/05/</span>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@nfs01[ &#x2F;nfs&#x2F;wordpress]#ls 2024&#x2F;05&#x2F;
 自律即自由-1024x576.jpg  自律即自由-1536x864.jpg  自律即自由-768x432.jpg
-自律即自由-150x150.jpg   自律即自由-300x169.jpg   自律即自由.jpg<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></div></figure>
+自律即自由-150x150.jpg   自律即自由-300x169.jpg   自律即自由.jpg</code></pre></div></figure>
 
 <h2 id="3-2-案例02-会话保持"><a href="#3-2-案例02-会话保持" class="headerlink" title="3.2 案例02-会话保持"></a>3.2 案例02-会话保持</h2><p>目前的站点虽然可以正常访问，但仍然存在问题：会话无法保持</p>
 <p>什么是会话？</p>
@@ -628,113 +628,113 @@ server <span class="token punctuation">&#123;</span>
 <li>修改php配置(创建新的端口)</li>
 <li>接入负载均衡.访问与测试</li>
 </ul>
-<h4 id="a）db01准备用户"><a href="#a）db01准备用户" class="headerlink" title="a）db01准备用户"></a>a）db01准备用户</h4><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># Mysql中创建phpmyadmin用户</span>
-MariaDB <span class="token punctuation">[</span><span class="token punctuation">(</span>none<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token operator">></span> grant all on *.* to <span class="token string">'phpmyadmin'</span>@<span class="token string">'172.16.1.%'</span> identified by <span class="token string">'redhat123'</span><span class="token punctuation">;</span>
-Query OK, <span class="token number">0</span> rows affected <span class="token punctuation">(</span><span class="token number">0.00</span> sec<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></div></figure>
+<h4 id="a）db01准备用户"><a href="#a）db01准备用户" class="headerlink" title="a）db01准备用户"></a>a）db01准备用户</h4><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># Mysql中创建phpmyadmin用户
+MariaDB [(none)]&gt; grant all on *.* to &#39;phpmyadmin&#39;@&#39;172.16.1.%&#39; identified by &#39;redhat123&#39;;
+Query OK, 0 rows affected (0.00 sec)</code></pre></div></figure>
 
 <h4 id="b）部署phpmyadmin"><a href="#b）部署phpmyadmin" class="headerlink" title="b）部署phpmyadmin"></a>b）部署phpmyadmin</h4><p>web01和web02做同样的操作</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 下载</span>
-<span class="token function">wget</span> https://files.phpmyadmin.net/phpMyAdmin/5.2.1/phpMyAdmin-5.2.1-all-languages.zip
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 下载
+wget https:&#x2F;&#x2F;files.phpmyadmin.net&#x2F;phpMyAdmin&#x2F;5.2.1&#x2F;phpMyAdmin-5.2.1-all-languages.zip
 
-<span class="token comment"># 创建站点文件夹，解压放入</span>
-<span class="token punctuation">[</span>root@web01<span class="token punctuation">[</span> /etc/nginx/conf.d<span class="token punctuation">]</span><span class="token comment">#ls /app/code/phpmyadmin/</span>
+# 创建站点文件夹，解压放入
+[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#ls &#x2F;app&#x2F;code&#x2F;phpmyadmin&#x2F;
 babel.config.json      CONTRIBUTING.md  js            README                  sql        yarn.lock
 ChangeLog              doc              libraries     RELEASE-DATE-5.2.1      templates
 composer.json          examples         LICENSE       robots.txt              themes
 composer.lock          favicon.ico      locale        setup                   url.php
 config.sample.inc.php  index.php        package.json  show_config_errors.php  vendor
 
-<span class="token comment"># 子配置文件</span>
-<span class="token punctuation">[</span>root@web01<span class="token punctuation">[</span> /etc/nginx/conf.d<span class="token punctuation">]</span><span class="token comment">#cat phpmyadmin.oldboylinux.cn.conf</span>
-server <span class="token punctuation">&#123;</span>
-  listen <span class="token number">80</span><span class="token punctuation">;</span>
-  server_name phpmyadmin.oldboylinux.cn<span class="token punctuation">;</span>
-  root /app/code/phpmyadmin<span class="token punctuation">;</span>
-  error_log /var/log/nginx/phpmyadmin-error.log notice<span class="token punctuation">;</span>
-  access_log /var/log/nginx/phpmyadmin-access.log main<span class="token punctuation">;</span>
-  location / <span class="token punctuation">&#123;</span>
-    index index.php<span class="token punctuation">;</span>
-  <span class="token punctuation">&#125;</span>
-  location ~ <span class="token punctuation">\</span>.php$ <span class="token punctuation">&#123;</span>
-    <span class="token comment"># 传递给php</span>
-    fastcgi_pass <span class="token number">127.0</span>.0.1:9000<span class="token punctuation">;</span>
-    fastcgi_index index.php<span class="token punctuation">;</span>
-    fastcgi_buffering on<span class="token punctuation">;</span>
-    fastcgi_buffers <span class="token number">64</span> 64k<span class="token punctuation">;</span>
-    fastcgi_param SCRIPT_FILENAME <span class="token variable">$document_root</span><span class="token variable">$fastcgi_script_name</span><span class="token punctuation">;</span>
-    include fastcgi_params<span class="token punctuation">;</span>
-  <span class="token punctuation">&#125;</span>
-<span class="token punctuation">&#125;</span>
+# 子配置文件
+[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#cat phpmyadmin.oldboylinux.cn.conf
+server &#123;
+  listen 80;
+  server_name phpmyadmin.oldboylinux.cn;
+  root &#x2F;app&#x2F;code&#x2F;phpmyadmin;
+  error_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;phpmyadmin-error.log notice;
+  access_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;phpmyadmin-access.log main;
+  location &#x2F; &#123;
+    index index.php;
+  &#125;
+  location ~ \.php$ &#123;
+    # 传递给php
+    fastcgi_pass 127.0.0.1:9000;
+    fastcgi_index index.php;
+    fastcgi_buffering on;
+    fastcgi_buffers 64 64k;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    include fastcgi_params;
+  &#125;
+&#125;
 
 
-<span class="token comment"># 检查语法，重新加载服务</span>
-<span class="token punctuation">[</span>root@web01<span class="token punctuation">[</span> /etc/nginx/conf.d<span class="token punctuation">]</span><span class="token comment">#nginx -t</span>
-nginx: the configuration <span class="token function">file</span> /etc/nginx/nginx.conf syntax is ok
-nginx: configuration <span class="token function">file</span> /etc/nginx/nginx.conf <span class="token builtin class-name">test</span> is successful
-<span class="token punctuation">[</span>root@web01<span class="token punctuation">[</span> /etc/nginx/conf.d<span class="token punctuation">]</span><span class="token comment">#systemctl reload nginx</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+# 检查语法，重新加载服务
+[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#nginx -t
+nginx: the configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf syntax is ok
+nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test is successful
+[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#systemctl reload nginx</code></pre></div></figure>
 
 <blockquote>
 <p>配置文件vim编辑时的替换方法：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token operator">></span>:%s<span class="token comment">#blog#phpmyadmin#g</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">&gt;:%s#blog#phpmyadmin#g</code></pre></div></figure>
 </blockquote>
 <p>配置hosts，测试访问，报错<strong>Permission denied</strong></p>
 <p><img src="/../../../img/image-20240509223814652.png" srcset="/img/loading.gif" lazyload alt="image-20240509223814652"></p>
 <p>原因是因为session目录没有权限，解决方法：将session目录用户和属组修改为www</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 修改所有者</span>
-<span class="token punctuation">[</span>root@web01<span class="token punctuation">[</span> /etc/nginx/conf.d<span class="token punctuation">]</span><span class="token comment">#chown -R www.www /var/lib/php/session</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 修改所有者
+[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#chown -R www.www &#x2F;var&#x2F;lib&#x2F;php&#x2F;session</code></pre></div></figure>
 
 <blockquote>
 <p>这里的www用户和用户组是根据nginx的配置文件来的：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token operator">></span><span class="token punctuation">[</span>root@web01<span class="token punctuation">[</span> /etc/nginx/conf.d<span class="token punctuation">]</span><span class="token comment">#cat /etc/nginx/nginx.conf</span>
-<span class="token operator">></span><span class="token punctuation">..</span>.
-<span class="token operator">></span>user  nginx<span class="token punctuation">;</span>
-<span class="token operator">></span><span class="token punctuation">..</span>.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">&gt;[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#cat &#x2F;etc&#x2F;nginx&#x2F;nginx.conf
+&gt;...
+&gt;user  nginx;
+&gt;...</code></pre></div></figure>
 
 <p>user项里是什么，就改成什么，我的原来是nginx，后面改成www</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token operator">></span><span class="token punctuation">[</span>root@web01<span class="token punctuation">[</span> /etc/nginx/conf.d<span class="token punctuation">]</span><span class="token comment">#cat /etc/nginx/nginx.conf</span>
-<span class="token operator">></span><span class="token punctuation">..</span>.
-<span class="token operator">></span>user www<span class="token punctuation">;</span>
-<span class="token operator">></span>worker_processes  auto<span class="token punctuation">;</span>
-<span class="token operator">></span><span class="token punctuation">..</span>.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">&gt;[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#cat &#x2F;etc&#x2F;nginx&#x2F;nginx.conf
+&gt;...
+&gt;user www;
+&gt;worker_processes  auto;
+&gt;...</code></pre></div></figure>
 </blockquote>
 <p>再次访问，正常</p>
 <p><img src="/../../../img/image-20240510092319840.png" srcset="/img/loading.gif" lazyload alt="image-20240510092319840"></p>
 <p>phpmyadmin默认的数据库IP为localhost，因此需要在站点文件夹中，手动创建连接数据库的配置文件</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 拷贝一份</span>
-<span class="token function">cp</span> config.sample.inc.php config.inc.php
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 拷贝一份
+cp config.sample.inc.php config.inc.php
 
-<span class="token comment"># 把host改成数据库的IP</span>
-<span class="token function">grep</span> <span class="token parameter variable">-wn</span> <span class="token function">host</span> config.inc.php
-<span class="token number">30</span>:<span class="token variable">$cfg</span><span class="token punctuation">[</span><span class="token string">'Servers'</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token variable">$i</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">'host'</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string">'172.16.1.51'</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+# 把host改成数据库的IP
+grep -wn host config.inc.php
+30:$cfg[&#39;Servers&#39;][$i][&#39;host&#39;] &#x3D; &#39;172.16.1.51&#39;;</code></pre></div></figure>
 
 <p>测试访问（10.0.0.8单机部署），帐号密码为mysql用户，用之前创建的phpmyadmin用户登录</p>
 <p><img src="/../../../img/image-20240510094005767.png" srcset="/img/loading.gif" lazyload alt="image-20240510094005767"></p>
 <p>访问成功，10.0.0.7也做相同配置，站点代码保持一致</p>
 <h4 id="c）部署负载均衡"><a href="#c）部署负载均衡" class="headerlink" title="c）部署负载均衡"></a>c）部署负载均衡</h4><p>lb01部署</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 子配置文件</span>
-<span class="token punctuation">[</span>root@lb01<span class="token punctuation">[</span> /etc/nginx/conf.d<span class="token punctuation">]</span><span class="token comment">#cat phpmyadmin.oldboylinux.cn.conf</span>
-upstream phpmyadmin_spools<span class="token punctuation">&#123;</span>
-  server <span class="token number">10.0</span>.0.7:80<span class="token punctuation">;</span>
-  server <span class="token number">10.0</span>.0.8:80<span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 子配置文件
+[root@lb01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#cat phpmyadmin.oldboylinux.cn.conf
+upstream phpmyadmin_spools&#123;
+  server 10.0.0.7:80;
+  server 10.0.0.8:80;
+&#125;
 
-server <span class="token punctuation">&#123;</span>
-  listen <span class="token number">80</span><span class="token punctuation">;</span>
-  server_name phpmyadmin.oldboylinux.cn<span class="token punctuation">;</span>
-  error_log /var/log/nginx/phpmyadmin-error.log notice<span class="token punctuation">;</span>
-  access_log /var/log/nginx/phpmyadmin-acess.log main<span class="token punctuation">;</span>
-  location / <span class="token punctuation">&#123;</span>
-    proxy_pass http://phpmyadmin_spools<span class="token punctuation">;</span>
-    proxy_set_header Host <span class="token variable">$http_host</span><span class="token punctuation">;</span>
-    proxy_set_header X-Forwarded-For <span class="token variable">$proxy_add_x_forwarded_for</span><span class="token punctuation">;</span>
-  <span class="token punctuation">&#125;</span>
-<span class="token punctuation">&#125;</span>
+server &#123;
+  listen 80;
+  server_name phpmyadmin.oldboylinux.cn;
+  error_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;phpmyadmin-error.log notice;
+  access_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;phpmyadmin-acess.log main;
+  location &#x2F; &#123;
+    proxy_pass http:&#x2F;&#x2F;phpmyadmin_spools;
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  &#125;
+&#125;
 
-<span class="token comment"># 重新加载</span>
-<span class="token punctuation">[</span>root@lb01<span class="token punctuation">[</span> /etc/nginx/conf.d<span class="token punctuation">]</span><span class="token comment">#systemctl reload nginx</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+# 重新加载
+[root@lb01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#systemctl reload nginx</code></pre></div></figure>
 
 <p>测试：经过负载均衡访问，无法正常登录了，报错</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">Failed to <span class="token builtin class-name">set</span> session cookie. Maybe you are using HTTP instead of HTTPS to access phpMyAdmin.<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">Failed to set session cookie. Maybe you are using HTTP instead of HTTPS to access phpMyAdmin.</code></pre></div></figure>
 
 <p><img src="/../../../img/image-20240510094652072.png" srcset="/img/loading.gif" lazyload alt="image-20240510094652072"></p>
 <p>这是怎么回事？</p>
@@ -746,22 +746,22 @@ server <span class="token punctuation">&#123;</span>
 <p>此操作在<font color=red>数据库服务器</font>操作（db01 - 10.0.0.51）</p>
 </blockquote>
 <p>部署redis</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 安装</span>
-yum <span class="token function">install</span> <span class="token parameter variable">-y</span> redis
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 安装
+yum install -y redis
 
-<span class="token comment"># 修改配置文件</span>
-<span class="token punctuation">[</span>root@db01<span class="token punctuation">[</span> ~<span class="token punctuation">]</span><span class="token comment">#grep -wn 'bind' /etc/redis.conf</span>
-<span class="token punctuation">..</span>.
-<span class="token number">61</span>:bind <span class="token number">127.0</span>.0.1 <span class="token number">172.16</span>.1.51	<span class="token comment"># 绑定本地网卡IP</span>
-<span class="token punctuation">..</span>.
+# 修改配置文件
+[root@db01[ ~]#grep -wn &#39;bind&#39; &#x2F;etc&#x2F;redis.conf
+...
+61:bind 127.0.0.1 172.16.1.51	# 绑定本地网卡IP
+...
 
-<span class="token comment"># 重启服务，--now就不需要额外的start reload了</span>
-systemctl <span class="token builtin class-name">enable</span> <span class="token parameter variable">--now</span> redis
+# 重启服务，--now就不需要额外的start reload了
+systemctl enable --now redis
 
-<span class="token comment"># 查看进程状态, 在6379端口</span>
-<span class="token punctuation">[</span>root@db01<span class="token punctuation">[</span> ~<span class="token punctuation">]</span><span class="token comment">#ss -lntup | grep redis</span>
-tcp    LISTEN     <span class="token number">0</span>      <span class="token number">128</span>    <span class="token number">172.16</span>.1.51:6379                  *:*                   users:<span class="token variable"><span class="token punctuation">((</span>"redis<span class="token operator">-</span>server"<span class="token punctuation">,</span>pid<span class="token operator">=</span><span class="token number">9992</span><span class="token punctuation">,</span>fd<span class="token operator">=</span><span class="token number">5</span><span class="token punctuation">))</span></span>
-tcp    LISTEN     <span class="token number">0</span>      <span class="token number">128</span>    <span class="token number">127.0</span>.0.1:6379                  *:*                   users:<span class="token variable"><span class="token punctuation">((</span>"redis<span class="token operator">-</span>server"<span class="token punctuation">,</span>pid<span class="token operator">=</span><span class="token number">9992</span><span class="token punctuation">,</span>fd<span class="token operator">=</span><span class="token number">4</span><span class="token punctuation">))</span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+# 查看进程状态, 在6379端口
+[root@db01[ ~]#ss -lntup | grep redis
+tcp    LISTEN     0      128    172.16.1.51:6379                  *:*                   users:((&quot;redis-server&quot;,pid&#x3D;9992,fd&#x3D;5))
+tcp    LISTEN     0      128    127.0.0.1:6379                  *:*                   users:((&quot;redis-server&quot;,pid&#x3D;9992,fd&#x3D;4))</code></pre></div></figure>
 
 
 
@@ -770,44 +770,44 @@ tcp    LISTEN     <span class="token number">0</span>      <span class="token nu
 <p>通知php指定会话保持位置：redis tcp:&#x2F;&#x2F;172.16.1.51:6379  </p>
 </blockquote>
 <p>创建php配置文件</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 原使用www.conf文件，9000端口，复制创建新的conf文件：session.conf，使用9001端口</span>
-<span class="token function">cp</span> /etc/php-fpm.d/www.conf /etc/php-fpm.d/session.conf
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 原使用www.conf文件，9000端口，复制创建新的conf文件：session.conf，使用9001端口
+cp &#x2F;etc&#x2F;php-fpm.d&#x2F;www.conf &#x2F;etc&#x2F;php-fpm.d&#x2F;session.conf
 
-<span class="token comment"># 配置文件全部信息如下</span>
-<span class="token punctuation">[</span>root@web01<span class="token punctuation">[</span> /etc/php-fpm.d<span class="token punctuation">]</span><span class="token comment">#egrep -v '^$|;' session.conf</span>
-<span class="token punctuation">[</span>session<span class="token punctuation">]</span>	<span class="token comment"># 会话名修改</span>
-user <span class="token operator">=</span> www
-group <span class="token operator">=</span> www
-listen <span class="token operator">=</span> <span class="token number">127.0</span>.0.1:9001	<span class="token comment"># 端口改成9001</span>
-listen.allowed_clients <span class="token operator">=</span> <span class="token number">127.0</span>.0.1
-pm <span class="token operator">=</span> dynamic
-pm.max_children <span class="token operator">=</span> <span class="token number">50</span>
-pm.start_servers <span class="token operator">=</span> <span class="token number">5</span>
-pm.min_spare_servers <span class="token operator">=</span> <span class="token number">5</span>
-pm.max_spare_servers <span class="token operator">=</span> <span class="token number">35</span>
-slowlog <span class="token operator">=</span> /var/log/php-fpm/www-slow.log
-php_admin_value<span class="token punctuation">[</span>error_log<span class="token punctuation">]</span> <span class="token operator">=</span> /var/log/php-fpm/www-error.log
-php_admin_flag<span class="token punctuation">[</span>log_errors<span class="token punctuation">]</span> <span class="token operator">=</span> on
-php_value<span class="token punctuation">[</span>session.save_handler<span class="token punctuation">]</span> <span class="token operator">=</span> redis		<span class="token comment"># files改为redis</span>
-php_value<span class="token punctuation">[</span>session.save_path<span class="token punctuation">]</span>    <span class="token operator">=</span> tcp://172.16.1.51:6379	<span class="token comment"># 文件改成redis地址</span>
-php_value<span class="token punctuation">[</span>soap.wsdl_cache_dir<span class="token punctuation">]</span>  <span class="token operator">=</span> /var/lib/php/wsdlcache
+# 配置文件全部信息如下
+[root@web01[ &#x2F;etc&#x2F;php-fpm.d]#egrep -v &#39;^$|;&#39; session.conf
+[session]	# 会话名修改
+user &#x3D; www
+group &#x3D; www
+listen &#x3D; 127.0.0.1:9001	# 端口改成9001
+listen.allowed_clients &#x3D; 127.0.0.1
+pm &#x3D; dynamic
+pm.max_children &#x3D; 50
+pm.start_servers &#x3D; 5
+pm.min_spare_servers &#x3D; 5
+pm.max_spare_servers &#x3D; 35
+slowlog &#x3D; &#x2F;var&#x2F;log&#x2F;php-fpm&#x2F;www-slow.log
+php_admin_value[error_log] &#x3D; &#x2F;var&#x2F;log&#x2F;php-fpm&#x2F;www-error.log
+php_admin_flag[log_errors] &#x3D; on
+php_value[session.save_handler] &#x3D; redis		# files改为redis
+php_value[session.save_path]    &#x3D; tcp:&#x2F;&#x2F;172.16.1.51:6379	# 文件改成redis地址
+php_value[soap.wsdl_cache_dir]  &#x3D; &#x2F;var&#x2F;lib&#x2F;php&#x2F;wsdlcache
 
-<span class="token comment"># 重启服务</span>
-systemctl restart php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+# 重启服务
+systemctl restart php-fpm</code></pre></div></figure>
 
 <p>修改nginx配置文件，转发到9001端口处理</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@web01<span class="token punctuation">[</span> /etc/php-fpm.d<span class="token punctuation">]</span><span class="token comment">#cat /etc/nginx/conf.d/phpmyadmin.oldboylinux.cn.conf</span>
-server <span class="token punctuation">&#123;</span>
-<span class="token punctuation">..</span>.
-  location ~ <span class="token punctuation">\</span>.php$ <span class="token punctuation">&#123;</span>
-    <span class="token comment"># 传递给php</span>
-    fastcgi_pass <span class="token number">127.0</span>.0.1:9001<span class="token punctuation">;</span>	<span class="token comment"># 9000改9001</span>
-<span class="token punctuation">..</span>.
-  <span class="token punctuation">&#125;</span>
-<span class="token punctuation">&#125;</span>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web01[ &#x2F;etc&#x2F;php-fpm.d]#cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;phpmyadmin.oldboylinux.cn.conf
+server &#123;
+...
+  location ~ \.php$ &#123;
+    # 传递给php
+    fastcgi_pass 127.0.0.1:9001;	# 9000改9001
+...
+  &#125;
+&#125;
 
-<span class="token comment"># 重启服务</span>
-systemctl restart nginx php-fpm<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+# 重启服务
+systemctl restart nginx php-fpm</code></pre></div></figure>
 
 <h4 id="d）最终测试"><a href="#d）最终测试" class="headerlink" title="d）最终测试"></a>d）最终测试</h4><p>再次登录正常</p>
 <p><img src="/../../../img/image-20240510102005704.png" srcset="/img/loading.gif" lazyload alt="image-20240510102005704"></p>
@@ -1097,6 +1097,10 @@ systemctl restart nginx php-fpm<span aria-hidden="true" class="line-numbers-rows
   });
 </script>
 
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/components/prism-core.min.js" ></script>
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js" ></script>
 
   <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
 

@@ -248,7 +248,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          2.9k 字
+          3.3k 字
         
       </span>
     
@@ -259,7 +259,7 @@
         
         
         
-          25 分钟
+          28 分钟
         
       </span>
     
@@ -344,71 +344,71 @@
 <p>（本文档中的测试sever是172.16.1.62，非图中的63）</p>
 <p><img src="/../../../img/image-20240625161248441.png" srcset="/img/loading.gif" lazyload alt="image-20240625161248441"></p>
 <h3 id="1-2-1-配置代理服务器"><a href="#1-2-1-配置代理服务器" class="headerlink" title="1.2.1 配置代理服务器"></a>1.2.1 配置代理服务器</h3><p>用web01做代理，安装相关软件并配置</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 1、安装代理软件</span>
-yum <span class="token function">install</span> <span class="token parameter variable">-y</span> https://mirrors.tuna.tsinghua.edu.cn/zabbix/zabbix/6.0/rhel/7/x86_64/zabbix-proxy-mysql-6.0.5-1.el7.x86_64.rpm
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 1、安装代理软件
+yum install -y https:&#x2F;&#x2F;mirrors.tuna.tsinghua.edu.cn&#x2F;zabbix&#x2F;zabbix&#x2F;6.0&#x2F;rhel&#x2F;7&#x2F;x86_64&#x2F;zabbix-proxy-mysql-6.0.5-1.el7.x86_64.rpm
 
-<span class="token comment"># 2、安装和启动数据库</span>
-<span class="token comment"># 准备mariadb的yum repo</span>
-<span class="token punctuation">[</span>root@web01 /app<span class="token punctuation">]</span><span class="token comment">#cat /etc/yum.repos.d/mariadb.repo </span>
-<span class="token punctuation">[</span>mariadb<span class="token punctuation">]</span>
-name <span class="token operator">=</span> MariaDB
-baseurl <span class="token operator">=</span> http://mirrors.aliyun.com/mariadb/yum/10.5/centos7-amd64/
-gpgkey <span class="token operator">=</span> http://mirrors.aliyun.com/mariadb/yum/RPM-GPG-KEY-MariaDB
-gpgcheck <span class="token operator">=</span> <span class="token number">0</span>
-enabled <span class="token operator">=</span> <span class="token number">1</span>
-<span class="token comment"># 安装</span>
-yum <span class="token function">install</span> <span class="token parameter variable">-y</span> mariadb-server
+# 2、安装和启动数据库
+# 准备mariadb的yum repo
+[root@web01 &#x2F;app]#cat &#x2F;etc&#x2F;yum.repos.d&#x2F;mariadb.repo 
+[mariadb]
+name &#x3D; MariaDB
+baseurl &#x3D; http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;mariadb&#x2F;yum&#x2F;10.5&#x2F;centos7-amd64&#x2F;
+gpgkey &#x3D; http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;mariadb&#x2F;yum&#x2F;RPM-GPG-KEY-MariaDB
+gpgcheck &#x3D; 0
+enabled &#x3D; 1
+# 安装
+yum install -y mariadb-server
 
-<span class="token comment"># 3、启动数据库服务</span>
-systemctl <span class="token builtin class-name">enable</span> <span class="token parameter variable">--now</span> mariadb
+# 3、启动数据库服务
+systemctl enable --now mariadb
 
-<span class="token comment"># 4、初始化数据库</span>
+# 4、初始化数据库
 mysql_secure_installation 执行后根据提示yes或no
-	Switch to unix_socket authentication <span class="token punctuation">[</span>Y/n<span class="token punctuation">]</span> N
-	Change the root password? <span class="token punctuation">[</span>Y/n<span class="token punctuation">]</span> n
-	Remove anonymous users? <span class="token punctuation">[</span>Y/n<span class="token punctuation">]</span> Y
-	Disallow root login remotely? <span class="token punctuation">[</span>Y/n<span class="token punctuation">]</span> Y
-	Remove <span class="token builtin class-name">test</span> database and access to it? <span class="token punctuation">[</span>Y/n<span class="token punctuation">]</span> Y
-	Reload privilege tables now? <span class="token punctuation">[</span>Y/n<span class="token punctuation">]</span> Y
+	Switch to unix_socket authentication [Y&#x2F;n] N
+	Change the root password? [Y&#x2F;n] n
+	Remove anonymous users? [Y&#x2F;n] Y
+	Disallow root login remotely? [Y&#x2F;n] Y
+	Remove test database and access to it? [Y&#x2F;n] Y
+	Reload privilege tables now? [Y&#x2F;n] Y
 
-<span class="token comment"># 5、进入数据库创建库和用户</span>
-create database zabbix_proxy character <span class="token builtin class-name">set</span> utf8 collate utf8_bin<span class="token punctuation">;</span>
-grant all privileges on zabbix_proxy.* to zabbix_proxy@<span class="token string">'localhost'</span> identified by <span class="token string">'redhat123'</span><span class="token punctuation">;</span>
+# 5、进入数据库创建库和用户
+create database zabbix_proxy character set utf8 collate utf8_bin;
+grant all privileges on zabbix_proxy.* to zabbix_proxy@&#39;localhost&#39; identified by &#39;redhat123&#39;;
 
-<span class="token comment"># 6、导入数据库（这个sql文件是zabbix包里的）</span>
-mysql <span class="token parameter variable">-uroot</span> zabbix_proxy <span class="token operator">&lt;</span>schema.sql
+# 6、导入数据库（这个sql文件是zabbix包里的）
+mysql -uroot zabbix_proxy &lt;schema.sql
 
-<span class="token comment"># 查看是否导入成功</span>
-MariaDB <span class="token punctuation">[</span><span class="token punctuation">(</span>none<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token operator">></span> show databases<span class="token punctuation">;</span>
+# 查看是否导入成功
+MariaDB [(none)]&gt; show databases;
 +--------------------+
-<span class="token operator">|</span> Database           <span class="token operator">|</span>
+| Database           |
 +--------------------+
-<span class="token operator">|</span> information_schema <span class="token operator">|</span>
-<span class="token operator">|</span> mysql              <span class="token operator">|</span>
-<span class="token operator">|</span> performance_schema <span class="token operator">|</span>
-<span class="token operator">|</span> zabbix_proxy       <span class="token operator">|</span>
+| information_schema |
+| mysql              |
+| performance_schema |
+| zabbix_proxy       |
 +--------------------+
-<span class="token number">4</span> rows <span class="token keyword">in</span> <span class="token builtin class-name">set</span> <span class="token punctuation">(</span><span class="token number">0.000</span> sec<span class="token punctuation">)</span>
+4 rows in set (0.000 sec)
 
-<span class="token comment"># 修改zabbix_proxy的配置文件</span>
-<span class="token punctuation">[</span>root@web01 ~<span class="token punctuation">]</span><span class="token comment">#grep '^[a-Z]' /etc/zabbix/zabbix_proxy.conf </span>
-<span class="token assign-left variable">Server</span><span class="token operator">=</span><span class="token number">172.16</span>.1.62
-<span class="token assign-left variable">Hostname</span><span class="token operator">=</span>shanghai_proxy
-<span class="token assign-left variable">LogFile</span><span class="token operator">=</span>/var/log/zabbix/zabbix_proxy.log
-<span class="token assign-left variable">LogFileSize</span><span class="token operator">=</span><span class="token number">0</span>
-<span class="token assign-left variable">PidFile</span><span class="token operator">=</span>/run/zabbix/zabbix_proxy.pid
-<span class="token assign-left variable">SocketDir</span><span class="token operator">=</span>/run/zabbix
-<span class="token assign-left variable">DBHost</span><span class="token operator">=</span>localhost
-<span class="token assign-left variable">DBName</span><span class="token operator">=</span>zabbix_proxy
-<span class="token assign-left variable">DBUser</span><span class="token operator">=</span>zabbix_proxy
-<span class="token assign-left variable">DBPassword</span><span class="token operator">=</span>redhat123
-<span class="token assign-left variable">SNMPTrapperFile</span><span class="token operator">=</span>/var/log/snmptrap/snmptrap.log
-<span class="token assign-left variable">Timeout</span><span class="token operator">=</span><span class="token number">4</span>
-<span class="token assign-left variable">LogSlowQueries</span><span class="token operator">=</span><span class="token number">3000</span>
-<span class="token assign-left variable">StatsAllowedIP</span><span class="token operator">=</span><span class="token number">127.0</span>.0.1
+# 修改zabbix_proxy的配置文件
+[root@web01 ~]#grep &#39;^[a-Z]&#39; &#x2F;etc&#x2F;zabbix&#x2F;zabbix_proxy.conf 
+Server&#x3D;172.16.1.62
+Hostname&#x3D;shanghai_proxy
+LogFile&#x3D;&#x2F;var&#x2F;log&#x2F;zabbix&#x2F;zabbix_proxy.log
+LogFileSize&#x3D;0
+PidFile&#x3D;&#x2F;run&#x2F;zabbix&#x2F;zabbix_proxy.pid
+SocketDir&#x3D;&#x2F;run&#x2F;zabbix
+DBHost&#x3D;localhost
+DBName&#x3D;zabbix_proxy
+DBUser&#x3D;zabbix_proxy
+DBPassword&#x3D;redhat123
+SNMPTrapperFile&#x3D;&#x2F;var&#x2F;log&#x2F;snmptrap&#x2F;snmptrap.log
+Timeout&#x3D;4
+LogSlowQueries&#x3D;3000
+StatsAllowedIP&#x3D;127.0.0.1
 
-<span class="token comment"># 重启服务</span>
-<span class="token punctuation">[</span>root@web01 ~<span class="token punctuation">]</span><span class="token comment">#systemctl enable --now zabbix-proxy.service </span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+# 重启服务
+[root@web01 ~]#systemctl enable --now zabbix-proxy.service </code></pre></div></figure>
 
 
 
@@ -421,17 +421,17 @@ MariaDB <span class="token punctuation">[</span><span class="token punctuation">
 <p><img src="/../../../img/image-20240625163856771.png" srcset="/img/loading.gif" lazyload alt="image-20240625163856771"></p>
 <h3 id="1-2-3-zabix客户端修改"><a href="#1-2-3-zabix客户端修改" class="headerlink" title="1.2.3 zabix客户端修改"></a>1.2.3 zabix客户端修改</h3><p>客户端需要将zabbix sever指向代理服务器（web01-172.16.1.7）</p>
 <p>以db01为例</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@db01 /<span class="token punctuation">]</span><span class="token comment">#grep "^[a-Z]" /etc/zabbix/zabbix_agent2.conf </span>
-<span class="token assign-left variable">PidFile</span><span class="token operator">=</span>/var/run/zabbix/zabbix_agent2.pid
-<span class="token assign-left variable">LogFile</span><span class="token operator">=</span>/var/log/zabbix/zabbix_agent2.log
-<span class="token assign-left variable">LogFileSize</span><span class="token operator">=</span><span class="token number">0</span>
-<span class="token assign-left variable">Server</span><span class="token operator">=</span><span class="token number">172.16</span>.1.7
-<span class="token assign-left variable">ServerActive</span><span class="token operator">=</span><span class="token number">172.16</span>.1.7
-<span class="token assign-left variable">HostnameItem</span><span class="token operator">=</span>system.hostname
-<span class="token assign-left variable">HostMetadataItem</span><span class="token operator">=</span>system.uname
-<span class="token assign-left variable">Include</span><span class="token operator">=</span>/etc/zabbix/zabbix_agent2.d/*.conf
-<span class="token assign-left variable">ControlSocket</span><span class="token operator">=</span>/tmp/agent.sock
-<span class="token assign-left variable">Include</span><span class="token operator">=</span>./zabbix_agent2.d/plugins.d/*.conf<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@db01 &#x2F;]#grep &quot;^[a-Z]&quot; &#x2F;etc&#x2F;zabbix&#x2F;zabbix_agent2.conf 
+PidFile&#x3D;&#x2F;var&#x2F;run&#x2F;zabbix&#x2F;zabbix_agent2.pid
+LogFile&#x3D;&#x2F;var&#x2F;log&#x2F;zabbix&#x2F;zabbix_agent2.log
+LogFileSize&#x3D;0
+Server&#x3D;172.16.1.7
+ServerActive&#x3D;172.16.1.7
+HostnameItem&#x3D;system.hostname
+HostMetadataItem&#x3D;system.uname
+Include&#x3D;&#x2F;etc&#x2F;zabbix&#x2F;zabbix_agent2.d&#x2F;*.conf
+ControlSocket&#x3D;&#x2F;tmp&#x2F;agent.sock
+Include&#x3D;.&#x2F;zabbix_agent2.d&#x2F;plugins.d&#x2F;*.conf</code></pre></div></figure>
 
 <p>在web页面配合修改，让db01通过代理服务器上传数据</p>
 <p>（测试中，页面自动修改了）</p>
@@ -465,21 +465,21 @@ MariaDB <span class="token punctuation">[</span><span class="token punctuation">
 <li>api测试工具</li>
 </ol>
 <p>在zabx 5.x中可以使用如下方法调用：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">curl</span> <span class="token parameter variable">-s</span> <span class="token parameter variable">-v</span> <span class="token parameter variable">-X</span> POST <span class="token parameter variable">-H</span> ContentType:application/json-rpc <span class="token number">10.0</span>.0.62/api_jsonrpc.php <span class="token parameter variable">-d</span> <span class="token string">'&#123;
-"jsonrpc": "2.0",
-"method": "user.login",
-"params": &#123;
-"user": "Admin",
-"password": "zabbix"
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">curl -s -v -X POST -H ContentType:application&#x2F;json-rpc 10.0.0.62&#x2F;api_jsonrpc.php -d &#39;&#123;
+&quot;jsonrpc&quot;: &quot;2.0&quot;,
+&quot;method&quot;: &quot;user.login&quot;,
+&quot;params&quot;: &#123;
+&quot;user&quot;: &quot;Admin&quot;,
+&quot;password&quot;: &quot;zabbix&quot;
 &#125;,
-"id": 1,
-"auth": null
-&#125;'</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+&quot;id&quot;: 1,
+&quot;auth&quot;: null
+&#125;&#39;</code></pre></div></figure>
 
 <p>在zbx 6.x中，使用token令牌调用</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># token令牌</span>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># token令牌
 24f749cdcacba78205e151899b323ba3c2a401418907a908601d2
-684ac5fc3be<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></div></figure>
+684ac5fc3be</code></pre></div></figure>
 
 
 
@@ -489,92 +489,92 @@ MariaDB <span class="token punctuation">[</span><span class="token punctuation">
 <p><img src="/../../../img/image-20240625170700222.png" srcset="/img/loading.gif" lazyload alt="image-20240625170700222"></p>
 <p>添加完成，令牌显示出来（只会显示一次，注意保存）</p>
 <p><img src="/../../../img/image-20240625170729491.png" srcset="/img/loading.gif" lazyload alt="image-20240625170729491"></p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">aaba9f82d156cce0411c1e06cdc2b3ae60fde705b064baa17b4b92c46e86dc0b<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">aaba9f82d156cce0411c1e06cdc2b3ae60fde705b064baa17b4b92c46e86dc0b</code></pre></div></figure>
 
 
 
 <h3 id="3-2-2-API使用案例"><a href="#3-2-2-API使用案例" class="headerlink" title="3.2.2 API使用案例"></a>3.2.2 API使用案例</h3><p>案例：通过zabbix api获取主机列表</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token assign-left variable">token</span><span class="token operator">=</span>aaba9f82d156cce0411c1e06cdc2b3ae60fde705b064baa17b4b92c46e86dc0b
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">token&#x3D;aaba9f82d156cce0411c1e06cdc2b3ae60fde705b064baa17b4b92c46e86dc0b
 
-<span class="token function">curl</span> <span class="token parameter variable">-X</span> POST <span class="token parameter variable">-H</span> <span class="token string">"Content-Type: application/json-rpc"</span> <span class="token parameter variable">-d</span> <span class="token string">'
+curl -X POST -H &quot;Content-Type: application&#x2F;json-rpc&quot; -d &#39;
 &#123;
-  "jsonrpc": "2.0",
-  "method": "host.get",
-  "params": &#123;
-    "output": [
-      "hostid",
-      "host"
+  &quot;jsonrpc&quot;: &quot;2.0&quot;,
+  &quot;method&quot;: &quot;host.get&quot;,
+  &quot;params&quot;: &#123;
+    &quot;output&quot;: [
+      &quot;hostid&quot;,
+      &quot;host&quot;
     ],
-    "selectInterfaces": [
-      "interfaceid",
-      "ip"
+    &quot;selectInterfaces&quot;: [
+      &quot;interfaceid&quot;,
+      &quot;ip&quot;
     ]
 &#125;,
-"id": 2,
-"auth": "aaba9f82d156cce0411c1e06cdc2b3ae60fde705b064baa17b4b92c46e86dc0b"
-&#125;'</span> http://zbx.test.cn/api_jsonrpc.php <span class="token operator">|</span> jq
+&quot;id&quot;: 2,
+&quot;auth&quot;: &quot;aaba9f82d156cce0411c1e06cdc2b3ae60fde705b064baa17b4b92c46e86dc0b&quot;
+&#125;&#39; http:&#x2F;&#x2F;zbx.test.cn&#x2F;api_jsonrpc.php | jq
 
-<span class="token comment"># 执行结果</span>
+# 执行结果
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-<span class="token number">100</span>   <span class="token number">754</span>    <span class="token number">0</span>   <span class="token number">489</span>  <span class="token number">100</span>   <span class="token number">265</span>   <span class="token number">6988</span>   <span class="token number">3787</span> --:--:-- --:--:-- --:--:--  <span class="token number">7086</span>
-<span class="token punctuation">&#123;</span>
-  <span class="token string">"jsonrpc"</span><span class="token builtin class-name">:</span> <span class="token string">"2.0"</span>,
-  <span class="token string">"result"</span><span class="token builtin class-name">:</span> <span class="token punctuation">[</span>
-    <span class="token punctuation">&#123;</span>
-      <span class="token string">"hostid"</span><span class="token builtin class-name">:</span> <span class="token string">"10084"</span>,
-      <span class="token string">"host"</span><span class="token builtin class-name">:</span> <span class="token string">"Zabbix server"</span>,
-      <span class="token string">"interfaces"</span><span class="token builtin class-name">:</span> <span class="token punctuation">[</span>
-        <span class="token punctuation">&#123;</span>
-          <span class="token string">"interfaceid"</span><span class="token builtin class-name">:</span> <span class="token string">"1"</span>,
-          <span class="token string">"ip"</span><span class="token builtin class-name">:</span> <span class="token string">"127.0.0.1"</span>
-        <span class="token punctuation">&#125;</span>
-      <span class="token punctuation">]</span>
-    <span class="token punctuation">&#125;</span>,
-    <span class="token punctuation">&#123;</span>
-      <span class="token string">"hostid"</span><span class="token builtin class-name">:</span> <span class="token string">"10620"</span>,
-      <span class="token string">"host"</span><span class="token builtin class-name">:</span> <span class="token string">"NFS01 server"</span>,
-      <span class="token string">"interfaces"</span><span class="token builtin class-name">:</span> <span class="token punctuation">[</span>
-        <span class="token punctuation">&#123;</span>
-          <span class="token string">"interfaceid"</span><span class="token builtin class-name">:</span> <span class="token string">"31"</span>,
-          <span class="token string">"ip"</span><span class="token builtin class-name">:</span> <span class="token string">"172.16.1.31"</span>
-        <span class="token punctuation">&#125;</span>
-      <span class="token punctuation">]</span>
-    <span class="token punctuation">&#125;</span>,
-    <span class="token punctuation">&#123;</span>
-      <span class="token string">"hostid"</span><span class="token builtin class-name">:</span> <span class="token string">"10629"</span>,
-      <span class="token string">"host"</span><span class="token builtin class-name">:</span> <span class="token string">"web01"</span>,
-      <span class="token string">"interfaces"</span><span class="token builtin class-name">:</span> <span class="token punctuation">[</span>
-        <span class="token punctuation">&#123;</span>
-          <span class="token string">"interfaceid"</span><span class="token builtin class-name">:</span> <span class="token string">"40"</span>,
-          <span class="token string">"ip"</span><span class="token builtin class-name">:</span> <span class="token string">"172.16.1.7"</span>
-        <span class="token punctuation">&#125;</span>
-      <span class="token punctuation">]</span>
-    <span class="token punctuation">&#125;</span>,
-    <span class="token punctuation">&#123;</span>
-      <span class="token string">"hostid"</span><span class="token builtin class-name">:</span> <span class="token string">"10630"</span>,
-      <span class="token string">"host"</span><span class="token builtin class-name">:</span> <span class="token string">"web03"</span>,
-      <span class="token string">"interfaces"</span><span class="token builtin class-name">:</span> <span class="token punctuation">[</span>
-        <span class="token punctuation">&#123;</span>
-          <span class="token string">"interfaceid"</span><span class="token builtin class-name">:</span> <span class="token string">"41"</span>,
-          <span class="token string">"ip"</span><span class="token builtin class-name">:</span> <span class="token string">"172.16.1.9"</span>
-        <span class="token punctuation">&#125;</span>
-      <span class="token punctuation">]</span>
-    <span class="token punctuation">&#125;</span>,
-    <span class="token punctuation">&#123;</span>
-      <span class="token string">"hostid"</span><span class="token builtin class-name">:</span> <span class="token string">"10631"</span>,
-      <span class="token string">"host"</span><span class="token builtin class-name">:</span> <span class="token string">"db01"</span>,
-      <span class="token string">"interfaces"</span><span class="token builtin class-name">:</span> <span class="token punctuation">[</span>
-        <span class="token punctuation">&#123;</span>
-          <span class="token string">"interfaceid"</span><span class="token builtin class-name">:</span> <span class="token string">"42"</span>,
-          <span class="token string">"ip"</span><span class="token builtin class-name">:</span> <span class="token string">"172.16.1.51"</span>
-        <span class="token punctuation">&#125;</span>
-      <span class="token punctuation">]</span>
-    <span class="token punctuation">&#125;</span>
-  <span class="token punctuation">]</span>,
-  <span class="token string">"id"</span><span class="token builtin class-name">:</span> <span class="token number">2</span>
-<span class="token punctuation">&#125;</span>
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+100   754    0   489  100   265   6988   3787 --:--:-- --:--:-- --:--:--  7086
+&#123;
+  &quot;jsonrpc&quot;: &quot;2.0&quot;,
+  &quot;result&quot;: [
+    &#123;
+      &quot;hostid&quot;: &quot;10084&quot;,
+      &quot;host&quot;: &quot;Zabbix server&quot;,
+      &quot;interfaces&quot;: [
+        &#123;
+          &quot;interfaceid&quot;: &quot;1&quot;,
+          &quot;ip&quot;: &quot;127.0.0.1&quot;
+        &#125;
+      ]
+    &#125;,
+    &#123;
+      &quot;hostid&quot;: &quot;10620&quot;,
+      &quot;host&quot;: &quot;NFS01 server&quot;,
+      &quot;interfaces&quot;: [
+        &#123;
+          &quot;interfaceid&quot;: &quot;31&quot;,
+          &quot;ip&quot;: &quot;172.16.1.31&quot;
+        &#125;
+      ]
+    &#125;,
+    &#123;
+      &quot;hostid&quot;: &quot;10629&quot;,
+      &quot;host&quot;: &quot;web01&quot;,
+      &quot;interfaces&quot;: [
+        &#123;
+          &quot;interfaceid&quot;: &quot;40&quot;,
+          &quot;ip&quot;: &quot;172.16.1.7&quot;
+        &#125;
+      ]
+    &#125;,
+    &#123;
+      &quot;hostid&quot;: &quot;10630&quot;,
+      &quot;host&quot;: &quot;web03&quot;,
+      &quot;interfaces&quot;: [
+        &#123;
+          &quot;interfaceid&quot;: &quot;41&quot;,
+          &quot;ip&quot;: &quot;172.16.1.9&quot;
+        &#125;
+      ]
+    &#125;,
+    &#123;
+      &quot;hostid&quot;: &quot;10631&quot;,
+      &quot;host&quot;: &quot;db01&quot;,
+      &quot;interfaces&quot;: [
+        &#123;
+          &quot;interfaceid&quot;: &quot;42&quot;,
+          &quot;ip&quot;: &quot;172.16.1.51&quot;
+        &#125;
+      ]
+    &#125;
+  ],
+  &quot;id&quot;: 2
+&#125;
+</code></pre></div></figure>
 
 <p>可见正常获取到各主机信息</p>
 <h1 id="四、Zabbix性能优化"><a href="#四、Zabbix性能优化" class="headerlink" title="四、Zabbix性能优化"></a>四、Zabbix性能优化</h1><h2 id="4-1-优化概述"><a href="#4-1-优化概述" class="headerlink" title="4.1 优化概述"></a>4.1 优化概述</h2><p>优化方法：</p>
@@ -605,16 +605,16 @@ MariaDB <span class="token punctuation">[</span><span class="token punctuation">
 </li>
 </ul>
 <h3 id="4-3-1-缓存调整"><a href="#4-3-1-缓存调整" class="headerlink" title="4.3.1 缓存调整"></a>4.3.1 缓存调整</h3><p>配置文件修改参数，调节缓存大小，(使用率高，就把缓存适当调大一些)</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 用于存储主机、监控项、触发器数据的共享内存大小</span>
-<span class="token assign-left variable">CacheSize</span><span class="token operator">=</span>64M <span class="token comment">#512M 边调节边看监控 Zabbix server:Zabbix cache usage, % free</span>
-<span class="token comment"># 历史数据缓存</span>
-<span class="token assign-left variable">HistoryCacheSize</span><span class="token operator">=</span>16M
-<span class="token comment">#历史数据索引的缓存</span>
-<span class="token assign-left variable">HistoryIndexCacheSize</span><span class="token operator">=</span>4M
-<span class="token comment">#趋势数据缓存</span>
-<span class="token assign-left variable">TrendCacheSize</span><span class="token operator">=</span>4M
-<span class="token comment">#值的缓存</span>
-<span class="token assign-left variable">ValueCacheSize</span><span class="token operator">=</span>8M<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 用于存储主机、监控项、触发器数据的共享内存大小
+CacheSize&#x3D;64M #512M 边调节边看监控 Zabbix server:Zabbix cache usage, % free
+# 历史数据缓存
+HistoryCacheSize&#x3D;16M
+#历史数据索引的缓存
+HistoryIndexCacheSize&#x3D;4M
+#趋势数据缓存
+TrendCacheSize&#x3D;4M
+#值的缓存
+ValueCacheSize&#x3D;8M</code></pre></div></figure>
 
 <blockquote>
 <p>根据图形调整缓存、进程数量，那个缓存用的多，就调那个</p>
@@ -628,18 +628,18 @@ MariaDB <span class="token punctuation">[</span><span class="token punctuation">
 <p>调整<code>CacheSize=64M</code>的效果，<code>Configuration cache</code>使用率从31%降到15%</p>
 <p><img src="/../../../img/image-20240701104939367.png" srcset="/img/loading.gif" lazyload alt="image-20240701104939367"></p>
 <h3 id="4-3-2-进程数量调整"><a href="#4-3-2-进程数量调整" class="headerlink" title="4.3.2 进程数量调整"></a>4.3.2 进程数量调整</h3><p>修改配置文件，调整poller进程数量</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 收集数据进程的数量</span>
-<span class="token assign-left variable">StartPollers</span><span class="token operator">=</span><span class="token number">5</span>
-<span class="token comment"># 客户端/主机 不可达 可达主机 (包括IPMI 和 Java)的轮询进程的初始实例数量</span>
-<span class="token assign-left variable">StartPollersUnreachable</span><span class="token operator">=</span><span class="token number">1</span>
-<span class="token comment">#用于接收http客户端的数据</span>
-<span class="token assign-left variable">StartHTTPPollers</span><span class="token operator">=</span><span class="token number">1</span>
-<span class="token comment">#用于收集客户端jmx的数据 (默认是0) java-gateway的时候使用</span>
-<span class="token assign-left variable">StartJavaPollers</span><span class="token operator">=</span><span class="token number">5</span>
-<span class="token comment">#用于收集zabbix proxy代理的数据的进程数 默认是1</span>
-<span class="token assign-left variable">StartProxyPollers</span><span class="token operator">=</span><span class="token number">1</span>
-<span class="token comment">#收集ipmi客户端数据</span>
-<span class="token assign-left variable">StartIPMIPollers</span><span class="token operator">=</span><span class="token number">0</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 收集数据进程的数量
+StartPollers&#x3D;5
+# 客户端&#x2F;主机 不可达 可达主机 (包括IPMI 和 Java)的轮询进程的初始实例数量
+StartPollersUnreachable&#x3D;1
+#用于接收http客户端的数据
+StartHTTPPollers&#x3D;1
+#用于收集客户端jmx的数据 (默认是0) java-gateway的时候使用
+StartJavaPollers&#x3D;5
+#用于收集zabbix proxy代理的数据的进程数 默认是1
+StartProxyPollers&#x3D;1
+#收集ipmi客户端数据
+StartIPMIPollers&#x3D;0</code></pre></div></figure>
 
 <p>可以看图形来改，过滤busy关键字</p>
 <p><img src="/../../../img/image-20240701104549301.png" srcset="/img/loading.gif" lazyload alt="image-20240701104549301"></p>
@@ -656,18 +656,18 @@ MariaDB <span class="token punctuation">[</span><span class="token punctuation">
 </ul>
 <p>案例：修改web01配置，改为主动模式</p>
 <p>1、配置文件修改：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">grep</span> <span class="token string">'^[a-Z]'</span> /etc/zabbix/zabbix_agent2.conf
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">grep &#39;^[a-Z]&#39; &#x2F;etc&#x2F;zabbix&#x2F;zabbix_agent2.conf
 
-<span class="token assign-left variable">PidFile</span><span class="token operator">=</span>/var/run/zabbix/zabbix_agent2.pid
-<span class="token assign-left variable">LogFile</span><span class="token operator">=</span>/var/log/zabbix/zabbix_agent2.log
-<span class="token assign-left variable">LogFileSize</span><span class="token operator">=</span><span class="token number">0</span>
-<span class="token assign-left variable">Server</span><span class="token operator">=</span><span class="token number">172.16</span>.1.62
-<span class="token assign-left variable">ServerActive</span><span class="token operator">=</span><span class="token number">172.16</span>.1.62 <span class="token comment"># 修改为服务端ip</span>
-<span class="token comment">#Hostname 这个注释掉</span>
-<span class="token assign-left variable">HostnameItem</span><span class="token operator">=</span>system.hostname <span class="token comment"># 修改为键值</span>
-<span class="token assign-left variable">Include</span><span class="token operator">=</span>/etc/zabbix/zabbix_agent2.d/*.conf
-<span class="token assign-left variable">ControlSocket</span><span class="token operator">=</span>/tmp/agent.sock
-<span class="token assign-left variable">Include</span><span class="token operator">=</span>./zabbix_agent2.d/plugins.d/*.conf<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+PidFile&#x3D;&#x2F;var&#x2F;run&#x2F;zabbix&#x2F;zabbix_agent2.pid
+LogFile&#x3D;&#x2F;var&#x2F;log&#x2F;zabbix&#x2F;zabbix_agent2.log
+LogFileSize&#x3D;0
+Server&#x3D;172.16.1.62
+ServerActive&#x3D;172.16.1.62 # 修改为服务端ip
+#Hostname 这个注释掉
+HostnameItem&#x3D;system.hostname # 修改为键值
+Include&#x3D;&#x2F;etc&#x2F;zabbix&#x2F;zabbix_agent2.d&#x2F;*.conf
+ControlSocket&#x3D;&#x2F;tmp&#x2F;agent.sock
+Include&#x3D;.&#x2F;zabbix_agent2.d&#x2F;plugins.d&#x2F;*.conf</code></pre></div></figure>
 
 <p>2、关联主动模式zabbix模板</p>
 <p><img src="/../../../img/image-20240701110420399.png" srcset="/img/loading.gif" lazyload alt="image-20240701110420399"></p>
@@ -704,7 +704,7 @@ MariaDB <span class="token punctuation">[</span><span class="token punctuation">
 <li>自带高可用功能</li>
 </ul>
 <p>可以通过命令行查看到高可用情况</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn02 ~<span class="token punctuation">]</span><span class="token comment">#zabbix_server -R ha_status</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn02 ~]#zabbix_server -R ha_status</code></pre></div></figure>
 
 
 
@@ -733,82 +733,82 @@ MariaDB <span class="token punctuation">[</span><span class="token punctuation">
 <li>安装依赖</li>
 </ul>
 <h3 id="5-2-2-开始配置"><a href="#5-2-2-开始配置" class="headerlink" title="5.2.2 开始配置"></a>5.2.2 开始配置</h3><h4 id="a）服务端配置"><a href="#a）服务端配置" class="headerlink" title="a）服务端配置"></a>a）服务端配置</h4><p>mn02配置</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn02 ~<span class="token punctuation">]</span><span class="token comment">#grep "^[a-Z]" /etc/zabbix/zabbix_server.conf</span>
-<span class="token assign-left variable">ListenPort</span><span class="token operator">=</span><span class="token number">10051</span>
-<span class="token assign-left variable">LogFile</span><span class="token operator">=</span>/tmp/zabbix_server.log
-<span class="token assign-left variable">DBHost</span><span class="token operator">=</span><span class="token number">172.16</span>.1.51
-<span class="token assign-left variable">DBName</span><span class="token operator">=</span>zabbix
-<span class="token assign-left variable">DBUser</span><span class="token operator">=</span>zabbix
-<span class="token assign-left variable">DBPassword</span><span class="token operator">=</span>zabbix
-<span class="token assign-left variable">JavaGateway</span><span class="token operator">=</span><span class="token number">127.0</span>.0.1
-<span class="token assign-left variable">JavaGatewayPort</span><span class="token operator">=</span><span class="token number">10052</span>
-<span class="token assign-left variable">StartJavaPollers</span><span class="token operator">=</span><span class="token number">5</span>
-<span class="token assign-left variable">CacheSize</span><span class="token operator">=</span>64M
-<span class="token assign-left variable">Timeout</span><span class="token operator">=</span><span class="token number">4</span>
-<span class="token assign-left variable">LogSlowQueries</span><span class="token operator">=</span><span class="token number">3000</span>
-<span class="token assign-left variable">StatsAllowedIP</span><span class="token operator">=</span><span class="token number">127.0</span>.0.1
-<span class="token comment"># 添加作为HA节点的信息</span>
-<span class="token assign-left variable">HANodeName</span><span class="token operator">=</span>mn02
-<span class="token assign-left variable">NodeAddress</span><span class="token operator">=</span><span class="token number">172.16</span>.1.62:10051<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn02 ~]#grep &quot;^[a-Z]&quot; &#x2F;etc&#x2F;zabbix&#x2F;zabbix_server.conf
+ListenPort&#x3D;10051
+LogFile&#x3D;&#x2F;tmp&#x2F;zabbix_server.log
+DBHost&#x3D;172.16.1.51
+DBName&#x3D;zabbix
+DBUser&#x3D;zabbix
+DBPassword&#x3D;zabbix
+JavaGateway&#x3D;127.0.0.1
+JavaGatewayPort&#x3D;10052
+StartJavaPollers&#x3D;5
+CacheSize&#x3D;64M
+Timeout&#x3D;4
+LogSlowQueries&#x3D;3000
+StatsAllowedIP&#x3D;127.0.0.1
+# 添加作为HA节点的信息
+HANodeName&#x3D;mn02
+NodeAddress&#x3D;172.16.1.62:10051</code></pre></div></figure>
 
 <p>mn03配置</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn03 ~<span class="token punctuation">]</span><span class="token comment">#grep "^[a-Z]" /etc/zabbix/zabbix_server.conf</span>
-<span class="token assign-left variable">ListenPort</span><span class="token operator">=</span><span class="token number">10051</span>
-<span class="token assign-left variable">LogFile</span><span class="token operator">=</span>/tmp/zabbix_server.log
-<span class="token assign-left variable">DBHost</span><span class="token operator">=</span><span class="token number">172.16</span>.1.51
-<span class="token assign-left variable">DBName</span><span class="token operator">=</span>zabbix
-<span class="token assign-left variable">DBUser</span><span class="token operator">=</span>zabbix
-<span class="token assign-left variable">DBPassword</span><span class="token operator">=</span>zabbix
-<span class="token assign-left variable">JavaGateway</span><span class="token operator">=</span><span class="token number">127.0</span>.0.1
-<span class="token assign-left variable">JavaGatewayPort</span><span class="token operator">=</span><span class="token number">10052</span>
-<span class="token assign-left variable">StartJavaPollers</span><span class="token operator">=</span><span class="token number">5</span>
-<span class="token assign-left variable">CacheSize</span><span class="token operator">=</span>64M
-<span class="token assign-left variable">Timeout</span><span class="token operator">=</span><span class="token number">4</span>
-<span class="token assign-left variable">LogSlowQueries</span><span class="token operator">=</span><span class="token number">3000</span>
-<span class="token assign-left variable">StatsAllowedIP</span><span class="token operator">=</span><span class="token number">127.0</span>.0.1
-<span class="token comment"># 添加作为HA节点的信息</span>
-<span class="token assign-left variable">HANodeName</span><span class="token operator">=</span>mn03
-<span class="token assign-left variable">NodeAddress</span><span class="token operator">=</span><span class="token number">172.16</span>.1.63:10051<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn03 ~]#grep &quot;^[a-Z]&quot; &#x2F;etc&#x2F;zabbix&#x2F;zabbix_server.conf
+ListenPort&#x3D;10051
+LogFile&#x3D;&#x2F;tmp&#x2F;zabbix_server.log
+DBHost&#x3D;172.16.1.51
+DBName&#x3D;zabbix
+DBUser&#x3D;zabbix
+DBPassword&#x3D;zabbix
+JavaGateway&#x3D;127.0.0.1
+JavaGatewayPort&#x3D;10052
+StartJavaPollers&#x3D;5
+CacheSize&#x3D;64M
+Timeout&#x3D;4
+LogSlowQueries&#x3D;3000
+StatsAllowedIP&#x3D;127.0.0.1
+# 添加作为HA节点的信息
+HANodeName&#x3D;mn03
+NodeAddress&#x3D;172.16.1.63:10051</code></pre></div></figure>
 
 <p>都重启服务，查看HA情况</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 主节点可以看到</span>
-<span class="token punctuation">[</span>root@mn03 ~<span class="token punctuation">]</span><span class="token comment">#zabbix_server -R ha_status</span>
-Failover delay: <span class="token number">60</span> seconds
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 主节点可以看到
+[root@mn03 ~]#zabbix_server -R ha_status
+Failover delay: 60 seconds
 Cluster status:
-   <span class="token comment">#  ID                        Name                      Address                        Status      Last Access</span>
-   <span class="token number">1</span> cly2f5z3s0001xw9yldxunt78 mn02                      <span class="token number">172.16</span>.1.62:10051              standby     4s
-   <span class="token number">2</span> cly2f9z900001mf9xebepvbwv mn03                      <span class="token number">172.16</span>.1.63:10051              active      4s
+   #  ID                        Name                      Address                        Status      Last Access
+   1 cly2f5z3s0001xw9yldxunt78 mn02                      172.16.1.62:10051              standby     4s
+   2 cly2f9z900001mf9xebepvbwv mn03                      172.16.1.63:10051              active      4s
 
 
-<span class="token comment"># 备节点会提示</span>
-<span class="token punctuation">[</span>root@mn02~<span class="token punctuation">]</span><span class="token comment">#zabbix_server -R ha_status</span>
-Runtime commands can be executed only <span class="token keyword">in</span> active mode<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+# 备节点会提示
+[root@mn02~]#zabbix_server -R ha_status
+Runtime commands can be executed only in active mode</code></pre></div></figure>
 
 <p>界面也会显示</p>
 <p><img src="/../../../img/image-20240701113639345.png" srcset="/img/loading.gif" lazyload alt="image-20240701113639345"></p>
 <h4 id="b）客户端配置"><a href="#b）客户端配置" class="headerlink" title="b）客户端配置"></a>b）客户端配置</h4><p>客户端配置多个服务端地址</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@web03 ~<span class="token punctuation">]</span><span class="token comment"># grep '^[a-Z]'</span>
-/etc/zabbix/zabbix_agent2.conf
-<span class="token assign-left variable">PidFile</span><span class="token operator">=</span>/var/run/zabbix/zabbix_agent2.pid
-<span class="token assign-left variable">LogFile</span><span class="token operator">=</span>/var/log/zabbix/zabbix_agent2.log
-<span class="token assign-left variable">LogFileSize</span><span class="token operator">=</span><span class="token number">0</span>
-<span class="token assign-left variable">Server</span><span class="token operator">=</span><span class="token number">172.16</span>.1.63,172.16.1.62 <span class="token comment">#多个服务端，ip、主机名要用逗号分隔。</span>
-<span class="token assign-left variable">ServerActive</span><span class="token operator">=</span><span class="token number">172.16</span>.1.63<span class="token punctuation">;</span><span class="token number">172.16</span>.1.62 <span class="token comment">#多个ha集群，节点名字或ip，要用分号分隔。</span>
-<span class="token assign-left variable">HostnameItem</span><span class="token operator">=</span>system.hostname
-<span class="token assign-left variable">Include</span><span class="token operator">=</span>/etc/zabbix/zabbix_agent2.d/*.conf
-<span class="token assign-left variable">ControlSocket</span><span class="token operator">=</span>/tmp/agent.sock
-<span class="token assign-left variable">Include</span><span class="token operator">=</span>./zabbix_agent2.d/plugins.d/*.conf<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web03 ~]# grep &#39;^[a-Z]&#39;
+&#x2F;etc&#x2F;zabbix&#x2F;zabbix_agent2.conf
+PidFile&#x3D;&#x2F;var&#x2F;run&#x2F;zabbix&#x2F;zabbix_agent2.pid
+LogFile&#x3D;&#x2F;var&#x2F;log&#x2F;zabbix&#x2F;zabbix_agent2.log
+LogFileSize&#x3D;0
+Server&#x3D;172.16.1.63,172.16.1.62 #多个服务端，ip、主机名要用逗号分隔。
+ServerActive&#x3D;172.16.1.63;172.16.1.62 #多个ha集群，节点名字或ip，要用分号分隔。
+HostnameItem&#x3D;system.hostname
+Include&#x3D;&#x2F;etc&#x2F;zabbix&#x2F;zabbix_agent2.d&#x2F;*.conf
+ControlSocket&#x3D;&#x2F;tmp&#x2F;agent.sock
+Include&#x3D;.&#x2F;zabbix_agent2.d&#x2F;plugins.d&#x2F;*.conf</code></pre></div></figure>
 
 
 
 <h4 id="c）站点配置"><a href="#c）站点配置" class="headerlink" title="c）站点配置"></a>c）站点配置</h4><p>web页面配置文件<code>zabbix.conf.php</code>，改为空</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 原单个</span>
-// <span class="token variable">$ZBX_SERVER</span>                  <span class="token operator">=</span> <span class="token string">'172.16.1.63'</span><span class="token punctuation">;</span>
-// <span class="token variable">$ZBX_SERVER_PORT</span>             <span class="token operator">=</span> <span class="token string">'10051'</span><span class="token punctuation">;</span>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 原单个
+&#x2F;&#x2F; $ZBX_SERVER                  &#x3D; &#39;172.16.1.63&#39;;
+&#x2F;&#x2F; $ZBX_SERVER_PORT             &#x3D; &#39;10051&#39;;
 
-<span class="token comment"># 改为空，会自动切换</span>
-// <span class="token variable">$ZBX_SERVER</span>                  <span class="token operator">=</span> <span class="token string">''</span><span class="token punctuation">;</span>
-// <span class="token variable">$ZBX_SERVER_PORT</span>             <span class="token operator">=</span> <span class="token string">''</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+# 改为空，会自动切换
+&#x2F;&#x2F; $ZBX_SERVER                  &#x3D; &#39;&#39;;
+&#x2F;&#x2F; $ZBX_SERVER_PORT             &#x3D; &#39;&#39;;</code></pre></div></figure>
 
 <blockquote>
 <p>参考自zabbix官方手册</p>
@@ -1127,6 +1127,10 @@ Runtime commands can be executed only <span class="token keyword">in</span> acti
   });
 </script>
 
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/components/prism-core.min.js" ></script>
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js" ></script>
 
   <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
 

@@ -230,7 +230,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.7k 字
+          1.9k 字
         
       </span>
     
@@ -241,7 +241,7 @@
         
         
         
-          15 分钟
+          16 分钟
         
       </span>
     
@@ -306,25 +306,25 @@
 <p><img src="/../../../img/image-20240506170346946.png" srcset="/img/loading.gif" lazyload alt="image-20240506170346946"></p>
 <h2 id="1-2-实现案例"><a href="#1-2-实现案例" class="headerlink" title="1.2 实现案例"></a>1.2 实现案例</h2><p>拆分nfs部署的剧本，实现如下：</p>
 <p>部署服务端：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 服务端</span>
-<span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts/playbook<span class="token punctuation">]</span><span class="token comment">#cat 15-deploy-nfs-server.yml</span>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 服务端
+[root@mn01[ &#x2F;server&#x2F;scripts&#x2F;playbook]#cat 15-deploy-nfs-server.yml
     - name: 01. 安装服务
       yum:
         name: nfs-utils, rpcbind
         state: present
-      <span class="token comment"># 打标签tag</span>
+      # 打标签tag
       tags:
         - 01.install
     - name: 02. 修改配置文件
       lineinfile:
-        path: /etc/exports
-        line: <span class="token string">"/backup-nfs 172.16.1.0/24(rw, all_squash)"</span>
-        create: <span class="token boolean">true</span>
+        path: &#x2F;etc&#x2F;exports
+        line: &quot;&#x2F;backup-nfs 172.16.1.0&#x2F;24(rw, all_squash)&quot;
+        create: true
       tags:
         - 02.conf
     - name: 03. 创建共享目录并修改所有者
       file:
-        path: /backup-nfs
+        path: &#x2F;backup-nfs
         owner: nfsnobody
         group: nfsnobody
         state: directory
@@ -332,41 +332,41 @@
         - 03.dir
     - name: 04. 启动服务
       systemd:
-        name: <span class="token string">"&#123;&#123; item &#125;&#125;"</span>
+        name: &quot;&#123;&#123; item &#125;&#125;&quot;
         state: started
-        enabled: <span class="token function">yes</span>
+        enabled: yes
       loop:
         - rpcbind
         - nfs
       tags:
-        - 04.start_srv<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+        - 04.start_srv</code></pre></div></figure>
 
 <p>部署客户端：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts/playbook<span class="token punctuation">]</span><span class="token comment">#cat 15-deploy-nfs-client.yml</span>
-<span class="token comment"># 客户端</span>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01[ &#x2F;server&#x2F;scripts&#x2F;playbook]#cat 15-deploy-nfs-client.yml
+# 客户端
     - name: 01. 部署nfs-utils
       yum:
         name: nfs-utils
         state: present
     - name: 02. 挂载nfs
       mount:
-        src: <span class="token number">172.16</span>.1.41:/backup-nfs
-        path: /ans-upload
+        src: 172.16.1.41:&#x2F;backup-nfs
+        path: &#x2F;ans-upload
         fstype: nfs
-        state: mounted<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+        state: mounted</code></pre></div></figure>
 
 <p>include整合</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts/playbook<span class="token punctuation">]</span><span class="token comment">#cat 15-deploy-nfs-all.yml</span>
-<span class="token comment"># 服务端</span>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01[ &#x2F;server&#x2F;scripts&#x2F;playbook]#cat 15-deploy-nfs-all.yml
+# 服务端
 - hosts: backup01
   tasks:
-    - include_tasks: <span class="token number">15</span>-deploy-nfs-server.yml
+    - include_tasks: 15-deploy-nfs-server.yml
 
 
-<span class="token comment"># 客户端</span>
+# 客户端
 - hosts: web01
   tasks:
-    - include_tasks: <span class="token number">15</span>-deploy-nfs-client.yml<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+    - include_tasks: 15-deploy-nfs-client.yml</code></pre></div></figure>
 
 
 
@@ -377,50 +377,50 @@
 <p><img src="/../../../img/image-20240506181052793.png" srcset="/img/loading.gif" lazyload alt="image-20240506181052793"></p>
 <h2 id="2-2-实现案例"><a href="#2-2-实现案例" class="headerlink" title="2.2 实现案例"></a>2.2 实现案例</h2><p>使用Roles规则，实现nfs服务部署剧本</p>
 <h3 id="2-2-1-目录准备"><a href="#2-2-1-目录准备" class="headerlink" title="2.2.1 目录准备"></a>2.2.1 目录准备</h3><p>按照Roles规则创建目录</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts/roles-all/roles01<span class="token punctuation">]</span><span class="token comment">#tree -F</span>
-<span class="token builtin class-name">.</span>
-├── group_vars/
-│   └── all/	<span class="token comment"># 用于存放变量文件</span>
-├── hosts	<span class="token comment"># hosts文件，方便指定</span>
-├── nfs-server/·
-│   ├── files/	<span class="token comment"># 存放需要下发的普通文件</span>
-│   ├── handlers/	<span class="token comment"># 存放handler操作</span>
-│   ├── tasks/·<span class="token comment"># 存放tasks任务</span>
-│   └── templates/	<span class="token comment"># 存放需要下发的j2文件</span>
-└── top.yml	<span class="token comment"># 整体调用接口</span>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01[ &#x2F;server&#x2F;scripts&#x2F;roles-all&#x2F;roles01]#tree -F
+.
+├── group_vars&#x2F;
+│   └── all&#x2F;	# 用于存放变量文件
+├── hosts	# hosts文件，方便指定
+├── nfs-server&#x2F;·
+│   ├── files&#x2F;	# 存放需要下发的普通文件
+│   ├── handlers&#x2F;	# 存放handler操作
+│   ├── tasks&#x2F;·# 存放tasks任务
+│   └── templates&#x2F;	# 存放需要下发的j2文件
+└── top.yml	# 整体调用接口
 
-<span class="token number">7</span> directories, <span class="token number">2</span> files<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+7 directories, 2 files</code></pre></div></figure>
 
 <h3 id="2-2-2-添加文件"><a href="#2-2-2-添加文件" class="headerlink" title="2.2.2 添加文件"></a>2.2.2 添加文件</h3><p>创建各文件</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts/roles-all/roles01<span class="token punctuation">]</span><span class="token comment">#tree -F</span>
-<span class="token builtin class-name">.</span>
-├── group_vars/
-│   └── all/
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01[ &#x2F;server&#x2F;scripts&#x2F;roles-all&#x2F;roles01]#tree -F
+.
+├── group_vars&#x2F;
+│   └── all&#x2F;
 ├── hosts
-├── nfs-server/
-│   ├── files/
-│   │   └── exports
-│   ├── handlers/
-│   │   └── main.yml
-│   ├── tasks/
-│   │   └── main.yml
-│   └── templates/
-│       └── motd.j2
-└── top.yml<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+├── nfs-server&#x2F;
+│   ├── files&#x2F;
+│   │   └── exports
+│   ├── handlers&#x2F;
+│   │   └── main.yml
+│   ├── tasks&#x2F;
+│   │   └── main.yml
+│   └── templates&#x2F;
+│       └── motd.j2
+└── top.yml</code></pre></div></figure>
 
 <p>exports文件</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts/roles-all/roles01<span class="token punctuation">]</span><span class="token comment">#cat nfs-server/files/exports</span>
-/backup-nfs <span class="token number">172.16</span>.1.0/24<span class="token punctuation">(</span>rw,all_squash<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01[ &#x2F;server&#x2F;scripts&#x2F;roles-all&#x2F;roles01]#cat nfs-server&#x2F;files&#x2F;exports
+&#x2F;backup-nfs 172.16.1.0&#x2F;24(rw,all_squash)</code></pre></div></figure>
 
 <p>handler&#x2F;main.yml文件</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts/roles-all/roles01<span class="token punctuation">]</span><span class="token comment">#cat nfs-server/handlers/main.yml</span>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01[ &#x2F;server&#x2F;scripts&#x2F;roles-all&#x2F;roles01]#cat nfs-server&#x2F;handlers&#x2F;main.yml
 - name: restart nfs server
   systemd:
     name: nfs
-    state: reloaded<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+    state: reloaded</code></pre></div></figure>
 
 <p>tasks&#x2F;main.yml文件</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts/roles-all/roles01<span class="token punctuation">]</span><span class="token comment">#cat nfs-server/tasks/main.yml</span>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01[ &#x2F;server&#x2F;scripts&#x2F;roles-all&#x2F;roles01]#cat nfs-server&#x2F;tasks&#x2F;main.yml
     - name: 01. 部署nfs-utils
       yum:
         name: nfs-utils,rpcbind
@@ -430,8 +430,8 @@
     - name: 02. 修改配置文件
       copy:
         src: exports
-        dest: /etc/exports
-        backup: <span class="token function">yes</span>
+        dest: &#x2F;etc&#x2F;exports
+        backup: yes
       tags:
         - 02-conf
       notify:
@@ -439,7 +439,7 @@
 
     - name: 03. 共享目录
       file:
-        path: /backup-nfs/
+        path: &#x2F;backup-nfs&#x2F;
         owner: nfsnobody
         group: nfsnobody
         state: directory
@@ -447,8 +447,8 @@
          - 03-mkdir
     - name: 04. 启动服务 rpc nfs
       systemd:
-        name: <span class="token string">"&#123;&#123; item &#125;&#125;"</span>
-        enabled: <span class="token function">yes</span>
+        name: &quot;&#123;&#123; item &#125;&#125;&quot;
+        enabled: yes
         state: started
       loop:
         - rpcbind
@@ -458,132 +458,132 @@
     - name: 05 分发motd
       template:
         src: motd.j2
-        dest: /etc/motd
-        backup: <span class="token function">yes</span>
+        dest: &#x2F;etc&#x2F;motd
+        backup: yes
       tags:
-        - 05-motd<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+        - 05-motd</code></pre></div></figure>
 
 <p>templates&#x2F;motd.j2文件</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts/roles-all/roles01<span class="token punctuation">]</span><span class="token comment">#cat nfs-server/templates/motd.j2</span>
-<span class="token comment">#######################################</span>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01[ &#x2F;server&#x2F;scripts&#x2F;roles-all&#x2F;roles01]#cat nfs-server&#x2F;templates&#x2F;motd.j2
+#######################################
 welcome to oldboy elastic linux system
 操作需谨慎,删根弹指间
-主机名: <span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> ansible_hostname <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>
-ip地址: <span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> ansible_default_ipv4.address <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>
-内存大小: <span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> ansible_memtotal_mb <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>
-CPU数量: <span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> ansible_processor_vcpus <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>
-核心总数: <span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> ansible_processor_cores <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>
-发行版本: <span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> ansible_distribution <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+主机名: &#123;&#123; ansible_hostname &#125;&#125;
+ip地址: &#123;&#123; ansible_default_ipv4.address &#125;&#125;
+内存大小: &#123;&#123; ansible_memtotal_mb &#125;&#125;
+CPU数量: &#123;&#123; ansible_processor_vcpus &#125;&#125;
+核心总数: &#123;&#123; ansible_processor_cores &#125;&#125;
+发行版本: &#123;&#123; ansible_distribution &#125;&#125;</code></pre></div></figure>
 
 <h3 id="2-2-3-运行调试"><a href="#2-2-3-运行调试" class="headerlink" title="2.2.3 运行调试"></a>2.2.3 运行调试</h3><p>运行如下：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts/roles-all/roles01<span class="token punctuation">]</span><span class="token comment">#ansible-playbook -i hosts top.yml</span>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01[ &#x2F;server&#x2F;scripts&#x2F;roles-all&#x2F;roles01]#ansible-playbook -i hosts top.yml
  _________________
-<span class="token operator">&lt;</span> PLAY <span class="token punctuation">[</span>backup01<span class="token punctuation">]</span> <span class="token operator">></span>
+&lt; PLAY [backup01] &gt;
  -----------------
-        <span class="token punctuation">\</span>   ^__^
-         <span class="token punctuation">\</span>  <span class="token punctuation">(</span>oo<span class="token punctuation">)</span><span class="token punctuation">\</span>_______
-            <span class="token punctuation">(</span>__<span class="token punctuation">)</span><span class="token punctuation">\</span>       <span class="token punctuation">)</span><span class="token punctuation">\</span>/<span class="token punctuation">\</span>
-                <span class="token operator">||</span>----w <span class="token operator">|</span>
-                <span class="token operator">||</span>     <span class="token operator">||</span>
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\&#x2F;\
+                ||----w |
+                ||     ||
 
  ________________________
-<span class="token operator">&lt;</span> TASK <span class="token punctuation">[</span>Gathering Facts<span class="token punctuation">]</span> <span class="token operator">></span>
+&lt; TASK [Gathering Facts] &gt;
  ------------------------
-        <span class="token punctuation">\</span>   ^__^
-         <span class="token punctuation">\</span>  <span class="token punctuation">(</span>oo<span class="token punctuation">)</span><span class="token punctuation">\</span>_______
-            <span class="token punctuation">(</span>__<span class="token punctuation">)</span><span class="token punctuation">\</span>       <span class="token punctuation">)</span><span class="token punctuation">\</span>/<span class="token punctuation">\</span>
-                <span class="token operator">||</span>----w <span class="token operator">|</span>
-                <span class="token operator">||</span>     <span class="token operator">||</span>
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\&#x2F;\
+                ||----w |
+                ||     ||
 
-ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span>
+ok: [172.16.1.41]
  _____________________________________
-<span class="token operator">&lt;</span> TASK <span class="token punctuation">[</span>nfs-server <span class="token builtin class-name">:</span> 01. 部署nfs-utils<span class="token punctuation">]</span> <span class="token operator">></span>
+&lt; TASK [nfs-server : 01. 部署nfs-utils] &gt;
  -------------------------------------
-        <span class="token punctuation">\</span>   ^__^
-         <span class="token punctuation">\</span>  <span class="token punctuation">(</span>oo<span class="token punctuation">)</span><span class="token punctuation">\</span>_______
-            <span class="token punctuation">(</span>__<span class="token punctuation">)</span><span class="token punctuation">\</span>       <span class="token punctuation">)</span><span class="token punctuation">\</span>/<span class="token punctuation">\</span>
-                <span class="token operator">||</span>----w <span class="token operator">|</span>
-                <span class="token operator">||</span>     <span class="token operator">||</span>
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\&#x2F;\
+                ||----w |
+                ||     ||
 
-ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span>
+ok: [172.16.1.41]
  ________________________________
-<span class="token operator">&lt;</span> TASK <span class="token punctuation">[</span>nfs-server <span class="token builtin class-name">:</span> 02. 修改配置文件<span class="token punctuation">]</span> <span class="token operator">></span>
+&lt; TASK [nfs-server : 02. 修改配置文件] &gt;
  --------------------------------
-        <span class="token punctuation">\</span>   ^__^
-         <span class="token punctuation">\</span>  <span class="token punctuation">(</span>oo<span class="token punctuation">)</span><span class="token punctuation">\</span>_______
-            <span class="token punctuation">(</span>__<span class="token punctuation">)</span><span class="token punctuation">\</span>       <span class="token punctuation">)</span><span class="token punctuation">\</span>/<span class="token punctuation">\</span>
-                <span class="token operator">||</span>----w <span class="token operator">|</span>
-                <span class="token operator">||</span>     <span class="token operator">||</span>
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\&#x2F;\
+                ||----w |
+                ||     ||
 
-changed: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span>
+changed: [172.16.1.41]
  ______________________________
-<span class="token operator">&lt;</span> TASK <span class="token punctuation">[</span>nfs-server <span class="token builtin class-name">:</span> 03. 共享目录<span class="token punctuation">]</span> <span class="token operator">></span>
+&lt; TASK [nfs-server : 03. 共享目录] &gt;
  ------------------------------
-        <span class="token punctuation">\</span>   ^__^
-         <span class="token punctuation">\</span>  <span class="token punctuation">(</span>oo<span class="token punctuation">)</span><span class="token punctuation">\</span>_______
-            <span class="token punctuation">(</span>__<span class="token punctuation">)</span><span class="token punctuation">\</span>       <span class="token punctuation">)</span><span class="token punctuation">\</span>/<span class="token punctuation">\</span>
-                <span class="token operator">||</span>----w <span class="token operator">|</span>
-                <span class="token operator">||</span>     <span class="token operator">||</span>
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\&#x2F;\
+                ||----w |
+                ||     ||
 
-ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span>
+ok: [172.16.1.41]
  ______________________________________
-<span class="token operator">&lt;</span> TASK <span class="token punctuation">[</span>nfs-server <span class="token builtin class-name">:</span> 04. 启动服务 rpc nfs<span class="token punctuation">]</span> <span class="token operator">></span>
+&lt; TASK [nfs-server : 04. 启动服务 rpc nfs] &gt;
  --------------------------------------
-        <span class="token punctuation">\</span>   ^__^
-         <span class="token punctuation">\</span>  <span class="token punctuation">(</span>oo<span class="token punctuation">)</span><span class="token punctuation">\</span>_______
-            <span class="token punctuation">(</span>__<span class="token punctuation">)</span><span class="token punctuation">\</span>       <span class="token punctuation">)</span><span class="token punctuation">\</span>/<span class="token punctuation">\</span>
-                <span class="token operator">||</span>----w <span class="token operator">|</span>
-                <span class="token operator">||</span>     <span class="token operator">||</span>
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\&#x2F;\
+                ||----w |
+                ||     ||
 
-ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">(</span>item<span class="token operator">=</span>rpcbind<span class="token punctuation">)</span>
-ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">(</span>item<span class="token operator">=</span>nfs<span class="token punctuation">)</span>
+ok: [172.16.1.41] &#x3D;&gt; (item&#x3D;rpcbind)
+ok: [172.16.1.41] &#x3D;&gt; (item&#x3D;nfs)
  _______________________________
-<span class="token operator">&lt;</span> TASK <span class="token punctuation">[</span>nfs-server <span class="token builtin class-name">:</span> 05 分发motd<span class="token punctuation">]</span> <span class="token operator">></span>
+&lt; TASK [nfs-server : 05 分发motd] &gt;
  -------------------------------
-        <span class="token punctuation">\</span>   ^__^
-         <span class="token punctuation">\</span>  <span class="token punctuation">(</span>oo<span class="token punctuation">)</span><span class="token punctuation">\</span>_______
-            <span class="token punctuation">(</span>__<span class="token punctuation">)</span><span class="token punctuation">\</span>       <span class="token punctuation">)</span><span class="token punctuation">\</span>/<span class="token punctuation">\</span>
-                <span class="token operator">||</span>----w <span class="token operator">|</span>
-                <span class="token operator">||</span>     <span class="token operator">||</span>
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\&#x2F;\
+                ||----w |
+                ||     ||
 
-ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span>
+ok: [172.16.1.41]
  ___________________________________________________
-<span class="token operator">&lt;</span> RUNNING HANDLER <span class="token punctuation">[</span>nfs-server <span class="token builtin class-name">:</span> restart nfs server<span class="token punctuation">]</span> <span class="token operator">></span>
+&lt; RUNNING HANDLER [nfs-server : restart nfs server] &gt;
  ---------------------------------------------------
-        <span class="token punctuation">\</span>   ^__^
-         <span class="token punctuation">\</span>  <span class="token punctuation">(</span>oo<span class="token punctuation">)</span><span class="token punctuation">\</span>_______
-            <span class="token punctuation">(</span>__<span class="token punctuation">)</span><span class="token punctuation">\</span>       <span class="token punctuation">)</span><span class="token punctuation">\</span>/<span class="token punctuation">\</span>
-                <span class="token operator">||</span>----w <span class="token operator">|</span>
-                <span class="token operator">||</span>     <span class="token operator">||</span>
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\&#x2F;\
+                ||----w |
+                ||     ||
 
-changed: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span>
+changed: [172.16.1.41]
  ____________
-<span class="token operator">&lt;</span> PLAY RECAP <span class="token operator">></span>
+&lt; PLAY RECAP &gt;
  ------------
-        <span class="token punctuation">\</span>   ^__^
-         <span class="token punctuation">\</span>  <span class="token punctuation">(</span>oo<span class="token punctuation">)</span><span class="token punctuation">\</span>_______
-            <span class="token punctuation">(</span>__<span class="token punctuation">)</span><span class="token punctuation">\</span>       <span class="token punctuation">)</span><span class="token punctuation">\</span>/<span class="token punctuation">\</span>
-                <span class="token operator">||</span>----w <span class="token operator">|</span>
-                <span class="token operator">||</span>     <span class="token operator">||</span>
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\&#x2F;\
+                ||----w |
+                ||     ||
 
-<span class="token number">172.16</span>.1.41                <span class="token builtin class-name">:</span> <span class="token assign-left variable">ok</span><span class="token operator">=</span><span class="token number">7</span>    <span class="token assign-left variable">changed</span><span class="token operator">=</span><span class="token number">2</span>    <span class="token assign-left variable">unreachable</span><span class="token operator">=</span><span class="token number">0</span>    <span class="token assign-left variable">failed</span><span class="token operator">=</span><span class="token number">0</span>    <span class="token assign-left variable">skipped</span><span class="token operator">=</span><span class="token number">0</span>    <span class="token assign-left variable">rescued</span><span class="token operator">=</span><span class="token number">0</span>    <span class="token assign-left variable">ignored</span><span class="token operator">=</span><span class="token number">0</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+172.16.1.41                : ok&#x3D;7    changed&#x3D;2    unreachable&#x3D;0    failed&#x3D;0    skipped&#x3D;0    rescued&#x3D;0    ignored&#x3D;0</code></pre></div></figure>
 
 <h2 id="2-3-加入变量"><a href="#2-3-加入变量" class="headerlink" title="2.3 加入变量"></a>2.3 加入变量</h2><p>使用<code>group_vars</code>文件夹，加入变量</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">路径、用户、uid、gid、域名/端口<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">路径、用户、uid、gid、域名&#x2F;端口</code></pre></div></figure>
 
 <p>添加变量文件：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts/roles-all/roles01<span class="token punctuation">]</span><span class="token comment">#cat group_vars/all/main.yml</span>
-nfs_share_dir: /backup-nfs-v3/
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01[ &#x2F;server&#x2F;scripts&#x2F;roles-all&#x2F;roles01]#cat group_vars&#x2F;all&#x2F;main.yml
+nfs_share_dir: &#x2F;backup-nfs-v3&#x2F;
 nfs_user: nfsnobody
-nfs_user_id: <span class="token number">65534</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+nfs_user_id: 65534</code></pre></div></figure>
 
 <p>下发文件</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts/roles-all/roles01<span class="token punctuation">]</span><span class="token comment">#cat nfs-server/templates/exports.j2</span>
-<span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span> nfs_share_dir <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span> <span class="token number">172.16</span>.1.0/24<span class="token punctuation">(</span>rw,all_squash,anonuid<span class="token operator">=</span><span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span>nfs_user_id<span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span>,anongid<span class="token operator">=</span><span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span>nfs_user_id<span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span><span class="token punctuation">)</span>
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01[ &#x2F;server&#x2F;scripts&#x2F;roles-all&#x2F;roles01]#cat nfs-server&#x2F;templates&#x2F;exports.j2
+&#123;&#123; nfs_share_dir &#125;&#125; 172.16.1.0&#x2F;24(rw,all_squash,anonuid&#x3D;&#123;&#123;nfs_user_id&#125;&#125;,anongid&#x3D;&#123;&#123;nfs_user_id&#125;&#125;)
+</code></pre></div></figure>
 
 <p>主任务文件（**<font color=red>注意调用需要双引号</font>**）</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts/roles-all/roles01<span class="token punctuation">]</span><span class="token comment">#cat nfs-server/tasks/main.yml</span>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01[ &#x2F;server&#x2F;scripts&#x2F;roles-all&#x2F;roles01]#cat nfs-server&#x2F;tasks&#x2F;main.yml
     - name: 01. 部署nfs-utils
       yum:
         name: nfs-utils,rpcbind
@@ -591,11 +591,11 @@ nfs_user_id: <span class="token number">65534</span><span aria-hidden="true" cla
       tags:
         - 01-install-nfs
     - name: 02. 修改配置文件
-      <span class="token comment"># 改动1，下发exports文件改用变量</span>
+      # 改动1，下发exports文件改用变量
       template:
         src: exports.j2
-        dest: /etc/exports
-        backup: <span class="token function">yes</span>
+        dest: &#x2F;etc&#x2F;exports
+        backup: yes
       tags:
         - 02-conf
       notify:
@@ -603,17 +603,17 @@ nfs_user_id: <span class="token number">65534</span><span aria-hidden="true" cla
 
     - name: 03. 共享目录
       file:
-        <span class="token comment"># 改动2, 共享目录改用变量</span>
-        path: <span class="token string">"&#123;&#123; nfs_share_dir &#125;&#125;"</span>
-        owner: <span class="token string">"&#123;&#123; nfs_user &#125;&#125;"</span>
-        group: <span class="token string">"&#123;&#123; nfs_user &#125;&#125;"</span>
+        # 改动2, 共享目录改用变量
+        path: &quot;&#123;&#123; nfs_share_dir &#125;&#125;&quot;
+        owner: &quot;&#123;&#123; nfs_user &#125;&#125;&quot;
+        group: &quot;&#123;&#123; nfs_user &#125;&#125;&quot;
         state: directory
       tags:
          - 03-mkdir
     - name: 04. 启动服务 rpc nfs
       systemd:
-        name: <span class="token string">"&#123;&#123; item &#125;&#125;"</span>
-        enabled: <span class="token function">yes</span>
+        name: &quot;&#123;&#123; item &#125;&#125;&quot;
+        enabled: yes
         state: started
       loop:
         - rpcbind
@@ -623,131 +623,131 @@ nfs_user_id: <span class="token number">65534</span><span aria-hidden="true" cla
     - name: 05 分发motd
       template:
         src: motd.j2
-        dest: /etc/motd
-        backup: <span class="token function">yes</span>
+        dest: &#x2F;etc&#x2F;motd
+        backup: yes
       tags:
-        - 05-motd<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+        - 05-motd</code></pre></div></figure>
 
 <p>执行：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts/roles-all/roles01<span class="token punctuation">]</span><span class="token comment">#ansible-playbook -i hosts top.yml</span>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01[ &#x2F;server&#x2F;scripts&#x2F;roles-all&#x2F;roles01]#ansible-playbook -i hosts top.yml
  _________________
-<span class="token operator">&lt;</span> PLAY <span class="token punctuation">[</span>backup01<span class="token punctuation">]</span> <span class="token operator">></span>
+&lt; PLAY [backup01] &gt;
  -----------------
-        <span class="token punctuation">\</span>   ^__^
-         <span class="token punctuation">\</span>  <span class="token punctuation">(</span>oo<span class="token punctuation">)</span><span class="token punctuation">\</span>_______
-            <span class="token punctuation">(</span>__<span class="token punctuation">)</span><span class="token punctuation">\</span>       <span class="token punctuation">)</span><span class="token punctuation">\</span>/<span class="token punctuation">\</span>
-                <span class="token operator">||</span>----w <span class="token operator">|</span>
-                <span class="token operator">||</span>     <span class="token operator">||</span>
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\&#x2F;\
+                ||----w |
+                ||     ||
 
  ________________________
-<span class="token operator">&lt;</span> TASK <span class="token punctuation">[</span>Gathering Facts<span class="token punctuation">]</span> <span class="token operator">></span>
+&lt; TASK [Gathering Facts] &gt;
  ------------------------
-        <span class="token punctuation">\</span>   ^__^
-         <span class="token punctuation">\</span>  <span class="token punctuation">(</span>oo<span class="token punctuation">)</span><span class="token punctuation">\</span>_______
-            <span class="token punctuation">(</span>__<span class="token punctuation">)</span><span class="token punctuation">\</span>       <span class="token punctuation">)</span><span class="token punctuation">\</span>/<span class="token punctuation">\</span>
-                <span class="token operator">||</span>----w <span class="token operator">|</span>
-                <span class="token operator">||</span>     <span class="token operator">||</span>
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\&#x2F;\
+                ||----w |
+                ||     ||
 
-ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span>
+ok: [172.16.1.41]
  _____________________________________
-<span class="token operator">&lt;</span> TASK <span class="token punctuation">[</span>nfs-server <span class="token builtin class-name">:</span> 01. 部署nfs-utils<span class="token punctuation">]</span> <span class="token operator">></span>
+&lt; TASK [nfs-server : 01. 部署nfs-utils] &gt;
  -------------------------------------
-        <span class="token punctuation">\</span>   ^__^
-         <span class="token punctuation">\</span>  <span class="token punctuation">(</span>oo<span class="token punctuation">)</span><span class="token punctuation">\</span>_______
-            <span class="token punctuation">(</span>__<span class="token punctuation">)</span><span class="token punctuation">\</span>       <span class="token punctuation">)</span><span class="token punctuation">\</span>/<span class="token punctuation">\</span>
-                <span class="token operator">||</span>----w <span class="token operator">|</span>
-                <span class="token operator">||</span>     <span class="token operator">||</span>
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\&#x2F;\
+                ||----w |
+                ||     ||
 
-ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span>
+ok: [172.16.1.41]
  ________________________________
-<span class="token operator">&lt;</span> TASK <span class="token punctuation">[</span>nfs-server <span class="token builtin class-name">:</span> 02. 修改配置文件<span class="token punctuation">]</span> <span class="token operator">></span>
+&lt; TASK [nfs-server : 02. 修改配置文件] &gt;
  --------------------------------
-        <span class="token punctuation">\</span>   ^__^
-         <span class="token punctuation">\</span>  <span class="token punctuation">(</span>oo<span class="token punctuation">)</span><span class="token punctuation">\</span>_______
-            <span class="token punctuation">(</span>__<span class="token punctuation">)</span><span class="token punctuation">\</span>       <span class="token punctuation">)</span><span class="token punctuation">\</span>/<span class="token punctuation">\</span>
-                <span class="token operator">||</span>----w <span class="token operator">|</span>
-                <span class="token operator">||</span>     <span class="token operator">||</span>
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\&#x2F;\
+                ||----w |
+                ||     ||
 
-changed: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span>
+changed: [172.16.1.41]
  ______________________________
-<span class="token operator">&lt;</span> TASK <span class="token punctuation">[</span>nfs-server <span class="token builtin class-name">:</span> 03. 共享目录<span class="token punctuation">]</span> <span class="token operator">></span>
+&lt; TASK [nfs-server : 03. 共享目录] &gt;
  ------------------------------
-        <span class="token punctuation">\</span>   ^__^
-         <span class="token punctuation">\</span>  <span class="token punctuation">(</span>oo<span class="token punctuation">)</span><span class="token punctuation">\</span>_______
-            <span class="token punctuation">(</span>__<span class="token punctuation">)</span><span class="token punctuation">\</span>       <span class="token punctuation">)</span><span class="token punctuation">\</span>/<span class="token punctuation">\</span>
-                <span class="token operator">||</span>----w <span class="token operator">|</span>
-                <span class="token operator">||</span>     <span class="token operator">||</span>
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\&#x2F;\
+                ||----w |
+                ||     ||
 
-ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span>
+ok: [172.16.1.41]
  ______________________________________
-<span class="token operator">&lt;</span> TASK <span class="token punctuation">[</span>nfs-server <span class="token builtin class-name">:</span> 04. 启动服务 rpc nfs<span class="token punctuation">]</span> <span class="token operator">></span>
+&lt; TASK [nfs-server : 04. 启动服务 rpc nfs] &gt;
  --------------------------------------
-        <span class="token punctuation">\</span>   ^__^
-         <span class="token punctuation">\</span>  <span class="token punctuation">(</span>oo<span class="token punctuation">)</span><span class="token punctuation">\</span>_______
-            <span class="token punctuation">(</span>__<span class="token punctuation">)</span><span class="token punctuation">\</span>       <span class="token punctuation">)</span><span class="token punctuation">\</span>/<span class="token punctuation">\</span>
-                <span class="token operator">||</span>----w <span class="token operator">|</span>
-                <span class="token operator">||</span>     <span class="token operator">||</span>
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\&#x2F;\
+                ||----w |
+                ||     ||
 
-ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">(</span>item<span class="token operator">=</span>rpcbind<span class="token punctuation">)</span>
-ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span> <span class="token operator">=</span><span class="token operator">></span> <span class="token punctuation">(</span>item<span class="token operator">=</span>nfs<span class="token punctuation">)</span>
+ok: [172.16.1.41] &#x3D;&gt; (item&#x3D;rpcbind)
+ok: [172.16.1.41] &#x3D;&gt; (item&#x3D;nfs)
  _______________________________
-<span class="token operator">&lt;</span> TASK <span class="token punctuation">[</span>nfs-server <span class="token builtin class-name">:</span> 05 分发motd<span class="token punctuation">]</span> <span class="token operator">></span>
+&lt; TASK [nfs-server : 05 分发motd] &gt;
  -------------------------------
-        <span class="token punctuation">\</span>   ^__^
-         <span class="token punctuation">\</span>  <span class="token punctuation">(</span>oo<span class="token punctuation">)</span><span class="token punctuation">\</span>_______
-            <span class="token punctuation">(</span>__<span class="token punctuation">)</span><span class="token punctuation">\</span>       <span class="token punctuation">)</span><span class="token punctuation">\</span>/<span class="token punctuation">\</span>
-                <span class="token operator">||</span>----w <span class="token operator">|</span>
-                <span class="token operator">||</span>     <span class="token operator">||</span>
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\&#x2F;\
+                ||----w |
+                ||     ||
 
-ok: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span>
+ok: [172.16.1.41]
  ___________________________________________________
-<span class="token operator">&lt;</span> RUNNING HANDLER <span class="token punctuation">[</span>nfs-server <span class="token builtin class-name">:</span> restart nfs server<span class="token punctuation">]</span> <span class="token operator">></span>
+&lt; RUNNING HANDLER [nfs-server : restart nfs server] &gt;
  ---------------------------------------------------
-        <span class="token punctuation">\</span>   ^__^
-         <span class="token punctuation">\</span>  <span class="token punctuation">(</span>oo<span class="token punctuation">)</span><span class="token punctuation">\</span>_______
-            <span class="token punctuation">(</span>__<span class="token punctuation">)</span><span class="token punctuation">\</span>       <span class="token punctuation">)</span><span class="token punctuation">\</span>/<span class="token punctuation">\</span>
-                <span class="token operator">||</span>----w <span class="token operator">|</span>
-                <span class="token operator">||</span>     <span class="token operator">||</span>
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\&#x2F;\
+                ||----w |
+                ||     ||
 
-changed: <span class="token punctuation">[</span><span class="token number">172.16</span>.1.41<span class="token punctuation">]</span>
+changed: [172.16.1.41]
  ____________
-<span class="token operator">&lt;</span> PLAY RECAP <span class="token operator">></span>
+&lt; PLAY RECAP &gt;
  ------------
-        <span class="token punctuation">\</span>   ^__^
-         <span class="token punctuation">\</span>  <span class="token punctuation">(</span>oo<span class="token punctuation">)</span><span class="token punctuation">\</span>_______
-            <span class="token punctuation">(</span>__<span class="token punctuation">)</span><span class="token punctuation">\</span>       <span class="token punctuation">)</span><span class="token punctuation">\</span>/<span class="token punctuation">\</span>
-                <span class="token operator">||</span>----w <span class="token operator">|</span>
-                <span class="token operator">||</span>     <span class="token operator">||</span>
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\&#x2F;\
+                ||----w |
+                ||     ||
 
-<span class="token number">172.16</span>.1.41                <span class="token builtin class-name">:</span> <span class="token assign-left variable">ok</span><span class="token operator">=</span><span class="token number">7</span>    <span class="token assign-left variable">changed</span><span class="token operator">=</span><span class="token number">2</span>    <span class="token assign-left variable">unreachable</span><span class="token operator">=</span><span class="token number">0</span>    <span class="token assign-left variable">failed</span><span class="token operator">=</span><span class="token number">0</span>    <span class="token assign-left variable">skipped</span><span class="token operator">=</span><span class="token number">0</span>    <span class="token assign-left variable">rescued</span><span class="token operator">=</span><span class="token number">0</span>    <span class="token assign-left variable">ignored</span><span class="token operator">=</span><span class="token number">0</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+172.16.1.41                : ok&#x3D;7    changed&#x3D;2    unreachable&#x3D;0    failed&#x3D;0    skipped&#x3D;0    rescued&#x3D;0    ignored&#x3D;0</code></pre></div></figure>
 
 
 
 <h1 id="三、Ansible文件加密-Vault"><a href="#三、Ansible文件加密-Vault" class="headerlink" title="三、Ansible文件加密-Vault"></a>三、Ansible文件加密-Vault</h1><p>使用方法如下：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#进行加密</span>
-ansible-vault encrypt 文件<span class="token comment">#enable</span>
-<span class="token comment">#进行使用</span>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">#进行加密
+ansible-vault encrypt 文件#enable
+#进行使用
 ansible或ansible-playbook --ask-vault-pass 即可
-<span class="token comment">#彻底解密</span>
-ansible-vault decrypt hosts<span class="token comment">#</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+#彻底解密
+ansible-vault decrypt hosts#</code></pre></div></figure>
 
 <p>如果加密后是不能查看内容和执行的</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts/roles-all/roles01<span class="token punctuation">]</span><span class="token comment">#ansible-playbook top.yml</span>
-ERROR<span class="token operator">!</span> Attempting to decrypt but no vault secrets found
-<span class="token punctuation">[</span>root@mn01<span class="token punctuation">[</span> /server/scripts/roles-all/roles01<span class="token punctuation">]</span><span class="token comment">#cat top.yml</span>
-<span class="token variable">$ANSIBLE_VAULT</span><span class="token punctuation">;</span><span class="token number">1.1</span><span class="token punctuation">;</span>AES256
-<span class="token number">38323232336535376538333039623035306130393831336563633134656661303166336434303231</span>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01[ &#x2F;server&#x2F;scripts&#x2F;roles-all&#x2F;roles01]#ansible-playbook top.yml
+ERROR! Attempting to decrypt but no vault secrets found
+[root@mn01[ &#x2F;server&#x2F;scripts&#x2F;roles-all&#x2F;roles01]#cat top.yml
+$ANSIBLE_VAULT;1.1;AES256
+38323232336535376538333039623035306130393831336563633134656661303166336434303231
 3166623337343664653963646664326566303663653762620a353936373566316436613837313534
-<span class="token number">64343932663833343364326137316633626437303130366663666263616366303361666433393330</span>
+64343932663833343364326137316633626437303130366663666263616366303361666433393330
 3438343536306431300a636331333662386364626362636537303164623865353139613333346261
-<span class="token number">63313066396361623839333461623365626136353434313663316564333735613037656437353136</span>
-<span class="token number">31383531613666613038353365636231326637333036626131316263366439643266643735393634</span>
-<span class="token number">653233353234353535663538326538366138</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+63313066396361623839333461623365626136353434313663316564333735613037656437353136
+31383531613666613038353365636231326637333036626131316263366439643266643735393634
+653233353234353535663538326538366138</code></pre></div></figure>
 
 
 
 <h1 id="四、Glaxy-别人的Roles"><a href="#四、Glaxy-别人的Roles" class="headerlink" title="四、Glaxy-别人的Roles"></a>四、Glaxy-别人的Roles</h1><p>可以从Glaxy网站下载别人做好的Roles，并安装</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-she" data-language="she"><code class="language-she">ansible-galaxy collection install nginxinc.nginx_core<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></div></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-she" data-language="she"><code class="language-she">ansible-galaxy collection install nginxinc.nginx_core</code></pre></div></figure>
 
 
 
@@ -755,36 +755,36 @@ ERROR<span class="token operator">!</span> Attempting to decrypt but no vault se
 <p><img src="/../../../img/image-20240506221240923.png" srcset="/img/loading.gif" lazyload alt="image-20240506221240923"></p>
 <p>其中安全–配置sudo的方法：</p>
 <figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">管理端:
-<span class="token punctuation">[</span>root@m01 /server/scripts/playbook<span class="token punctuation">]</span><span class="token comment"># egrep -v '^$|#' /etc/ansible/ansible.cfg</span>
-<span class="token punctuation">[</span>defaults<span class="token punctuation">]</span>
-sudo_user <span class="token operator">=</span> ans Վˁ被管理端上具有sudo权限的用户
+[root@m01 &#x2F;server&#x2F;scripts&#x2F;playbook]# egrep -v &#39;^$|#&#39; &#x2F;etc&#x2F;ansible&#x2F;ansible.cfg
+[defaults]
+sudo_user &#x3D; ans Վˁ被管理端上具有sudo权限的用户
 nopasswd: ALL
-remote_user <span class="token operator">=</span> ans Վˁ被管理端使用的用户,不指定默认是当
-前用户/root
-remote_port <span class="token operator">=</span> <span class="token number">22</span> Վˁ被管理端ssh端口号
-host_key_checking <span class="token operator">=</span> False
-log_path <span class="token operator">=</span> /var/log/ansible.log
-<span class="token punctuation">[</span>inventory<span class="token punctuation">]</span>
-<span class="token punctuation">[</span>privilege_escalation<span class="token punctuation">]</span>
-<span class="token assign-left variable">become</span><span class="token operator">=</span>True Վˁ开启sudo功能
-<span class="token assign-left variable">become_method</span><span class="token operator">=</span>sudo Վˁ使用sudo命令
-<span class="token assign-left variable">become_user</span><span class="token operator">=</span>root Վˁ普通用户切换为root
-<span class="token punctuation">[</span>paramiko_connection<span class="token punctuation">]</span>
-<span class="token punctuation">[</span>ssh_connection<span class="token punctuation">]</span>
-<span class="token punctuation">[</span>persistent_connection<span class="token punctuation">]</span>
-<span class="token punctuation">[</span>accelerate<span class="token punctuation">]</span>
-<span class="token punctuation">[</span>selinux<span class="token punctuation">]</span>
-<span class="token punctuation">[</span>colors<span class="token punctuation">]</span>
-<span class="token punctuation">[</span>diff<span class="token punctuation">]</span>
+remote_user &#x3D; ans Վˁ被管理端使用的用户,不指定默认是当
+前用户&#x2F;root
+remote_port &#x3D; 22 Վˁ被管理端ssh端口号
+host_key_checking &#x3D; False
+log_path &#x3D; &#x2F;var&#x2F;log&#x2F;ansible.log
+[inventory]
+[privilege_escalation]
+become&#x3D;True Վˁ开启sudo功能
+become_method&#x3D;sudo Վˁ使用sudo命令
+become_user&#x3D;root Վˁ普通用户切换为root
+[paramiko_connection]
+[ssh_connection]
+[persistent_connection]
+[accelerate]
+[selinux]
+[colors]
+[diff]
 
-<span class="token comment"># 被管理端:</span>
-ans <span class="token assign-left variable">ALL</span><span class="token operator">=</span><span class="token punctuation">(</span>ALL<span class="token punctuation">)</span> NOPASSWD: ALL` 密码是1,ssh端口是 <span class="token number">22</span>
+# 被管理端:
+ans ALL&#x3D;(ALL) NOPASSWD: ALL&#96; 密码是1,ssh端口是 22
 
-<span class="token comment"># 重新分发密钥给ans普通用户.</span>
+# 重新分发密钥给ans普通用户.
 ssh-copy-id ans@10.0.0.7
 
-<span class="token comment"># 测试</span>
-ansible <span class="token parameter variable">-i</span> hosts web <span class="token parameter variable">-m</span> <span class="token function">ping</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+# 测试
+ansible -i hosts web -m ping</code></pre></div></figure>
 
 
 
@@ -1073,6 +1073,10 @@ ansible <span class="token parameter variable">-i</span> hosts web <span class="
   });
 </script>
 
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/components/prism-core.min.js" ></script>
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js" ></script>
 
   <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
 

@@ -226,7 +226,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.7k 字
+          2k 字
         
       </span>
     
@@ -237,7 +237,7 @@
         
         
         
-          15 分钟
+          17 分钟
         
       </span>
     
@@ -354,182 +354,182 @@
 </tr>
 </tbody></table>
 <p><img src="/img/sersync%E6%B5%81%E7%A8%8B-1628145534424.png" srcset="/img/loading.gif" lazyload alt="sersync流程"></p>
-<h3 id="1-web上传视频至nfs存储"><a href="#1-web上传视频至nfs存储" class="headerlink" title="1 web上传视频至nfs存储"></a>1 web上传视频至nfs存储</h3><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">nfs存储服务  <span class="token number">172.16</span>.1.31
-	<span class="token number">1</span>.安装
-		<span class="token punctuation">[</span>root@nfs ~<span class="token punctuation">]</span><span class="token comment"># yum install nfs-utils -y</span>
-	<span class="token number">2</span>.配置
-		<span class="token punctuation">[</span>root@nfs ~<span class="token punctuation">]</span><span class="token comment"># cat /etc/exports</span>
-		/data <span class="token number">172.16</span>.1.0/24<span class="token punctuation">(</span>rw,sync,all_squash,anonuid<span class="token operator">=</span><span class="token number">666</span>,anongid<span class="token operator">=</span><span class="token number">666</span><span class="token punctuation">)</span>
+<h3 id="1-web上传视频至nfs存储"><a href="#1-web上传视频至nfs存储" class="headerlink" title="1 web上传视频至nfs存储"></a>1 web上传视频至nfs存储</h3><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">nfs存储服务  172.16.1.31
+	1.安装
+		[root@nfs ~]# yum install nfs-utils -y
+	2.配置
+		[root@nfs ~]# cat &#x2F;etc&#x2F;exports
+		&#x2F;data 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
 		
-		<span class="token punctuation">[</span>root@nfs ~<span class="token punctuation">]</span><span class="token comment"># groupadd -g666 www</span>
-		<span class="token punctuation">[</span>root@nfs ~<span class="token punctuation">]</span><span class="token comment"># useradd -u666 -g666 www</span>
+		[root@nfs ~]# groupadd -g666 www
+		[root@nfs ~]# useradd -u666 -g666 www
 		
-		<span class="token punctuation">[</span>root@nfs ~<span class="token punctuation">]</span><span class="token comment"># mkdir /data</span>
-		<span class="token punctuation">[</span>root@nfs ~<span class="token punctuation">]</span><span class="token comment"># chown -R www.www /data</span>
+		[root@nfs ~]# mkdir &#x2F;data
+		[root@nfs ~]# chown -R www.www &#x2F;data
 		
-	<span class="token number">3</span>.启动
-		<span class="token punctuation">[</span>root@nfs ~<span class="token punctuation">]</span><span class="token comment"># systemctl restart nfs-server</span>
-		<span class="token punctuation">[</span>root@nfs ~<span class="token punctuation">]</span><span class="token comment"># sysytemctl enable nfs-server</span>
+	3.启动
+		[root@nfs ~]# systemctl restart nfs-server
+		[root@nfs ~]# sysytemctl enable nfs-server
 		
 web服务器操作：172.16.1.7
-	<span class="token number">1</span>.安装
-		<span class="token punctuation">[</span>root@web01 ~<span class="token punctuation">]</span><span class="token comment"># yum install httpd php -y</span>
-	<span class="token number">2</span>.配置
+	1.安装
+		[root@web01 ~]# yum install httpd php -y
+	2.配置
 		进程运行的身份（最好是和nfs的匿名用户保持一致）
-			<span class="token comment"># sed c 匹配到User开头的字段，替换为User www</span>
-			<span class="token punctuation">[</span>root@web01 html<span class="token punctuation">]</span><span class="token comment"># sed -i '/^User/c User www' /etc/httpd/conf/httpd.conf 	</span>
-			<span class="token punctuation">[</span>root@web01 html<span class="token punctuation">]</span><span class="token comment"># sed -i '/^Group/c Group www' /etc/httpd/conf/httpd.conf</span>
+			# sed c 匹配到User开头的字段，替换为User www
+			[root@web01 html]# sed -i &#39;&#x2F;^User&#x2F;c User www&#39; &#x2F;etc&#x2F;httpd&#x2F;conf&#x2F;httpd.conf 	
+			[root@web01 html]# sed -i &#39;&#x2F;^Group&#x2F;c Group www&#39; &#x2F;etc&#x2F;httpd&#x2F;conf&#x2F;httpd.conf
 		挂载
-			<span class="token punctuation">[</span>root@web01 ~<span class="token punctuation">]</span><span class="token comment"># mount -t nfs 172.16.1.31:/data /var/www/html		#核心</span>
+			[root@web01 ~]# mount -t nfs 172.16.1.31:&#x2F;data &#x2F;var&#x2F;www&#x2F;html		#核心
 		上传代码
-			<span class="token punctuation">[</span>root@web01 ~<span class="token punctuation">]</span><span class="token comment"># cd /var/www/html/</span>
-			<span class="token punctuation">[</span>root@web01 html<span class="token punctuation">]</span><span class="token comment"># rz kaoshi.zip</span>
-			<span class="token punctuation">[</span>root@web01 html<span class="token punctuation">]</span><span class="token comment"># unzip kaoshi.zip</span>
-	<span class="token number">3</span>.启动
-		<span class="token punctuation">[</span>root@web01 ~<span class="token punctuation">]</span><span class="token comment"># systemctl start httpd</span>
+			[root@web01 ~]# cd &#x2F;var&#x2F;www&#x2F;html&#x2F;
+			[root@web01 html]# rz kaoshi.zip
+			[root@web01 html]# unzip kaoshi.zip
+	3.启动
+		[root@web01 ~]# systemctl start httpd
 
-	<span class="token number">4</span>.修改上传大小
-		<span class="token punctuation">[</span>root@web01 ~<span class="token punctuation">]</span><span class="token comment"># vim /etc/php.ini中设置：</span>
-		upload_max_filesize <span class="token operator">=</span> 200M<span class="token punctuation">;</span>
-		post_max_size <span class="token operator">=</span> 200M<span class="token punctuation">;</span>
+	4.修改上传大小
+		[root@web01 ~]# vim &#x2F;etc&#x2F;php.ini中设置：
+		upload_max_filesize &#x3D; 200M;
+		post_max_size &#x3D; 200M;
 	
-	<span class="token number">5</span>.注意: 修改完配置记得重启服务
-	<span class="token punctuation">[</span>root@web01 ~<span class="token punctuation">]</span><span class="token comment">#  systemctl restart httpd</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+	5.注意: 修改完配置记得重启服务
+	[root@web01 ~]#  systemctl restart httpd</code></pre></div></figure>
 
 <h3 id="2-web和nfs的数据都备份在备份服务器的-backup"><a href="#2-web和nfs的数据都备份在备份服务器的-backup" class="headerlink" title="2 web和nfs的数据都备份在备份服务器的&#x2F;backup"></a>2 web和nfs的数据都备份在备份服务器的&#x2F;backup</h3><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">备份服务器操作如下：172.16.1.41
-	<span class="token number">1</span>.安装
-		<span class="token punctuation">[</span>root@backup ~<span class="token punctuation">]</span><span class="token comment"># yum install rsync -y</span>
-	<span class="token number">2</span>.配置
-		<span class="token punctuation">[</span>root@backup ~<span class="token punctuation">]</span><span class="token comment"># cat /etc/rsyncd.conf</span>
-		uid <span class="token operator">=</span> www
-		gid <span class="token operator">=</span> www
-		port <span class="token operator">=</span> <span class="token number">873</span>
-		fake super <span class="token operator">=</span> <span class="token function">yes</span>
-		use <span class="token function">chroot</span> <span class="token operator">=</span> no
-		max connections <span class="token operator">=</span> <span class="token number">200</span>
-		<span class="token function">timeout</span> <span class="token operator">=</span> <span class="token number">600</span>
+	1.安装
+		[root@backup ~]# yum install rsync -y
+	2.配置
+		[root@backup ~]# cat &#x2F;etc&#x2F;rsyncd.conf
+		uid &#x3D; www
+		gid &#x3D; www
+		port &#x3D; 873
+		fake super &#x3D; yes
+		use chroot &#x3D; no
+		max connections &#x3D; 200
+		timeout &#x3D; 600
 		ignore errors
-		<span class="token builtin class-name">read</span> only <span class="token operator">=</span> <span class="token boolean">false</span>
-		list <span class="token operator">=</span> <span class="token boolean">true</span>
-		auth <span class="token function">users</span> <span class="token operator">=</span> rsync_backup
-		secrets <span class="token function">file</span> <span class="token operator">=</span> /etc/rsync.passwd
-		log <span class="token function">file</span> <span class="token operator">=</span> /var/log/rsyncd.log
-		<span class="token comment">#####################################</span>
-		<span class="token punctuation">[</span>backup<span class="token punctuation">]</span>
-		path <span class="token operator">=</span> /backup
+		read only &#x3D; false
+		list &#x3D; true
+		auth users &#x3D; rsync_backup
+		secrets file &#x3D; &#x2F;etc&#x2F;rsync.passwd
+		log file &#x3D; &#x2F;var&#x2F;log&#x2F;rsyncd.log
+		#####################################
+		[backup]
+		path &#x3D; &#x2F;backup
 		
-		<span class="token punctuation">[</span>data<span class="token punctuation">]</span>
-		path <span class="token operator">=</span> /data
+		[data]
+		path &#x3D; &#x2F;data
 		
 		创建用户
-			<span class="token punctuation">[</span>root@backup ~<span class="token punctuation">]</span><span class="token comment"># groupadd -g666 www</span>
-			<span class="token punctuation">[</span>root@backup ~<span class="token punctuation">]</span><span class="token comment"># useradd -u666 -g666 www</span>
+			[root@backup ~]# groupadd -g666 www
+			[root@backup ~]# useradd -u666 -g666 www
 		
 		准备虚拟连接用户账号和密码
-		<span class="token punctuation">[</span>root@backup ~<span class="token punctuation">]</span><span class="token comment"># cat /etc/rsync.passwd </span>
+		[root@backup ~]# cat &#x2F;etc&#x2F;rsync.passwd 
 		rsync_backup:123456
-		<span class="token punctuation">[</span>root@backup ~<span class="token punctuation">]</span><span class="token comment"># chmod 600 /etc/rsync.passwd</span>
+		[root@backup ~]# chmod 600 &#x2F;etc&#x2F;rsync.passwd
 		
 		创建数据存放的目录
-		<span class="token punctuation">[</span>root@backup ~<span class="token punctuation">]</span><span class="token comment"># mkdir -p /data /backup</span>
-		<span class="token punctuation">[</span>root@backup ~<span class="token punctuation">]</span><span class="token comment"># chown -R www.www /data/ /backup/</span>
+		[root@backup ~]# mkdir -p &#x2F;data &#x2F;backup
+		[root@backup ~]# chown -R www.www &#x2F;data&#x2F; &#x2F;backup&#x2F;
 
-	<span class="token number">3</span>.启动
-		<span class="token punctuation">[</span>root@backup ~<span class="token punctuation">]</span><span class="token comment"># systemctl restart rsyncd</span>
+	3.启动
+		[root@backup ~]# systemctl restart rsyncd
 
-	<span class="token number">4</span>.客户端执行脚本。测试rsync的备份是否ok   （客户端的数据都写入到/backup目录中） <span class="token number">172.16</span>.1.7 <span class="token number">172.16</span>.1.31
-	<span class="token punctuation">[</span>root@web01 ~<span class="token punctuation">]</span><span class="token comment"># sh /server/scripts/client_push_data.sh </span>
-	sending incremental <span class="token function">file</span> list
-	web01_172.16.1.7_2019-01-08/
-	web01_172.16.1.7_2019-01-08/flag_2019-01-08
-	web01_172.16.1.7_2019-01-08/other.tar.gz
-	web01_172.16.1.7_2019-01-08/sys.tar.gz<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+	4.客户端执行脚本。测试rsync的备份是否ok   （客户端的数据都写入到&#x2F;backup目录中） 172.16.1.7 172.16.1.31
+	[root@web01 ~]# sh &#x2F;server&#x2F;scripts&#x2F;client_push_data.sh 
+	sending incremental file list
+	web01_172.16.1.7_2019-01-08&#x2F;
+	web01_172.16.1.7_2019-01-08&#x2F;flag_2019-01-08
+	web01_172.16.1.7_2019-01-08&#x2F;other.tar.gz
+	web01_172.16.1.7_2019-01-08&#x2F;sys.tar.gz</code></pre></div></figure>
 
-<h3 id="3-如何将nfs的数据实时的同步到备份服务器的-data目录"><a href="#3-如何将nfs的数据实时的同步到备份服务器的-data目录" class="headerlink" title="3 如何将nfs的数据实时的同步到备份服务器的&#x2F;data目录"></a>3 如何将nfs的数据实时的同步到备份服务器的&#x2F;data目录</h3><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">监控nfs服务器上面的/data目录，如果发生变化则触发动作，动作可以是执行一次同步。
-<span class="token number">1</span>.安装
-	<span class="token punctuation">[</span>root@nfs ~<span class="token punctuation">]</span><span class="token comment"># yum install inotify-tools		监控工具</span>
+<h3 id="3-如何将nfs的数据实时的同步到备份服务器的-data目录"><a href="#3-如何将nfs的数据实时的同步到备份服务器的-data目录" class="headerlink" title="3 如何将nfs的数据实时的同步到备份服务器的&#x2F;data目录"></a>3 如何将nfs的数据实时的同步到备份服务器的&#x2F;data目录</h3><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">监控nfs服务器上面的&#x2F;data目录，如果发生变化则触发动作，动作可以是执行一次同步。
+1.安装
+	[root@nfs ~]# yum install inotify-tools		监控工具
 	
-	<span class="token punctuation">[</span>root@nfs ~<span class="token punctuation">]</span><span class="token comment"># rz -E sersync2.5.4_64bit_binary_stable_final.tar.gz	</span>
-	<span class="token punctuation">[</span>root@nfs ~<span class="token punctuation">]</span><span class="token comment"># tar xf sersync2.5.4_64bit_binary_stable_final.tar.gz</span>
-	<span class="token punctuation">[</span>root@nfs ~<span class="token punctuation">]</span><span class="token comment"># mv GNU-Linux-x86/ /usr/local/sersync</span>
-<span class="token number">2</span>.配置
-	<span class="token punctuation">[</span>root@nfs sersync<span class="token punctuation">]</span><span class="token comment"># diff confxml.xml confxml.xml.bak</span>
+	[root@nfs ~]# rz -E sersync2.5.4_64bit_binary_stable_final.tar.gz	
+	[root@nfs ~]# tar xf sersync2.5.4_64bit_binary_stable_final.tar.gz
+	[root@nfs ~]# mv GNU-Linux-x86&#x2F; &#x2F;usr&#x2F;local&#x2F;sersync
+2.配置
+	[root@nfs sersync]# diff confxml.xml confxml.xml.bak
        5c5
-       <span class="token operator">&lt;</span>     <span class="token operator">&lt;</span>fileSystem <span class="token assign-left variable">xfs</span><span class="token operator">=</span><span class="token string">"true"</span>/<span class="token operator">></span>
+       &lt;     &lt;fileSystem xfs&#x3D;&quot;true&quot;&#x2F;&gt;
        ---
-       <span class="token operator">></span>     <span class="token operator">&lt;</span>fileSystem <span class="token assign-left variable">xfs</span><span class="token operator">=</span><span class="token string">"false"</span>/<span class="token operator">></span>
+       &gt;     &lt;fileSystem xfs&#x3D;&quot;false&quot;&#x2F;&gt;
        15c15
-       <span class="token operator">&lt;</span>       <span class="token operator">&lt;</span>createFile <span class="token assign-left variable">start</span><span class="token operator">=</span><span class="token string">"true"</span>/<span class="token operator">></span>
+       &lt;       &lt;createFile start&#x3D;&quot;true&quot;&#x2F;&gt;
        ---
-       <span class="token operator">></span>       <span class="token operator">&lt;</span>createFile <span class="token assign-left variable">start</span><span class="token operator">=</span><span class="token string">"false"</span>/<span class="token operator">></span>
-       <span class="token number">19</span>,20c19,20
-       <span class="token operator">&lt;</span>       <span class="token operator">&lt;</span>attrib <span class="token assign-left variable">start</span><span class="token operator">=</span><span class="token string">"true"</span>/<span class="token operator">></span>
-       <span class="token operator">&lt;</span>       <span class="token operator">&lt;</span>modify <span class="token assign-left variable">start</span><span class="token operator">=</span><span class="token string">"true"</span>/<span class="token operator">></span>
+       &gt;       &lt;createFile start&#x3D;&quot;false&quot;&#x2F;&gt;
+       19,20c19,20
+       &lt;       &lt;attrib start&#x3D;&quot;true&quot;&#x2F;&gt;
+       &lt;       &lt;modify start&#x3D;&quot;true&quot;&#x2F;&gt;
        ---
-       <span class="token operator">></span>       <span class="token operator">&lt;</span>attrib <span class="token assign-left variable">start</span><span class="token operator">=</span><span class="token string">"false"</span>/<span class="token operator">></span>
-       <span class="token operator">></span>       <span class="token operator">&lt;</span>modify <span class="token assign-left variable">start</span><span class="token operator">=</span><span class="token string">"false"</span>/<span class="token operator">></span>
-       <span class="token number">24</span>,25c24,25
-       <span class="token operator">&lt;</span>       <span class="token operator">&lt;</span>localpath <span class="token assign-left variable">watch</span><span class="token operator">=</span><span class="token string">"/data"</span><span class="token operator">></span>
-       <span class="token operator">&lt;</span>           <span class="token operator">&lt;</span>remote <span class="token assign-left variable">ip</span><span class="token operator">=</span><span class="token string">"172.16.1.41"</span> <span class="token assign-left variable">name</span><span class="token operator">=</span><span class="token string">"data"</span>/<span class="token operator">></span>
+       &gt;       &lt;attrib start&#x3D;&quot;false&quot;&#x2F;&gt;
+       &gt;       &lt;modify start&#x3D;&quot;false&quot;&#x2F;&gt;
+       24,25c24,25
+       &lt;       &lt;localpath watch&#x3D;&quot;&#x2F;data&quot;&gt;
+       &lt;           &lt;remote ip&#x3D;&quot;172.16.1.41&quot; name&#x3D;&quot;data&quot;&#x2F;&gt;
        ---
-       <span class="token operator">></span>       <span class="token operator">&lt;</span>localpath <span class="token assign-left variable">watch</span><span class="token operator">=</span><span class="token string">"/opt/tongbu"</span><span class="token operator">></span>
-       <span class="token operator">></span>           <span class="token operator">&lt;</span>remote <span class="token assign-left variable">ip</span><span class="token operator">=</span><span class="token string">"127.0.0.1"</span> <span class="token assign-left variable">name</span><span class="token operator">=</span><span class="token string">"tongbu1"</span>/<span class="token operator">></span>
-       <span class="token number">30</span>,31c30,31
-       <span class="token operator">&lt;</span>           <span class="token operator">&lt;</span>commonParams <span class="token assign-left variable">params</span><span class="token operator">=</span><span class="token string">"-az"</span>/<span class="token operator">></span>
-       <span class="token operator">&lt;</span>           <span class="token operator">&lt;</span>auth <span class="token assign-left variable">start</span><span class="token operator">=</span><span class="token string">"true"</span> <span class="token assign-left variable">users</span><span class="token operator">=</span><span class="token string">"rsync_backup"</span> <span class="token assign-left variable">passwordfile</span><span class="token operator">=</span><span class="token string">"/etc/rsync.pass"</span>/<span class="token operator">></span>
+       &gt;       &lt;localpath watch&#x3D;&quot;&#x2F;opt&#x2F;tongbu&quot;&gt;
+       &gt;           &lt;remote ip&#x3D;&quot;127.0.0.1&quot; name&#x3D;&quot;tongbu1&quot;&#x2F;&gt;
+       30,31c30,31
+       &lt;           &lt;commonParams params&#x3D;&quot;-az&quot;&#x2F;&gt;
+       &lt;           &lt;auth start&#x3D;&quot;true&quot; users&#x3D;&quot;rsync_backup&quot; passwordfile&#x3D;&quot;&#x2F;etc&#x2F;rsync.pass&quot;&#x2F;&gt;
        ---
-       <span class="token operator">></span>           <span class="token operator">&lt;</span>commonParams <span class="token assign-left variable">params</span><span class="token operator">=</span><span class="token string">"-artuz"</span>/<span class="token operator">></span>
-       <span class="token operator">></span>           <span class="token operator">&lt;</span>auth <span class="token assign-left variable">start</span><span class="token operator">=</span><span class="token string">"false"</span> <span class="token assign-left variable">users</span><span class="token operator">=</span><span class="token string">"root"</span> <span class="token assign-left variable">passwordfile</span><span class="token operator">=</span><span class="token string">"/etc/rsync.pas"</span>/<span class="token operator">></span>
+       &gt;           &lt;commonParams params&#x3D;&quot;-artuz&quot;&#x2F;&gt;
+       &gt;           &lt;auth start&#x3D;&quot;false&quot; users&#x3D;&quot;root&quot; passwordfile&#x3D;&quot;&#x2F;etc&#x2F;rsync.pas&quot;&#x2F;&gt;
        33c33
-       <span class="token operator">&lt;</span>           <span class="token operator">&lt;</span>timeout <span class="token assign-left variable">start</span><span class="token operator">=</span><span class="token string">"true"</span> <span class="token assign-left variable">time</span><span class="token operator">=</span><span class="token string">"100"</span>/<span class="token operator">></span><span class="token operator">&lt;</span><span class="token operator">!</span>-- <span class="token assign-left variable">timeout</span><span class="token operator">=</span><span class="token number">100</span> --<span class="token operator">></span>
+       &lt;           &lt;timeout start&#x3D;&quot;true&quot; time&#x3D;&quot;100&quot;&#x2F;&gt;&lt;!-- timeout&#x3D;100 --&gt;
        ---
-       <span class="token operator">></span>           <span class="token operator">&lt;</span>timeout <span class="token assign-left variable">start</span><span class="token operator">=</span><span class="token string">"false"</span> <span class="token assign-left variable">time</span><span class="token operator">=</span><span class="token string">"100"</span>/<span class="token operator">></span><span class="token operator">&lt;</span><span class="token operator">!</span>-- <span class="token assign-left variable">timeout</span><span class="token operator">=</span><span class="token number">100</span> --<span class="token operator">></span>
+       &gt;           &lt;timeout start&#x3D;&quot;false&quot; time&#x3D;&quot;100&quot;&#x2F;&gt;&lt;!-- timeout&#x3D;100 --&gt;
 
 	创建客户端密码文件
-	<span class="token punctuation">[</span>root@nfs ~<span class="token punctuation">]</span><span class="token comment"># cat /etc/rsync.pass</span>
-	<span class="token number">123456</span>
-	<span class="token punctuation">[</span>root@nfs ~<span class="token punctuation">]</span><span class="token comment"># chmod 600 /etc/rsync.pass</span>
+	[root@nfs ~]# cat &#x2F;etc&#x2F;rsync.pass
+	123456
+	[root@nfs ~]# chmod 600 &#x2F;etc&#x2F;rsync.pass
 
-<span class="token number">3</span>.启动
-<span class="token punctuation">[</span>root@nfs ~<span class="token punctuation">]</span><span class="token comment"># /usr/local/sersync/sersync2  -h</span>
-<span class="token builtin class-name">set</span> the system param
-execute：echo <span class="token number">50000000</span> <span class="token operator">></span> /proc/sys/fs/inotify/max_user_watches
-execute：echo <span class="token number">327679</span> <span class="token operator">></span> /proc/sys/fs/inotify/max_queued_events
-parse the <span class="token builtin class-name">command</span> param
+3.启动
+[root@nfs ~]# &#x2F;usr&#x2F;local&#x2F;sersync&#x2F;sersync2  -h
+set the system param
+execute：echo 50000000 &gt; &#x2F;proc&#x2F;sys&#x2F;fs&#x2F;inotify&#x2F;max_user_watches
+execute：echo 327679 &gt; &#x2F;proc&#x2F;sys&#x2F;fs&#x2F;inotify&#x2F;max_queued_events
+parse the command param
 _______________________________________________________
 参数-d:启用守护进程模式
 参数-r:在监控前，将监控目录与远程主机用rsync命令推送一遍
 参数-n: 指定开启守护线程的数量，默认为10个
 参数-o:指定配置文件，默认使用confxml.xml文件
-参数-m:单独启用其他模块，使用 <span class="token parameter variable">-m</span> refreshCDN 开启刷新CDN模块
-参数-m:单独启用其他模块，使用 <span class="token parameter variable">-m</span> socket 开启socket模块
-参数-m:单独启用其他模块，使用 <span class="token parameter variable">-m</span> http 开启http模块
+参数-m:单独启用其他模块，使用 -m refreshCDN 开启刷新CDN模块
+参数-m:单独启用其他模块，使用 -m socket 开启socket模块
+参数-m:单独启用其他模块，使用 -m http 开启http模块
 不加-m参数，则默认执行同步程序
 
 启动
-<span class="token punctuation">[</span>root@nfs ~<span class="token punctuation">]</span><span class="token comment">#  /usr/local/sersync/sersync2 -dro /usr/local/sersync/confxml.xml</span>
+[root@nfs ~]#  &#x2F;usr&#x2F;local&#x2F;sersync&#x2F;sersync2 -dro &#x2F;usr&#x2F;local&#x2F;sersync&#x2F;confxml.xml
 
-<span class="token comment">#启动sersync后一定要提取同步的命令，手动运行一次，检查是否存在错误</span>
-<span class="token punctuation">[</span>root@nfs ~<span class="token punctuation">]</span><span class="token comment">#  cd /data &amp;&amp; rsync -az -R --delete ./  --timeout=100 rsync_backup@172.16.1.41::data --password-file=/etc/rsync.pass</span>
+#启动sersync后一定要提取同步的命令，手动运行一次，检查是否存在错误
+[root@nfs ~]#  cd &#x2F;data &amp;&amp; rsync -az -R --delete .&#x2F;  --timeout&#x3D;100 rsync_backup@172.16.1.41::data --password-file&#x3D;&#x2F;etc&#x2F;rsync.pass
 
 停止
-<span class="token punctuation">[</span>root@nfs data<span class="token punctuation">]</span><span class="token comment"># pkill sersync</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+[root@nfs data]# pkill sersync</code></pre></div></figure>
 
-<h3 id="4-如何平滑的迁移nfs数据到backup服务器。并且让后续的上传都是上传至backup-（不能出现业务中断）"><a href="#4-如何平滑的迁移nfs数据到backup服务器。并且让后续的上传都是上传至backup-（不能出现业务中断）" class="headerlink" title="4 如何平滑的迁移nfs数据到backup服务器。并且让后续的上传都是上传至backup   （不能出现业务中断）"></a>4 如何平滑的迁移nfs数据到backup服务器。并且让后续的上传都是上传至backup   （不能出现业务中断）</h3><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token number">1</span>.backup服务器上需要运行和nfs服务器上一样的业务环境 
+<h3 id="4-如何平滑的迁移nfs数据到backup服务器。并且让后续的上传都是上传至backup-（不能出现业务中断）"><a href="#4-如何平滑的迁移nfs数据到backup服务器。并且让后续的上传都是上传至backup-（不能出现业务中断）" class="headerlink" title="4 如何平滑的迁移nfs数据到backup服务器。并且让后续的上传都是上传至backup   （不能出现业务中断）"></a>4 如何平滑的迁移nfs数据到backup服务器。并且让后续的上传都是上传至backup   （不能出现业务中断）</h3><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">1.backup服务器上需要运行和nfs服务器上一样的业务环境 
 	创建用户
-	<span class="token punctuation">[</span>root@backup ~<span class="token punctuation">]</span><span class="token comment"># groupadd -g 666 www</span>
-	<span class="token punctuation">[</span>root@backup ~<span class="token punctuation">]</span><span class="token comment"># useradd -u666 -g666 www</span>
+	[root@backup ~]# groupadd -g 666 www
+	[root@backup ~]# useradd -u666 -g666 www
 	配置
-	<span class="token punctuation">[</span>root@backup ~<span class="token punctuation">]</span><span class="token comment"># yum install -y nfs-utils -y</span>
-	<span class="token punctuation">[</span>root@backup ~<span class="token punctuation">]</span><span class="token comment"># cat /etc/exports</span>
-	/data <span class="token number">172.16</span>.1.0/24<span class="token punctuation">(</span>rw,sync,all_squash,anonuid<span class="token operator">=</span><span class="token number">666</span>,anongid<span class="token operator">=</span><span class="token number">666</span><span class="token punctuation">)</span>
+	[root@backup ~]# yum install -y nfs-utils -y
+	[root@backup ~]# cat &#x2F;etc&#x2F;exports
+	&#x2F;data 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
 	启动
-	<span class="token punctuation">[</span>root@backup ~<span class="token punctuation">]</span><span class="token comment"># systemctl restart nfs-server</span>
+	[root@backup ~]# systemctl restart nfs-server
 	
-<span class="token number">2</span>.先实现实时的同步 √
+2.先实现实时的同步 √
 
-<span class="token number">3</span>.在web上实现切换，卸载nfs的/data目录，重新挂载backup服务的/data目录
-	<span class="token punctuation">[</span>root@web01 ~<span class="token punctuation">]</span><span class="token comment"># umount -lf /var/www/html/ &amp;&amp; mount -t nfs 172.16.1.41:/data /var/www/html/</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></div></figure>
+3.在web上实现切换，卸载nfs的&#x2F;data目录，重新挂载backup服务的&#x2F;data目录
+	[root@web01 ~]# umount -lf &#x2F;var&#x2F;www&#x2F;html&#x2F; &amp;&amp; mount -t nfs 172.16.1.41:&#x2F;data &#x2F;var&#x2F;www&#x2F;html&#x2F;</code></pre></div></figure>
 
 
 
@@ -627,9 +627,9 @@ _______________________________________________________
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/02-Rsync%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/" title="运维之综合架构--02--Rsync服务器搭建">
+                      <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/03-NFS%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/" title="运维之综合架构--03-NFS服务器搭建">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">运维之综合架构--02--Rsync服务器搭建</span>
+                        <span class="hidden-mobile">运维之综合架构--03-NFS服务器搭建</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -637,8 +637,8 @@ _______________________________________________________
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/01-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E8%A7%84%E5%88%92/" title="运维之综合架构--01-整体架构规划">
-                        <span class="hidden-mobile">运维之综合架构--01-整体架构规划</span>
+                      <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/05-ssh%E6%9C%8D%E5%8A%A1%E8%B7%B3%E6%9D%BF%E6%9C%BA%E6%90%AD%E5%BB%BA/" title="运维之综合架构--05--SSH服务器搭建">
+                        <span class="hidden-mobile">运维之综合架构--05--SSH服务器搭建</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
@@ -821,6 +821,10 @@ _______________________________________________________
   });
 </script>
 
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/components/prism-core.min.js" ></script>
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js" ></script>
 
   <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
 
