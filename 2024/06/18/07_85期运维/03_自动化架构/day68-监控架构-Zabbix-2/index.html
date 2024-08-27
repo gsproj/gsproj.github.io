@@ -7,8 +7,11 @@
 
 <head>
   <meta charset="UTF-8">
+
   <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
   <link rel="icon" href="/img/fluid.png">
+  
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   
@@ -16,12 +19,12 @@
   <meta name="author" content="GongSheng">
   <meta name="keywords" content="">
   
-    <meta name="description" content="监控架构-Zabbix-02">
+    <meta name="description" content="监控架构-Zabbix-02今日内容：  Zabbix自定义监控配置 监控告警配置（邮箱告警、企业微信告警）  一、自定义监控（核心）1.1 概述zabbix模板提供的模板非常丰富，包含 CPU、磁盘、网络、负载等各个方面，为什么还需要自定义模板呢？ 自定义模板的应用场景  模板中没有我们需要的监控项 默认模板监控项过多，不需要这么多  1.2 自定义监控全流程流程概括：  客户端：书写命令或脚本">
 <meta property="og:type" content="article">
 <meta property="og:title" content="day68-监控架构-Zabbix(二)">
 <meta property="og:url" content="http://gsproj.github.io/2024/06/18/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/03_%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9E%B6%E6%9E%84/day68-%E7%9B%91%E6%8E%A7%E6%9E%B6%E6%9E%84-Zabbix-2/index.html">
 <meta property="og:site_name" content="迎风之豚的博客">
-<meta property="og:description" content="监控架构-Zabbix-02">
+<meta property="og:description" content="监控架构-Zabbix-02今日内容：  Zabbix自定义监控配置 监控告警配置（邮箱告警、企业微信告警）  一、自定义监控（核心）1.1 概述zabbix模板提供的模板非常丰富，包含 CPU、磁盘、网络、负载等各个方面，为什么还需要自定义模板呢？ 自定义模板的应用场景  模板中没有我们需要的监控项 默认模板监控项过多，不需要这么多  1.2 自定义监控全流程流程概括：  客户端：书写命令或脚本">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240618112656304.png">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240618112714346.png">
@@ -100,6 +103,8 @@
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
 
+  <link  rel="stylesheet" href="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" />
+
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
 
@@ -107,11 +112,11 @@
 <!-- 主题依赖的图标库，不要自行修改 -->
 <!-- Do not modify the link that theme dependent icons -->
 
-<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
 
 
 
-<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
 
 
 <link  rel="stylesheet" href="/css/main.css" />
@@ -128,7 +133,7 @@
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
     Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"left","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
 
     if (CONFIG.web_analytics.follow_dnt) {
       var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
@@ -141,7 +146,7 @@
 
 
   
-<meta name="generator" content="Hexo 5.4.2"></head>
+<meta name="generator" content="Hexo 7.3.0"></head>
 
 
 <body>
@@ -154,7 +159,7 @@
   <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand" href="/">
-      <strong>&#34;迎风之豚的博客&#34;</strong>
+      <strong>Haris的博客</strong>
     </a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
@@ -172,9 +177,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/">
+              <a class="nav-link" href="/" target="_self">
                 <i class="iconfont icon-home-fill"></i>
-                首页
+                <span>首页</span>
               </a>
             </li>
           
@@ -184,9 +189,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/archives/">
+              <a class="nav-link" href="/archives/" target="_self">
                 <i class="iconfont icon-archive-fill"></i>
-                归档
+                <span>归档</span>
               </a>
             </li>
           
@@ -196,9 +201,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/categories/">
+              <a class="nav-link" href="/categories/" target="_self">
                 <i class="iconfont icon-category-fill"></i>
-                分类
+                <span>分类</span>
               </a>
             </li>
           
@@ -208,9 +213,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/tags/">
+              <a class="nav-link" href="/tags/" target="_self">
                 <i class="iconfont icon-tags-fill"></i>
-                标签
+                <span>标签</span>
               </a>
             </li>
           
@@ -220,9 +225,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/about/">
+              <a class="nav-link" href="/about/" target="_self">
                 <i class="iconfont icon-user-fill"></i>
-                关于
+                <span>关于</span>
               </a>
             </li>
           
@@ -230,15 +235,16 @@
         
           <li class="nav-item" id="search-btn">
             <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
-              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+              <i class="iconfont icon-search"></i>
             </a>
           </li>
           
         
         
           <li class="nav-item" id="color-toggle-btn">
-            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
-                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
           </li>
         
       </ul>
@@ -278,7 +284,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          8.4k 字
+          3.4k 字
         
       </span>
     
@@ -289,7 +295,7 @@
         
         
         
-          70 分钟
+          29 分钟
         
       </span>
     
@@ -319,6 +325,19 @@
   <div class="row nomargin-x">
     <div class="side-col d-none d-lg-block col-lg-2">
       
+  <aside class="sidebar" style="padding-left: 2rem; margin-right: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
 
     </div>
 
@@ -326,8 +345,7 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <!-- SEO header -->
-            <h1 style="display: none">day68-监控架构-Zabbix(二)</h1>
+            <h1 id="seo-header">day68-监控架构-Zabbix(二)</h1>
             
             
               <div class="markdown-body">
@@ -388,27 +406,32 @@
 </tr>
 </tbody></table>
 <h3 id="1-2-1-客户端配置"><a href="#1-2-1-客户端配置" class="headerlink" title="1.2.1 客户端配置"></a>1.2.1 客户端配置</h3><h4 id="a-通过命令、脚本取出对应的值"><a href="#a-通过命令、脚本取出对应的值" class="headerlink" title="a)  通过命令、脚本取出对应的值"></a>a)  通过命令、脚本取出对应的值</h4><p>监控3306端口是否存在？Linux中的命令操作</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@db01 ~]#ss -lntup | grep -w 80 | wc -l<br>1<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@db01 ~]#ss -lntup | grep -w 80 | wc -l
+1</code></pre></div></figure>
 
 <h4 id="b-创建键值与重启"><a href="#b-创建键值与重启" class="headerlink" title="b)  创建键值与重启"></a>b)  创建键值与重启</h4><p>创建键值文件</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@db01 ~]#cat /etc/zabbix/zabbix_agent2.d/database.conf <br><span class="hljs-meta">#</span><span class="bash">UserParameter=key,cmd</span><br><span class="hljs-meta">#</span><span class="bash">UserParameter=check.databse,sh /server/scripts/xxx.sh</span><br>UserParameter=check.database,ss -lntup|grep -w 3306|wc -l<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@db01 ~]#cat &#x2F;etc&#x2F;zabbix&#x2F;zabbix_agent2.d&#x2F;database.conf 
+#UserParameter&#x3D;key,cmd
+#UserParameter&#x3D;check.databse,sh &#x2F;server&#x2F;scripts&#x2F;xxx.sh
+UserParameter&#x3D;check.database,ss -lntup|grep -w 3306|wc -l</code></pre></div></figure>
 
 <blockquote>
 <p>UserParameter&#x3D;key,cmd<br>UserParameter&#x3D;固定写法，表示要自定义键值<br>key表示键值名字，命名最好就是 单词+”.” (点)<br>cmd表示命令或脚本  </p>
 </blockquote>
 <p>重启客户端</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">systemctl restart zabbix-agent2.service<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">systemctl restart zabbix-agent2.service</code></pre></div></figure>
 
 <p>本地测试</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@db01 /]#zabbix_agent2 -t check.database<br>check.database                                [s|1]<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@db01 &#x2F;]#zabbix_agent2 -t check.database
+check.database                                [s|1]</code></pre></div></figure>
 
 <blockquote>
 <p>自定义创建的conf文件，zabbix客户端配置是如何知道的？</p>
 <p>因为客户端配置文件里自带了include代码行</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">&gt;</span><span class="bash">Include=/etc/zabbix/zabbix_agent2.d/*.conf</span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">&gt;Include&#x3D;&#x2F;etc&#x2F;zabbix&#x2F;zabbix_agent2.d&#x2F;*.conf</code></pre></div></figure>
 </blockquote>
 <h3 id="1-2-2-服务端配置"><a href="#1-2-2-服务端配置" class="headerlink" title="1.2.2 服务端配置"></a>1.2.2 服务端配置</h3><p>安装工具并手动测试</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">yum install -y zabbix-get<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">yum install -y zabbix-get</code></pre></div></figure>
 
 <p>zabbix-get工具用于向客户端要指定键值的数据  </p>
 <p>选项说明：</p>
@@ -418,7 +441,8 @@
 <li>-k	指定键值</li>
 </ul>
 <p>测试</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn02 /]#zabbix_get -s 172.16.1.51 -p 10050 -k check.database<br>1<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn02 &#x2F;]#zabbix_get -s 172.16.1.51 -p 10050 -k check.database
+1</code></pre></div></figure>
 
 
 
@@ -497,16 +521,21 @@
 </tbody></table>
 <p>键值案例:</p>
 <p>1、过滤僵尸进程数量</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn02 /usr/share]#zabbix_get -s 172.16.1.51 -p 10050 -k proc.num[,,zomb]0<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn02 &#x2F;usr&#x2F;share]#zabbix_get -s 172.16.1.51 -p 10050 -k proc.num[,,zomb]0</code></pre></div></figure>
 
 <p>2、查看网卡流出流入的流量</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn02 /usr/share]#zabbix_get -s 172.16.1.51 -p 10050 -k net.if.in[ens33,]<br>6740169<br>[root@mn02 /usr/share]#zabbix_get -s 172.16.1.51 -p 10050 -k net.if.out[ens33,]<br>962137<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn02 &#x2F;usr&#x2F;share]#zabbix_get -s 172.16.1.51 -p 10050 -k net.if.in[ens33,]
+6740169
+[root@mn02 &#x2F;usr&#x2F;share]#zabbix_get -s 172.16.1.51 -p 10050 -k net.if.out[ens33,]
+962137</code></pre></div></figure>
 
 <p>3、查看mysql进程数量</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn02 /usr/share]#zabbix_get -s 172.16.1.51 -p 10050 -k proc.num[mariadbd]<br>1<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn02 &#x2F;usr&#x2F;share]#zabbix_get -s 172.16.1.51 -p 10050 -k proc.num[mariadbd]
+1</code></pre></div></figure>
 
 <p>4、查看3306端口是否开启</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn02 /usr/share]#zabbix_get -s 172.16.1.51 -p 10050 -k net.tcp.port[,3306]<br>1<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn02 &#x2F;usr&#x2F;share]#zabbix_get -s 172.16.1.51 -p 10050 -k net.tcp.port[,3306]
+1</code></pre></div></figure>
 
 <blockquote>
 <p>以上只是部分，如果需要了解更多可以网上查询</p>
@@ -551,10 +580,13 @@
 <p>案例：分析模板自带的触发器：&#x2F;etc&#x2F;passwd文件的变化情况，检查是否有用户增加或删减</p>
 <p><img src="/../../../img/image-20240619152156362.png" srcset="/img/loading.gif" lazyload alt="image-20240619152156362"></p>
 <p>里面是这么写的</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">last(/db01/vfs.file.cksum[/etc/passwd,sha256],#1)&lt;&gt;last(/db01/vfs.file.cksum[/etc/passwd,sha256],#2)<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">last(&#x2F;db01&#x2F;vfs.file.cksum[&#x2F;etc&#x2F;passwd,sha256],#1)&lt;&gt;last(&#x2F;db01&#x2F;vfs.file.cksum[&#x2F;etc&#x2F;passwd,sha256],#2)</code></pre></div></figure>
 
 <p>作用是什么？</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 检查倒数第一个/etc/passwd的md5值（最近的倒数第一个）</span><br>last(/db01/vfs.file.cksum[/etc/passwd,sha256],#1)<br><span class="hljs-meta">#</span><span class="bash"> 检查倒数第2个/etc/passwd的md5值（最近的倒数第二个）</span><br>&lt;&gt;last(/db01/vfs.file.cksum[/etc/passwd,sha256],#2)<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 检查倒数第一个&#x2F;etc&#x2F;passwd的md5值（最近的倒数第一个）
+last(&#x2F;db01&#x2F;vfs.file.cksum[&#x2F;etc&#x2F;passwd,sha256],#1)
+# 检查倒数第2个&#x2F;etc&#x2F;passwd的md5值（最近的倒数第二个）
+&lt;&gt;last(&#x2F;db01&#x2F;vfs.file.cksum[&#x2F;etc&#x2F;passwd,sha256],#2)</code></pre></div></figure>
 
 <p>倒数第1个md5的值和倒数第2个md5的值如果不相等了，则报警.</p>
 <h4 id="1-3-2-1-案例：检查swap值"><a href="#1-3-2-1-案例：检查swap值" class="headerlink" title="1.3.2.1 案例：检查swap值"></a>1.3.2.1 案例：检查swap值</h4><p>需求：</p>
@@ -563,10 +595,22 @@
 <li>条件2：swap当前的使用量大于0(没有直接可以使用的监控项，这里调整为当前swap空闲率小于100)</li>
 </ul>
 <p>如何表示？</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 1、找出满足要求的键值</span><br>system.swap.size[,total]) #取出swap总数<br>last(/web01/system.swap.size[,used]) #swap使用大小<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 2、条件1:swap总量大于0</span><br>last(/web01/system.swap.size[,total])&gt;0<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 3、条件2：swap使用量大于0（空闲率小于100）</span><br>last(/web01/system.swap.size[,pfree])&lt;100<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 4、条件3：与和或</span><br>-a ==&gt; and<br>-o ==&gt; or<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 1、找出满足要求的键值
+system.swap.size[,total]) #取出swap总数
+last(&#x2F;web01&#x2F;system.swap.size[,used]) #swap使用大小
+
+# 2、条件1:swap总量大于0
+last(&#x2F;web01&#x2F;system.swap.size[,total])&gt;0
+
+# 3、条件2：swap使用量大于0（空闲率小于100）
+last(&#x2F;web01&#x2F;system.swap.size[,pfree])&lt;100
+
+# 4、条件3：与和或
+-a &#x3D;&#x3D;&gt; and
+-o &#x3D;&#x3D;&gt; or</code></pre></div></figure>
 
 <p>完整表达式如下：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">last(/web01/system.swap.size[,total])&gt;0 and last(/web01/system.swap.size[,used])&gt;0<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">last(&#x2F;web01&#x2F;system.swap.size[,total])&gt;0 and last(&#x2F;web01&#x2F;system.swap.size[,used])&gt;0</code></pre></div></figure>
 
 <p>创建触发器，进入触发器配置页面</p>
 <p><img src="/../../../img/image-20240619152950813.png" srcset="/img/loading.gif" lazyload alt="image-20240619152950813"></p>
@@ -575,32 +619,38 @@
 <p>填写表达式</p>
 <p><img src="/../../../img/image-20240619153320441.png" srcset="/img/loading.gif" lazyload alt="image-20240619153320441"></p>
 <h4 id="1-3-2-2-其他案例"><a href="#1-3-2-2-其他案例" class="headerlink" title="1.3.2.2 其他案例"></a>1.3.2.2 其他案例</h4><p>检查内存是否够用</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">max(/Zabbix server/vm.memory.size[available],5m)<br>&lt;&#123;$MEMORY.AVAILABLE.MIN&#125; and last(/Zabbix server/vm.memory.size[total])&gt;0<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">max(&#x2F;Zabbix server&#x2F;vm.memory.size[available],5m)
+&lt;&#123;$MEMORY.AVAILABLE.MIN&#125; and last(&#x2F;Zabbix server&#x2F;vm.memory.size[total])&gt;0</code></pre></div></figure>
 
 
 
 <h2 id="1-4-自定义监控-参数案例"><a href="#1-4-自定义监控-参数案例" class="headerlink" title="1.4 自定义监控- 参数案例"></a>1.4 自定义监控- 参数案例</h2><p>目标：检查指定用户是否存在异地登录。<br>最简单想法：检查指定用户登录的ip地址。进行对比。  </p>
 <p>1、命令选择</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">w、who只能显示当前、自此时此刻的登录情况，不适用<br>lastlog 适合<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">w、who只能显示当前、自此时此刻的登录情况，不适用
+lastlog 适合</code></pre></div></figure>
 
 <p>2、键值</p>
 <p>实现取出指定用户登录的IP地址</p>
 <p>服务器：web页面触发器作对比</p>
 <h3 id="1-4-1-客户端配置"><a href="#1-4-1-客户端配置" class="headerlink" title="1.4.1 客户端配置"></a>1.4.1 客户端配置</h3><p>命令获取登录的ip地址</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01 /app/code/zbx/assets/fonts]#lastlog | grep root | awk &#x27;&#123;print $3&#125;&#x27;<br>10.0.0.1<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web01 &#x2F;app&#x2F;code&#x2F;zbx&#x2F;assets&#x2F;fonts]#lastlog | grep root | awk &#39;&#123;print $3&#125;&#39;
+10.0.0.1</code></pre></div></figure>
 
 <p>书写键值</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01 /app/code/zbx/assets/fonts]#cat /etc/zabbix/zabbix_agent2.d/web.conf <br>UserParameter=ngx.port,ss -lntup |grep -w 80|wc -l<br>UserParameter=user.login[*],lastlog -u &quot;$1&quot; |awk &#x27;NR==2&#123;print $3&#125;&#x27;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web01 &#x2F;app&#x2F;code&#x2F;zbx&#x2F;assets&#x2F;fonts]#cat &#x2F;etc&#x2F;zabbix&#x2F;zabbix_agent2.d&#x2F;web.conf 
+UserParameter&#x3D;ngx.port,ss -lntup |grep -w 80|wc -l
+UserParameter&#x3D;user.login[*],lastlog -u &quot;$1&quot; |awk &#39;NR&#x3D;&#x3D;2&#123;print $3&#125;&#39;</code></pre></div></figure>
 
 <p>里面的<code>$1</code>传递参数如何运作？</p>
 <p><img src="/../../../img/image-20240619154505001.png" srcset="/img/loading.gif" lazyload alt="image-20240619154505001"></p>
 <p>重启服务</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">systemctl restart zabbix-agent2.service<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">systemctl restart zabbix-agent2.service</code></pre></div></figure>
 
 
 
 <h3 id="1-4-2-服务端测试"><a href="#1-4-2-服务端测试" class="headerlink" title="1.4.2 服务端测试"></a>1.4.2 服务端测试</h3><p>命令测试</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@mn02 /usr/share]#zabbix_get -s 172.16.1.7 -k user.login[root]<br>root             pts/1    10.0.0.1         Wed Jun 19 15:17:51 +0800 2024<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn02 &#x2F;usr&#x2F;share]#zabbix_get -s 172.16.1.7 -k user.login[root]
+root             pts&#x2F;1    10.0.0.1         Wed Jun 19 15:17:51 +0800 2024</code></pre></div></figure>
 
 
 
@@ -721,10 +771,108 @@
 <li>动作：已经完成</li>
 </ul>
 <h3 id="2-3-1-准备企业微信"><a href="#2-3-1-准备企业微信" class="headerlink" title="2.3.1 准备企业微信"></a>2.3.1 准备企业微信</h3><p>企业微信ID准备</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash">1.企业微信 id号</span><br>企业ID ww6ac68d5d41044330<br><span class="hljs-meta">#</span><span class="bash">2.创建1个报警机器人(应用)</span><br>机器人的id(应用id)<br>AgentId<br>1000005<br><span class="hljs-meta">#</span><span class="bash"><span class="hljs-comment">#应用密码</span></span><br>Ss7VFx8Mkzm8XABMNqVRp31zxNnxhbJ_rJzz8sPDgk4<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">#1.企业微信 id号
+企业ID ww6ac68d5d41044330
+#2.创建1个报警机器人(应用)
+机器人的id(应用id)
+AgentId
+1000005
+##应用密码
+Ss7VFx8Mkzm8XABMNqVRp31zxNnxhbJ_rJzz8sPDgk4</code></pre></div></figure>
 
 <p>微信报警脚本准备</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment">#1.企业微信 id号</span><br>企业ID<br>ww6ac68d5d41044330<br><br><span class="hljs-comment">#2.创建1个报警机器人(应用)</span><br><span class="hljs-comment">##机器人的id(应用id)  </span><br>AgentId<br><span class="hljs-number">1000005</span><br><br><span class="hljs-comment">##应用密码  </span><br>Ss7VFx8Mkzm8XABMNqVRp31zxNnxhbJ_rJzz8sPDgk4<br><span class="hljs-comment">#修改微信报警的脚本</span><br>vim /usr/local/share/zabbix/alertscripts/wechat.py<br><br><span class="hljs-comment">#!/usr/bin/env python</span><br><span class="hljs-comment">#-*- coding: utf-8 -*-</span><br><span class="hljs-comment">#author: oldboy-linux</span><br><span class="hljs-comment">#date: 2021</span><br><span class="hljs-comment">#description: Zabbix Wechat Alerts Scripts</span><br><span class="hljs-keyword">import</span> requests<br><span class="hljs-keyword">import</span> sys<br><span class="hljs-keyword">import</span> os<br><span class="hljs-keyword">import</span> json<br><span class="hljs-keyword">import</span> logging<br>logging.basicConfig(level = logging.DEBUG, <span class="hljs-built_in">format</span> = <span class="hljs-string">&#x27;%(asctime)s, %(filename)s, %(levelname)s, %(message)s&#x27;</span>,<br>                datefmt = <span class="hljs-string">&#x27;%a, %d %b %Y %H:%M:%S&#x27;</span>,<br>                filename = os.path.join(<span class="hljs-string">&#x27;/tmp&#x27;</span>,<span class="hljs-string">&#x27;wechat.log&#x27;</span>),<br>                filemode = <span class="hljs-string">&#x27;a&#x27;</span>)<br>               <br><span class="hljs-comment">#id和secret需要修改</span><br>corpid=<span class="hljs-string">&#x27;wxd074861951c67ba6&#x27;</span><br>appsecret=<span class="hljs-string">&#x27;QtraZrI936DZ0jZ3aSWTZ-lFVheAMgLmq3toM4B9U1A&#x27;</span><br>agentid=<span class="hljs-number">1</span><br><span class="hljs-comment">#获取accesstoken</span><br>token_url=<span class="hljs-string">&#x27;https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=&#x27;</span> + corpid + <span class="hljs-string">&#x27;&amp;corpsecret=&#x27;</span> + appsecret<br>req=requests.get(token_url)<br>accesstoken=req.json()[<span class="hljs-string">&#x27;access_token&#x27;</span>]<br><span class="hljs-comment">#发送消息</span><br>msgsend_url=<span class="hljs-string">&#x27;https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=&#x27;</span> + accesstoken<br><br><span class="hljs-comment">#脚本参数</span><br><span class="hljs-comment">#touser=sys.argv[1]</span><br>toparty=sys.argv[<span class="hljs-number">1</span>]<br>subject=sys.argv[<span class="hljs-number">2</span>]<br><span class="hljs-comment">#toparty=&#x27;3|4|5|6&#x27;</span><br>message=sys.argv[<span class="hljs-number">2</span>] + <span class="hljs-string">&quot;\n\n&quot;</span> +sys.argv[<span class="hljs-number">3</span>]<br>params=&#123;<br><span class="hljs-comment">#       &quot;touser&quot;: touser,</span><br>       <span class="hljs-string">&quot;toparty&quot;</span>: toparty,<br>        <span class="hljs-string">&quot;msgtype&quot;</span>: <span class="hljs-string">&quot;text&quot;</span>,<br>        <span class="hljs-string">&quot;agentid&quot;</span>: agentid,<br>        <span class="hljs-string">&quot;text&quot;</span>: &#123;<br>                <span class="hljs-string">&quot;content&quot;</span>: message<br>       &#125;,<br>        <span class="hljs-string">&quot;safe&quot;</span>:<span class="hljs-number">0</span><br>&#125;<br>req=requests.post(msgsend_url, data=json.dumps(params))<br><br><span class="hljs-comment"># 书写日志/tmp/wechat.log</span><br>logging.info(<span class="hljs-string">&#x27;sendto:&#x27;</span> + toparty + <span class="hljs-string">&#x27;;;subject:&#x27;</span> + subject + <span class="hljs-string">&#x27;;;message:&#x27;</span> + message)<br><br>chmod +x /usr/lib/zabbix/alertscripts/wechat.py<br><br><span class="hljs-comment">#安装python环境</span><br>yum install -y python3 python3-pip<br>通过pip3 命令安装requests依赖.<br>pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple requests<br><br><span class="hljs-comment">#测试</span><br>python3 wechat.py 用户的<span class="hljs-built_in">id</span>或组<span class="hljs-built_in">id</span> 标题 内容 <span class="hljs-string">&#x27;下雨了&#x27;</span>  <span class="hljs-string">&#x27;打雷下雨收衣服&#x27;</span><br>Traceback (most recent call last):<br>File <span class="hljs-string">&quot;/usr/lib/zabbix/alertscripts/wechat.py&quot;</span>, line <span class="hljs-number">7</span>, <span class="hljs-keyword">in</span> &lt;module&gt;<br>   <span class="hljs-keyword">import</span> requests<br>ImportError: No module named requests<br>pip install -i https://pypi.tuna.tsinghua.edu.cn/simple some-package<br>pip install requests<br><br><span class="hljs-comment">#web页面 发件人:报警媒介类型</span><br>&#123;ALERT.SENDTO&#125;  <span class="hljs-comment">#发给谁</span><br>&#123;ALERT.SUBJECT&#125; <span class="hljs-comment">#报警标题</span><br>&#123;ALERT.MESSAGE&#125; <span class="hljs-comment">#报警内容</span><br><br>故障目前已经解决时间: &#123;EVENT.RECOVERY.TIME&#125; 日期<br>&#123;EVENT.RECOVERY.DATE&#125;<br>故障名称: &#123;EVENT.NAME&#125;<br>故障经历多久: &#123;EVENT.DURATION&#125;<br>故障主机: &#123;HOST.NAME&#125;<br>故障级别: &#123;EVENT.SEVERITY&#125;<br>故障ID: &#123;EVENT.ID&#125;<br>&#123;TRIGGER.URL&#125;<br><span class="hljs-comment">#web页面 收件人:接收用户</span><br><span class="hljs-comment">#Web页面 配置--&gt;动作</span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">#1.企业微信 id号
+企业ID
+ww6ac68d5d41044330
+
+#2.创建1个报警机器人(应用)
+##机器人的id(应用id)  
+AgentId
+1000005
+
+##应用密码  
+Ss7VFx8Mkzm8XABMNqVRp31zxNnxhbJ_rJzz8sPDgk4
+#修改微信报警的脚本
+vim &#x2F;usr&#x2F;local&#x2F;share&#x2F;zabbix&#x2F;alertscripts&#x2F;wechat.py
+
+#!&#x2F;usr&#x2F;bin&#x2F;env python
+#-*- coding: utf-8 -*-
+#author: oldboy-linux
+#date: 2021
+#description: Zabbix Wechat Alerts Scripts
+import requests
+import sys
+import os
+import json
+import logging
+logging.basicConfig(level &#x3D; logging.DEBUG, format &#x3D; &#39;%(asctime)s, %(filename)s, %(levelname)s, %(message)s&#39;,
+                datefmt &#x3D; &#39;%a, %d %b %Y %H:%M:%S&#39;,
+                filename &#x3D; os.path.join(&#39;&#x2F;tmp&#39;,&#39;wechat.log&#39;),
+                filemode &#x3D; &#39;a&#39;)
+               
+#id和secret需要修改
+corpid&#x3D;&#39;wxd074861951c67ba6&#39;
+appsecret&#x3D;&#39;QtraZrI936DZ0jZ3aSWTZ-lFVheAMgLmq3toM4B9U1A&#39;
+agentid&#x3D;1
+#获取accesstoken
+token_url&#x3D;&#39;https:&#x2F;&#x2F;qyapi.weixin.qq.com&#x2F;cgi-bin&#x2F;gettoken?corpid&#x3D;&#39; + corpid + &#39;&amp;corpsecret&#x3D;&#39; + appsecret
+req&#x3D;requests.get(token_url)
+accesstoken&#x3D;req.json()[&#39;access_token&#39;]
+#发送消息
+msgsend_url&#x3D;&#39;https:&#x2F;&#x2F;qyapi.weixin.qq.com&#x2F;cgi-bin&#x2F;message&#x2F;send?access_token&#x3D;&#39; + accesstoken
+
+#脚本参数
+#touser&#x3D;sys.argv[1]
+toparty&#x3D;sys.argv[1]
+subject&#x3D;sys.argv[2]
+#toparty&#x3D;&#39;3|4|5|6&#39;
+message&#x3D;sys.argv[2] + &quot;\n\n&quot; +sys.argv[3]
+params&#x3D;&#123;
+#       &quot;touser&quot;: touser,
+       &quot;toparty&quot;: toparty,
+        &quot;msgtype&quot;: &quot;text&quot;,
+        &quot;agentid&quot;: agentid,
+        &quot;text&quot;: &#123;
+                &quot;content&quot;: message
+       &#125;,
+        &quot;safe&quot;:0
+&#125;
+req&#x3D;requests.post(msgsend_url, data&#x3D;json.dumps(params))
+
+# 书写日志&#x2F;tmp&#x2F;wechat.log
+logging.info(&#39;sendto:&#39; + toparty + &#39;;;subject:&#39; + subject + &#39;;;message:&#39; + message)
+
+chmod +x &#x2F;usr&#x2F;lib&#x2F;zabbix&#x2F;alertscripts&#x2F;wechat.py
+
+#安装python环境
+yum install -y python3 python3-pip
+通过pip3 命令安装requests依赖.
+pip3 install -i https:&#x2F;&#x2F;pypi.tuna.tsinghua.edu.cn&#x2F;simple requests
+
+#测试
+python3 wechat.py 用户的id或组id 标题 内容 &#39;下雨了&#39;  &#39;打雷下雨收衣服&#39;
+Traceback (most recent call last):
+File &quot;&#x2F;usr&#x2F;lib&#x2F;zabbix&#x2F;alertscripts&#x2F;wechat.py&quot;, line 7, in &lt;module&gt;
+   import requests
+ImportError: No module named requests
+pip install -i https:&#x2F;&#x2F;pypi.tuna.tsinghua.edu.cn&#x2F;simple some-package
+pip install requests
+
+#web页面 发件人:报警媒介类型
+&#123;ALERT.SENDTO&#125;  #发给谁
+&#123;ALERT.SUBJECT&#125; #报警标题
+&#123;ALERT.MESSAGE&#125; #报警内容
+
+故障目前已经解决时间: &#123;EVENT.RECOVERY.TIME&#125; 日期
+&#123;EVENT.RECOVERY.DATE&#125;
+故障名称: &#123;EVENT.NAME&#125;
+故障经历多久: &#123;EVENT.DURATION&#125;
+故障主机: &#123;HOST.NAME&#125;
+故障级别: &#123;EVENT.SEVERITY&#125;
+故障ID: &#123;EVENT.ID&#125;
+&#123;TRIGGER.URL&#125;
+#web页面 收件人:接收用户
+#Web页面 配置--&gt;动作</code></pre></div></figure>
 
 <p>需要去企业微信后台,开通白名单  </p>
 <p><img src="/../../../img/image-20240619172914240.png" srcset="/img/loading.gif" lazyload alt="image-20240619172914240"></p>
@@ -732,9 +880,20 @@
 <p><img src="/../../../img/image-20240619172938289.png" srcset="/img/loading.gif" lazyload alt="image-20240619172938289"></p>
 <p><img src="/../../../img/image-20240619172944777.png" srcset="/img/loading.gif" lazyload alt="image-20240619172944777"></p>
 <p>错误提示</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs shell">故障提示：<br>python3 wechat-v2-lidao996.py lidao996  &quot;webisdown&quot; &quot;nginx is down&quot;<br>Traceback (most recent call last):<br> File &quot;wechat-v2-lidao996.py&quot;, line 7, in &lt;module&gt;<br>   import requests<br>ModuleNotFoundError: No module named &#x27;requests&#x27;<br>故障解决：<br>pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple<br>新的安装方法:<br>python3 -m pip install requests -i https://pypi.tuna.tsinghua.edu.cn/simple<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">故障提示：
+python3 wechat-v2-lidao996.py lidao996  &quot;webisdown&quot; &quot;nginx is down&quot;
+Traceback (most recent call last):
+ File &quot;wechat-v2-lidao996.py&quot;, line 7, in &lt;module&gt;
+   import requests
+ModuleNotFoundError: No module named &#39;requests&#39;
+故障解决：
+pip3 install requests -i https:&#x2F;&#x2F;pypi.tuna.tsinghua.edu.cn&#x2F;simple
+新的安装方法:
+python3 -m pip install requests -i https:&#x2F;&#x2F;pypi.tuna.tsinghua.edu.cn&#x2F;simple</code></pre></div></figure>
 
-<h3 id="2-3-2-配置发件人"><a href="#2-3-2-配置发件人" class="headerlink" title="2.3.2 配置发件人"></a>2.3.2 配置发件人</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">&#123;ALERT.SENDTO&#125;<br>&#123;ALERT.SUBJECT&#125;<br>&#123;ALERT.MESSAGE&#125;<br></code></pre></td></tr></table></figure>
+<h3 id="2-3-2-配置发件人"><a href="#2-3-2-配置发件人" class="headerlink" title="2.3.2 配置发件人"></a>2.3.2 配置发件人</h3><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">&#123;ALERT.SENDTO&#125;
+&#123;ALERT.SUBJECT&#125;
+&#123;ALERT.MESSAGE&#125;</code></pre></div></figure>
 
 <p>添加报警媒介类型</p>
 <p><img src="/../../../img/image-20240619173115608.png" srcset="/img/loading.gif" lazyload alt="image-20240619173115608"></p>
@@ -815,9 +974,9 @@
             
               
               
-                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
                   <span class="hint--top hint--rounded" aria-label="BY - 署名">
-                    <i class="iconfont icon-by"></i>
+                    <i class="iconfont icon-cc-by"></i>
                   </span>
                 </a>
               
@@ -865,16 +1024,6 @@
 
     <div class="side-col d-none d-lg-block col-lg-2">
       
-  <aside class="sidebar" style="margin-left: -1rem">
-    <div id="toc">
-  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
-  <div class="toc-body" id="toc-body"></div>
-</div>
-
-
-
-  </aside>
-
 
     </div>
   </div>
@@ -952,7 +1101,6 @@
   
   
   
-  
 </div>
 
   </footer>
@@ -971,7 +1119,7 @@
   </script>
 
 
-<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
 <script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
 <script  src="/js/events.js" ></script>
 <script  src="/js/plugins.js" ></script>
@@ -1004,7 +1152,7 @@
 
   
 <script>
-  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
     var toc = jQuery('#toc');
     if (toc.length === 0 || !window.tocbot) { return; }
     var boardCtn = jQuery('#board-ctn');
@@ -1042,6 +1190,12 @@
 </script>
 
 
+  <script  src="https://lib.baomitu.com/prism/1.29.0/components/prism-core.min.js" ></script>
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js" ></script>
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
+
   <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
 
   <script>Fluid.plugins.codeWidget();</script>
@@ -1049,7 +1203,7 @@
 
   
 <script>
-  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
     window.anchors.options = {
       placement: CONFIG.anchorjs.placement,
       visible  : CONFIG.anchorjs.visible

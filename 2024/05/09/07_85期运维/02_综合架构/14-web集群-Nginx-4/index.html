@@ -7,8 +7,11 @@
 
 <head>
   <meta charset="UTF-8">
+
   <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
   <link rel="icon" href="/img/fluid.png">
+  
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   
@@ -16,12 +19,12 @@
   <meta name="author" content="GongSheng">
   <meta name="keywords" content="">
   
-    <meta name="description" content="Web集群-Nginx（四）">
+    <meta name="description" content="Web集群-Nginx（四）今日内容： 1、lnmp深入原理与排错 2、nginx代理  案例：多个虚拟主机的情况 案例：后端节点记录用户的真实IP地址  3、nginx负载均衡  案例：基本负载均衡案例 案例：动静分离案例  一、LNMP流程详解高清地址：https:&#x2F;&#x2F;www.processon.com&#x2F;view&#x2F;link&#x2F;63e99e40d0902d35a13e3496 1.1 简单流程简单">
 <meta property="og:type" content="article">
 <meta property="og:title" content="14-Web集群-Nginx(四)">
 <meta property="og:url" content="http://gsproj.github.io/2024/05/09/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/02_%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/14-web%E9%9B%86%E7%BE%A4-Nginx-4/index.html">
 <meta property="og:site_name" content="迎风之豚的博客">
-<meta property="og:description" content="Web集群-Nginx（四）">
+<meta property="og:description" content="Web集群-Nginx（四）今日内容： 1、lnmp深入原理与排错 2、nginx代理  案例：多个虚拟主机的情况 案例：后端节点记录用户的真实IP地址  3、nginx负载均衡  案例：基本负载均衡案例 案例：动静分离案例  一、LNMP流程详解高清地址：https:&#x2F;&#x2F;www.processon.com&#x2F;view&#x2F;link&#x2F;63e99e40d0902d35a13e3496 1.1 简单流程简单">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240509093225114.png">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240509093234136.png">
@@ -54,6 +57,8 @@
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
 
+  <link  rel="stylesheet" href="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" />
+
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
 
@@ -61,11 +66,11 @@
 <!-- 主题依赖的图标库，不要自行修改 -->
 <!-- Do not modify the link that theme dependent icons -->
 
-<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
 
 
 
-<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
 
 
 <link  rel="stylesheet" href="/css/main.css" />
@@ -82,7 +87,7 @@
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
     Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"left","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
 
     if (CONFIG.web_analytics.follow_dnt) {
       var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
@@ -95,7 +100,7 @@
 
 
   
-<meta name="generator" content="Hexo 5.4.2"></head>
+<meta name="generator" content="Hexo 7.3.0"></head>
 
 
 <body>
@@ -108,7 +113,7 @@
   <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand" href="/">
-      <strong>&#34;迎风之豚的博客&#34;</strong>
+      <strong>Haris的博客</strong>
     </a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
@@ -126,9 +131,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/">
+              <a class="nav-link" href="/" target="_self">
                 <i class="iconfont icon-home-fill"></i>
-                首页
+                <span>首页</span>
               </a>
             </li>
           
@@ -138,9 +143,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/archives/">
+              <a class="nav-link" href="/archives/" target="_self">
                 <i class="iconfont icon-archive-fill"></i>
-                归档
+                <span>归档</span>
               </a>
             </li>
           
@@ -150,9 +155,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/categories/">
+              <a class="nav-link" href="/categories/" target="_self">
                 <i class="iconfont icon-category-fill"></i>
-                分类
+                <span>分类</span>
               </a>
             </li>
           
@@ -162,9 +167,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/tags/">
+              <a class="nav-link" href="/tags/" target="_self">
                 <i class="iconfont icon-tags-fill"></i>
-                标签
+                <span>标签</span>
               </a>
             </li>
           
@@ -174,9 +179,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/about/">
+              <a class="nav-link" href="/about/" target="_self">
                 <i class="iconfont icon-user-fill"></i>
-                关于
+                <span>关于</span>
               </a>
             </li>
           
@@ -184,15 +189,16 @@
         
           <li class="nav-item" id="search-btn">
             <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
-              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+              <i class="iconfont icon-search"></i>
             </a>
           </li>
           
         
         
           <li class="nav-item" id="color-toggle-btn">
-            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
-                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
           </li>
         
       </ul>
@@ -232,7 +238,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          8.6k 字
+          2.8k 字
         
       </span>
     
@@ -243,7 +249,7 @@
         
         
         
-          72 分钟
+          24 分钟
         
       </span>
     
@@ -273,6 +279,19 @@
   <div class="row nomargin-x">
     <div class="side-col d-none d-lg-block col-lg-2">
       
+  <aside class="sidebar" style="padding-left: 2rem; margin-right: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
 
     </div>
 
@@ -280,8 +299,7 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <!-- SEO header -->
-            <h1 style="display: none">14-Web集群-Nginx(四)</h1>
+            <h1 id="seo-header">14-Web集群-Nginx(四)</h1>
             
             
               <div class="markdown-body">
@@ -346,14 +364,45 @@
 </ul>
 <h2 id="2-2-检查PHP是否正常运行"><a href="#2-2-检查PHP是否正常运行" class="headerlink" title="2.2 检查PHP是否正常运行"></a>2.2 检查PHP是否正常运行</h2><p>检查ngx是否把动态页面转发php,php是否解析。</p>
 <p>站点目录下创建<code>testinfo.php</code></p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">&lt;?php<br>phpinfo();<br>?&gt;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">&lt;?php
+phpinfo();
+?&gt;</code></pre></div></figure>
 
 <p><font color=red>测试完成,务必删除,否则网站信息泄漏</font></p>
 <h2 id="2-3-检查数据库是否正常"><a href="#2-3-检查数据库是否正常" class="headerlink" title="2.3 检查数据库是否正常"></a>2.3 检查数据库是否正常</h2><p>检查数据库是否正常：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">mysql -u用户 -p密码 -h 数据库的ip<br><span class="hljs-meta">&gt;</span><span class="bash"> show databases;</span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">mysql -u用户 -p密码 -h 数据库的ip
+&gt; show databases;</code></pre></div></figure>
 
 <p>检查php连接数据库是否正常(测试数据库用户名和密码)  </p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash">书写页面测试 testmysql.php</span><br>&lt;?php<br>// 数据库地址<br><span class="hljs-meta">$</span><span class="bash">db_host=<span class="hljs-string">&#x27;172.16.1.51&#x27;</span>;</span><br>// 数据库用户名<br><span class="hljs-meta">$</span><span class="bash">db_user=<span class="hljs-string">&#x27;lidao&#x27;</span>;</span><br><span class="hljs-meta">$</span><span class="bash">db_pass=<span class="hljs-string">&#x27;1&#x27;</span>;</span><br>// 数据库名字<br><span class="hljs-meta">$</span><span class="bash">db_name=<span class="hljs-string">&#x27;lidao&#x27;</span>;</span><br><span class="hljs-meta">$</span><span class="bash">link_id=mysqli_connect(<span class="hljs-variable">$db_host</span>,<span class="hljs-variable">$db_user</span>,<span class="hljs-variable">$db_pass</span>,$</span><br>db_name);<br><span class="hljs-meta">if($</span><span class="bash">link_id)&#123;</span><br>echo &quot;successful by oldboy lidao996! 库名<br>字:$db_name 库用户:$db_user 库密码:$db_pass&quot; ;<br>&#125;else&#123;<br>echo &quot;connection failed! 库名字:$db_name 库用<br>户:$db_user 库密码:$db_pass&quot; ;<br>&#125;<br>?&gt;<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 虚拟主机设置</span><br>location ~* (testinfo|testmysq).php$ &#123;<br>  allow 10.0.0.0/24;<br>  allow 172.16.1.0/24;<br>  deny all;<br>  fastcgi_pass 127.0.0.1:9000;<br>  fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;<br>  include fastcgi_params;<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">#书写页面测试 testmysql.php
+&lt;?php
+&#x2F;&#x2F; 数据库地址
+$db_host&#x3D;&#39;172.16.1.51&#39;;
+&#x2F;&#x2F; 数据库用户名
+$db_user&#x3D;&#39;lidao&#39;;
+$db_pass&#x3D;&#39;1&#39;;
+&#x2F;&#x2F; 数据库名字
+$db_name&#x3D;&#39;lidao&#39;;
+$link_id&#x3D;mysqli_connect($db_host,$db_user,$db_pass,$
+db_name);
+if($link_id)&#123;
+echo &quot;successful by oldboy lidao996! 库名
+字:$db_name 库用户:$db_user 库密码:$db_pass&quot; ;
+&#125;else&#123;
+echo &quot;connection failed! 库名字:$db_name 库用
+户:$db_user 库密码:$db_pass&quot; ;
+&#125;
+?&gt;
+
+# 虚拟主机设置
+location ~* (testinfo|testmysq).php$ &#123;
+  allow 10.0.0.0&#x2F;24;
+  allow 172.16.1.0&#x2F;24;
+  deny all;
+  fastcgi_pass 127.0.0.1:9000;
+  fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+  include fastcgi_params;
+&#125;</code></pre></div></figure>
 
 <blockquote>
 <p>推荐看的，运维基操：</p>
@@ -464,7 +513,25 @@
 </tr>
 </tbody></table>
 <p>代理服务器lb01配置</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 配置nginx yum源</span><br>[root@lb01[ /etc/yum.repos.d]#cat nginx.repo<br>[nginx-stable]<br>name=nginx stable repo<br>baseurl=http://nginx.org/packages/centos/$releasever/$basearch/<br>gpgcheck=1<br>enabled=1<br>gpgkey=https://nginx.org/keys/nginx_signing.key<br>module_hotfixes=true<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 安装</span><br>yum clean all<br>yum makecache<br>yum install -y nginx <br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 检查</span><br>rpm -qa nginx<br>systemctl enable nginx<br>systemctl start nginx<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 配置nginx yum源
+[root@lb01[ &#x2F;etc&#x2F;yum.repos.d]#cat nginx.repo
+[nginx-stable]
+name&#x3D;nginx stable repo
+baseurl&#x3D;http:&#x2F;&#x2F;nginx.org&#x2F;packages&#x2F;centos&#x2F;$releasever&#x2F;$basearch&#x2F;
+gpgcheck&#x3D;1
+enabled&#x3D;1
+gpgkey&#x3D;https:&#x2F;&#x2F;nginx.org&#x2F;keys&#x2F;nginx_signing.key
+module_hotfixes&#x3D;true
+
+# 安装
+yum clean all
+yum makecache
+yum install -y nginx 
+
+# 检查
+rpm -qa nginx
+systemctl enable nginx
+systemctl start nginx</code></pre></div></figure>
 
 <p>nginx启动后默认是web服务，需要使用对应的模块</p>
 <ul>
@@ -486,19 +553,50 @@
 </tr>
 </tbody></table>
 <p>配置虚拟主机	(<strong>以前配置的都注释掉</strong>)</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 子配置文件</span><br>[root@web01[ /app/code/proxy]#cat /etc/nginx/conf.d/proxy.oldboylinux.cn.conf<br>server &#123;<br>  listen 80;<br>  server_name proxy.oldboylinux.cn;<br>  root /app/code/proxy;<br>  error_log  /var/log/nginx/proxy-error.log notice;<br>  access_log /var/log/nginx/proxy-access.log main;<br>  location / &#123;<br>    index index.html;<br>  &#125;<br>&#125;<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 站点目录文件</span><br>[root@web01[ /app/code/proxy]#echo &quot;PROXY WEB PAGE&quot; &gt; index.html<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 子配置文件
+[root@web01[ &#x2F;app&#x2F;code&#x2F;proxy]#cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy.oldboylinux.cn.conf
+server &#123;
+  listen 80;
+  server_name proxy.oldboylinux.cn;
+  root &#x2F;app&#x2F;code&#x2F;proxy;
+  error_log  &#x2F;var&#x2F;log&#x2F;nginx&#x2F;proxy-error.log notice;
+  access_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;proxy-access.log main;
+  location &#x2F; &#123;
+    index index.html;
+  &#125;
+&#125;
+
+# 站点目录文件
+[root@web01[ &#x2F;app&#x2F;code&#x2F;proxy]#echo &quot;PROXY WEB PAGE&quot; &gt; index.html</code></pre></div></figure>
 
 <p>测试连接</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01[ /app/code/proxy]#curl -H Host:proxy.oldboylinux.cn 10.0.0.7<br>PROXY WEB PAGE<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web01[ &#x2F;app&#x2F;code&#x2F;proxy]#curl -H Host:proxy.oldboylinux.cn 10.0.0.7
+PROXY WEB PAGE</code></pre></div></figure>
 
 <h3 id="3-3-3-代理基本使用"><a href="#3-3-3-代理基本使用" class="headerlink" title="3.3.3 代理基本使用"></a>3.3.3 代理基本使用</h3><p>在lb01服务器配置代理</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@lb01[ /etc/nginx/conf.d]#cat proxy.oldboylinux.cn.conf<br>server &#123;<br>  listen 80;<br>  server_name proxy.oldboylinux.cn;<br>  error_log /var/log/nginx/proxy-error.log notice;<br>  access_log /var/log/nginx/proxy-acess.log main;<br>  location / &#123;<br>    proxy_pass http://10.0.0.7:80;<br>    proxy_set_header Host $http_host;<br>  &#125;<br>&#125;<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 检查并重启服务</span><br>nginx -t<br>systemctl reload nginx<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@lb01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#cat proxy.oldboylinux.cn.conf
+server &#123;
+  listen 80;
+  server_name proxy.oldboylinux.cn;
+  error_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;proxy-error.log notice;
+  access_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;proxy-acess.log main;
+  location &#x2F; &#123;
+    proxy_pass http:&#x2F;&#x2F;10.0.0.7:80;
+    proxy_set_header Host $http_host;
+  &#125;
+&#125;
+
+# 检查并重启服务
+nginx -t
+systemctl reload nginx</code></pre></div></figure>
 
 <p>命令测试（注意，这里是经过10.0.0.5访问，而不是0.7）</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@db01[ ~]#curl -H Host:proxy.oldboylinux.cn http://10.0.0.5<br>PROXY WEB PAGE<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@db01[ ~]#curl -H Host:proxy.oldboylinux.cn http:&#x2F;&#x2F;10.0.0.5
+PROXY WEB PAGE</code></pre></div></figure>
 
 <p>浏览器测试</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> windows hosts</span><br>10.0.0.5 proxy.oldboylinux.cn<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># windows hosts
+10.0.0.5 proxy.oldboylinux.cn</code></pre></div></figure>
 
 <p><img src="/../../../img/image-20240509103538026.png" srcset="/img/loading.gif" lazyload alt="image-20240509103538026"></p>
 <p>抓包查看代理流程</p>
@@ -538,12 +636,39 @@
 <p>解决:</p>
 <p>在代理上面修改请求头:<code>proxy_set_header X-Forwarded-For $remote_addr;</code></p>
 <p>最后在web服务器上记录了真实的ip地址：<code>$http_x_forwarded_ for</code></p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs shell">the “X-Forwarded-For” client request header field<br>with the $remote_addr variable appended to it,<br>separated by a comma. If the “X-Forwarded-For” field<br>is not present in the client request header, the<br><span class="hljs-meta">$</span><span class="bash">proxy_add_x_forwarded_for variable is equal to the</span><br><span class="hljs-meta">$</span><span class="bash">remote_addr variable.</span><br><span class="hljs-meta"></span><br><span class="hljs-meta">$</span><span class="bash">proxy_add_x_forwarded_for</span><br>变量相当于$remote_addr 客户ip地址.<br>多层代理的时候,会记录每个代理的ip地址.相当于记录了多个<br><span class="hljs-meta">$</span><span class="bash">remote_addr</span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">the “X-Forwarded-For” client request header field
+with the $remote_addr variable appended to it,
+separated by a comma. If the “X-Forwarded-For” field
+is not present in the client request header, the
+$proxy_add_x_forwarded_for variable is equal to the
+$remote_addr variable.
+
+$proxy_add_x_forwarded_for
+变量相当于$remote_addr 客户ip地址.
+多层代理的时候,会记录每个代理的ip地址.相当于记录了多个
+$remote_addr</code></pre></div></figure>
 
 
 
 <p>配置如下：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@lb01 ~]# cat<br>/etc/nginx/conf.d/proxy.oldboylinux.cn.conf<br><span class="hljs-meta">#</span><span class="bash">lb 代理服务器的ngx 配置</span><br><br>server &#123;<br>  listen 80;<br>  server_name proxy.oldboylinux.cn;<br>  error_log /var/log/nginx/proxy-error.log notice;<br>  access_log /var/log/nginx/proxy-acess.log main;<br>location / &#123;<br>  proxy_pass http://10.0.0.7:80 ;<br><span class="hljs-meta">  #</span><span class="bash">代理--&gt;节点发出请求,修改请求头.</span><br><span class="hljs-meta">  #</span><span class="bash">proxy_set_header 请求头字段 内容(变量);</span><br>  proxy_set_header Host $http_host;<br><span class="hljs-meta">  #</span><span class="bash">proxy_set_header X-Forwarded-For 取出客户端ip地址</span><br>  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;<br>&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@lb01 ~]# cat
+&#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;proxy.oldboylinux.cn.conf
+#lb 代理服务器的ngx 配置
+
+server &#123;
+  listen 80;
+  server_name proxy.oldboylinux.cn;
+  error_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;proxy-error.log notice;
+  access_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;proxy-acess.log main;
+location &#x2F; &#123;
+  proxy_pass http:&#x2F;&#x2F;10.0.0.7:80 ;
+  #代理--&gt;节点发出请求,修改请求头.
+  #proxy_set_header 请求头字段 内容(变量);
+  proxy_set_header Host $http_host;
+  #proxy_set_header X-Forwarded-For 取出客户端ip地址
+  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+&#125;
+&#125;</code></pre></div></figure>
 
 
 
@@ -551,16 +676,33 @@
 <p><font color=red>浏览器测试没看到</font></p>
 <p><img src="/../../../img/image-20240509110830878.png" srcset="/img/loading.gif" lazyload alt="image-20240509110830878"></p>
 <p>也可以在访问日志文件中看到：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01[ /app/code]#cat /var/log/nginx/proxy-access.log<br>...<br>10.0.0.5 - - [09/May/2024:11:07:18 +0800] &quot;GET /favicon.ico HTTP/1.0&quot; 404 153 &quot;http://proxy.oldboylinux.cn/&quot; &quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0&quot; &quot;10.0.0.1&quot;<br>...<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web01[ &#x2F;app&#x2F;code]#cat &#x2F;var&#x2F;log&#x2F;nginx&#x2F;proxy-access.log
+...
+10.0.0.5 - - [09&#x2F;May&#x2F;2024:11:07:18 +0800] &quot;GET &#x2F;favicon.ico HTTP&#x2F;1.0&quot; 404 153 &quot;http:&#x2F;&#x2F;proxy.oldboylinux.cn&#x2F;&quot; &quot;Mozilla&#x2F;5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko&#x2F;20100101 Firefox&#x2F;121.0&quot; &quot;10.0.0.1&quot;
+...</code></pre></div></figure>
 
 <h2 id="3-4-参数多的时候如何配置"><a href="#3-4-参数多的时候如何配置" class="headerlink" title="3.4 参数多的时候如何配置"></a>3.4 参数多的时候如何配置</h2><blockquote>
 <p>可将参数写到一个文件中，然后在nginx配置文件里include包含进去</p>
 </blockquote>
 <p>1、创建包含参数的文件</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@lb01 conf.d]# cat /etc/nginx/proxy_params<br>proxy_set_header Host $http_host;<br>proxy_set_header X-Real-IP $remote_addr;<br>proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;<br><br>proxy_connect_timeout 30;<br>proxy_send_timeout 60;<br>proxy_read_timeout 60;<br><br>proxy_buffering on;<br>proxy_buffer_size 32k;<br>proxy_buffers 4 128k;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@lb01 conf.d]# cat &#x2F;etc&#x2F;nginx&#x2F;proxy_params
+proxy_set_header Host $http_host;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+proxy_connect_timeout 30;
+proxy_send_timeout 60;
+proxy_read_timeout 60;
+
+proxy_buffering on;
+proxy_buffer_size 32k;
+proxy_buffers 4 128k;</code></pre></div></figure>
 
 <p>2、在配置文件中导入，方便后续多个location使用</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">location / &#123;<br>    proxy_pass http://10.0.0.7:80;<br>    include proxy_params;<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">location &#x2F; &#123;
+    proxy_pass http:&#x2F;&#x2F;10.0.0.7:80;
+    include proxy_params;
+&#125;</code></pre></div></figure>
 
 <h2 id="3-5-代理小结"><a href="#3-5-代理小结" class="headerlink" title="3.5 代理小结"></a>3.5 代理小结</h2><p>1、什么是正向代理，什么是反向代理</p>
 <p>2、核心指令：<code>proxy_pass</code></p>
@@ -572,7 +714,9 @@
 </li>
 </ul>
 <p>4、生产建议配置</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">proxy_set_header Host $http_host;<br>proxy_set_header X-Real-IP $remote_addr;<br>proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">proxy_set_header Host $http_host;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;</code></pre></div></figure>
 
 <p>5、常用参数解释</p>
 <table>
@@ -684,16 +828,58 @@
 </tr>
 </tbody></table>
 <p>web服务器准备，两台都做相同配置</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 子配置文件</span><br>[root@web01 /etc/nginx/conf.d]# cat lb.oldboylinux.cn.conf<br>server &#123;<br>  listen 80;<br>  server_name lb.oldboylinux.cn;<br>  root /app/code/lb;<br>  error_log /var/log/nginx/lb-error.log notice;<br>  access_log /var/log/nginx/lb-access.log main;<br>  location / &#123;<br>    index index.html;<br>  &#125;<br>&#125;<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 站点内容</span><br>[root@web01 /etc/nginx/conf.d]# cat /app/code/lb/index.html<br>lb.oldboylinux.cn web01<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 子配置文件
+[root@web01 &#x2F;etc&#x2F;nginx&#x2F;conf.d]# cat lb.oldboylinux.cn.conf
+server &#123;
+  listen 80;
+  server_name lb.oldboylinux.cn;
+  root &#x2F;app&#x2F;code&#x2F;lb;
+  error_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;lb-error.log notice;
+  access_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;lb-access.log main;
+  location &#x2F; &#123;
+    index index.html;
+  &#125;
+&#125;
+
+# 站点内容
+[root@web01 &#x2F;etc&#x2F;nginx&#x2F;conf.d]# cat &#x2F;app&#x2F;code&#x2F;lb&#x2F;index.html
+lb.oldboylinux.cn web01</code></pre></div></figure>
 
 <p>检查web服务</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@db01[ ~]#curl -H Host:lb.oldboylinux.cn http://10.0.0.7<br>WEB 01 PAGE<br>[root@db01[ ~]#curl -H Host:lb.oldboylinux.cn http://10.0.0.8<br>WEB 02 PAGE<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@db01[ ~]#curl -H Host:lb.oldboylinux.cn http:&#x2F;&#x2F;10.0.0.7
+WEB 01 PAGE
+[root@db01[ ~]#curl -H Host:lb.oldboylinux.cn http:&#x2F;&#x2F;10.0.0.8
+WEB 02 PAGE</code></pre></div></figure>
 
 <h2 id="4-2-负载均衡配置"><a href="#4-2-负载均衡配置" class="headerlink" title="4.2 负载均衡配置"></a>4.2 负载均衡配置</h2><p>lb01配置</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@lb01 /etc/nginx/conf.d]# cat<br>lb.oldboylinux.cn.conf<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> upstream创建资源池</span><br>upstream lb_pools &#123;<br>  server 10.0.0.7:80;<br>  server 10.0.0.8:80;<br>&#125;<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> server指向资源池</span><br>server &#123;<br>  listen 80;<br>  server_name lb.oldboylinux.cn;<br>  error_log /var/log/nginx/lb-error.log notice;<br>  access_log /var/log/nginx/lb-access.log main;<br>  location / &#123;<br>    proxy_pass http://lb_pools;<br>    proxy_set_header Host $http_host;<br>    proxy_set_header X-Real-Ip $remote_addr;<br>    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@lb01 &#x2F;etc&#x2F;nginx&#x2F;conf.d]# cat
+lb.oldboylinux.cn.conf
+
+# upstream创建资源池
+upstream lb_pools &#123;
+  server 10.0.0.7:80;
+  server 10.0.0.8:80;
+&#125;
+
+# server指向资源池
+server &#123;
+  listen 80;
+  server_name lb.oldboylinux.cn;
+  error_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;lb-error.log notice;
+  access_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;lb-access.log main;
+  location &#x2F; &#123;
+    proxy_pass http:&#x2F;&#x2F;lb_pools;
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Real-Ip $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  &#125;
+&#125;</code></pre></div></figure>
 
 <p>命令行测试</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@db01[ ~]#curl -H Host:lb.oldboylinux.cn http://10.0.0.5<br>WEB 01 PAGE<br>[root@db01[ ~]#curl -H Host:lb.oldboylinux.cn http://10.0.0.5<br>WEB 02 PAGE<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@db01[ ~]#curl -H Host:lb.oldboylinux.cn http:&#x2F;&#x2F;10.0.0.5
+WEB 01 PAGE
+[root@db01[ ~]#curl -H Host:lb.oldboylinux.cn http:&#x2F;&#x2F;10.0.0.5
+WEB 02 PAGE</code></pre></div></figure>
 
 
                 
@@ -764,9 +950,9 @@
             
               
               
-                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
                   <span class="hint--top hint--rounded" aria-label="BY - 署名">
-                    <i class="iconfont icon-by"></i>
+                    <i class="iconfont icon-cc-by"></i>
                   </span>
                 </a>
               
@@ -814,16 +1000,6 @@
 
     <div class="side-col d-none d-lg-block col-lg-2">
       
-  <aside class="sidebar" style="margin-left: -1rem">
-    <div id="toc">
-  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
-  <div class="toc-body" id="toc-body"></div>
-</div>
-
-
-
-  </aside>
-
 
     </div>
   </div>
@@ -901,7 +1077,6 @@
   
   
   
-  
 </div>
 
   </footer>
@@ -920,7 +1095,7 @@
   </script>
 
 
-<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
 <script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
 <script  src="/js/events.js" ></script>
 <script  src="/js/plugins.js" ></script>
@@ -953,7 +1128,7 @@
 
   
 <script>
-  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
     var toc = jQuery('#toc');
     if (toc.length === 0 || !window.tocbot) { return; }
     var boardCtn = jQuery('#board-ctn');
@@ -991,6 +1166,12 @@
 </script>
 
 
+  <script  src="https://lib.baomitu.com/prism/1.29.0/components/prism-core.min.js" ></script>
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js" ></script>
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
+
   <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
 
   <script>Fluid.plugins.codeWidget();</script>
@@ -998,7 +1179,7 @@
 
   
 <script>
-  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
     window.anchors.options = {
       placement: CONFIG.anchorjs.placement,
       visible  : CONFIG.anchorjs.visible

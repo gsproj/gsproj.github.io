@@ -7,8 +7,11 @@
 
 <head>
   <meta charset="UTF-8">
+
   <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
   <link rel="icon" href="/img/fluid.png">
+  
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   
@@ -16,12 +19,12 @@
   <meta name="author" content="GongSheng">
   <meta name="keywords" content="">
   
-    <meta name="description" content="Web集群-Nginx（二）">
+    <meta name="description" content="Web集群-Nginx（二）一、Nginx处理用户请求流程思考问题：之前搭建的cxk.oldboylinux.cn网站,使用域名访问或ip访问都是没有问 题的.如果把配置文件名game.cxk.oldboylinux.cn.conf使用域名或ip访问或怎么样?   答案：  域名访问网站没有任何问题. 使用ip访问则显示静态页面,另外一个网站了  域名访问正常：  IP访问异常  为什么是这样？它">
 <meta property="og:type" content="article">
 <meta property="og:title" content="12-Web集群-Nginx(二)">
 <meta property="og:url" content="http://gsproj.github.io/2024/05/07/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/02_%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/12-web%E9%9B%86%E7%BE%A4-Nginx-2/index.html">
 <meta property="og:site_name" content="迎风之豚的博客">
-<meta property="og:description" content="Web集群-Nginx（二）">
+<meta property="og:description" content="Web集群-Nginx（二）一、Nginx处理用户请求流程思考问题：之前搭建的cxk.oldboylinux.cn网站,使用域名访问或ip访问都是没有问 题的.如果把配置文件名game.cxk.oldboylinux.cn.conf使用域名或ip访问或怎么样?   答案：  域名访问网站没有任何问题. 使用ip访问则显示静态页面,另外一个网站了  域名访问正常：  IP访问异常  为什么是这样？它">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240507151441247.png">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240507151451949.png">
@@ -49,6 +52,8 @@
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
 
+  <link  rel="stylesheet" href="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" />
+
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
 
@@ -56,11 +61,11 @@
 <!-- 主题依赖的图标库，不要自行修改 -->
 <!-- Do not modify the link that theme dependent icons -->
 
-<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
 
 
 
-<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
 
 
 <link  rel="stylesheet" href="/css/main.css" />
@@ -77,7 +82,7 @@
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
     Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"left","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
 
     if (CONFIG.web_analytics.follow_dnt) {
       var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
@@ -90,7 +95,7 @@
 
 
   
-<meta name="generator" content="Hexo 5.4.2"></head>
+<meta name="generator" content="Hexo 7.3.0"></head>
 
 
 <body>
@@ -103,7 +108,7 @@
   <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand" href="/">
-      <strong>&#34;迎风之豚的博客&#34;</strong>
+      <strong>Haris的博客</strong>
     </a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
@@ -121,9 +126,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/">
+              <a class="nav-link" href="/" target="_self">
                 <i class="iconfont icon-home-fill"></i>
-                首页
+                <span>首页</span>
               </a>
             </li>
           
@@ -133,9 +138,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/archives/">
+              <a class="nav-link" href="/archives/" target="_self">
                 <i class="iconfont icon-archive-fill"></i>
-                归档
+                <span>归档</span>
               </a>
             </li>
           
@@ -145,9 +150,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/categories/">
+              <a class="nav-link" href="/categories/" target="_self">
                 <i class="iconfont icon-category-fill"></i>
-                分类
+                <span>分类</span>
               </a>
             </li>
           
@@ -157,9 +162,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/tags/">
+              <a class="nav-link" href="/tags/" target="_self">
                 <i class="iconfont icon-tags-fill"></i>
-                标签
+                <span>标签</span>
               </a>
             </li>
           
@@ -169,9 +174,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/about/">
+              <a class="nav-link" href="/about/" target="_self">
                 <i class="iconfont icon-user-fill"></i>
-                关于
+                <span>关于</span>
               </a>
             </li>
           
@@ -179,15 +184,16 @@
         
           <li class="nav-item" id="search-btn">
             <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
-              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+              <i class="iconfont icon-search"></i>
             </a>
           </li>
           
         
         
           <li class="nav-item" id="color-toggle-btn">
-            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
-                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
           </li>
         
       </ul>
@@ -227,7 +233,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          11k 字
+          3.7k 字
         
       </span>
     
@@ -238,7 +244,7 @@
         
         
         
-          92 分钟
+          31 分钟
         
       </span>
     
@@ -268,6 +274,19 @@
   <div class="row nomargin-x">
     <div class="side-col d-none d-lg-block col-lg-2">
       
+  <aside class="sidebar" style="padding-left: 2rem; margin-right: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
 
     </div>
 
@@ -275,8 +294,7 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <!-- SEO header -->
-            <h1 style="display: none">12-Web集群-Nginx(二)</h1>
+            <h1 id="seo-header">12-Web集群-Nginx(二)</h1>
             
             
               <div class="markdown-body">
@@ -298,7 +316,9 @@
 <h3 id="1-1-1-正常流程步骤"><a href="#1-1-1-正常流程步骤" class="headerlink" title="1.1.1 正常流程步骤"></a>1.1.1 正常流程步骤</h3><p>1、DNS解析：cxk.oldboylinux.cn –&gt; 10.0.0.7</p>
 <p>2、连接80端口：TCP三次握手与网站80端口建立连接</p>
 <p>3、发送HTTP请求报文：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">GET /index.html<br>HOST: cxk.oldboylinux.cn<br>User-Agent: Chrome/xxx<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">GET &#x2F;index.html
+HOST: cxk.oldboylinux.cn
+User-Agent: Chrome&#x2F;xxx</code></pre></div></figure>
 
 <p>4、nginx处理：</p>
 <ul>
@@ -376,7 +396,22 @@
 <p>访问一个完全没配置过虚拟主机的域名会怎样？</p>
 </blockquote>
 <p>书写配置：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 创建子配置文件</span><br>[root@web01[ /etc/nginx/conf.d]#cat bird.oldboylinux.cn.conf<br>server &#123;<br>  listen 80;<br>  server_name bird.oldboylinux.cn;<br>  root /app/code/bird;<br>  location / &#123;<br>    index index.html;<br>  &#125;<br>&#125;<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 重新加载服务</span><br>[root@web01[ /etc/nginx/conf.d]#systemctl reload nginx<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> windows客户端做hosts解析</span><br>...<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 创建子配置文件
+[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#cat bird.oldboylinux.cn.conf
+server &#123;
+  listen 80;
+  server_name bird.oldboylinux.cn;
+  root &#x2F;app&#x2F;code&#x2F;bird;
+  location &#x2F; &#123;
+    index index.html;
+  &#125;
+&#125;
+
+# 重新加载服务
+[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#systemctl reload nginx
+
+# windows客户端做hosts解析
+...</code></pre></div></figure>
 
 <p>测试：</p>
 <ul>
@@ -408,20 +443,104 @@
 </blockquote>
 <h2 id="2-3-基于端口的虚拟主机"><a href="#2-3-基于端口的虚拟主机" class="headerlink" title="2.3 基于端口的虚拟主机"></a>2.3 基于端口的虚拟主机</h2><p>顾名思义：根据不同的端口，访问不同的网站</p>
 <p>案例：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 创建live网站，并将端口改为81</span><br>[root@web01[ /etc/nginx/conf.d]#cat live.oldboylinux.cn.conf<br>server &#123;<br>  listen 81;<br>  server_name live.oldboylinux.cn;<br>  root /app/code/live;<br>  location / &#123;<br>    index index.html;<br>  &#125;<br>&#125;<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 添加网页文件</span><br>[root@web01[ /app/code/live]#tree /app/code/live/<br>/app/code/live/<br>└── index.html<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 创建live网站，并将端口改为81
+[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#cat live.oldboylinux.cn.conf
+server &#123;
+  listen 81;
+  server_name live.oldboylinux.cn;
+  root &#x2F;app&#x2F;code&#x2F;live;
+  location &#x2F; &#123;
+    index index.html;
+  &#125;
+&#125;
+
+# 添加网页文件
+[root@web01[ &#x2F;app&#x2F;code&#x2F;live]#tree &#x2F;app&#x2F;code&#x2F;live&#x2F;
+&#x2F;app&#x2F;code&#x2F;live&#x2F;
+└── index.html</code></pre></div></figure>
 
 <p>测试访问：</p>
 <p>命令：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01[ /app/code/live]#curl -v -H &quot;Host: live.oldboylinux.cn&quot; http://10.0.0.7:81/index.html<br>* About to connect() to 10.0.0.7 port 81 (#0)<br>*   Trying 10.0.0.7...<br>* Connected to 10.0.0.7 (10.0.0.7) port 81 (#0)<br><span class="hljs-meta">&gt;</span><span class="bash"> GET /index.html HTTP/1.1</span><br><span class="hljs-meta">&gt;</span><span class="bash"> User-Agent: curl/7.29.0</span><br><span class="hljs-meta">&gt;</span><span class="bash"> Accept: */*</span><br><span class="hljs-meta">&gt;</span><span class="bash"> Host: live.oldboylinux.cn</span><br><span class="hljs-meta">&gt;</span><span class="bash"></span><br><span class="bash">&lt; HTTP/1.1 200 OK</span><br>&lt; Server: nginx/1.26.0<br>&lt; Date: Tue, 07 May 2024 07:58:07 GMT<br>&lt; Content-Type: text/html<br>&lt; Content-Length: 252<br>&lt; Last-Modified: Tue, 07 May 2024 07:54:57 GMT<br>&lt; Connection: keep-alive<br>&lt; ETag: &quot;6639de51-fc&quot;<br>&lt; Accept-Ranges: bytes<br>&lt;<br>&lt;!DOCTYPE html&gt;<br>&lt;html lang=&quot;en&quot;&gt;<br>&lt;head&gt;<br>    &lt;meta charset=&quot;UTF-8&quot;&gt;<br>    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;<br>    &lt;title&gt;Live Show&lt;/title&gt;<br>&lt;/head&gt;<br>&lt;body&gt;<br>    &lt;h1&gt;Welcome to Live Show Page&lt;/h1&gt;<br>&lt;/body&gt;<br>&lt;/html&gt;<br>* Connection #0 to host 10.0.0.7 left intact<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web01[ &#x2F;app&#x2F;code&#x2F;live]#curl -v -H &quot;Host: live.oldboylinux.cn&quot; http:&#x2F;&#x2F;10.0.0.7:81&#x2F;index.html
+* About to connect() to 10.0.0.7 port 81 (#0)
+*   Trying 10.0.0.7...
+* Connected to 10.0.0.7 (10.0.0.7) port 81 (#0)
+&gt; GET &#x2F;index.html HTTP&#x2F;1.1
+&gt; User-Agent: curl&#x2F;7.29.0
+&gt; Accept: *&#x2F;*
+&gt; Host: live.oldboylinux.cn
+&gt;
+&lt; HTTP&#x2F;1.1 200 OK
+&lt; Server: nginx&#x2F;1.26.0
+&lt; Date: Tue, 07 May 2024 07:58:07 GMT
+&lt; Content-Type: text&#x2F;html
+&lt; Content-Length: 252
+&lt; Last-Modified: Tue, 07 May 2024 07:54:57 GMT
+&lt; Connection: keep-alive
+&lt; ETag: &quot;6639de51-fc&quot;
+&lt; Accept-Ranges: bytes
+&lt;
+&lt;!DOCTYPE html&gt;
+&lt;html lang&#x3D;&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset&#x3D;&quot;UTF-8&quot;&gt;
+    &lt;meta name&#x3D;&quot;viewport&quot; content&#x3D;&quot;width&#x3D;device-width, initial-scale&#x3D;1.0&quot;&gt;
+    &lt;title&gt;Live Show&lt;&#x2F;title&gt;
+&lt;&#x2F;head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Welcome to Live Show Page&lt;&#x2F;h1&gt;
+&lt;&#x2F;body&gt;
+&lt;&#x2F;html&gt;
+* Connection #0 to host 10.0.0.7 left intact</code></pre></div></figure>
 
 <p>浏览器</p>
 <p><img src="/../../../img/image-20240507155545483.png" srcset="/img/loading.gif" lazyload alt="image-20240507155545483"></p>
 <h2 id="2-4-基于IP的虚拟主机"><a href="#2-4-基于IP的虚拟主机" class="headerlink" title="2.4 基于IP的虚拟主机"></a>2.4 基于IP的虚拟主机</h2><p>搭建mimi网站,端口是8888,只能通过172.16.1.7内网访问  </p>
 <p><font color=red>在listen字段需要绑定IP</font></p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 创建虚拟主机</span><br>[root@web01[ /etc/nginx/conf.d]#cat mi.oldboylinux.cn.conf<br>server &#123;<br>  listen 172.16.1.7:8888;<br>  server_name mi.oldboylinux.cn;<br>  root /app/code/mi;<br>  location / &#123;<br>    index index.html;<br>  &#125;<br>&#125;<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 添加网页文件</span><br>[root@web01[ /app/code]#tree /app/code/mi/<br>/app/code/mi/<br>└── index.html<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 创建虚拟主机
+[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#cat mi.oldboylinux.cn.conf
+server &#123;
+  listen 172.16.1.7:8888;
+  server_name mi.oldboylinux.cn;
+  root &#x2F;app&#x2F;code&#x2F;mi;
+  location &#x2F; &#123;
+    index index.html;
+  &#125;
+&#125;
+
+# 添加网页文件
+[root@web01[ &#x2F;app&#x2F;code]#tree &#x2F;app&#x2F;code&#x2F;mi&#x2F;
+&#x2F;app&#x2F;code&#x2F;mi&#x2F;
+└── index.html</code></pre></div></figure>
 
 <p>测试访问</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 172网段访问成功</span><br>[root@web01[ /etc/nginx/conf.d]#curl -v -H &quot;Host: mi.oldboylinux.cn&quot; http://172.16.1.7:8888/index.html<br>* About to connect() to 172.16.1.7 port 8888 (#0)<br>*   Trying 172.16.1.7...<br>* Connected to 172.16.1.7 (172.16.1.7) port 8888 (#0)<br>。...<br>&lt;!DOCTYPE html&gt;<br>&lt;html lang=&quot;en&quot;&gt;<br>&lt;head&gt;<br>    &lt;meta charset=&quot;UTF-8&quot;&gt;<br>    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;<br>    &lt;title&gt;Mi Mi Small Mi&lt;/title&gt;<br>&lt;/head&gt;<br>&lt;body&gt;<br>    &lt;h1&gt;年青人的第一个MI页面&lt;/h1&gt;<br>&lt;/body&gt;<br>&lt;/html&gt;<br>* Connection #0 to host 172.16.1.7 left intact<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 10网段访问失败</span><br>[root@web01[ /etc/nginx/conf.d]#curl -v -H &quot;Host: mi.oldboylinux.cn&quot; http://10.0.0.7:8888/index.html<br>* About to connect() to 10.0.0.7 port 8888 (#0)<br>*   Trying 10.0.0.7...<br>* Connection refused<br>* Failed connect to 10.0.0.7:8888; Connection refused<br>* Closing connection 0<br>curl: (7) Failed connect to 10.0.0.7:8888; Connection refused<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 172网段访问成功
+[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#curl -v -H &quot;Host: mi.oldboylinux.cn&quot; http:&#x2F;&#x2F;172.16.1.7:8888&#x2F;index.html
+* About to connect() to 172.16.1.7 port 8888 (#0)
+*   Trying 172.16.1.7...
+* Connected to 172.16.1.7 (172.16.1.7) port 8888 (#0)
+。...
+&lt;!DOCTYPE html&gt;
+&lt;html lang&#x3D;&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset&#x3D;&quot;UTF-8&quot;&gt;
+    &lt;meta name&#x3D;&quot;viewport&quot; content&#x3D;&quot;width&#x3D;device-width, initial-scale&#x3D;1.0&quot;&gt;
+    &lt;title&gt;Mi Mi Small Mi&lt;&#x2F;title&gt;
+&lt;&#x2F;head&gt;
+&lt;body&gt;
+    &lt;h1&gt;年青人的第一个MI页面&lt;&#x2F;h1&gt;
+&lt;&#x2F;body&gt;
+&lt;&#x2F;html&gt;
+* Connection #0 to host 172.16.1.7 left intact
+
+# 10网段访问失败
+[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#curl -v -H &quot;Host: mi.oldboylinux.cn&quot; http:&#x2F;&#x2F;10.0.0.7:8888&#x2F;index.html
+* About to connect() to 10.0.0.7 port 8888 (#0)
+*   Trying 10.0.0.7...
+* Connection refused
+* Failed connect to 10.0.0.7:8888; Connection refused
+* Closing connection 0
+curl: (7) Failed connect to 10.0.0.7:8888; Connection refused</code></pre></div></figure>
 
 
 
@@ -454,7 +573,8 @@
 </tr>
 </tbody></table>
 <h2 id="3-2-错误日志"><a href="#3-2-错误日志" class="headerlink" title="3.2 错误日志"></a>3.2 错误日志</h2><p>指定错误日志的位置和错误日志级别</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">格式:<br>	error_log 文件名 级别<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">格式:
+	error_log 文件名 级别</code></pre></div></figure>
 
 <p>错误日志级别</p>
 <table>
@@ -501,13 +621,30 @@
 <p>debug: 未来主要用于调试使用，短时间开启，在网站访问量较大时别开</p>
 </blockquote>
 <p>案例：给每个虚拟主机指定自己独立的错误日志  </p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01[ /etc/nginx/conf.d]#cat cxk.oldboylinux.cn.conf<br>server &#123;<br>  listen 80;<br>  server_name cxk.oldboylinux.cn;<br>  root /app/code/cxk;<br><span class="hljs-meta">  #</span><span class="bash"> 设置错误日志</span><br>  error_log /var/log/nginx/cxk.oldboylinux.cn-error.log notice;<br>  location / &#123;<br>    index index.html;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#cat cxk.oldboylinux.cn.conf
+server &#123;
+  listen 80;
+  server_name cxk.oldboylinux.cn;
+  root &#x2F;app&#x2F;code&#x2F;cxk;
+  # 设置错误日志
+  error_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;cxk.oldboylinux.cn-error.log notice;
+  location &#x2F; &#123;
+    index index.html;
+  &#125;
+&#125;</code></pre></div></figure>
 
 <p>**<font color=red>注意：</font>**如开启独立错误日志，需要把nginx.conf里面的error_log注释</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01[ /etc/nginx/conf.d]#cat /etc/nginx/nginx.conf<br><br>user  nginx;<br>worker_processes  auto;<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash">error_log  /var/<span class="hljs-built_in">log</span>/nginx/error.log notice;</span><br>pid        /var/run/nginx.pid;<br>...<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#cat &#x2F;etc&#x2F;nginx&#x2F;nginx.conf
+
+user  nginx;
+worker_processes  auto;
+
+#error_log  &#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log notice;
+pid        &#x2F;var&#x2F;run&#x2F;nginx.pid;
+...</code></pre></div></figure>
 
 <h2 id="3-2-访问日志"><a href="#3-2-访问日志" class="headerlink" title="3.2 访问日志"></a>3.2 访问日志</h2><h3 id="3-2-1-日志格式配置"><a href="#3-2-1-日志格式配置" class="headerlink" title="3.2.1 日志格式配置"></a>3.2.1 日志格式配置</h3><p>辅助我们进行分析，如网站访问量，ip，pv，访问日志设置的格式</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs she">log_format 格式名字 格式.....;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-she" data-language="she"><code class="language-she">log_format 格式名字 格式.....;</code></pre></div></figure>
 
 <p> 访问日志格式</p>
 <table>
@@ -555,19 +692,46 @@
 </tr>
 </tbody></table>
 <p>日志格式配置</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01[ /var/log/nginx]#cat /etc/nginx/nginx.conf<br>...<br>http &#123;<br>...<br>    log_format  main  &#x27;$remote_addr - $remote_user [$time_local] &quot;$request&quot; &#x27;<br>                      &#x27;$status $body_bytes_sent &quot;$http_referer&quot; &#x27;<br>                      &#x27;&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;&#x27;;<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash">    access_log  /var/<span class="hljs-built_in">log</span>/nginx/access.log  main;</span><br>...<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web01[ &#x2F;var&#x2F;log&#x2F;nginx]#cat &#x2F;etc&#x2F;nginx&#x2F;nginx.conf
+...
+http &#123;
+...
+    log_format  main  &#39;$remote_addr - $remote_user [$time_local] &quot;$request&quot; &#39;
+                      &#39;$status $body_bytes_sent &quot;$http_referer&quot; &#39;
+                      &#39;&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;&#39;;
+
+#    access_log  &#x2F;var&#x2F;log&#x2F;nginx&#x2F;access.log  main;
+...
+&#125;</code></pre></div></figure>
 
 <h3 id="3-2-2-访问日志配置"><a href="#3-2-2-访问日志配置" class="headerlink" title="3.2.2 访问日志配置"></a>3.2.2 访问日志配置</h3><p>access_log指定日志，使用对应格式</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">access_log 日志位置 格式<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">access_log 日志位置 格式</code></pre></div></figure>
 
 <p>案例：给每个虚拟主机指定自己独立的访问日志  </p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01[ /etc/nginx/conf.d]#cat cxk.oldboylinux.cn.conf<br>server &#123;<br>  listen 80;<br>  server_name cxk.oldboylinux.cn;<br>  error_log  /var/log/nginx/cxk.oldboylinux.cn-error.log notice;<br>  access_log /var/log/nginx/cxk.oldboylinux.cn-access.log main;<br>  root /app/code/cxk;<br>  location / &#123;<br>    index index.html;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#cat cxk.oldboylinux.cn.conf
+server &#123;
+  listen 80;
+  server_name cxk.oldboylinux.cn;
+  error_log  &#x2F;var&#x2F;log&#x2F;nginx&#x2F;cxk.oldboylinux.cn-error.log notice;
+  access_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;cxk.oldboylinux.cn-access.log main;
+  root &#x2F;app&#x2F;code&#x2F;cxk;
+  location &#x2F; &#123;
+    index index.html;
+  &#125;
+&#125;</code></pre></div></figure>
 
 <p>**<font color=red>注意：</font>**如开启独立错误日志，需要把nginx.conf里面的access_log注释</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01[ /etc/nginx/conf.d]#cat /etc/nginx/nginx.conf<br>...<br><span class="hljs-meta">#</span><span class="bash">    access_log  /var/<span class="hljs-built_in">log</span>/nginx/access.log  main;</span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#cat &#x2F;etc&#x2F;nginx&#x2F;nginx.conf
+...
+#    access_log  &#x2F;var&#x2F;log&#x2F;nginx&#x2F;access.log  main;</code></pre></div></figure>
 
 <p>查看效果</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01[ /etc/nginx/conf.d]#tree /var/log/nginx/<br>/var/log/nginx/<br>├── access.log<br>├── cxk.oldboylinux.cn-access.log<br>├── cxk.oldboylinux.cn-error.log<br>└── error.log<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#tree &#x2F;var&#x2F;log&#x2F;nginx&#x2F;
+&#x2F;var&#x2F;log&#x2F;nginx&#x2F;
+├── access.log
+├── cxk.oldboylinux.cn-access.log
+├── cxk.oldboylinux.cn-error.log
+└── error.log</code></pre></div></figure>
 
 <h3 id="3-2-3-访问日志其他选项"><a href="#3-2-3-访问日志其他选项" class="headerlink" title="3.2.3 访问日志其他选项"></a>3.2.3 访问日志其他选项</h3><p>了解即可，未来根据需要进行配置</p>
 <table>
@@ -591,7 +755,17 @@
 </tr>
 </tbody></table>
 <p>配置如下：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01[ /etc/nginx]#cat conf.d/cxk.oldboylinux.cn.conf<br>server &#123;<br>  listen 80;<br>  server_name cxk.oldboylinux.cn;<br>  root /app/code/cxk;<br>  error_log  /var/log/nginx/cxk.oldboylinux.cn-error.log notice;<br>  access_log /var/log/nginx/cxk.oldboylinux.cn-access.log main gzip buffer=32k flush=10s;<br>  location / &#123;<br>    index index.html;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web01[ &#x2F;etc&#x2F;nginx]#cat conf.d&#x2F;cxk.oldboylinux.cn.conf
+server &#123;
+  listen 80;
+  server_name cxk.oldboylinux.cn;
+  root &#x2F;app&#x2F;code&#x2F;cxk;
+  error_log  &#x2F;var&#x2F;log&#x2F;nginx&#x2F;cxk.oldboylinux.cn-error.log notice;
+  access_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;cxk.oldboylinux.cn-access.log main gzip buffer&#x3D;32k flush&#x3D;10s;
+  location &#x2F; &#123;
+    index index.html;
+  &#125;
+&#125;</code></pre></div></figure>
 
 
 
@@ -681,16 +855,68 @@
 </tr>
 </tbody></table>
 <h2 id="4-2-location案例1"><a href="#4-2-location案例1" class="headerlink" title="4.2 location案例1"></a>4.2 location案例1</h2><p>案例：搭建大型直播购物网站  </p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs shell">要求：<br>域名:buy.oldboylinux.cn<br>站点目录:/app/code/buy/ 首页文件index.html<br>后台管理页面:/app/code/buy/admin/index.html<br>要求后台页面（admin）只能内网访问:172.16.1.0/24网段<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">要求：
+域名:buy.oldboylinux.cn
+站点目录:&#x2F;app&#x2F;code&#x2F;buy&#x2F; 首页文件index.html
+后台管理页面:&#x2F;app&#x2F;code&#x2F;buy&#x2F;admin&#x2F;index.html
+要求后台页面（admin）只能内网访问:172.16.1.0&#x2F;24网段</code></pre></div></figure>
 
 <p>配置虚拟主机：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01[ /etc/nginx/conf.d]#cat buy.oldboylinux.cn.conf<br>server &#123;<br>  listen 80;<br>  server_name buy.oldboylinux.cn;<br>  root /app/code/buy;<br>  error_log  /var/log/nginx/buy.oldboylinux.cn-error.log notice;<br>  access_log /var/log/nginx/buy.oldboylinux.cn-access.log main;<br><br>  location / &#123;<br>    index index.html;<br>  &#125;<br><span class="hljs-meta"></span><br><span class="hljs-meta">  #</span><span class="bash">buy.oldboylinux.cn/admin/</span><br><span class="hljs-meta">  #</span><span class="bash">uri: /admin/</span><br><span class="hljs-meta"></span><br><span class="hljs-meta">  #</span><span class="bash"> 后台页面特殊配置</span><br>  location /admin &#123;<br>    # 准许172.16.1.0/24网段访问<br>    allow 172.16.1.0/24<br>    # 拒绝其他所有<br>    deny all<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#cat buy.oldboylinux.cn.conf
+server &#123;
+  listen 80;
+  server_name buy.oldboylinux.cn;
+  root &#x2F;app&#x2F;code&#x2F;buy;
+  error_log  &#x2F;var&#x2F;log&#x2F;nginx&#x2F;buy.oldboylinux.cn-error.log notice;
+  access_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;buy.oldboylinux.cn-access.log main;
+
+  location &#x2F; &#123;
+    index index.html;
+  &#125;
+
+  #buy.oldboylinux.cn&#x2F;admin&#x2F;
+  #uri: &#x2F;admin&#x2F;
+
+  # 后台页面特殊配置
+  location &#x2F;admin &#123;
+    # 准许172.16.1.0&#x2F;24网段访问
+    allow 172.16.1.0&#x2F;24
+    # 拒绝其他所有
+    deny all
+  &#125;
+&#125;</code></pre></div></figure>
 
 <p>添加网页文件</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01[ /app/code/buy]#echo &quot;buy web site&quot; &gt; index.html<br>[root@web01[ /app/code/buy]#echo &quot;admin web site&quot; &gt; admin/index.html<br>[root@web01[ /app/code/buy]#tree /app/code/buy/<br>/app/code/buy/<br>├── admin<br>│   └── index.html<br>└── index.html<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web01[ &#x2F;app&#x2F;code&#x2F;buy]#echo &quot;buy web site&quot; &gt; index.html
+[root@web01[ &#x2F;app&#x2F;code&#x2F;buy]#echo &quot;admin web site&quot; &gt; admin&#x2F;index.html
+[root@web01[ &#x2F;app&#x2F;code&#x2F;buy]#tree &#x2F;app&#x2F;code&#x2F;buy&#x2F;
+&#x2F;app&#x2F;code&#x2F;buy&#x2F;
+├── admin
+│   └── index.html
+└── index.html</code></pre></div></figure>
 
 <p>测试访问</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 10网段访问主页面 --- OK</span><br>[root@web01[ /app/code]#curl -v -H &quot;Host: buy.oldboylinux.cn&quot; http://10.0.0.7:80/index.html<br>* About to connect() to 10.0.0.7 port 80 (#0)<br>...<br>&lt; HTTP/1.1 200 OK<br>...<br>buy web site<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 10网段访问admin页面 --- ERROR</span><br>[root@web01[ /app/code]#curl -v -H &quot;Host: buy.oldboylinux.cn&quot; http://10.0.0.7:80/admin/index.html<br>* About to connect() to 10.0.0.7 port 80 (#0)<br>...<br>&lt; HTTP/1.1 403 Forbidden<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 172网段访问admin页面 --- OK</span><br>[root@web01[ /app/code]#curl -v -H &quot;Host: buy.oldboylinux.cn&quot; http://172.16.1.7:80/admin/index.html<br>* About to connect() to 10.0.0.7 port 80 (#0)<br>...<br>&lt; HTTP/1.1 200 OK<br>...<br>admin web site<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 10网段访问主页面 --- OK
+[root@web01[ &#x2F;app&#x2F;code]#curl -v -H &quot;Host: buy.oldboylinux.cn&quot; http:&#x2F;&#x2F;10.0.0.7:80&#x2F;index.html
+* About to connect() to 10.0.0.7 port 80 (#0)
+...
+&lt; HTTP&#x2F;1.1 200 OK
+...
+buy web site
+
+# 10网段访问admin页面 --- ERROR
+[root@web01[ &#x2F;app&#x2F;code]#curl -v -H &quot;Host: buy.oldboylinux.cn&quot; http:&#x2F;&#x2F;10.0.0.7:80&#x2F;admin&#x2F;index.html
+* About to connect() to 10.0.0.7 port 80 (#0)
+...
+&lt; HTTP&#x2F;1.1 403 Forbidden
+
+# 172网段访问admin页面 --- OK
+[root@web01[ &#x2F;app&#x2F;code]#curl -v -H &quot;Host: buy.oldboylinux.cn&quot; http:&#x2F;&#x2F;172.16.1.7:80&#x2F;admin&#x2F;index.html
+* About to connect() to 10.0.0.7 port 80 (#0)
+...
+&lt; HTTP&#x2F;1.1 200 OK
+...
+admin web site</code></pre></div></figure>
 
 <h2 id="4-3-location案例2"><a href="#4-3-location案例2" class="headerlink" title="4.3 location案例2"></a>4.3 location案例2</h2><p>案例：搭建bird小鸟飞飞网站，给网站加速，设置缓存，网站中html、js、css结</p>
 <p>尾的文件缓存1天，图片缓存1小时 。</p>
@@ -699,10 +925,50 @@
 <p>基本配置浏览器访问并没有缓存  </p>
 </blockquote>
 <p>配置：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01[ /app/code/bird]#cat /etc/nginx/conf.d/bird.oldboylinux.cn.conf<br>server &#123;<br>  listen 80;<br>  server_name bird.oldboylinux.cn;<br>  root /app/code/bird;<br>  location / &#123;<br>    index index.html;<br>  &#125;<br><span class="hljs-meta"></span><br><span class="hljs-meta">  #</span><span class="bash"> uri包含 .html或者.js或者.css 缓存1天</span><br>  location ~* \.(html|js|css)$ &#123;<br>    expires 1d;<br>    #expires max;<br>  &#125;<br><span class="hljs-meta"></span><br><span class="hljs-meta">  #</span><span class="bash"> uri包含 .jpg或.jpge或.png或.gif或.bmp 缓存1小时</span><br>  location ~* \.(jpg|jpeg|png|gif|bmp)$ &#123;<br>    expier 1h;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web01[ &#x2F;app&#x2F;code&#x2F;bird]#cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;bird.oldboylinux.cn.conf
+server &#123;
+  listen 80;
+  server_name bird.oldboylinux.cn;
+  root &#x2F;app&#x2F;code&#x2F;bird;
+  location &#x2F; &#123;
+    index index.html;
+  &#125;
+
+  # uri包含 .html或者.js或者.css 缓存1天
+  location ~* \.(html|js|css)$ &#123;
+    expires 1d;
+    #expires max;
+  &#125;
+
+  # uri包含 .jpg或.jpge或.png或.gif或.bmp 缓存1小时
+  location ~* \.(jpg|jpeg|png|gif|bmp)$ &#123;
+    expier 1h;
+  &#125;
+&#125;</code></pre></div></figure>
 
 <p>网页内容</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 下载flyppy bird</span><br>https://gitee.com/rc-wei/JS-Flappy-Bird/repository/archive/master.zip<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 导入</span><br>[root@web01[ /app/code/bird]#tree .<br>.<br>├── flappy.css<br>├── flappy.js<br>├── img<br>│   ├── banner.jpg<br>│   ├── bg.jpg<br>│   ├── bird.gif<br>│   ├── down.gif<br>│   ├── down_mod.png<br>│   ├── down_pipe.png<br>│   ├── head.jpg<br>│   ├── start.jpg<br>│   ├── up.gif<br>│   ├── up_mod.png<br>│   └── up_pipe.png<br>├── index.html<br>└── README.md<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 下载flyppy bird
+https:&#x2F;&#x2F;gitee.com&#x2F;rc-wei&#x2F;JS-Flappy-Bird&#x2F;repository&#x2F;archive&#x2F;master.zip
+
+# 导入
+[root@web01[ &#x2F;app&#x2F;code&#x2F;bird]#tree .
+.
+├── flappy.css
+├── flappy.js
+├── img
+│   ├── banner.jpg
+│   ├── bg.jpg
+│   ├── bird.gif
+│   ├── down.gif
+│   ├── down_mod.png
+│   ├── down_pipe.png
+│   ├── head.jpg
+│   ├── start.jpg
+│   ├── up.gif
+│   ├── up_mod.png
+│   └── up_pipe.png
+├── index.html
+└── README.md</code></pre></div></figure>
 
 <p>测试访问正常</p>
 <p><img src="/../../../img/image-20240507175222019.png" srcset="/img/loading.gif" lazyload alt="image-20240507175222019"></p>
@@ -710,13 +976,48 @@
 <p><img src="/../../../img/image-20240507175140195.png" srcset="/img/loading.gif" lazyload alt="image-20240507175140195"></p>
 <p>缓存生效</p>
 <p><img src="/../../../img/image-20240507175201535.png" srcset="/img/loading.gif" lazyload alt="image-20240507175201535"></p>
-<h2 id="4-4-location案例3"><a href="#4-4-location案例3" class="headerlink" title="4.4 location案例3"></a>4.4 location案例3</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs shell">server &#123;<br>    listen 80;<br>    server_name l.oldboylinux.cn;<br>    default_type text/html;<br><br>    location / &#123;<br>      return 200 &quot;location /\n&quot;;<br>    &#125;<br>    location = /index.html &#123;<br>      return 200 &quot;location =/\n&quot;;<br>    &#125;<br>    location ~ /index.html &#123;<br>      return 200 &quot;location ~/\n&quot;;<br>    &#125;<br>    location ^~ /index.html &#123;<br>      return 200 &quot;location ^~\n&quot;;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="4-4-location案例3"><a href="#4-4-location案例3" class="headerlink" title="4.4 location案例3"></a>4.4 location案例3</h2><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">server &#123;
+    listen 80;
+    server_name l.oldboylinux.cn;
+    default_type text&#x2F;html;
+
+    location &#x2F; &#123;
+      return 200 &quot;location &#x2F;\n&quot;;
+    &#125;
+    location &#x3D; &#x2F;index.html &#123;
+      return 200 &quot;location &#x3D;&#x2F;\n&quot;;
+    &#125;
+    location ~ &#x2F;index.html &#123;
+      return 200 &quot;location ~&#x2F;\n&quot;;
+    &#125;
+    location ^~ &#x2F;index.html &#123;
+      return 200 &quot;location ^~\n&quot;;
+    &#125;
+&#125;</code></pre></div></figure>
 
 <p>以上的访问优先级是什么？</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs shell">location = / &#123;<br>[ configuration A ]<br>&#125;<br>location / &#123;<br>[ configuration B ]<br>&#125;<br>location /documents/ &#123;<br>[ configuration C ]<br>&#125;<br>location ^~ /images/ &#123;<br>[ configuration D ]<br>&#125;<br>location ~* \.(gif|jpg|jpeg)$ &#123;<br>[ configuration E ]<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">location &#x3D; &#x2F; &#123;
+[ configuration A ]
+&#125;
+location &#x2F; &#123;
+[ configuration B ]
+&#125;
+location &#x2F;documents&#x2F; &#123;
+[ configuration C ]
+&#125;
+location ^~ &#x2F;images&#x2F; &#123;
+[ configuration D ]
+&#125;
+location ~* \.(gif|jpg|jpeg)$ &#123;
+[ configuration E ]
+&#125;</code></pre></div></figure>
 
 <p>测试访问</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs shell">“/” 						A<br>“/index.html” 				B<br>“/documents/document.html” 	C<br>“/images/1.gif” 			D<br>“/documents/1.jpg” 			E<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">“&#x2F;” 						A
+“&#x2F;index.html” 				B
+“&#x2F;documents&#x2F;document.html” 	C
+“&#x2F;images&#x2F;1.gif” 			D
+“&#x2F;documents&#x2F;1.jpg” 			E</code></pre></div></figure>
 
 
 
@@ -803,9 +1104,9 @@
             
               
               
-                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
                   <span class="hint--top hint--rounded" aria-label="BY - 署名">
-                    <i class="iconfont icon-by"></i>
+                    <i class="iconfont icon-cc-by"></i>
                   </span>
                 </a>
               
@@ -853,16 +1154,6 @@
 
     <div class="side-col d-none d-lg-block col-lg-2">
       
-  <aside class="sidebar" style="margin-left: -1rem">
-    <div id="toc">
-  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
-  <div class="toc-body" id="toc-body"></div>
-</div>
-
-
-
-  </aside>
-
 
     </div>
   </div>
@@ -940,7 +1231,6 @@
   
   
   
-  
 </div>
 
   </footer>
@@ -959,7 +1249,7 @@
   </script>
 
 
-<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
 <script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
 <script  src="/js/events.js" ></script>
 <script  src="/js/plugins.js" ></script>
@@ -992,7 +1282,7 @@
 
   
 <script>
-  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
     var toc = jQuery('#toc');
     if (toc.length === 0 || !window.tocbot) { return; }
     var boardCtn = jQuery('#board-ctn');
@@ -1030,6 +1320,12 @@
 </script>
 
 
+  <script  src="https://lib.baomitu.com/prism/1.29.0/components/prism-core.min.js" ></script>
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js" ></script>
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
+
   <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
 
   <script>Fluid.plugins.codeWidget();</script>
@@ -1037,7 +1333,7 @@
 
   
 <script>
-  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
     window.anchors.options = {
       placement: CONFIG.anchorjs.placement,
       visible  : CONFIG.anchorjs.visible

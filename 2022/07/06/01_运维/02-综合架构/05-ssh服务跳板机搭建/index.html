@@ -7,8 +7,11 @@
 
 <head>
   <meta charset="UTF-8">
+
   <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
   <link rel="icon" href="/img/fluid.png">
+  
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   
@@ -16,12 +19,12 @@
   <meta name="author" content="GongSheng">
   <meta name="keywords" content="">
   
-    <meta name="description" content="一、SSH服务器介绍">
+    <meta name="description" content="一、SSH服务器介绍 SSH是一个安全协议，在进行数据传输时，会对数据包进行加密处理，加密后在进行数据传输。确保了数据传输安全。   1 ssh的功能 提供远程连接服务器的服务 对传输的数据进行加密  2 常用服务的端口 ftp – tcp&#x2F;20  tcp&#x2F;21 dns – tcp&#x2F;53  udp&#x2F;53 ssh  –  tcp&#x2F;22 telnet">
 <meta property="og:type" content="article">
 <meta property="og:title" content="运维之综合架构--05--SSH服务器搭建">
 <meta property="og:url" content="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/05-ssh%E6%9C%8D%E5%8A%A1%E8%B7%B3%E6%9D%BF%E6%9C%BA%E6%90%AD%E5%BB%BA/index.html">
 <meta property="og:site_name" content="迎风之豚的博客">
-<meta property="og:description" content="一、SSH服务器介绍">
+<meta property="og:description" content="一、SSH服务器介绍 SSH是一个安全协议，在进行数据传输时，会对数据包进行加密处理，加密后在进行数据传输。确保了数据传输安全。   1 ssh的功能 提供远程连接服务器的服务 对传输的数据进行加密  2 常用服务的端口 ftp – tcp&#x2F;20  tcp&#x2F;21 dns – tcp&#x2F;53  udp&#x2F;53 ssh  –  tcp&#x2F;22 telnet">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://gsproj.github.io/img/ssh%E5%85%8D%E5%AF%86%E7%99%BB%E5%BD%95.png">
 <meta property="article:published_time" content="2022-07-06T03:19:52.000Z">
@@ -42,6 +45,8 @@
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
 
+  <link  rel="stylesheet" href="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" />
+
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
 
@@ -49,11 +54,11 @@
 <!-- 主题依赖的图标库，不要自行修改 -->
 <!-- Do not modify the link that theme dependent icons -->
 
-<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
 
 
 
-<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
 
 
 <link  rel="stylesheet" href="/css/main.css" />
@@ -70,7 +75,7 @@
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
     Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"left","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
 
     if (CONFIG.web_analytics.follow_dnt) {
       var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
@@ -83,7 +88,7 @@
 
 
   
-<meta name="generator" content="Hexo 5.4.2"></head>
+<meta name="generator" content="Hexo 7.3.0"></head>
 
 
 <body>
@@ -96,7 +101,7 @@
   <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand" href="/">
-      <strong>&#34;迎风之豚的博客&#34;</strong>
+      <strong>Haris的博客</strong>
     </a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
@@ -114,9 +119,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/">
+              <a class="nav-link" href="/" target="_self">
                 <i class="iconfont icon-home-fill"></i>
-                首页
+                <span>首页</span>
               </a>
             </li>
           
@@ -126,9 +131,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/archives/">
+              <a class="nav-link" href="/archives/" target="_self">
                 <i class="iconfont icon-archive-fill"></i>
-                归档
+                <span>归档</span>
               </a>
             </li>
           
@@ -138,9 +143,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/categories/">
+              <a class="nav-link" href="/categories/" target="_self">
                 <i class="iconfont icon-category-fill"></i>
-                分类
+                <span>分类</span>
               </a>
             </li>
           
@@ -150,9 +155,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/tags/">
+              <a class="nav-link" href="/tags/" target="_self">
                 <i class="iconfont icon-tags-fill"></i>
-                标签
+                <span>标签</span>
               </a>
             </li>
           
@@ -162,9 +167,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/about/">
+              <a class="nav-link" href="/about/" target="_self">
                 <i class="iconfont icon-user-fill"></i>
-                关于
+                <span>关于</span>
               </a>
             </li>
           
@@ -172,15 +177,16 @@
         
           <li class="nav-item" id="search-btn">
             <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
-              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+              <i class="iconfont icon-search"></i>
             </a>
           </li>
           
         
         
           <li class="nav-item" id="color-toggle-btn">
-            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
-                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
           </li>
         
       </ul>
@@ -220,7 +226,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          2.4k 字
+          877 字
         
       </span>
     
@@ -231,7 +237,7 @@
         
         
         
-          21 分钟
+          8 分钟
         
       </span>
     
@@ -261,6 +267,19 @@
   <div class="row nomargin-x">
     <div class="side-col d-none d-lg-block col-lg-2">
       
+  <aside class="sidebar" style="padding-left: 2rem; margin-right: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
 
     </div>
 
@@ -268,8 +287,7 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <!-- SEO header -->
-            <h1 style="display: none">运维之综合架构--05--SSH服务器搭建</h1>
+            <h1 id="seo-header">运维之综合架构--05--SSH服务器搭建</h1>
             
             
               <div class="markdown-body">
@@ -292,7 +310,10 @@
 <li>https – tcp&#x2F;443</li>
 </ul>
 <h3 id="3-telnet服务搭建"><a href="#3-telnet服务搭建" class="headerlink" title="3 telnet服务搭建"></a>3 telnet服务搭建</h3><p>安装并启动telnet服务</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@backup ~]# yum install telnet-server -y<br>[root@backup ~]# systemctl start telnet.socket <br>[root@backup ~]# useradd gs<br>[root@backup ~]# echo &quot;1&quot; | passwd --stdin gs<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@backup ~]# yum install telnet-server -y
+[root@backup ~]# systemctl start telnet.socket 
+[root@backup ~]# useradd gs
+[root@backup ~]# echo &quot;1&quot; | passwd --stdin gs</code></pre></div></figure>
 
 <p>使用终端软件通过telnet使用gs用户登录连接</p>
 <h3 id="4-telnet与ssh的对比"><a href="#4-telnet与ssh的对比" class="headerlink" title="4 telnet与ssh的对比"></a>4 telnet与ssh的对比</h3><table>
@@ -317,13 +338,30 @@
 <td>不支持root登录</td>
 </tr>
 </tbody></table>
-<h2 id="二、ssh与scp的使用"><a href="#二、ssh与scp的使用" class="headerlink" title="二、ssh与scp的使用"></a>二、ssh与scp的使用</h2><h3 id="1-使用ssh"><a href="#1-使用ssh" class="headerlink" title="1 使用ssh"></a>1 使用ssh</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">ssh命令<br>	ssh 172.16.1.31					#取决当前执行此命令的用户<br>	ssh root@172.16.1.31			#标准的写法<br>	ssh -p22 root@172.16.1.31		#带端口<br></code></pre></td></tr></table></figure>
+<h2 id="二、ssh与scp的使用"><a href="#二、ssh与scp的使用" class="headerlink" title="二、ssh与scp的使用"></a>二、ssh与scp的使用</h2><h3 id="1-使用ssh"><a href="#1-使用ssh" class="headerlink" title="1 使用ssh"></a>1 使用ssh</h3><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">ssh命令
+	ssh 172.16.1.31					#取决当前执行此命令的用户
+	ssh root@172.16.1.31			#标准的写法
+	ssh -p22 root@172.16.1.31		#带端口</code></pre></div></figure>
 
-<h3 id="2-使用scp"><a href="#2-使用scp" class="headerlink" title="2 使用scp"></a>2 使用scp</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs shell">scp <br><span class="hljs-meta">#</span><span class="bash"> -P 指定端口，默认22端口可不写</span><br><span class="hljs-meta">#</span><span class="bash"> -r 表示递归拷贝目录</span><br><span class="hljs-meta">#</span><span class="bash"> -p 表示在拷贝文件前后保持文件或目录属性不变</span><br><span class="hljs-meta">#</span><span class="bash"> -l 限制传输使用带宽(默认kb) /8 -&gt;KB  /1024  -&gt;MB</span> <br></code></pre></td></tr></table></figure>
+<h3 id="2-使用scp"><a href="#2-使用scp" class="headerlink" title="2 使用scp"></a>2 使用scp</h3><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">scp 
+# -P 指定端口，默认22端口可不写
+# -r 表示递归拷贝目录
+# -p 表示在拷贝文件前后保持文件或目录属性不变
+# -l 限制传输使用带宽(默认kb) &#x2F;8 -&gt;KB  &#x2F;1024  -&gt;MB </code></pre></div></figure>
 
-<h2 id="三、使用ssh密钥登录"><a href="#三、使用ssh密钥登录" class="headerlink" title="三、使用ssh密钥登录"></a>三、使用ssh密钥登录</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs shell">1.生成密钥对    公钥  私钥<br>[root@m01 ~]# ssh-keygen -C 7242xxxxx@qq.com<br>	<br>2.将公钥推送到你需要连接的主机，第一次需要输入对端主机的密码<br>[root@m01 ~]# ssh-copy-id -i ~/.ssh/id_rsa.pub root@172.16.1.31<br>root@172.16.1.31&#x27;s password:<br>	<br>3.通过ssh命令测试连接是否需要密码<br>[root@m01 ~]# ssh 172.16.1.31<br>Last login: Wed Jan  9 10:39:16 2019 from 172.16.1.61<br></code></pre></td></tr></table></figure>
+<h2 id="三、使用ssh密钥登录"><a href="#三、使用ssh密钥登录" class="headerlink" title="三、使用ssh密钥登录"></a>三、使用ssh密钥登录</h2><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">1.生成密钥对    公钥  私钥
+[root@m01 ~]# ssh-keygen -C 7242xxxxx@qq.com
+	
+2.将公钥推送到你需要连接的主机，第一次需要输入对端主机的密码
+[root@m01 ~]# ssh-copy-id -i ~&#x2F;.ssh&#x2F;id_rsa.pub root@172.16.1.31
+root@172.16.1.31&#39;s password:
+	
+3.通过ssh命令测试连接是否需要密码
+[root@m01 ~]# ssh 172.16.1.31
+Last login: Wed Jan  9 10:39:16 2019 from 172.16.1.61</code></pre></div></figure>
 
-<h2 id="四、ssh安全"><a href="#四、ssh安全" class="headerlink" title="四、ssh安全"></a>四、ssh安全</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@jumpserver ~]# vim /etc/ssh/sshd_config<br>[root@jumpserver ~]# systemctl restart sshd<br></code></pre></td></tr></table></figure>
+<h2 id="四、ssh安全"><a href="#四、ssh安全" class="headerlink" title="四、ssh安全"></a>四、ssh安全</h2><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@jumpserver ~]# vim &#x2F;etc&#x2F;ssh&#x2F;sshd_config
+[root@jumpserver ~]# systemctl restart sshd</code></pre></div></figure>
 
 <p>SSH作为远程连接服务，通常我们需要考虑到该服务的安全，所以需要对该服务进行安全方面的配置。<br>1.更改远程连接登陆的端口		6666<br>2.禁止ROOT管理员直接登录		<br>3.密码认证方式改为密钥认证<br>4.重要服务不使用公网IP地址<br>5.使用防火墙限制来源IP地址</p>
 <p>Port 6666                       # 变更SSH服务远程连接端口√<br>PermitRootLogin         no      # 禁止root用户直接远程登录√<br>PasswordAuthentication  no      # 禁止使用密码直接远程登录√<br>UseDNS                  no      # 禁止ssh进行dns反向解析，影响ssh连接效率参数√<br>GSSAPIAuthentication    no      # 禁止GSS认证，减少连接时产生的延迟√</p>
@@ -331,7 +369,46 @@
 <p>fail2ban可以监控系统日志，并且根据一定规则匹配异常IP后使用Firewalld将其屏蔽，尤其是针对一些爆破&#x2F;扫描等非常有效。</p>
 </blockquote>
 <p>部署流程</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><code class="hljs shell">1.开启Firewalld防火墙<br>[root@bgx ~]# systemctl start firewalld<br>[root@bgx ~]# systemctl enable firewalld<br>[root@bgx ~]# firewall-cmd --state<br>running<br><br>2.修改firewalld规则，启用Firewalld后会禁止一些服务的传输，但默认会放行常用的22端口, 如果想添加更多，以下是放行SSH端口（22）示例，供参考：<br><span class="hljs-meta">#</span><span class="bash">放行SSHD服务端口</span><br>[root@bgx ~]# firewall-cmd --permanent --add-service=ssh --add-service=http <br><span class="hljs-meta">#</span><span class="bash">重载配</span><br>[root@bgx ~]# firewall-cmd --reload<br><span class="hljs-meta">#</span><span class="bash">查看已放行端口</span><br>[root@bgx ~]# firewall-cmd  --list-service<br><br>3.安装fail2ban,需要有epel<br>[root@bgx ~]# yum install fail2ban fail2ban-firewalld mailx -y<br><br>4.配置fail2ban规则.local会覆盖.conf文件<br>[root@bgx fail2ban]# cat /etc/fail2ban/jail.local<br>[DEFAULT]<br>ignoreip = 127.0.0.1/8<br>bantime  = 86400<br>findtime = 600<br>maxretry = 5<br>banaction = firewallcmd-ipset<br>action = %(action_mwl)s<br><br>[sshd]<br>enabled = true<br>filter  = sshd<br>port    = 22<br>action = %(action_mwl)s<br>logpath = /var/log/secure<br><br>5.启动服务，并检查状态<br>[root@bgx ~]# systemctl start fail2ban.service<br>[root@bgx ~]# fail2ban-client status sshd<br><br>6.清除被封掉的IP地址<br>[root@bgx ~]# fail2ban-client set sshd unbanip 10.0.0.1<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">1.开启Firewalld防火墙
+[root@bgx ~]# systemctl start firewalld
+[root@bgx ~]# systemctl enable firewalld
+[root@bgx ~]# firewall-cmd --state
+running
+
+2.修改firewalld规则，启用Firewalld后会禁止一些服务的传输，但默认会放行常用的22端口, 如果想添加更多，以下是放行SSH端口（22）示例，供参考：
+#放行SSHD服务端口
+[root@bgx ~]# firewall-cmd --permanent --add-service&#x3D;ssh --add-service&#x3D;http 
+#重载配
+[root@bgx ~]# firewall-cmd --reload
+#查看已放行端口
+[root@bgx ~]# firewall-cmd  --list-service
+
+3.安装fail2ban,需要有epel
+[root@bgx ~]# yum install fail2ban fail2ban-firewalld mailx -y
+
+4.配置fail2ban规则.local会覆盖.conf文件
+[root@bgx fail2ban]# cat &#x2F;etc&#x2F;fail2ban&#x2F;jail.local
+[DEFAULT]
+ignoreip &#x3D; 127.0.0.1&#x2F;8
+bantime  &#x3D; 86400
+findtime &#x3D; 600
+maxretry &#x3D; 5
+banaction &#x3D; firewallcmd-ipset
+action &#x3D; %(action_mwl)s
+
+[sshd]
+enabled &#x3D; true
+filter  &#x3D; sshd
+port    &#x3D; 22
+action &#x3D; %(action_mwl)s
+logpath &#x3D; &#x2F;var&#x2F;log&#x2F;secure
+
+5.启动服务，并检查状态
+[root@bgx ~]# systemctl start fail2ban.service
+[root@bgx ~]# fail2ban-client status sshd
+
+6.清除被封掉的IP地址
+[root@bgx ~]# fail2ban-client set sshd unbanip 10.0.0.1</code></pre></div></figure>
 
 
                 
@@ -402,9 +479,9 @@
             
               
               
-                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
                   <span class="hint--top hint--rounded" aria-label="BY - 署名">
-                    <i class="iconfont icon-by"></i>
+                    <i class="iconfont icon-cc-by"></i>
                   </span>
                 </a>
               
@@ -423,9 +500,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/03-NFS%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/" title="运维之综合架构--03-NFS服务器搭建">
+                      <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/04-sersync%E5%AE%9E%E6%97%B6%E5%90%8C%E6%AD%A5%E5%A4%87%E4%BB%BD/" title="运维之综合架构--04--Sersync实时备份">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">运维之综合架构--03-NFS服务器搭建</span>
+                        <span class="hidden-mobile">运维之综合架构--04--Sersync实时备份</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -452,16 +529,6 @@
 
     <div class="side-col d-none d-lg-block col-lg-2">
       
-  <aside class="sidebar" style="margin-left: -1rem">
-    <div id="toc">
-  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
-  <div class="toc-body" id="toc-body"></div>
-</div>
-
-
-
-  </aside>
-
 
     </div>
   </div>
@@ -539,7 +606,6 @@
   
   
   
-  
 </div>
 
   </footer>
@@ -558,7 +624,7 @@
   </script>
 
 
-<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
 <script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
 <script  src="/js/events.js" ></script>
 <script  src="/js/plugins.js" ></script>
@@ -591,7 +657,7 @@
 
   
 <script>
-  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
     var toc = jQuery('#toc');
     if (toc.length === 0 || !window.tocbot) { return; }
     var boardCtn = jQuery('#board-ctn');
@@ -629,6 +695,12 @@
 </script>
 
 
+  <script  src="https://lib.baomitu.com/prism/1.29.0/components/prism-core.min.js" ></script>
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js" ></script>
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
+
   <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
 
   <script>Fluid.plugins.codeWidget();</script>
@@ -636,7 +708,7 @@
 
   
 <script>
-  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
     window.anchors.options = {
       placement: CONFIG.anchorjs.placement,
       visible  : CONFIG.anchorjs.visible

@@ -7,8 +7,11 @@
 
 <head>
   <meta charset="UTF-8">
+
   <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
   <link rel="icon" href="/img/fluid.png">
+  
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   
@@ -16,12 +19,12 @@
   <meta name="author" content="GongSheng">
   <meta name="keywords" content="">
   
-    <meta name="description" content="Devops架构-Jenkins-02">
+    <meta name="description" content="Devops架构-Jenkins-02今日内容：  CD持续交付&#x2F;部署的方案介绍 案例04：Jenkins从gitlab拉取站点代码并部署 案例05：Jenkins拉取java代码, maven编译后部署  一、CD持续交付&#x2F;部署方案   CD方案 优点 缺点 应用场景    1、使用Jenkins执行shell命令、脚本 简单、通用 集群中有大批量节点时，效率低 通用的、初学">
 <meta property="og:type" content="article">
 <meta property="og:title" content="day76-Devops-Jenkins(二)">
 <meta property="og:url" content="http://gsproj.github.io/2024/07/12/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/03_%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9E%B6%E6%9E%84/day76-Devops-Jenkins-2/index.html">
 <meta property="og:site_name" content="迎风之豚的博客">
-<meta property="og:description" content="Devops架构-Jenkins-02">
+<meta property="og:description" content="Devops架构-Jenkins-02今日内容：  CD持续交付&#x2F;部署的方案介绍 案例04：Jenkins从gitlab拉取站点代码并部署 案例05：Jenkins拉取java代码, maven编译后部署  一、CD持续交付&#x2F;部署方案   CD方案 优点 缺点 应用场景    1、使用Jenkins执行shell命令、脚本 简单、通用 集群中有大批量节点时，效率低 通用的、初学">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240713211637176.png">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240713211951085.png">
@@ -75,6 +78,8 @@
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
 
+  <link  rel="stylesheet" href="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" />
+
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
 
@@ -82,11 +87,11 @@
 <!-- 主题依赖的图标库，不要自行修改 -->
 <!-- Do not modify the link that theme dependent icons -->
 
-<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
 
 
 
-<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
 
 
 <link  rel="stylesheet" href="/css/main.css" />
@@ -103,7 +108,7 @@
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
     Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"left","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
 
     if (CONFIG.web_analytics.follow_dnt) {
       var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
@@ -116,7 +121,7 @@
 
 
   
-<meta name="generator" content="Hexo 5.4.2"></head>
+<meta name="generator" content="Hexo 7.3.0"></head>
 
 
 <body>
@@ -129,7 +134,7 @@
   <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand" href="/">
-      <strong>&#34;迎风之豚的博客&#34;</strong>
+      <strong>Haris的博客</strong>
     </a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
@@ -147,9 +152,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/">
+              <a class="nav-link" href="/" target="_self">
                 <i class="iconfont icon-home-fill"></i>
-                首页
+                <span>首页</span>
               </a>
             </li>
           
@@ -159,9 +164,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/archives/">
+              <a class="nav-link" href="/archives/" target="_self">
                 <i class="iconfont icon-archive-fill"></i>
-                归档
+                <span>归档</span>
               </a>
             </li>
           
@@ -171,9 +176,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/categories/">
+              <a class="nav-link" href="/categories/" target="_self">
                 <i class="iconfont icon-category-fill"></i>
-                分类
+                <span>分类</span>
               </a>
             </li>
           
@@ -183,9 +188,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/tags/">
+              <a class="nav-link" href="/tags/" target="_self">
                 <i class="iconfont icon-tags-fill"></i>
-                标签
+                <span>标签</span>
               </a>
             </li>
           
@@ -195,9 +200,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/about/">
+              <a class="nav-link" href="/about/" target="_self">
                 <i class="iconfont icon-user-fill"></i>
-                关于
+                <span>关于</span>
               </a>
             </li>
           
@@ -205,15 +210,16 @@
         
           <li class="nav-item" id="search-btn">
             <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
-              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+              <i class="iconfont icon-search"></i>
             </a>
           </li>
           
         
         
           <li class="nav-item" id="color-toggle-btn">
-            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
-                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
           </li>
         
       </ul>
@@ -253,7 +259,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          5.6k 字
+          2k 字
         
       </span>
     
@@ -264,7 +270,7 @@
         
         
         
-          47 分钟
+          17 分钟
         
       </span>
     
@@ -294,6 +300,19 @@
   <div class="row nomargin-x">
     <div class="side-col d-none d-lg-block col-lg-2">
       
+  <aside class="sidebar" style="padding-left: 2rem; margin-right: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
 
     </div>
 
@@ -301,8 +320,7 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <!-- SEO header -->
-            <h1 style="display: none">day76-Devops-Jenkins(二)</h1>
+            <h1 id="seo-header">day76-Devops-Jenkins(二)</h1>
             
             
               <div class="markdown-body">
@@ -313,7 +331,7 @@
 <li>案例04：Jenkins从gitlab拉取站点代码并部署</li>
 <li>案例05：Jenkins拉取java代码, maven编译后部署</li>
 </ul>
-<h1 id="一、CD持续交付-x2F-部署方案"><a href="#一、CD持续交付-x2F-部署方案" class="headerlink" title="一、CD持续交付&#x2F;部署方案"></a>一、CD持续交付&#x2F;部署方案</h1><table>
+<h1 id="一、CD持续交付-部署方案"><a href="#一、CD持续交付-部署方案" class="headerlink" title="一、CD持续交付&#x2F;部署方案"></a>一、CD持续交付&#x2F;部署方案</h1><table>
 <thead>
 <tr>
 <th>CD方案</th>
@@ -412,7 +430,21 @@
 <p>3、站点也部署成功</p>
 <p><img src="/../../../img/image-20240713220134058.png" srcset="/img/loading.gif" lazyload alt="image-20240713220134058"></p>
 <p>4、修改站点代码，自己推送测试</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 修改代码</span><br><span class="hljs-meta">$</span><span class="bash"> cat index.html</span><br>hello4 myproj<br>&lt;title&gt;MyProj V4.0 Release&lt;/tiltle&gt;<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 打新标签，推送</span><br><span class="hljs-meta">$</span><span class="bash"> git add .</span><br><span class="hljs-meta">$</span><span class="bash"> git commit -m <span class="hljs-string">&#x27;v4.0&#x27;</span></span><br><span class="hljs-meta">$</span><span class="bash"> git tag -a <span class="hljs-string">&quot;v4.0&quot;</span> -m <span class="hljs-string">&quot;v4.0&quot;</span></span><br><span class="hljs-meta">$</span><span class="bash"> git push -u origin master</span><br><span class="hljs-meta">$</span><span class="bash"> git push -u origin --tags</span><br>Enumerating objects: 1, done.<br>Counting objects: 100% (1/1), done.<br>...<br> * [new tag]         v4.0 -&gt; v4.0<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 修改代码
+$ cat index.html
+hello4 myproj
+&lt;title&gt;MyProj V4.0 Release&lt;&#x2F;tiltle&gt;
+
+# 打新标签，推送
+$ git add .
+$ git commit -m &#39;v4.0&#39;
+$ git tag -a &quot;v4.0&quot; -m &quot;v4.0&quot;
+$ git push -u origin master
+$ git push -u origin --tags
+Enumerating objects: 1, done.
+Counting objects: 100% (1&#x2F;1), done.
+...
+ * [new tag]         v4.0 -&gt; v4.0</code></pre></div></figure>
 
 <p>5、推送完，查看jenkins，收到推送，并已经处理</p>
 <p><img src="/../../../img/image-20240713222801538.png" srcset="/img/loading.gif" lazyload alt="image-20240713222801538"></p>
@@ -471,20 +503,54 @@
 <p>2、从gitee获取需要的源码</p>
 <p>代码获取：<a target="_blank" rel="noopener" href="https://github.com/efsavage/hello-world-war">https://github.com/efsavage/hello-world-war</a></p>
 <p>3、把源码上传到gitlab的项目中</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs shell">git init<br>git remote add origin git@gitlab.test.cn:dev/hello-world-war.git<br>git status<br>git add .<br>git commit -m &#x27;添加源码&#x27;<br>git tag -a v1.0 -m v1.0<br>git push origin master<br>git push -u origin --tags<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">git init
+git remote add origin git@gitlab.test.cn:dev&#x2F;hello-world-war.git
+git status
+git add .
+git commit -m &#39;添加源码&#39;
+git tag -a v1.0 -m v1.0
+git push origin master
+git push -u origin --tags</code></pre></div></figure>
 
 
 
 <h3 id="3-2-2-jenkins服务器部署maven"><a href="#3-2-2-jenkins服务器部署maven" class="headerlink" title="3.2.2 jenkins服务器部署maven"></a>3.2.2 jenkins服务器部署maven</h3><p>mvn会读取项目中的pom.xml文件，实现自动化编译</p>
 <p>1、安装JDK</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@devops02 ~]#java --version<br>java 17.0.11 2024-04-16 LTS<br>Java(TM) SE Runtime Environment (build 17.0.11+7-LTS-207)<br>Java HotSpot(TM) 64-Bit Server VM (build 17.0.11+7-LTS-207, mixed mode, sha<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@devops02 ~]#java --version
+java 17.0.11 2024-04-16 LTS
+Java(TM) SE Runtime Environment (build 17.0.11+7-LTS-207)
+Java HotSpot(TM) 64-Bit Server VM (build 17.0.11+7-LTS-207, mixed mode, sha</code></pre></div></figure>
 
 <p>2、获取maven二进制包，配置环境变量</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 下载</span><br>wget https://dlcdn.apache.org/maven/maven-3/3.9.8/binaries/apache-maven-3.9.8-bin.tar.gz<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 部署</span><br>[root@devops02 /app/rpms]#mkdir /app/tools<br>[root@devops02 /app/rpms]#tar -xf apache-maven-3.9.8-bin.tar.gz -C /app/tools/<br>[root@devops02 /app/rpms]#ln -s /app/tools/apache-maven-3.9.8/ /app/tools/maven<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 设置环境变量</span><br>[root@devops02 /app/rpms]#echo &quot;export PATH=/app/tools/maven/bin:$PATH&quot; &gt;&gt; /etc/profile<br>[root@devops02 /app/rpms]#source /etc/profile<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 查看版本信息</span><br>[root@devops02 /app/rpms]#mvn --version<br>Apache Maven 3.9.8 (36645f6c9b5079805ea5009217e36f2cffd34256)<br>Maven home: /app/tools/maven<br>Java version: 17.0.11, vendor: Oracle Corporation, runtime: /usr/lib/jvm/jdk-17-oracle-x64<br>Default locale: en_US, platform encoding: UTF-8<br>OS name: &quot;linux&quot;, version: &quot;3.10.0-1160.el7.x86_64&quot;, arch: &quot;amd64&quot;, family: &quot;unix<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 下载
+wget https:&#x2F;&#x2F;dlcdn.apache.org&#x2F;maven&#x2F;maven-3&#x2F;3.9.8&#x2F;binaries&#x2F;apache-maven-3.9.8-bin.tar.gz
+
+# 部署
+[root@devops02 &#x2F;app&#x2F;rpms]#mkdir &#x2F;app&#x2F;tools
+[root@devops02 &#x2F;app&#x2F;rpms]#tar -xf apache-maven-3.9.8-bin.tar.gz -C &#x2F;app&#x2F;tools&#x2F;
+[root@devops02 &#x2F;app&#x2F;rpms]#ln -s &#x2F;app&#x2F;tools&#x2F;apache-maven-3.9.8&#x2F; &#x2F;app&#x2F;tools&#x2F;maven
+
+# 设置环境变量
+[root@devops02 &#x2F;app&#x2F;rpms]#echo &quot;export PATH&#x3D;&#x2F;app&#x2F;tools&#x2F;maven&#x2F;bin:$PATH&quot; &gt;&gt; &#x2F;etc&#x2F;profile
+[root@devops02 &#x2F;app&#x2F;rpms]#source &#x2F;etc&#x2F;profile
+
+# 查看版本信息
+[root@devops02 &#x2F;app&#x2F;rpms]#mvn --version
+Apache Maven 3.9.8 (36645f6c9b5079805ea5009217e36f2cffd34256)
+Maven home: &#x2F;app&#x2F;tools&#x2F;maven
+Java version: 17.0.11, vendor: Oracle Corporation, runtime: &#x2F;usr&#x2F;lib&#x2F;jvm&#x2F;jdk-17-oracle-x64
+Default locale: en_US, platform encoding: UTF-8
+OS name: &quot;linux&quot;, version: &quot;3.10.0-1160.el7.x86_64&quot;, arch: &quot;amd64&quot;, family: &quot;unix</code></pre></div></figure>
 
 <p>3、设置mvn国内下载源（加速）</p>
 <p>编辑<code>/app/tools/maven/conf/settings.xml</code></p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs shell">&lt;mirrors&gt; # 在此标签后面添加<br>    &lt;mirror&gt;<br>      &lt;id&gt;aliyun-maven&lt;/id&gt;<br>      &lt;mirrorOf&gt;*&lt;/mirrorOf&gt;<br>      &lt;name&gt;阿里云公共仓库&lt;/name&gt;<br>      &lt;url&gt;https://maven.aliyun.com/repository/public&lt;/url&gt;<br>  &lt;/mirror&gt;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">&lt;mirrors&gt; # 在此标签后面添加
+    &lt;mirror&gt;
+      &lt;id&gt;aliyun-maven&lt;&#x2F;id&gt;
+      &lt;mirrorOf&gt;*&lt;&#x2F;mirrorOf&gt;
+      &lt;name&gt;阿里云公共仓库&lt;&#x2F;name&gt;
+      &lt;url&gt;https:&#x2F;&#x2F;maven.aliyun.com&#x2F;repository&#x2F;public&lt;&#x2F;url&gt;
+  &lt;&#x2F;mirror&gt;</code></pre></div></figure>
 
 <h3 id="3-2-3-jenkins拉取代码与手动编译"><a href="#3-2-3-jenkins拉取代码与手动编译" class="headerlink" title="3.2.3 jenkins拉取代码与手动编译"></a>3.2.3 jenkins拉取代码与手动编译</h3><p>1、配置maven工具的路径</p>
 <p>进入“系统管理”—“全局工具配置”</p>
@@ -497,7 +563,8 @@
 <p>3、配置Git项目信息和ssh密钥</p>
 <p><img src="/../../../img/image-20240716100817753.png" srcset="/img/loading.gif" lazyload alt="image-20240716100817753"></p>
 <p>4、配置maven编译选项</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">maven clean package<br><span class="hljs-meta">#</span><span class="bash"> 删除已有的target目录，重新编译生成war/jar包</span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">maven clean package
+# 删除已有的target目录，重新编译生成war&#x2F;jar包</code></pre></div></figure>
 
 <p><img src="/../../../img/image-20240716105310410.png" srcset="/img/loading.gif" lazyload alt="image-20240716105310410"></p>
 <h3 id="3-2-4-运行项目生成war包"><a href="#3-2-4-运行项目生成war包" class="headerlink" title="3.2.4 运行项目生成war包"></a>3.2.4 运行项目生成war包</h3><p>1、第一次运行失败，在生成war包时出现错误</p>
@@ -509,23 +576,79 @@
 <p>3、再次运行，生成成功</p>
 <p><img src="/../../../img/image-20240716105853153.png" srcset="/img/loading.gif" lazyload alt="image-20240716105853153"></p>
 <h3 id="3-2-5-war包部署（手动实现）"><a href="#3-2-5-war包部署（手动实现）" class="headerlink" title="3.2.5 war包部署（手动实现）"></a>3.2.5 war包部署（手动实现）</h3><p>1、配置jenkins服务器到tomcat服务器的密钥认证</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@devops02 /app/tools/maven/bin]#ssh-copy-id root@172.16.1.9<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@devops02 &#x2F;app&#x2F;tools&#x2F;maven&#x2F;bin]#ssh-copy-id root@172.16.1.9</code></pre></div></figure>
 
 <p>2、将war包拷贝到tomcat服务器，改名为<code>ROOT.war</code></p>
 <blockquote>
 <p>war包生成路径：<code>/var/lib/jenkins/workspace/05-hello-war-job/target/hello-world-war-1.0.0.war</code></p>
 </blockquote>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@devops02 /app/tools/maven/bin]#scp /var/lib/jenkins/workspace/05-hello-war-job/target/hello-world-war-1.0.0.war 172.16.1.9:/opt/ROOT.war<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@devops02 &#x2F;app&#x2F;tools&#x2F;maven&#x2F;bin]#scp &#x2F;var&#x2F;lib&#x2F;jenkins&#x2F;workspace&#x2F;05-hello-war-job&#x2F;target&#x2F;hello-world-war-1.0.0.war 172.16.1.9:&#x2F;opt&#x2F;ROOT.war</code></pre></div></figure>
 
 <p>3、配置tomcat项目目录</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 清理以前的war包</span><br>[root@web03 /opt]#rm /app/tools/tomcat/webapps/ROOT* -fr<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 部署新的war包，并重启服务</span><br>[root@web03 /opt]#mv /opt/ROOT.war /app/tools/tomcat/webapps/<br>[root@web03 /opt]#systemctl restart tomcat<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 清理以前的war包
+[root@web03 &#x2F;opt]#rm &#x2F;app&#x2F;tools&#x2F;tomcat&#x2F;webapps&#x2F;ROOT* -fr
+
+# 部署新的war包，并重启服务
+[root@web03 &#x2F;opt]#mv &#x2F;opt&#x2F;ROOT.war &#x2F;app&#x2F;tools&#x2F;tomcat&#x2F;webapps&#x2F;
+[root@web03 &#x2F;opt]#systemctl restart tomcat</code></pre></div></figure>
 
 <p>4、测试访问：<a target="_blank" rel="noopener" href="http://10.0.0.9:8080/">http://10.0.0.9:8080</a></p>
 <p><img src="/../../../img/image-20240716111424306.png" srcset="/img/loading.gif" lazyload alt="image-20240716111424306"></p>
 <h3 id="3-2-6-war包部署（jenkins实现）"><a href="#3-2-6-war包部署（jenkins实现）" class="headerlink" title="3.2.6 war包部署（jenkins实现）"></a>3.2.6 war包部署（jenkins实现）</h3><p>jenkins添加shell命令步骤</p>
 <p><img src="/../../../img/image-20240716112858722.png" srcset="/img/loading.gif" lazyload alt="image-20240716112858722"></p>
 <p>脚本如下：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><code class="hljs shell">echo &quot;您当前部署的代码版本为: $&#123;TAG_NAME&#125;&quot;<br>echo &quot;您任务的URL地址:$&#123;JOB_DISPLAY_URL&#125;&quot;<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> .vars</span><br>date=$(date +%F)<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> web_list后面可以设置为参数化构建,文本参数</span><br>web_list=&quot;172.16.1.9&quot;<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 路径 <span class="hljs-variable">$WORKSPACE</span></span><br>src_dir=./target/<br>dst_dir=/opt/<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> web节点的变量</span><br>code_dir=/app/tools/tomcat/webapps/ROOT<br>code_file=/app/tools/tomcat/webapps/ROOT.war<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 1. 分发</span><br>fenfa() &#123;<br>  for ip in $&#123;web_list&#125;<br>  do<br>    scp $&#123;src_dir&#125;/hello-world-war-1.0.0.war root@$&#123;ip&#125;:$&#123;dst_dir&#125;<br>  done<br>&#125;<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 2、部署</span><br>deploy() &#123;<br>  for ip in $&#123;web_list&#125;<br>  do<br>    # 进入/opt文件夹<br>    ssh root@$&#123;ip&#125; &quot;cd $&#123;dst_dir&#125;;<br>    # 改war包名字 ROOT-时间.war<br>    mv hello-world-war-1.0.0.war ROOT-$&#123;date&#125;.war;<br>    [ -d $&#123;code_dir&#125; ] &amp;&amp; &#123;<br>      # 将war包、目录、按时间放到临时文件夹中<br>      mkdir -p /tmp/$&#123;date&#125;;<br>      mv $&#123;code_dir&#125; $&#123;code_file&#125; /tmp/$&#123;date&#125; ;<br>    &#125;;<br>    # 创建软连接<br>    ln -s $&#123;dst_dir&#125;/ROOT-$&#123;date&#125;.war $&#123;code_file&#125;<br>    # 重启服务<br>    systemctl restart tomcat<br>    &quot;<br>  done<br>&#125; <br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 主函数</span><br>main() &#123;<br>  fenfa<br>  deploy<br>&#125;<br>main<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">echo &quot;您当前部署的代码版本为: $&#123;TAG_NAME&#125;&quot;
+echo &quot;您任务的URL地址:$&#123;JOB_DISPLAY_URL&#125;&quot;
+
+# .vars
+date&#x3D;$(date +%F)
+
+# web_list后面可以设置为参数化构建,文本参数
+web_list&#x3D;&quot;172.16.1.9&quot;
+
+# 路径 $WORKSPACE
+src_dir&#x3D;.&#x2F;target&#x2F;
+dst_dir&#x3D;&#x2F;opt&#x2F;
+
+# web节点的变量
+code_dir&#x3D;&#x2F;app&#x2F;tools&#x2F;tomcat&#x2F;webapps&#x2F;ROOT
+code_file&#x3D;&#x2F;app&#x2F;tools&#x2F;tomcat&#x2F;webapps&#x2F;ROOT.war
+
+# 1. 分发
+fenfa() &#123;
+  for ip in $&#123;web_list&#125;
+  do
+    scp $&#123;src_dir&#125;&#x2F;hello-world-war-1.0.0.war root@$&#123;ip&#125;:$&#123;dst_dir&#125;
+  done
+&#125;
+
+# 2、部署
+deploy() &#123;
+  for ip in $&#123;web_list&#125;
+  do
+    # 进入&#x2F;opt文件夹
+    ssh root@$&#123;ip&#125; &quot;cd $&#123;dst_dir&#125;;
+    # 改war包名字 ROOT-时间.war
+    mv hello-world-war-1.0.0.war ROOT-$&#123;date&#125;.war;
+    [ -d $&#123;code_dir&#125; ] &amp;&amp; &#123;
+      # 将war包、目录、按时间放到临时文件夹中
+      mkdir -p &#x2F;tmp&#x2F;$&#123;date&#125;;
+      mv $&#123;code_dir&#125; $&#123;code_file&#125; &#x2F;tmp&#x2F;$&#123;date&#125; ;
+    &#125;;
+    # 创建软连接
+    ln -s $&#123;dst_dir&#125;&#x2F;ROOT-$&#123;date&#125;.war $&#123;code_file&#125;
+    # 重启服务
+    systemctl restart tomcat
+    &quot;
+  done
+&#125; 
+
+# 主函数
+main() &#123;
+  fenfa
+  deploy
+&#125;
+main</code></pre></div></figure>
 
 <p>执行测试成功</p>
 <p><img src="/../../../img/image-20240716112955544.png" srcset="/img/loading.gif" lazyload alt="image-20240716112955544"></p>
@@ -598,9 +721,9 @@
             
               
               
-                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
                   <span class="hint--top hint--rounded" aria-label="BY - 署名">
-                    <i class="iconfont icon-by"></i>
+                    <i class="iconfont icon-cc-by"></i>
                   </span>
                 </a>
               
@@ -648,16 +771,6 @@
 
     <div class="side-col d-none d-lg-block col-lg-2">
       
-  <aside class="sidebar" style="margin-left: -1rem">
-    <div id="toc">
-  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
-  <div class="toc-body" id="toc-body"></div>
-</div>
-
-
-
-  </aside>
-
 
     </div>
   </div>
@@ -735,7 +848,6 @@
   
   
   
-  
 </div>
 
   </footer>
@@ -754,7 +866,7 @@
   </script>
 
 
-<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
 <script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
 <script  src="/js/events.js" ></script>
 <script  src="/js/plugins.js" ></script>
@@ -787,7 +899,7 @@
 
   
 <script>
-  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
     var toc = jQuery('#toc');
     if (toc.length === 0 || !window.tocbot) { return; }
     var boardCtn = jQuery('#board-ctn');
@@ -825,6 +937,12 @@
 </script>
 
 
+  <script  src="https://lib.baomitu.com/prism/1.29.0/components/prism-core.min.js" ></script>
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js" ></script>
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
+
   <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
 
   <script>Fluid.plugins.codeWidget();</script>
@@ -832,7 +950,7 @@
 
   
 <script>
-  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
     window.anchors.options = {
       placement: CONFIG.anchorjs.placement,
       visible  : CONFIG.anchorjs.visible

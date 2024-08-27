@@ -7,8 +7,11 @@
 
 <head>
   <meta charset="UTF-8">
+
   <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
   <link rel="icon" href="/img/fluid.png">
+  
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   
@@ -16,12 +19,12 @@
   <meta name="author" content="GongSheng">
   <meta name="keywords" content="">
   
-    <meta name="description" content="Web集群-Nginx（六）">
+    <meta name="description" content="Web集群-Nginx（六）今日内容：  常见负载均衡轮询算法（面试会问） rewriter规则  一、轮询算法什么是轮询算法？  决定负载均衡如何把请求分发给后端节点 这种分发的方式就是轮询算法  1.1 常见轮询算法   轮询算法 说明    rr轮询 round robin 轮询,默认的循环访问.   wrr 加权轮询，在轮询的基础上增加权重功能。 server中的weight就是加权轮询。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="16-Web集群-Nginx(六)">
 <meta property="og:url" content="http://gsproj.github.io/2024/05/10/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/02_%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/16-web%E9%9B%86%E7%BE%A4-Nginx-6/index.html">
 <meta property="og:site_name" content="迎风之豚的博客">
-<meta property="og:description" content="Web集群-Nginx（六）">
+<meta property="og:description" content="Web集群-Nginx（六）今日内容：  常见负载均衡轮询算法（面试会问） rewriter规则  一、轮询算法什么是轮询算法？  决定负载均衡如何把请求分发给后端节点 这种分发的方式就是轮询算法  1.1 常见轮询算法   轮询算法 说明    rr轮询 round robin 轮询,默认的循环访问.   wrr 加权轮询，在轮询的基础上增加权重功能。 server中的weight就是加权轮询。">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240510114628339.png">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240510152227461.png">
@@ -44,6 +47,8 @@
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
 
+  <link  rel="stylesheet" href="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" />
+
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
 
@@ -51,11 +56,11 @@
 <!-- 主题依赖的图标库，不要自行修改 -->
 <!-- Do not modify the link that theme dependent icons -->
 
-<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
 
 
 
-<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
 
 
 <link  rel="stylesheet" href="/css/main.css" />
@@ -72,7 +77,7 @@
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
     Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"left","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
 
     if (CONFIG.web_analytics.follow_dnt) {
       var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
@@ -85,7 +90,7 @@
 
 
   
-<meta name="generator" content="Hexo 5.4.2"></head>
+<meta name="generator" content="Hexo 7.3.0"></head>
 
 
 <body>
@@ -98,7 +103,7 @@
   <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand" href="/">
-      <strong>&#34;迎风之豚的博客&#34;</strong>
+      <strong>Haris的博客</strong>
     </a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
@@ -116,9 +121,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/">
+              <a class="nav-link" href="/" target="_self">
                 <i class="iconfont icon-home-fill"></i>
-                首页
+                <span>首页</span>
               </a>
             </li>
           
@@ -128,9 +133,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/archives/">
+              <a class="nav-link" href="/archives/" target="_self">
                 <i class="iconfont icon-archive-fill"></i>
-                归档
+                <span>归档</span>
               </a>
             </li>
           
@@ -140,9 +145,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/categories/">
+              <a class="nav-link" href="/categories/" target="_self">
                 <i class="iconfont icon-category-fill"></i>
-                分类
+                <span>分类</span>
               </a>
             </li>
           
@@ -152,9 +157,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/tags/">
+              <a class="nav-link" href="/tags/" target="_self">
                 <i class="iconfont icon-tags-fill"></i>
-                标签
+                <span>标签</span>
               </a>
             </li>
           
@@ -164,9 +169,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/about/">
+              <a class="nav-link" href="/about/" target="_self">
                 <i class="iconfont icon-user-fill"></i>
-                关于
+                <span>关于</span>
               </a>
             </li>
           
@@ -174,15 +179,16 @@
         
           <li class="nav-item" id="search-btn">
             <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
-              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+              <i class="iconfont icon-search"></i>
             </a>
           </li>
           
         
         
           <li class="nav-item" id="color-toggle-btn">
-            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
-                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
           </li>
         
       </ul>
@@ -222,7 +228,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          18k 字
+          5.1k 字
         
       </span>
     
@@ -233,7 +239,7 @@
         
         
         
-          153 分钟
+          43 分钟
         
       </span>
     
@@ -263,6 +269,19 @@
   <div class="row nomargin-x">
     <div class="side-col d-none d-lg-block col-lg-2">
       
+  <aside class="sidebar" style="padding-left: 2rem; margin-right: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
 
     </div>
 
@@ -270,8 +289,7 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <!-- SEO header -->
-            <h1 style="display: none">16-Web集群-Nginx(六)</h1>
+            <h1 id="seo-header">16-Web集群-Nginx(六)</h1>
             
             
               <div class="markdown-body">
@@ -319,10 +337,24 @@
 </tr>
 </tbody></table>
 <h2 id="1-2-轮询算法实现案例"><a href="#1-2-轮询算法实现案例" class="headerlink" title="1.2 轮询算法实现案例"></a>1.2 轮询算法实现案例</h2><h3 id="1-2-1-ip-hash"><a href="#1-2-1-ip-hash" class="headerlink" title="1.2.1 ip_hash"></a>1.2.1 ip_hash</h3><p>lb01配置如下</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@lb01[ /etc/nginx/conf.d]#cat phpmyadmin.oldboylinux.cn.conf<br>upstream phpmyadmin_spools&#123;<br><span class="hljs-meta">  #</span><span class="bash"> 开启ip <span class="hljs-built_in">hash</span></span><br>  ip_hash;<br>  server 10.0.0.7:80 weight=1 max_fails=3 fail_timeout=30s;<br>  server 10.0.0.8:80 weight=1 max_fails=3 fail_timeout=30s;<br>&#125;<br>...<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@lb01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#cat phpmyadmin.oldboylinux.cn.conf
+upstream phpmyadmin_spools&#123;
+  # 开启ip hash
+  ip_hash;
+  server 10.0.0.7:80 weight&#x3D;1 max_fails&#x3D;3 fail_timeout&#x3D;30s;
+  server 10.0.0.8:80 weight&#x3D;1 max_fails&#x3D;3 fail_timeout&#x3D;30s;
+&#125;
+...</code></pre></div></figure>
 
 <h3 id="1-2-2-url-hash"><a href="#1-2-2-url-hash" class="headerlink" title="1.2.2 url_hash"></a>1.2.2 url_hash</h3><p>lb01配置如下</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@lb01[ /etc/nginx/conf.d]#cat phpmyadmin.oldboylinux.cn.conf<br>upstream phpmyadmin_spools&#123;<br><span class="hljs-meta">  #</span><span class="bash"> 开启url <span class="hljs-built_in">hash</span></span><br>  hash $request_uri;<br>  server 10.0.0.7:80 weight=1 max_fails=3 fail_timeout=30s;<br>  server 10.0.0.8:80 weight=1 max_fails=3 fail_timeout=30s;<br>&#125;<br>...<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@lb01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#cat phpmyadmin.oldboylinux.cn.conf
+upstream phpmyadmin_spools&#123;
+  # 开启url hash
+  hash $request_uri;
+  server 10.0.0.7:80 weight&#x3D;1 max_fails&#x3D;3 fail_timeout&#x3D;30s;
+  server 10.0.0.8:80 weight&#x3D;1 max_fails&#x3D;3 fail_timeout&#x3D;30s;
+&#125;
+...</code></pre></div></figure>
 
 <blockquote>
 <p>补充：</p>
@@ -348,29 +380,115 @@
 <li>Tengine是阿里基于Nginx二次开发的高性能HTTP服务器</li>
 <li>它把ngx常用的第3方模块放在了源代码中的modules目录下面，</li>
 </ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">&gt;</span><span class="bash"><span class="hljs-comment"># 编译安装的时候增加upstream_check模块</span></span><br><span class="hljs-meta">&gt;</span><span class="bash">--add-module=modules/ngx_http_upstream_check_module</span><br><span class="hljs-meta"></span><br><span class="hljs-meta">&gt;</span><span class="bash"><span class="hljs-comment"># 增加会话共享模块</span></span><br><span class="hljs-meta">&gt;</span><span class="bash">--add-module=modules/ngx_http_upstream_session_sticky_module/</span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">&gt;# 编译安装的时候增加upstream_check模块
+&gt;--add-module&#x3D;modules&#x2F;ngx_http_upstream_check_module
+
+&gt;# 增加会话共享模块
+&gt;--add-module&#x3D;modules&#x2F;ngx_http_upstream_session_sticky_module&#x2F;</code></pre></div></figure>
 </blockquote>
 <h2 id="2-1-编译tengine"><a href="#2-1-编译tengine" class="headerlink" title="2.1 编译tengine"></a>2.1 编译tengine</h2><p>下载tengine代码</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">wget https://tengine.taobao.org/download/tengine-3.1.0.tar.gz<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">wget https:&#x2F;&#x2F;tengine.taobao.org&#x2F;download&#x2F;tengine-3.1.0.tar.gz</code></pre></div></figure>
 
 <p>安装依赖</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">yum install -y pcre* openssl-devel<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">yum install -y pcre* openssl-devel</code></pre></div></figure>
 
 <p>编译</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> configure</span><br>./configure --prefix=/etc/nginx --sbin-path=/usr/sbin/nginx --modules-path=/usr/lib64/nginx/modules --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --pid-path=/var/run/nginx.pid --lock-path=/var/run/nginx.lock --http-client-body-temp-path=/var/cache/nginx/client_temp --http-proxy-temp-path=/var/cache/nginx/proxy_temp --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp --http-scgi-temp-path=/var/cache/nginx/scgi_temp --user=nginx --group=nginx --with-compat --with-file-aio --with-threads --with-http_addition_module --with-http_auth_request_module --with-http_dav_module --with-http_flv_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_mp4_module --with-http_random_index_module --with-http_realip_module --with-http_secure_link_module --with-http_slice_module --with-http_ssl_module --with-http_stub_status_module --with-http_sub_module --with-http_v2_module --with-mail --with-mail_ssl_module --with-stream --with-stream_realip_module --with-stream_ssl_module --with-stream_ssl_preread_module --with-cc-opt=&#x27;-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -fPIC&#x27; --with-ld-opt=&#x27;-Wl,-z,relro -Wl,-z,now -pie&#x27; --add-module=modules/ngx_http_upstream_check_module --add-module=modules/ngx_http_upstream_session_sticky_module/<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 编译</span><br>make -j 2<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># configure
+.&#x2F;configure --prefix&#x3D;&#x2F;etc&#x2F;nginx --sbin-path&#x3D;&#x2F;usr&#x2F;sbin&#x2F;nginx --modules-path&#x3D;&#x2F;usr&#x2F;lib64&#x2F;nginx&#x2F;modules --conf-path&#x3D;&#x2F;etc&#x2F;nginx&#x2F;nginx.conf --error-log-path&#x3D;&#x2F;var&#x2F;log&#x2F;nginx&#x2F;error.log --http-log-path&#x3D;&#x2F;var&#x2F;log&#x2F;nginx&#x2F;access.log --pid-path&#x3D;&#x2F;var&#x2F;run&#x2F;nginx.pid --lock-path&#x3D;&#x2F;var&#x2F;run&#x2F;nginx.lock --http-client-body-temp-path&#x3D;&#x2F;var&#x2F;cache&#x2F;nginx&#x2F;client_temp --http-proxy-temp-path&#x3D;&#x2F;var&#x2F;cache&#x2F;nginx&#x2F;proxy_temp --http-fastcgi-temp-path&#x3D;&#x2F;var&#x2F;cache&#x2F;nginx&#x2F;fastcgi_temp --http-uwsgi-temp-path&#x3D;&#x2F;var&#x2F;cache&#x2F;nginx&#x2F;uwsgi_temp --http-scgi-temp-path&#x3D;&#x2F;var&#x2F;cache&#x2F;nginx&#x2F;scgi_temp --user&#x3D;nginx --group&#x3D;nginx --with-compat --with-file-aio --with-threads --with-http_addition_module --with-http_auth_request_module --with-http_dav_module --with-http_flv_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_mp4_module --with-http_random_index_module --with-http_realip_module --with-http_secure_link_module --with-http_slice_module --with-http_ssl_module --with-http_stub_status_module --with-http_sub_module --with-http_v2_module --with-mail --with-mail_ssl_module --with-stream --with-stream_realip_module --with-stream_ssl_module --with-stream_ssl_preread_module --with-cc-opt&#x3D;&#39;-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE&#x3D;2 -fexceptions -fstack-protector-strong --param&#x3D;ssp-buffer-size&#x3D;4 -grecord-gcc-switches -m64 -mtune&#x3D;generic -fPIC&#39; --with-ld-opt&#x3D;&#39;-Wl,-z,relro -Wl,-z,now -pie&#39; --add-module&#x3D;modules&#x2F;ngx_http_upstream_check_module --add-module&#x3D;modules&#x2F;ngx_http_upstream_session_sticky_module&#x2F;
+
+# 编译
+make -j 2</code></pre></div></figure>
 
 <p>编译完成不需要install安装，检查编译后生成的命令即可  </p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">./objs/nginx -V<br><br>Tengine version: Tengine/3.1.0<br>nginx version: nginx/1.24.0<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">.&#x2F;objs&#x2F;nginx -V
+
+Tengine version: Tengine&#x2F;3.1.0
+nginx version: nginx&#x2F;1.24.0</code></pre></div></figure>
 
 <h2 id="2-2-替换nginx命令"><a href="#2-2-替换nginx命令" class="headerlink" title="2.2 替换nginx命令"></a>2.2 替换nginx命令</h2><p>把在db01编译出的tengine-nginx命令文件，替换到lb01中</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 停止服务</span><br>systemctl stop nginx<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 复制过去</span><br>[root@db01[ /server/tools/tengine-3.1.0/objs]#scp nginx 10.0.0.5:/root/<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> lb01备份</span><br>[root@lb01[ /etc/nginx/conf.d]#nginx -version<br>nginx version: nginx/1.26.0<br>[root@lb01[ /etc/nginx/conf.d]#mv /sbin/nginx /sbin/nginx-1.26.0<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 替换</span><br>[root@lb01[ /etc/nginx/conf.d]#mv /root/nginx /sbin/nginx<br>[root@lb01[ /etc/nginx/conf.d]#nginx -version<br>Tengine version: Tengine/3.1.0<br>nginx version: nginx/1.24.0<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 检查</span><br>[root@lb01[ /etc/nginx/conf.d]#nginx -t<br>nginx: the configuration file /etc/nginx/nginx.conf syntax is ok<br>nginx: configuration file /etc/nginx/nginx.conf test is successful<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 重启服务</span><br>[root@lb01[ /etc/nginx/conf.d]#systemctl restart nginx<br>[root@lb01[ /etc/nginx/conf.d]#ps -ef | grep nginx<br>root      24239      1  0 11:32 ?        00:00:00 nginx: master process /usr/sbin/nginx -c /etc/nginx/nginx.conf<br>nginx     24240  24239  0 11:32 ?        00:00:00 nginx: worker process<br>root      24242   2618  0 11:32 pts/0    00:00:00 grep --color=auto nginx<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 停止服务
+systemctl stop nginx
+
+# 复制过去
+[root@db01[ &#x2F;server&#x2F;tools&#x2F;tengine-3.1.0&#x2F;objs]#scp nginx 10.0.0.5:&#x2F;root&#x2F;
+
+# lb01备份
+[root@lb01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#nginx -version
+nginx version: nginx&#x2F;1.26.0
+[root@lb01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#mv &#x2F;sbin&#x2F;nginx &#x2F;sbin&#x2F;nginx-1.26.0
+
+# 替换
+[root@lb01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#mv &#x2F;root&#x2F;nginx &#x2F;sbin&#x2F;nginx
+[root@lb01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#nginx -version
+Tengine version: Tengine&#x2F;3.1.0
+nginx version: nginx&#x2F;1.24.0
+
+# 检查
+[root@lb01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#nginx -t
+nginx: the configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf syntax is ok
+nginx: configuration file &#x2F;etc&#x2F;nginx&#x2F;nginx.conf test is successful
+
+# 重启服务
+[root@lb01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#systemctl restart nginx
+[root@lb01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#ps -ef | grep nginx
+root      24239      1  0 11:32 ?        00:00:00 nginx: master process &#x2F;usr&#x2F;sbin&#x2F;nginx -c &#x2F;etc&#x2F;nginx&#x2F;nginx.conf
+nginx     24240  24239  0 11:32 ?        00:00:00 nginx: worker process
+root      24242   2618  0 11:32 pts&#x2F;0    00:00:00 grep --color&#x3D;auto nginx</code></pre></div></figure>
 
 <h2 id="2-3-tengine-chek说明"><a href="#2-3-tengine-chek说明" class="headerlink" title="2.3 tengine chek说明"></a>2.3 tengine chek说明</h2><blockquote>
 <p>根据官方案例进行配置：</p>
 <p><a target="_blank" rel="noopener" href="https://tengine.taobao.org/document_cn/http_upstream_check_cn.html">https://tengine.taobao.org/document_cn/http_upstream_check_cn.html</a>  </p>
 </blockquote>
 <p>各选项说明：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><code class="hljs shell">http &#123;<br>    upstream cluster1 &#123;<br>        # simple round-robin<br>        server 192.168.0.1:80;<br>        server 192.168.0.2:80;<br><br>        # curl命令访问：curl -I<br>        # 超时检测：进行1000ms的超时检测, 成功2次，判定为存活，失败5次判定为失效<br>        check interval=3000 rise=2 fall=5 timeout=1000 type=http;<br><br>        # 请求方法URI（uri最好反应业务是否正常，找开发写个页面）<br>        check_http_send &quot;HEAD / HTTP/1.0\r\n\r\n&quot;;<br>        <br>        # 认为是成功的状态码 2xx 3xx<br>        check_http_expect_alive http_2xx http_3xx;<br>    &#125;<br><br>    upstream cluster2 &#123;<br>        # simple round-robin<br>        server 192.168.0.3:80;<br>        server 192.168.0.4:80;<br><br>        check interval=3000 rise=2 fall=5 timeout=1000 type=http;<br>        check_keepalive_requests 100;<br>        check_http_send &quot;HEAD / HTTP/1.1\r\nConnection: keep-alive\r\n\r\n&quot;;<br>        check_http_expect_alive http_2xx http_3xx;<br>    &#125;<br><br>    server &#123;<br>        listen 80;<br><br>        location /1 &#123;<br>            proxy_pass http://cluster1;<br>        &#125;<br><br>        location /2 &#123;<br>            proxy_pass http://cluster2;<br>        &#125;<br><br>        location /status &#123;<br>            check_status;<br><br>            access_log   off;<br>            # 白名单<br>            allow SOME.IP.ADD.RESS;<br>            deny all;<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">http &#123;
+    upstream cluster1 &#123;
+        # simple round-robin
+        server 192.168.0.1:80;
+        server 192.168.0.2:80;
+
+        # curl命令访问：curl -I
+        # 超时检测：进行1000ms的超时检测, 成功2次，判定为存活，失败5次判定为失效
+        check interval&#x3D;3000 rise&#x3D;2 fall&#x3D;5 timeout&#x3D;1000 type&#x3D;http;
+
+        # 请求方法URI（uri最好反应业务是否正常，找开发写个页面）
+        check_http_send &quot;HEAD &#x2F; HTTP&#x2F;1.0\r\n\r\n&quot;;
+        
+        # 认为是成功的状态码 2xx 3xx
+        check_http_expect_alive http_2xx http_3xx;
+    &#125;
+
+    upstream cluster2 &#123;
+        # simple round-robin
+        server 192.168.0.3:80;
+        server 192.168.0.4:80;
+
+        check interval&#x3D;3000 rise&#x3D;2 fall&#x3D;5 timeout&#x3D;1000 type&#x3D;http;
+        check_keepalive_requests 100;
+        check_http_send &quot;HEAD &#x2F; HTTP&#x2F;1.1\r\nConnection: keep-alive\r\n\r\n&quot;;
+        check_http_expect_alive http_2xx http_3xx;
+    &#125;
+
+    server &#123;
+        listen 80;
+
+        location &#x2F;1 &#123;
+            proxy_pass http:&#x2F;&#x2F;cluster1;
+        &#125;
+
+        location &#x2F;2 &#123;
+            proxy_pass http:&#x2F;&#x2F;cluster2;
+        &#125;
+
+        location &#x2F;status &#123;
+            check_status;
+
+            access_log   off;
+            # 白名单
+            allow SOME.IP.ADD.RESS;
+            deny all;
+        &#125;
+    &#125;
+&#125;</code></pre></div></figure>
 
 <p>表格如下：</p>
 <table>
@@ -398,7 +516,35 @@
 </tr>
 </tbody></table>
 <h2 id="2-4-配置tengine-check"><a href="#2-4-配置tengine-check" class="headerlink" title="2.4 配置tengine check"></a>2.4 配置tengine check</h2><p>配置文件如下</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@lb01[ /etc/nginx/conf.d]#cat lb.oldboylinux.cn.conf<br>upstream lb_pools &#123;<br>  server 10.0.0.7:80 weight=1 max_fails=3 fail_timeout=30s;<br>  server 10.0.0.8:80 weight=1 max_fails=3 fail_timeout=30s;<br>  check interval=3000 rise=2 fall=5 timeout=1000 type=http;<br>  check_http_send &quot;HEAD / HTTP/1.0\r\n\r\n&quot;;<br>  check_http_expect_alive http_2xx http_3xx;<br>&#125;<br><br>server &#123;<br>  listen 80;<br>  server_name lb.oldboylinux.cn;<br>  error_log /var/log/nginx/lb-error.log notice;<br>  access_log /var/log/nginx/lb-access.log main;<br><br>  location / &#123;<br>    proxy_pass http://lb_pools;<br>    proxy_set_header Host $http_host;<br>    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;<br>  &#125;<br><br>  location /lb_status &#123;<br>    check_status;<br>    access_log off;<br>    allow 10.0.0.1;<br>    allow 10.0.0.0/24;<br>    deny all;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@lb01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#cat lb.oldboylinux.cn.conf
+upstream lb_pools &#123;
+  server 10.0.0.7:80 weight&#x3D;1 max_fails&#x3D;3 fail_timeout&#x3D;30s;
+  server 10.0.0.8:80 weight&#x3D;1 max_fails&#x3D;3 fail_timeout&#x3D;30s;
+  check interval&#x3D;3000 rise&#x3D;2 fall&#x3D;5 timeout&#x3D;1000 type&#x3D;http;
+  check_http_send &quot;HEAD &#x2F; HTTP&#x2F;1.0\r\n\r\n&quot;;
+  check_http_expect_alive http_2xx http_3xx;
+&#125;
+
+server &#123;
+  listen 80;
+  server_name lb.oldboylinux.cn;
+  error_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;lb-error.log notice;
+  access_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;lb-access.log main;
+
+  location &#x2F; &#123;
+    proxy_pass http:&#x2F;&#x2F;lb_pools;
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  &#125;
+
+  location &#x2F;lb_status &#123;
+    check_status;
+    access_log off;
+    allow 10.0.0.1;
+    allow 10.0.0.0&#x2F;24;
+    deny all;
+  &#125;
+&#125;</code></pre></div></figure>
 
 <h2 id="2-5-测试"><a href="#2-5-测试" class="headerlink" title="2.5 测试"></a>2.5 测试</h2><p>重新加载nginx服务，访问测试页面：<a target="_blank" rel="noopener" href="http://lb.oldboylinux.cn/lb_status">http://lb.oldboylinux.cn/lb_status</a></p>
 <p><img src="/../../../img/image-20240510114628339.png" srcset="/img/loading.gif" lazyload alt="image-20240510114628339"></p>
@@ -406,7 +552,7 @@
 <p>注意: 如果后端web有多个虚拟主机</p>
 <p>upstream check进行访问的时候默认使用的ip方式进行访问.</p>
 <p>在发出http请求的时候指定域名</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">&gt;</span><span class="bash">check_http_send <span class="hljs-string">&quot;HEAD / HTTP/1.0\r\nHost: lb.oldboylinux.cn\r\n\r\n&quot;</span> ;</span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">&gt;check_http_send &quot;HEAD &#x2F; HTTP&#x2F;1.0\r\nHost: lb.oldboylinux.cn\r\n\r\n&quot; ;</code></pre></div></figure>
 </blockquote>
 <h1 id="三、Nginx平滑升级案例"><a href="#三、Nginx平滑升级案例" class="headerlink" title="三、Nginx平滑升级案例"></a>三、Nginx平滑升级案例</h1><p>平滑升级的步骤</p>
 <table>
@@ -434,13 +580,71 @@
 </tr>
 </tbody></table>
 <p>找一台负载均衡服务器（lb01），执行操作</p>
-<h2 id="2-1-检查当前环境"><a href="#2-1-检查当前环境" class="headerlink" title="2.1 检查当前环境"></a>2.1 检查当前环境</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> Nginx版本</span><br>[root@lb01[ /]#nginx -v<br>nginx version: nginx/1.26.0<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 启动nginx</span><br>[root@lb01[ /]#systemctl start nginx<br>[root@lb01[ /]#ps -ef | grep ngxin<br>root      24726   2618  0 13:55 pts/0    00:00:00 grep --color=auto ngxin<br>[root@lb01[ /]#ps -ef | grep nginx<br>root      24239      1  0 11:32 ?        00:00:00 nginx: master process /usr/sbin/nginx -c /etc/nginx/nginx.conf<br>nginx     24300  24239  0 11:45 ?        00:00:01 nginx: worker process<br>root      24728   2618  0 13:55 pts/0    00:00:00 grep --color=auto nginx<br><span class="hljs-meta"></span><br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 查看pid</span><br>[root@lb01[ /]#ll /var/run/nginx.pid<br>-rw-r--r--. 1 root root 6 May 10 10:20 /var/run/nginx.pid<br>[root@lb01[ /]#ll /var/run/nginx.pid*<br>-rw-r--r--. 1 root root 6 May 10 10:20 /var/run/nginx.pid<br>[root@lb01[ /]#cat /var/run/nginx.pid<br>24239<br></code></pre></td></tr></table></figure>
+<h2 id="2-1-检查当前环境"><a href="#2-1-检查当前环境" class="headerlink" title="2.1 检查当前环境"></a>2.1 检查当前环境</h2><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># Nginx版本
+[root@lb01[ &#x2F;]#nginx -v
+nginx version: nginx&#x2F;1.26.0
+
+# 启动nginx
+[root@lb01[ &#x2F;]#systemctl start nginx
+[root@lb01[ &#x2F;]#ps -ef | grep ngxin
+root      24726   2618  0 13:55 pts&#x2F;0    00:00:00 grep --color&#x3D;auto ngxin
+[root@lb01[ &#x2F;]#ps -ef | grep nginx
+root      24239      1  0 11:32 ?        00:00:00 nginx: master process &#x2F;usr&#x2F;sbin&#x2F;nginx -c &#x2F;etc&#x2F;nginx&#x2F;nginx.conf
+nginx     24300  24239  0 11:45 ?        00:00:01 nginx: worker process
+root      24728   2618  0 13:55 pts&#x2F;0    00:00:00 grep --color&#x3D;auto nginx
+
+
+# 查看pid
+[root@lb01[ &#x2F;]#ll &#x2F;var&#x2F;run&#x2F;nginx.pid
+-rw-r--r--. 1 root root 6 May 10 10:20 &#x2F;var&#x2F;run&#x2F;nginx.pid
+[root@lb01[ &#x2F;]#ll &#x2F;var&#x2F;run&#x2F;nginx.pid*
+-rw-r--r--. 1 root root 6 May 10 10:20 &#x2F;var&#x2F;run&#x2F;nginx.pid
+[root@lb01[ &#x2F;]#cat &#x2F;var&#x2F;run&#x2F;nginx.pid
+24239</code></pre></div></figure>
 
 <h2 id="2-2-升级nginx"><a href="#2-2-升级nginx" class="headerlink" title="2.2 升级nginx"></a>2.2 升级nginx</h2><p>替换新老nginx</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 备份旧的Nginx</span><br>[root@lb01[ /]#mv /sbin/nginx /sbin/nginx-v.1.26.0<br><span class="hljs-meta">#</span><span class="bash"> 将新的nginx拷贝进去</span><br>[root@lb01[ /]#mv /root/tengine-nginx /sbin/nginx<br><span class="hljs-meta">#</span><span class="bash"> 检查替换后的信息</span><br>[root@lb01[ /]#nginx -v<br>Tengine version: Tengine/3.1.0<br>nginx version: nginx/1.24.0<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 备份旧的Nginx
+[root@lb01[ &#x2F;]#mv &#x2F;sbin&#x2F;nginx &#x2F;sbin&#x2F;nginx-v.1.26.0
+# 将新的nginx拷贝进去
+[root@lb01[ &#x2F;]#mv &#x2F;root&#x2F;tengine-nginx &#x2F;sbin&#x2F;nginx
+# 检查替换后的信息
+[root@lb01[ &#x2F;]#nginx -v
+Tengine version: Tengine&#x2F;3.1.0
+nginx version: nginx&#x2F;1.24.0</code></pre></div></figure>
 
 <p>PID相关处理</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 准备新老交替</span><br>[root@lb01[ /]#kill -USR2 `cat /var/run/nginx.pid`<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 会生成一个新的Pid文件，并重命名旧的PID文件</span><br>[root@lb01[ /var/run]#ll /var/run/nginx.pid*<br>-rw-r--r--. 1 root root 6 May 10 13:42 /var/run/nginx.pid<br>-rw-r--r--. 1 root root 6 May 10 13:41 /var/run/nginx.pid.oldbin<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 查看oldbin里面的PID</span><br>[root@lb01[ /var/run]#cat /var/run/nginx.pid.oldbin<br>24239<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 查看现在的nginx进程</span><br>[root@lb01[ /var/run]#ps -ef | grep nginx<br>root      24239      1  0 11:32 ?        00:00:00 nginx: master process /usr/sbin/nginx -c /etc/nginx/nginx.conf<br>nginx     24300  24239  0 11:45 ?        00:00:02 nginx: worker process<br>root      24740  24239  0 13:57 ?        00:00:00 nginx: master process /usr/sbin/nginx -c /etc/nginx/nginx.conf<br>nginx     24741  24740  0 13:57 ?        00:00:00 nginx: worker process<br>root      24770   2618  0 13:58 pts/0    00:00:00 grep --color=auto nginx<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 干掉与PID对应的进程号</span><br>[root@lb01[ /var/run]#kill 24239<br>[root@lb01[ /var/run]#ps -ef | grep nginx<br>root      24740      1  0 13:57 ?        00:00:00 nginx: master process /usr/sbin/nginx -c /etc/nginx/nginx.conf<br>nginx     24741  24740  0 13:57 ?        00:00:00 nginx: worker process<br>root      24772   2618  0 13:59 pts/0    00:00:00 grep --color=auto nginx<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 新的PID已生效</span><br>[root@lb01[ /var/run]#ss -lntup | grep 80<br>tcp    LISTEN     0      128       *:80                    *:*                   users:((&quot;nginx&quot;,pid=24741,fd=14),(&quot;nginx&quot;,pid=24740,fd=14))<br>[root@lb01[ /var/run]#cat /var/run/nginx.pid<br>24740<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 准备新老交替
+[root@lb01[ &#x2F;]#kill -USR2 &#96;cat &#x2F;var&#x2F;run&#x2F;nginx.pid&#96;
+
+# 会生成一个新的Pid文件，并重命名旧的PID文件
+[root@lb01[ &#x2F;var&#x2F;run]#ll &#x2F;var&#x2F;run&#x2F;nginx.pid*
+-rw-r--r--. 1 root root 6 May 10 13:42 &#x2F;var&#x2F;run&#x2F;nginx.pid
+-rw-r--r--. 1 root root 6 May 10 13:41 &#x2F;var&#x2F;run&#x2F;nginx.pid.oldbin
+
+# 查看oldbin里面的PID
+[root@lb01[ &#x2F;var&#x2F;run]#cat &#x2F;var&#x2F;run&#x2F;nginx.pid.oldbin
+24239
+
+# 查看现在的nginx进程
+[root@lb01[ &#x2F;var&#x2F;run]#ps -ef | grep nginx
+root      24239      1  0 11:32 ?        00:00:00 nginx: master process &#x2F;usr&#x2F;sbin&#x2F;nginx -c &#x2F;etc&#x2F;nginx&#x2F;nginx.conf
+nginx     24300  24239  0 11:45 ?        00:00:02 nginx: worker process
+root      24740  24239  0 13:57 ?        00:00:00 nginx: master process &#x2F;usr&#x2F;sbin&#x2F;nginx -c &#x2F;etc&#x2F;nginx&#x2F;nginx.conf
+nginx     24741  24740  0 13:57 ?        00:00:00 nginx: worker process
+root      24770   2618  0 13:58 pts&#x2F;0    00:00:00 grep --color&#x3D;auto nginx
+
+# 干掉与PID对应的进程号
+[root@lb01[ &#x2F;var&#x2F;run]#kill 24239
+[root@lb01[ &#x2F;var&#x2F;run]#ps -ef | grep nginx
+root      24740      1  0 13:57 ?        00:00:00 nginx: master process &#x2F;usr&#x2F;sbin&#x2F;nginx -c &#x2F;etc&#x2F;nginx&#x2F;nginx.conf
+nginx     24741  24740  0 13:57 ?        00:00:00 nginx: worker process
+root      24772   2618  0 13:59 pts&#x2F;0    00:00:00 grep --color&#x3D;auto nginx
+
+# 新的PID已生效
+[root@lb01[ &#x2F;var&#x2F;run]#ss -lntup | grep 80
+tcp    LISTEN     0      128       *:80                    *:*                   users:((&quot;nginx&quot;,pid&#x3D;24741,fd&#x3D;14),(&quot;nginx&quot;,pid&#x3D;24740,fd&#x3D;14))
+[root@lb01[ &#x2F;var&#x2F;run]#cat &#x2F;var&#x2F;run&#x2F;nginx.pid
+24740</code></pre></div></figure>
 
 
 
@@ -508,14 +712,47 @@
 <td>server、location、if</td>
 </tr>
 </tbody></table>
-<h4 id="案例01：返回状态码"><a href="#案例01：返回状态码" class="headerlink" title="案例01：返回状态码"></a>案例01：返回状态码</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 子配置文件</span><br>[root@web01[ /etc/nginx/conf.d]#cat rewrite.oldboylinux.cn.conf<br>server &#123;<br>  listen 80;<br>  server_name rewrite.oldboylinux.cn;<br>  root /app/code/rewrite;<br>  charset utf8;<br><br>  location / &#123;<br>    index index.html;<br>  &#125;<br><br>  location /admin/ &#123;<br>    # 重定向<br>    return 403;<br>  &#125;<br>&#125;<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 创建对应站点目录</span><br>[root@web01[ /etc/nginx/conf.d]#mkdir /app/code/rewrite<br>[root@web01[ /etc/nginx/conf.d]#echo &quot;重定向测试页面&quot; &gt;/app/code/rewrite/index.html<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 重启服务</span><br>[root@web01[ /etc/nginx/conf.d]#systemctl reload nginx<br></code></pre></td></tr></table></figure>
+<h4 id="案例01：返回状态码"><a href="#案例01：返回状态码" class="headerlink" title="案例01：返回状态码"></a>案例01：返回状态码</h4><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 子配置文件
+[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#cat rewrite.oldboylinux.cn.conf
+server &#123;
+  listen 80;
+  server_name rewrite.oldboylinux.cn;
+  root &#x2F;app&#x2F;code&#x2F;rewrite;
+  charset utf8;
+
+  location &#x2F; &#123;
+    index index.html;
+  &#125;
+
+  location &#x2F;admin&#x2F; &#123;
+    # 重定向
+    return 403;
+  &#125;
+&#125;
+
+# 创建对应站点目录
+[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#mkdir &#x2F;app&#x2F;code&#x2F;rewrite
+[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#echo &quot;重定向测试页面&quot; &gt;&#x2F;app&#x2F;code&#x2F;rewrite&#x2F;index.html
+
+# 重启服务
+[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#systemctl reload nginx</code></pre></div></figure>
 
 <blockquote>
 <p>return 403</p>
 <p>所有人禁止访问&#x2F;admin&#x2F;页面.  </p>
 </blockquote>
 <p>命令行测试：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web02[ /etc/php-fpm.d]#curl -H Host:rewrite.oldboylinux.cn http://10.0.0.7<br>重定向测试页面<br><br>[root@web02[ /etc/php-fpm.d]#curl -H Host:rewrite.oldboylinux.cn http://10.0.0.7/admin/<br>&lt;html&gt;<br>&lt;head&gt;&lt;title&gt;403 Forbidden&lt;/title&gt;&lt;/head&gt;<br>&lt;body&gt;<br>&lt;center&gt;&lt;h1&gt;403 Forbidden&lt;/h1&gt;&lt;/center&gt;<br>&lt;hr&gt;&lt;center&gt;nginx/1.26.0&lt;/center&gt;<br>&lt;/body&gt;<br>&lt;/html&gt;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web02[ &#x2F;etc&#x2F;php-fpm.d]#curl -H Host:rewrite.oldboylinux.cn http:&#x2F;&#x2F;10.0.0.7
+重定向测试页面
+
+[root@web02[ &#x2F;etc&#x2F;php-fpm.d]#curl -H Host:rewrite.oldboylinux.cn http:&#x2F;&#x2F;10.0.0.7&#x2F;admin&#x2F;
+&lt;html&gt;
+&lt;head&gt;&lt;title&gt;403 Forbidden&lt;&#x2F;title&gt;&lt;&#x2F;head&gt;
+&lt;body&gt;
+&lt;center&gt;&lt;h1&gt;403 Forbidden&lt;&#x2F;h1&gt;&lt;&#x2F;center&gt;
+&lt;hr&gt;&lt;center&gt;nginx&#x2F;1.26.0&lt;&#x2F;center&gt;
+&lt;&#x2F;body&gt;
+&lt;&#x2F;html&gt;</code></pre></div></figure>
 
 <p>浏览器测试：</p>
 <p>访问：<a target="_blank" rel="noopener" href="http://rewrite.oldboylinux.cn/">http://rewrite.oldboylinux.cn/</a></p>
@@ -523,20 +760,81 @@
 <p>访问：<a target="_blank" rel="noopener" href="http://rewrite.oldboylinux.cn/admin">http://rewrite.oldboylinux.cn/admin</a></p>
 <p><img src="/../../../img/image-20240510152504420.png" srcset="/img/loading.gif" lazyload alt="image-20240510152504420"></p>
 <h4 id="案例02：域名间跳转"><a href="#案例02：域名间跳转" class="headerlink" title="案例02：域名间跳转"></a>案例02：域名间跳转</h4><p>用户访问<a target="_blank" rel="noopener" href="http://rewrite.oldboylinux.cn/admin/%E8%B7%B3%E8%BD%AC%E5%88%B0www.baidu.com">http://rewrite.oldboylinux.cn/admin/跳转到www.baidu.com</a>  </p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs shell">server &#123;<br>  listen 80;<br>  server_name rewrite.oldboylinux.cn;<br>  root /app/code/rewrite;<br>  charset utf8;<br><br>  location / &#123;<br>    index index.html;<br>  &#125;<br><br>  location /admin/ &#123;<br>    # 重定向<br>    return 301 https://www.baidu.com;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">server &#123;
+  listen 80;
+  server_name rewrite.oldboylinux.cn;
+  root &#x2F;app&#x2F;code&#x2F;rewrite;
+  charset utf8;
+
+  location &#x2F; &#123;
+    index index.html;
+  &#125;
+
+  location &#x2F;admin&#x2F; &#123;
+    # 重定向
+    return 301 https:&#x2F;&#x2F;www.baidu.com;
+  &#125;
+&#125;</code></pre></div></figure>
 
 <p>也可以访问<a target="_blank" rel="noopener" href="http://rewrite.oldboylinux.cn就跳转到www.baidu.com/">http://rewrite.oldboylinux.cn就跳转到www.baidu.com</a>  </p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs shell">server &#123;<br>  listen 80;<br>  server_name rewrite.oldboylinux.cn;<br>  return 301 https://www.baidu.com;<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">server &#123;
+  listen 80;
+  server_name rewrite.oldboylinux.cn;
+  return 301 https:&#x2F;&#x2F;www.baidu.com;
+&#125;</code></pre></div></figure>
 
 <p>curl命令行测试</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web02[ /etc/php-fpm.d]#curl -Lv -H Host:rewrite.oldboylinux.cn http://10.0.0.7/admin/<br><span class="hljs-meta">#</span><span class="bash"> 先到rewrite.oldboylinux.cn</span><br>* About to connect() to 10.0.0.7 port 80 (#0)<br>...<br><span class="hljs-meta">&gt;</span><span class="bash"> Host:rewrite.oldboylinux.cn</span><br><span class="hljs-meta">&gt;</span><span class="bash"></span><br><span class="bash"><span class="hljs-comment"># 再301跳转</span></span><br>&lt; HTTP/1.1 301 Moved Permanently<br>&lt; Server: nginx/1.26.0<br>&lt; Date: Fri, 10 May 2024 07:31:06 GMT<br>&lt; Content-Type: text/html<br>&lt; Content-Length: 169<br>&lt; Connection: keep-alive<br>&lt; Location: https://www.baidu.com<br>...<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 再到baidu</span><br><span class="hljs-meta">&gt;</span><span class="bash"> GET / HTTP/1.1</span><br><span class="hljs-meta">&gt;</span><span class="bash"> User-Agent: curl/7.29.0</span><br><span class="hljs-meta">&gt;</span><span class="bash"> Host: www.baidu.com</span><br><span class="hljs-meta">&gt;</span><span class="bash"> Accept: */*</span><br><span class="hljs-meta">&gt;</span><span class="bash"></span><br><span class="bash">&lt; HTTP/1.1 200 OK</span><br>&lt; Accept-Ranges: bytes<br>...<br>&lt;title&gt;百度一下，你就知道&lt;/title&gt;&lt;/head&gt; &lt;body <br>...<br>* Connection #1 to host www.baidu.com left intact<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web02[ &#x2F;etc&#x2F;php-fpm.d]#curl -Lv -H Host:rewrite.oldboylinux.cn http:&#x2F;&#x2F;10.0.0.7&#x2F;admin&#x2F;
+# 先到rewrite.oldboylinux.cn
+* About to connect() to 10.0.0.7 port 80 (#0)
+...
+&gt; Host:rewrite.oldboylinux.cn
+&gt;
+# 再301跳转
+&lt; HTTP&#x2F;1.1 301 Moved Permanently
+&lt; Server: nginx&#x2F;1.26.0
+&lt; Date: Fri, 10 May 2024 07:31:06 GMT
+&lt; Content-Type: text&#x2F;html
+&lt; Content-Length: 169
+&lt; Connection: keep-alive
+&lt; Location: https:&#x2F;&#x2F;www.baidu.com
+...
+
+# 再到baidu
+&gt; GET &#x2F; HTTP&#x2F;1.1
+&gt; User-Agent: curl&#x2F;7.29.0
+&gt; Host: www.baidu.com
+&gt; Accept: *&#x2F;*
+&gt;
+&lt; HTTP&#x2F;1.1 200 OK
+&lt; Accept-Ranges: bytes
+...
+&lt;title&gt;百度一下，你就知道&lt;&#x2F;title&gt;&lt;&#x2F;head&gt; &lt;body 
+...
+* Connection #1 to host www.baidu.com left intact</code></pre></div></figure>
 
 <blockquote>
 <p>curl -L –location 跟随跳转：</p>
 <p>响应是301、302跳转的时候使用  </p>
 </blockquote>
 <h4 id="案例03：http跳转https（TODO）"><a href="#案例03：http跳转https（TODO）" class="headerlink" title="案例03：http跳转https（TODO）"></a>案例03：http跳转https（TODO）</h4><p>完整流程等讲完https再说，大致如下</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs shell">server &#123;<br>  listen 80;<br>  server_name rewrite.oldboylinux.cn;<br>  return 302<br>  https://rewrite.oldboylinux.cn$request_uri;<br>&#125;<br><br>server &#123;<br>  listen 443 ssl;<br>  server_name rewrite.oldboylinux.cn;<br>  root /app/code/rewrite/;<br>  私钥<br>  公钥(证书)<br>  location / &#123;<br>    index index.html;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">server &#123;
+  listen 80;
+  server_name rewrite.oldboylinux.cn;
+  return 302
+  https:&#x2F;&#x2F;rewrite.oldboylinux.cn$request_uri;
+&#125;
+
+server &#123;
+  listen 443 ssl;
+  server_name rewrite.oldboylinux.cn;
+  root &#x2F;app&#x2F;code&#x2F;rewrite&#x2F;;
+  私钥
+  公钥(证书)
+  location &#x2F; &#123;
+    index index.html;
+  &#125;
+&#125;</code></pre></div></figure>
 
 
 
@@ -547,7 +845,9 @@
 <li>也可以进行匹配(过滤).</li>
 </ul>
 <p>格式：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs she">if (条件) &#123;<br>满足条件执行的内容.<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-she" data-language="she"><code class="language-she">if (条件) &#123;
+满足条件执行的内容.
+&#125;</code></pre></div></figure>
 
 <p>可以放在：</p>
 <ul>
@@ -560,37 +860,149 @@
 <li>ngx取反,排除,只能用if</li>
 </ul>
 <h4 id="案例01：限定请求方法"><a href="#案例01：限定请求方法" class="headerlink" title="案例01：限定请求方法"></a>案例01：限定请求方法</h4><p>rewrite.oldboylinux.cn 网站只准许GET、POST这2种请求方法，其他访问禁止访问  </p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01[ /etc/nginx/conf.d]#cat rewrite.oldboylinux.cn.conf<br>server &#123;<br>  listen 80;<br>  server_name rewrite.oldboylinux.cn;<br>  root /app/code/rewrite;<br>  charset utf8;<br><br>  if ($request_method !~ &quot;GET|POST&quot;) &#123;<br>    return 403;<br>  &#125;<br><br>  location / &#123;<br>    index index.html;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#cat rewrite.oldboylinux.cn.conf
+server &#123;
+  listen 80;
+  server_name rewrite.oldboylinux.cn;
+  root &#x2F;app&#x2F;code&#x2F;rewrite;
+  charset utf8;
+
+  if ($request_method !~ &quot;GET|POST&quot;) &#123;
+    return 403;
+  &#125;
+
+  location &#x2F; &#123;
+    index index.html;
+  &#125;
+&#125;</code></pre></div></figure>
 
 <p>测试</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> GET请求正常</span><br>[root@web02[ /etc/php-fpm.d]#curl -H Host:rewrite.oldboylinux.cn http://10.0.0.7/<br>重定向测试页面<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> HEAD请求失败</span><br>[root@web02[ /etc/php-fpm.d]#curl -I -H Host:rewrite.oldboylinux.cn http://10.0.0.7/<br>HTTP/1.1 403 Forbidden<br>Server: nginx/1.26.0<br>Date: Fri, 10 May 2024 07:45:10 GMT<br>Content-Type: text/html; charset=utf8<br>Content-Length: 153<br>Connection: keep-alive<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># GET请求正常
+[root@web02[ &#x2F;etc&#x2F;php-fpm.d]#curl -H Host:rewrite.oldboylinux.cn http:&#x2F;&#x2F;10.0.0.7&#x2F;
+重定向测试页面
+
+# HEAD请求失败
+[root@web02[ &#x2F;etc&#x2F;php-fpm.d]#curl -I -H Host:rewrite.oldboylinux.cn http:&#x2F;&#x2F;10.0.0.7&#x2F;
+HTTP&#x2F;1.1 403 Forbidden
+Server: nginx&#x2F;1.26.0
+Date: Fri, 10 May 2024 07:45:10 GMT
+Content-Type: text&#x2F;html; charset&#x3D;utf8
+Content-Length: 153
+Connection: keep-alive</code></pre></div></figure>
 
 <h3 id="4-2-3-set指令"><a href="#4-2-3-set指令" class="headerlink" title="4.2.3 set指令"></a>4.2.3 set指令</h3><p>用于自己创建或修改ngx变量 ，一般与<code>if</code>搭配使用</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash">shell变量写法</span><br>oldboy=666<br>echo $oldboy<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash">ngx中变量写法，进行赋值与进行使用都需要加上$符号</span><br>set $变量 值;<br>set $lidao 996;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">#shell变量写法
+oldboy&#x3D;666
+echo $oldboy
 
-<h4 id="案例01：基本使用"><a href="#案例01：基本使用" class="headerlink" title="案例01：基本使用"></a>案例01：基本使用</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01[ /etc/nginx/conf.d]#cat rewrite.oldboylinux.cn.conf<br>server &#123;<br>  listen 80;<br>  server_name rewrite.oldboylinux.cn;<br>  root /app/code/rewrite;<br>  charset utf8;<br>  set $oldboy &quot;lidao996&quot;;<br>  return 200 $oldboy;<br><br>  location / &#123;<br>    index index.html;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+#ngx中变量写法，进行赋值与进行使用都需要加上$符号
+set $变量 值;
+set $lidao 996;</code></pre></div></figure>
+
+<h4 id="案例01：基本使用"><a href="#案例01：基本使用" class="headerlink" title="案例01：基本使用"></a>案例01：基本使用</h4><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#cat rewrite.oldboylinux.cn.conf
+server &#123;
+  listen 80;
+  server_name rewrite.oldboylinux.cn;
+  root &#x2F;app&#x2F;code&#x2F;rewrite;
+  charset utf8;
+  set $oldboy &quot;lidao996&quot;;
+  return 200 $oldboy;
+
+  location &#x2F; &#123;
+    index index.html;
+  &#125;
+&#125;</code></pre></div></figure>
 
 <p>测试访问</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 内容变成变量值了</span><br>[root@web02[ /etc/php-fpm.d]#curl -H Host:rewrite.oldboylinux.cn http://10.0.0.7/<br>lidao996<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 内容变成变量值了
+[root@web02[ &#x2F;etc&#x2F;php-fpm.d]#curl -H Host:rewrite.oldboylinux.cn http:&#x2F;&#x2F;10.0.0.7&#x2F;
+lidao996</code></pre></div></figure>
 
 <p>可以根据变量显示网站uri</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01[ /etc/nginx/conf.d]#!cat<br>cat rewrite.oldboylinux.cn.conf<br>server &#123;<br>  listen 80;<br>  server_name rewrite.oldboylinux.cn;<br>  root /app/code/rewrite;<br>  charset utf8;<br><span class="hljs-meta">  #</span><span class="bash"> 变量设置成uri</span><br>  set $oldboy $http_host$request_uri;<br>  return 200 $oldboy;<br><br>  location / &#123;<br>    index index.html;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#!cat
+cat rewrite.oldboylinux.cn.conf
+server &#123;
+  listen 80;
+  server_name rewrite.oldboylinux.cn;
+  root &#x2F;app&#x2F;code&#x2F;rewrite;
+  charset utf8;
+  # 变量设置成uri
+  set $oldboy $http_host$request_uri;
+  return 200 $oldboy;
+
+  location &#x2F; &#123;
+    index index.html;
+  &#125;
+&#125;</code></pre></div></figure>
 
 <p>测试访问，显示输入的uri</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web02[ /etc/php-fpm.d]#curl -H Host:rewrite.oldboylinux.cn http://10.0.0.7/<br>rewrite.oldboylinux.cn/<br>[root@web02[ /etc/php-fpm.d]#curl -H Host:rewrite.oldboylinux.cn http://10.0.0.7/admin<br>rewrite.oldboylinux.cn/admin<br>[root@web02[ /etc/php-fpm.d]#curl -H Host:rewrite.oldboylinux.cn http://10.0.0.7/test<br>rewrite.oldboylinux.cn/test<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web02[ &#x2F;etc&#x2F;php-fpm.d]#curl -H Host:rewrite.oldboylinux.cn http:&#x2F;&#x2F;10.0.0.7&#x2F;
+rewrite.oldboylinux.cn&#x2F;
+[root@web02[ &#x2F;etc&#x2F;php-fpm.d]#curl -H Host:rewrite.oldboylinux.cn http:&#x2F;&#x2F;10.0.0.7&#x2F;admin
+rewrite.oldboylinux.cn&#x2F;admin
+[root@web02[ &#x2F;etc&#x2F;php-fpm.d]#curl -H Host:rewrite.oldboylinux.cn http:&#x2F;&#x2F;10.0.0.7&#x2F;test
+rewrite.oldboylinux.cn&#x2F;test</code></pre></div></figure>
 
 <h4 id="案例02：设置网站维护状态"><a href="#案例02：设置网站维护状态" class="headerlink" title="案例02：设置网站维护状态"></a>案例02：设置网站维护状态</h4><p>设置网站是否为维护状态：</p>
 <ul>
 <li>如果维护状态，返回503状态码</li>
 <li>否则正常访问</li>
 </ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs shell">server &#123;<br>  listen 80;<br>  server_name rewrite.oldboylinux.cn;<br>  root /app/code/rewrite;<br>  charset utf8<br>  set $flag 0;<br><span class="hljs-meta">  #</span><span class="bash">include conf.d/rewrite-status.var;</span><br>  if ( $flag = 1 ) &#123;<br>    return 503;<br>  &#125;<br>  <br>  location / &#123;<br>    index index.html;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">server &#123;
+  listen 80;
+  server_name rewrite.oldboylinux.cn;
+  root &#x2F;app&#x2F;code&#x2F;rewrite;
+  charset utf8
+  set $flag 0;
+  #include conf.d&#x2F;rewrite-status.var;
+  if ( $flag &#x3D; 1 ) &#123;
+    return 503;
+  &#125;
+  
+  location &#x2F; &#123;
+    index index.html;
+  &#125;
+&#125;</code></pre></div></figure>
 
 <p>变量文件可以单独写到一个文件中，再导入</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01[ /etc/nginx/conf.d]#cat rewrite-status.flag<br>set $flag 0;<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 导入</span><br>[root@web01[ /etc/nginx/conf.d]#cat rewrite.oldboylinux.cn.conf<br>server &#123;<br>  listen 80;<br>  server_name rewrite.oldboylinux.cn;<br>  root /app/code/rewrite;<br>  charset utf8;<br><span class="hljs-meta">  #</span><span class="bash"> 导入</span><br>  include conf.d/rewrite-status.flag;<br>  <br><span class="hljs-meta">  #</span><span class="bash"> 判断</span><br>  if  ($flag = 1) &#123;<br>    return 503;<br>  &#125;<br><br>  location / &#123;<br>    index index.html;<br>  &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#cat rewrite-status.flag
+set $flag 0;
+
+# 导入
+[root@web01[ &#x2F;etc&#x2F;nginx&#x2F;conf.d]#cat rewrite.oldboylinux.cn.conf
+server &#123;
+  listen 80;
+  server_name rewrite.oldboylinux.cn;
+  root &#x2F;app&#x2F;code&#x2F;rewrite;
+  charset utf8;
+  # 导入
+  include conf.d&#x2F;rewrite-status.flag;
+  
+  # 判断
+  if  ($flag &#x3D; 1) &#123;
+    return 503;
+  &#125;
+
+  location &#x2F; &#123;
+    index index.html;
+  &#125;
+&#125;
+</code></pre></div></figure>
 
 <p>测试访问</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web02[ /etc/php-fpm.d]#curl -H Host:rewrite.oldboylinux.cn http://10.0.0.7/<br>重定向测试页面<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 中间修改flag的值，reload ngx服务</span><br><br>[root@web02[ /etc/php-fpm.d]#curl -H Host:rewrite.oldboylinux.cn http://10.0.0.7/<br>&lt;html&gt;<br>&lt;head&gt;&lt;title&gt;503 Service Temporarily Unavailable&lt;/title&gt;&lt;/head&gt;<br>&lt;body&gt;<br>&lt;center&gt;&lt;h1&gt;503 Service Temporarily Unavailable&lt;/h1&gt;&lt;/center&gt;<br>&lt;hr&gt;&lt;center&gt;nginx/1.26.0&lt;/center&gt;<br>&lt;/body&gt;<br>&lt;/html&gt;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web02[ &#x2F;etc&#x2F;php-fpm.d]#curl -H Host:rewrite.oldboylinux.cn http:&#x2F;&#x2F;10.0.0.7&#x2F;
+重定向测试页面
+
+# 中间修改flag的值，reload ngx服务
+
+[root@web02[ &#x2F;etc&#x2F;php-fpm.d]#curl -H Host:rewrite.oldboylinux.cn http:&#x2F;&#x2F;10.0.0.7&#x2F;
+&lt;html&gt;
+&lt;head&gt;&lt;title&gt;503 Service Temporarily Unavailable&lt;&#x2F;title&gt;&lt;&#x2F;head&gt;
+&lt;body&gt;
+&lt;center&gt;&lt;h1&gt;503 Service Temporarily Unavailable&lt;&#x2F;h1&gt;&lt;&#x2F;center&gt;
+&lt;hr&gt;&lt;center&gt;nginx&#x2F;1.26.0&lt;&#x2F;center&gt;
+&lt;&#x2F;body&gt;
+&lt;&#x2F;html&gt;</code></pre></div></figure>
 
 <h3 id="4-2-4-rewrite指令"><a href="#4-2-4-rewrite指令" class="headerlink" title="4.2.4 rewrite指令"></a>4.2.4 rewrite指令</h3><p>rewrite正则用于匹配用户请求的uri.</p>
 <p>命令的格式与<code>sed &#39;s###g&#39;</code>类似，实现替换功能，rewrite替换url内容.(改写)</p>
@@ -631,12 +1043,43 @@
 <td>301</td>
 </tr>
 </tbody></table>
-<h4 id="案例01：域名跳转"><a href="#案例01：域名跳转" class="headerlink" title="案例01：域名跳转"></a>案例01：域名跳转</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell">server &#123;<br>  listen 80;<br>  server_name rewrite.oldboylinux.cn;<br><br>  rewrite ^(.*)$ http://www.baidu.com$1;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h4 id="案例01：域名跳转"><a href="#案例01：域名跳转" class="headerlink" title="案例01：域名跳转"></a>案例01：域名跳转</h4><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">server &#123;
+  listen 80;
+  server_name rewrite.oldboylinux.cn;
+
+  rewrite ^(.*)$ http:&#x2F;&#x2F;www.baidu.com$1;
+&#125;</code></pre></div></figure>
 
 <p>测试访问</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web02[ /etc/php-fpm.d]#curl -Lv -H Host:rewrite.oldboylinux.cn http://10.0.0.7<br>...<br><span class="hljs-meta">&gt;</span><span class="bash"> Host:rewrite.oldboylinux.cn</span><br><span class="hljs-meta">&gt;</span><span class="bash"></span><br><span class="bash">&lt; HTTP/1.1 302 Moved Temporarily</span><br>...<br>&lt; HTTP/1.1 200 OK<br>&lt; Accept-Ranges: bytes<br>...<br>&lt;title&gt;百度一下，你就知道&lt;/title&gt;&lt;/head&gt; &lt;body link=#0000cc&gt; &lt;div <br>...<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web02[ &#x2F;etc&#x2F;php-fpm.d]#curl -Lv -H Host:rewrite.oldboylinux.cn http:&#x2F;&#x2F;10.0.0.7
+...
+&gt; Host:rewrite.oldboylinux.cn
+&gt;
+&lt; HTTP&#x2F;1.1 302 Moved Temporarily
+...
+&lt; HTTP&#x2F;1.1 200 OK
+&lt; Accept-Ranges: bytes
+...
+&lt;title&gt;百度一下，你就知道&lt;&#x2F;title&gt;&lt;&#x2F;head&gt; &lt;body link&#x3D;#0000cc&gt; &lt;div 
+...</code></pre></div></figure>
 
-<h4 id="案例02：http跳转https（TODO）"><a href="#案例02：http跳转https（TODO）" class="headerlink" title="案例02：http跳转https（TODO）"></a>案例02：http跳转https（TODO）</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs shell">server &#123;<br>  listen 80;<br>  server_name rewrite.oldboylinux.cn;<br><span class="hljs-meta">  #</span><span class="bash"><span class="hljs-built_in">return</span> 302 https://rewrite.oldboylinux.cn<span class="hljs-variable">$request_uri</span>;</span><br>  rewrite ^(.*)$ https://rewrite.oldboylinux.cn$1 ;<br><span class="hljs-meta">  #</span><span class="bash">302</span><br>&#125;<br>server &#123;<br>  listen 443 ssl;<br>  server_name rewrite.oldboylinux.cn;<br>  root /app/code/rewrite/;<br>  私钥<br>  公钥(证书)<br>  location / &#123;<br>    index index.html;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h4 id="案例02：http跳转https（TODO）"><a href="#案例02：http跳转https（TODO）" class="headerlink" title="案例02：http跳转https（TODO）"></a>案例02：http跳转https（TODO）</h4><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">server &#123;
+  listen 80;
+  server_name rewrite.oldboylinux.cn;
+  #return 302 https:&#x2F;&#x2F;rewrite.oldboylinux.cn$request_uri;
+  rewrite ^(.*)$ https:&#x2F;&#x2F;rewrite.oldboylinux.cn$1 ;
+  #302
+&#125;
+server &#123;
+  listen 443 ssl;
+  server_name rewrite.oldboylinux.cn;
+  root &#x2F;app&#x2F;code&#x2F;rewrite&#x2F;;
+  私钥
+  公钥(证书)
+  location &#x2F; &#123;
+    index index.html;
+  &#125;
+&#125;</code></pre></div></figure>
 
 <h4 id="案例03：rewrite的各种标记"><a href="#案例03：rewrite的各种标记" class="headerlink" title="案例03：rewrite的各种标记"></a>案例03：rewrite的各种标记</h4><table>
 <thead>
@@ -668,22 +1111,101 @@
 </tr>
 </tbody></table>
 <p>rewrite标记使用</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 子配置文件</span><br>server &#123;<br>  listen 80;<br>  server_name flag.oldboylinux.cn;<br>  root /app/code/flag;<br>  error_log /var/log/nginx/flag-error.log notice;<br>  rewrite_log on; #需要错误日志debug ՎՎʢ notice<br>  location / &#123;<br>    # 匹配到了，继续执行<br>    rewrite /1.html /2.html ;<br>    # 匹配到了，继续执行<br>    rewrite /2.html /3.html ;<br>  &#125;<br>  location /2.html &#123;<br>    # 匹配到了，继续执行<br>    rewrite /2.html /3.html ;<br>  &#125;<br>  location /3.html &#123;<br>    # 匹配到了，继续执行<br>    rewrite /3.html /a.html ;<br>  &#125;<br>&#125;<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 准备文件</span><br>echo 1.html url &gt;/app/code/flag/1.html<br>echo 2.html url &gt;/app/code/flag/2.html<br>echo 3.html url &gt;/app/code/flag/3.html<br>echo a.html url &gt;/app/code/flag/a.html<br>echo b.html url &gt;/app/code/flag/b.html<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 子配置文件
+server &#123;
+  listen 80;
+  server_name flag.oldboylinux.cn;
+  root &#x2F;app&#x2F;code&#x2F;flag;
+  error_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;flag-error.log notice;
+  rewrite_log on; #需要错误日志debug ՎՎʢ notice
+  location &#x2F; &#123;
+    # 匹配到了，继续执行
+    rewrite &#x2F;1.html &#x2F;2.html ;
+    # 匹配到了，继续执行
+    rewrite &#x2F;2.html &#x2F;3.html ;
+  &#125;
+  location &#x2F;2.html &#123;
+    # 匹配到了，继续执行
+    rewrite &#x2F;2.html &#x2F;3.html ;
+  &#125;
+  location &#x2F;3.html &#123;
+    # 匹配到了，继续执行
+    rewrite &#x2F;3.html &#x2F;a.html ;
+  &#125;
+&#125;
+
+# 准备文件
+echo 1.html url &gt;&#x2F;app&#x2F;code&#x2F;flag&#x2F;1.html
+echo 2.html url &gt;&#x2F;app&#x2F;code&#x2F;flag&#x2F;2.html
+echo 3.html url &gt;&#x2F;app&#x2F;code&#x2F;flag&#x2F;3.html
+echo a.html url &gt;&#x2F;app&#x2F;code&#x2F;flag&#x2F;a.html
+echo b.html url &gt;&#x2F;app&#x2F;code&#x2F;flag&#x2F;b.html</code></pre></div></figure>
 
 <p>测试rewrite：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 1.访问/1.html显示a.html内容</span><br>[root@web01 /etc/nginx/conf.d]# curl -H Host:flag.oldboylinux.cn 10.0.0.7/1.html<br>a.html url<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 2.访问/2.html显示a.html内容</span><br>[root@web01 /etc/nginx/conf.d]# curl -H Host:flag.oldboylinux.cn 10.0.0.7/2.html<br>a.html url<br><br><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 1.访问&#x2F;1.html显示a.html内容
+[root@web01 &#x2F;etc&#x2F;nginx&#x2F;conf.d]# curl -H Host:flag.oldboylinux.cn 10.0.0.7&#x2F;1.html
+a.html url
+
+# 2.访问&#x2F;2.html显示a.html内容
+[root@web01 &#x2F;etc&#x2F;nginx&#x2F;conf.d]# curl -H Host:flag.oldboylinux.cn 10.0.0.7&#x2F;2.html
+a.html url
+
+</code></pre></div></figure>
 
 <p>break标记使用：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 3. 在rewrite /1.html /2.html的时候加上标记<span class="hljs-built_in">break</span>标记.</span><br><span class="hljs-meta">#</span><span class="bash"> rewrite /1.html /2.html <span class="hljs-built_in">break</span>; 执行完成rewrite后会直接结束</span><br><br>server &#123;<br>  listen 80;<br>  server_name flag.oldboylinux.cn;<br>  root /app/code/flag;<br>  error_log /var/log/nginx/flag-error.log notice;<br>  rewrite_log on; #需要错误日志debug ... notice<br>  location / &#123;<br>    # 匹配到了，执行，遇到break，停止<br>    rewrite /1.html /2.html break;<br>    rewrite /2.html /3.html ;<br>  &#125;<br>  location /2.html &#123;<br>    rewrite /2.html /3.html ;<br>  &#125;<br>  location /3.html &#123;<br>    rewrite /3.html /a.html ;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 3. 在rewrite &#x2F;1.html &#x2F;2.html的时候加上标记break标记.
+# rewrite &#x2F;1.html &#x2F;2.html break; 执行完成rewrite后会直接结束
+
+server &#123;
+  listen 80;
+  server_name flag.oldboylinux.cn;
+  root &#x2F;app&#x2F;code&#x2F;flag;
+  error_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;flag-error.log notice;
+  rewrite_log on; #需要错误日志debug ... notice
+  location &#x2F; &#123;
+    # 匹配到了，执行，遇到break，停止
+    rewrite &#x2F;1.html &#x2F;2.html break;
+    rewrite &#x2F;2.html &#x2F;3.html ;
+  &#125;
+  location &#x2F;2.html &#123;
+    rewrite &#x2F;2.html &#x2F;3.html ;
+  &#125;
+  location &#x2F;3.html &#123;
+    rewrite &#x2F;3.html &#x2F;a.html ;
+  &#125;
+&#125;</code></pre></div></figure>
 
 <p>测试break，跳转到2.html就结束了</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01 /etc/nginx/conf.d]# curl -H Host:flag.oldboylinux.cn 10.0.0.7/1.html<br>2.html url<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web01 &#x2F;etc&#x2F;nginx&#x2F;conf.d]# curl -H Host:flag.oldboylinux.cn 10.0.0.7&#x2F;1.html
+2.html url</code></pre></div></figure>
 
 <p>last标记使用</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 4. 在rewrite /1.html /2.html的时候加上标记last标记。注意这一步修改下配置文件,创建新的页面b.html</span><br><br>[root@web01 /etc/nginx/conf.d]# cat flag.oldboylinux.cn.conf<br>server &#123;<br>  listen 80;<br>  server_name flag.oldboylinux.cn;<br>  root /app/code/flag;<br>  error_log /var/log/nginx/flag-error.log notice;<br>  rewrite_log on; #需要错误日志debug ... notice<br>  location / &#123;<br>    # 匹配到了，执行，遇到last，暂停，内部重新发起请求<br>    rewrite /1.html /2.html last;<br>    rewrite /2.html /3.html ;<br>  &#125;<br>  location /2.html &#123;<br>    # 收到内部发起的请求，继续处理<br>    rewrite /2.html /b.html ;<br>  &#125;<br>  location /3.html &#123;<br>    rewrite /3.html /a.html ;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 4. 在rewrite &#x2F;1.html &#x2F;2.html的时候加上标记last标记。注意这一步修改下配置文件,创建新的页面b.html
+
+[root@web01 &#x2F;etc&#x2F;nginx&#x2F;conf.d]# cat flag.oldboylinux.cn.conf
+server &#123;
+  listen 80;
+  server_name flag.oldboylinux.cn;
+  root &#x2F;app&#x2F;code&#x2F;flag;
+  error_log &#x2F;var&#x2F;log&#x2F;nginx&#x2F;flag-error.log notice;
+  rewrite_log on; #需要错误日志debug ... notice
+  location &#x2F; &#123;
+    # 匹配到了，执行，遇到last，暂停，内部重新发起请求
+    rewrite &#x2F;1.html &#x2F;2.html last;
+    rewrite &#x2F;2.html &#x2F;3.html ;
+  &#125;
+  location &#x2F;2.html &#123;
+    # 收到内部发起的请求，继续处理
+    rewrite &#x2F;2.html &#x2F;b.html ;
+  &#125;
+  location &#x2F;3.html &#123;
+    rewrite &#x2F;3.html &#x2F;a.html ;
+  &#125;
+&#125;</code></pre></div></figure>
 
 <p>last标记测试，重新发送请求，至b.html结束</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01 /etc/nginx/conf.d]# curl -H Host:flag.oldboylinux.cn 10.0.0.7/1.html<br>b.html url<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web01 &#x2F;etc&#x2F;nginx&#x2F;conf.d]# curl -H Host:flag.oldboylinux.cn 10.0.0.7&#x2F;1.html
+b.html url</code></pre></div></figure>
 
 
 
@@ -758,9 +1280,9 @@
             
               
               
-                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
                   <span class="hint--top hint--rounded" aria-label="BY - 署名">
-                    <i class="iconfont icon-by"></i>
+                    <i class="iconfont icon-cc-by"></i>
                   </span>
                 </a>
               
@@ -808,16 +1330,6 @@
 
     <div class="side-col d-none d-lg-block col-lg-2">
       
-  <aside class="sidebar" style="margin-left: -1rem">
-    <div id="toc">
-  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
-  <div class="toc-body" id="toc-body"></div>
-</div>
-
-
-
-  </aside>
-
 
     </div>
   </div>
@@ -895,7 +1407,6 @@
   
   
   
-  
 </div>
 
   </footer>
@@ -914,7 +1425,7 @@
   </script>
 
 
-<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
 <script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
 <script  src="/js/events.js" ></script>
 <script  src="/js/plugins.js" ></script>
@@ -947,7 +1458,7 @@
 
   
 <script>
-  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
     var toc = jQuery('#toc');
     if (toc.length === 0 || !window.tocbot) { return; }
     var boardCtn = jQuery('#board-ctn');
@@ -985,6 +1496,12 @@
 </script>
 
 
+  <script  src="https://lib.baomitu.com/prism/1.29.0/components/prism-core.min.js" ></script>
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js" ></script>
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
+
   <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
 
   <script>Fluid.plugins.codeWidget();</script>
@@ -992,7 +1509,7 @@
 
   
 <script>
-  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
     window.anchors.options = {
       placement: CONFIG.anchorjs.placement,
       visible  : CONFIG.anchorjs.visible

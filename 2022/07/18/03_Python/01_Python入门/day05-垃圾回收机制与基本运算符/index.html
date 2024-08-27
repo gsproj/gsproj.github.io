@@ -7,8 +7,11 @@
 
 <head>
   <meta charset="UTF-8">
+
   <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
   <link rel="icon" href="/img/fluid.png">
+  
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   
@@ -16,12 +19,12 @@
   <meta name="author" content="GongSheng">
   <meta name="keywords" content="">
   
-    <meta name="description" content="一 、垃圾回收机制（了解）">
+    <meta name="description" content="一 、垃圾回收机制（了解）垃圾回收机制（简称GC）是Python解释器自带一种机，专门用来回收不可用的变量值所占用的内存空间 1.1 垃圾回收机制介绍1.1.1 什么是垃圾？ 解释器：执行到定义变量的语句 –&gt; 申请内存空间来存放变量的值  内存的容量是有限的 当一个变量值没有用了（简称垃圾）就应该将其占用的内存给回收掉。  怎么判断变量值没有用了？  单从逻辑层面分析，我们定义变量将变量值">
 <meta property="og:type" content="article">
 <meta property="og:title" content="05-垃圾回收机制">
 <meta property="og:url" content="http://gsproj.github.io/2022/07/18/03_Python/01_Python%E5%85%A5%E9%97%A8/day05-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%9F%BA%E6%9C%AC%E8%BF%90%E7%AE%97%E7%AC%A6/index.html">
 <meta property="og:site_name" content="迎风之豚的博客">
-<meta property="og:description" content="一 、垃圾回收机制（了解）">
+<meta property="og:description" content="一 、垃圾回收机制（了解）垃圾回收机制（简称GC）是Python解释器自带一种机，专门用来回收不可用的变量值所占用的内存空间 1.1 垃圾回收机制介绍1.1.1 什么是垃圾？ 解释器：执行到定义变量的语句 –&gt; 申请内存空间来存放变量的值  内存的容量是有限的 当一个变量值没有用了（简称垃圾）就应该将其占用的内存给回收掉。  怎么判断变量值没有用了？  单从逻辑层面分析，我们定义变量将变量值">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://pic3.zhimg.com/80/v2-89915f2dc64db1fe79ce739a233bb09a_720w.jpg">
 <meta property="og:image" content="https://pic4.zhimg.com/80/v2-8a46e8993c193017bbbbca370ce6970b_720w.jpg">
@@ -55,6 +58,8 @@
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
 
+  <link  rel="stylesheet" href="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" />
+
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
 
@@ -62,11 +67,11 @@
 <!-- 主题依赖的图标库，不要自行修改 -->
 <!-- Do not modify the link that theme dependent icons -->
 
-<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
 
 
 
-<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
 
 
 <link  rel="stylesheet" href="/css/main.css" />
@@ -83,7 +88,7 @@
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
     Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"left","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
 
     if (CONFIG.web_analytics.follow_dnt) {
       var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
@@ -96,7 +101,7 @@
 
 
   
-<meta name="generator" content="Hexo 5.4.2"></head>
+<meta name="generator" content="Hexo 7.3.0"></head>
 
 
 <body>
@@ -109,7 +114,7 @@
   <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand" href="/">
-      <strong>&#34;迎风之豚的博客&#34;</strong>
+      <strong>Haris的博客</strong>
     </a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
@@ -127,9 +132,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/">
+              <a class="nav-link" href="/" target="_self">
                 <i class="iconfont icon-home-fill"></i>
-                首页
+                <span>首页</span>
               </a>
             </li>
           
@@ -139,9 +144,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/archives/">
+              <a class="nav-link" href="/archives/" target="_self">
                 <i class="iconfont icon-archive-fill"></i>
-                归档
+                <span>归档</span>
               </a>
             </li>
           
@@ -151,9 +156,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/categories/">
+              <a class="nav-link" href="/categories/" target="_self">
                 <i class="iconfont icon-category-fill"></i>
-                分类
+                <span>分类</span>
               </a>
             </li>
           
@@ -163,9 +168,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/tags/">
+              <a class="nav-link" href="/tags/" target="_self">
                 <i class="iconfont icon-tags-fill"></i>
-                标签
+                <span>标签</span>
               </a>
             </li>
           
@@ -175,9 +180,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/about/">
+              <a class="nav-link" href="/about/" target="_self">
                 <i class="iconfont icon-user-fill"></i>
-                关于
+                <span>关于</span>
               </a>
             </li>
           
@@ -185,15 +190,16 @@
         
           <li class="nav-item" id="search-btn">
             <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
-              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+              <i class="iconfont icon-search"></i>
             </a>
           </li>
           
         
         
           <li class="nav-item" id="color-toggle-btn">
-            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
-                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
           </li>
         
       </ul>
@@ -233,7 +239,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          8.9k 字
+          4.8k 字
         
       </span>
     
@@ -244,7 +250,7 @@
         
         
         
-          75 分钟
+          41 分钟
         
       </span>
     
@@ -274,6 +280,19 @@
   <div class="row nomargin-x">
     <div class="side-col d-none d-lg-block col-lg-2">
       
+  <aside class="sidebar" style="padding-left: 2rem; margin-right: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
 
     </div>
 
@@ -281,8 +300,7 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <!-- SEO header -->
-            <h1 style="display: none">05-垃圾回收机制</h1>
+            <h1 id="seo-header">05-垃圾回收机制</h1>
             
             
               <div class="markdown-body">
@@ -296,7 +314,8 @@
 <p>怎么判断变量值没有用了？</p>
 <ul>
 <li><p>单从逻辑层面分析，我们定义变量将变量值存起来的目的是为了以后取出来使用，而取得变量值需要通过其绑定的<code>直接引用</code>或<code>间接引用</code></p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs python">x=<span class="hljs-number">10</span> 		<span class="hljs-comment"># 值10被x直接引用</span><br>mylist=[x,]	<span class="hljs-comment"># 值10被容器mylist间接引用</span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">x&#x3D;10 		# 值10被x直接引用
+mylist&#x3D;[x,]	# 值10被容器mylist间接引用</code></pre></div></figure>
 </li>
 <li><p>所以当一个变量值<code>不再绑定任何引用</code>时，我们就无法再访问到该变量值了，该变量值自然就是没有用的，就应该被当成一个垃圾回收。</p>
 </li>
@@ -305,32 +324,54 @@
 <h3 id="1-1-2-为什么要用垃圾回收机制？"><a href="#1-1-2-为什么要用垃圾回收机制？" class="headerlink" title="1.1.2 为什么要用垃圾回收机制？"></a>1.1.2 为什么要用垃圾回收机制？</h3><p>程序运行过程中会申请大量的内存空间，而对于一些无用的内存空间如果不及时清理的话会导致内存使用殆尽（内存溢出），导致程序崩溃，因此管理内存是一件重要且繁杂的事情，而python解释器自带的垃圾回收机制把程序员从繁杂的内存管理中解放出来。</p>
 <h3 id="1-1-3-垃圾回收机制原理分析"><a href="#1-1-3-垃圾回收机制原理分析" class="headerlink" title="1.1.3 垃圾回收机制原理分析"></a>1.1.3 垃圾回收机制原理分析</h3><p>Python的GC模块主要运用了“引用计数”（reference counting）来跟踪和回收垃圾。在引用计数的基础上，还可以通过“标记-清除”（mark and sweep）解决容器对象可能产生的循环引用的问题，并且通过“分代回收”（generation collection）以空间换取时间的方式来进一步提高垃圾回收的效率。</p>
 <h2 id="1-2-引用计数"><a href="#1-2-引用计数" class="headerlink" title="1.2 引用计数"></a>1.2 引用计数</h2><h3 id="1-2-1-什么是引用计数"><a href="#1-2-1-什么是引用计数" class="headerlink" title="1.2.1 什么是引用计数"></a>1.2.1 什么是引用计数</h3><p>引用计数就是：变量值被变量名关联的次数</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs python">age = <span class="hljs-number">18</span><br><span class="hljs-comment"># 变量age --&gt; 值18的内存地址 --- 引用计数为1</span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">age &#x3D; 18
+# 变量age --&gt; 值18的内存地址 --- 引用计数为1</code></pre></div></figure>
 
 <p><img src="https://pic3.zhimg.com/80/v2-89915f2dc64db1fe79ce739a233bb09a_720w.jpg" srcset="/img/loading.gif" lazyload alt="img"></p>
 <p>引用计数增加：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs python">age=<span class="hljs-number">18</span>  <span class="hljs-comment"># 此时，值18的引用计数为1</span><br>m=age 	<span class="hljs-comment"># 变量m也记录了值18的内存地址，所以值18的引用计数为2</span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">age&#x3D;18  # 此时，值18的引用计数为1
+m&#x3D;age 	# 变量m也记录了值18的内存地址，所以值18的引用计数为2</code></pre></div></figure>
 
 <p><img src="https://pic4.zhimg.com/80/v2-8a46e8993c193017bbbbca370ce6970b_720w.jpg" srcset="/img/loading.gif" lazyload alt="img"></p>
 <p>引用计数减少：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs python">age=<span class="hljs-number">10</span> <span class="hljs-comment"># 变量age先与值18解除关联，再与值10建立了关联，变量值18的引用计数为1</span><br><span class="hljs-keyword">del</span> m	<span class="hljs-comment"># del的意思是解除变量名x与变量值18的关联关系，此时，值18的引用计数为0</span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">age&#x3D;10 # 变量age先与值18解除关联，再与值10建立了关联，变量值18的引用计数为1
+del m	# del的意思是解除变量名x与变量值18的关联关系，此时，值18的引用计数为0</code></pre></div></figure>
 
 
 
 <p><img src="https://pic3.zhimg.com/80/v2-6d0ed3fa462194215235ae22888b373a_720w.jpg" srcset="/img/loading.gif" lazyload alt="img"></p>
 <p>值18的引用计数一旦变为0，其占用的内存地址就应该被解释器的垃圾回收机制回收</p>
 <h3 id="1-2-2-直接引用和间接引用"><a href="#1-2-2-直接引用和间接引用" class="headerlink" title="1.2.2 直接引用和间接引用"></a>1.2.2 直接引用和间接引用</h3><p>除了有引用计数，还有直接引用与间件引用的概念，我通过一个例子来分析</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs python">x = <span class="hljs-number">18</span> <span class="hljs-comment"># 直接引用，变量x记录了值18的内存地址，值18的引用计数为1</span><br>mylist = [<span class="hljs-number">1</span>,x] <span class="hljs-comment"># 间接引用，列表mylist间件记录了值18的内存地址，值18的引用计数为2</span><br><br>x = <span class="hljs-number">200</span><br><span class="hljs-built_in">print</span>(mylist[<span class="hljs-number">1</span>]) <span class="hljs-comment"># 输出18还是200？答案还是输出18！像这种情况我们可以称值18是被mylist间件引用</span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">x &#x3D; 18 # 直接引用，变量x记录了值18的内存地址，值18的引用计数为1
+mylist &#x3D; [1,x] # 间接引用，列表mylist间件记录了值18的内存地址，值18的引用计数为2
+
+x &#x3D; 200
+print(mylist[1]) # 输出18还是200？答案还是输出18！像这种情况我们可以称值18是被mylist间件引用</code></pre></div></figure>
 
 <p>这里又涉及到一个问题，即<strong>列表在内存中的存储方式</strong>，可以参考其它文章学习</p>
 <h3 id="1-2-3-引用计数带来的循环引用问题"><a href="#1-2-3-引用计数带来的循环引用问题" class="headerlink" title="1.2.3 引用计数带来的循环引用问题"></a>1.2.3 引用计数带来的循环引用问题</h3><p>引用计数机制还存在着一个致命的弱点，即循环引用（也称交叉引用）</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 如下我们定义了两个列表，简称列表1与列表2，变量名l1指向列表1，变量名l2指向列表2</span><br><span class="hljs-meta">&gt;&gt;&gt; </span>l1=[<span class="hljs-string">&#x27;xxx&#x27;</span>]  <span class="hljs-comment"># 列表1被引用一次，列表1的引用计数变为1   </span><br><span class="hljs-meta">&gt;&gt;&gt; </span>l2=[<span class="hljs-string">&#x27;yyy&#x27;</span>]  <span class="hljs-comment"># 列表2被引用一次，列表2的引用计数变为1   </span><br><span class="hljs-meta">&gt;&gt;&gt; </span>l1.append(l2)             <span class="hljs-comment"># 把列表2追加到l1中作为第二个元素，列表2的引用计数变为2</span><br><span class="hljs-meta">&gt;&gt;&gt; </span>l2.append(l1)             <span class="hljs-comment"># 把列表1追加到l2中作为第二个元素，列表1的引用计数变为2</span><br><br><span class="hljs-comment"># l1与l2之间有相互引用</span><br><span class="hljs-comment"># l1 = [&#x27;xxx&#x27;的内存地址,列表2的内存地址]</span><br><span class="hljs-comment"># l2 = [&#x27;yyy&#x27;的内存地址,列表1的内存地址]</span><br><span class="hljs-meta">&gt;&gt;&gt; </span>l1<br>[<span class="hljs-string">&#x27;xxx&#x27;</span>, [<span class="hljs-string">&#x27;yyy&#x27;</span>, [...]]]<br><span class="hljs-meta">&gt;&gt;&gt; </span>l2<br>[<span class="hljs-string">&#x27;yyy&#x27;</span>, [<span class="hljs-string">&#x27;xxx&#x27;</span>, [...]]]<br><span class="hljs-meta">&gt;&gt;&gt; </span>l1[<span class="hljs-number">1</span>][<span class="hljs-number">1</span>][<span class="hljs-number">0</span>]<br><span class="hljs-string">&#x27;xxx&#x27;</span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"># 如下我们定义了两个列表，简称列表1与列表2，变量名l1指向列表1，变量名l2指向列表2
+&gt;&gt;&gt; l1&#x3D;[&#39;xxx&#39;]  # 列表1被引用一次，列表1的引用计数变为1   
+&gt;&gt;&gt; l2&#x3D;[&#39;yyy&#39;]  # 列表2被引用一次，列表2的引用计数变为1   
+&gt;&gt;&gt; l1.append(l2)             # 把列表2追加到l1中作为第二个元素，列表2的引用计数变为2
+&gt;&gt;&gt; l2.append(l1)             # 把列表1追加到l2中作为第二个元素，列表1的引用计数变为2
+
+# l1与l2之间有相互引用
+# l1 &#x3D; [&#39;xxx&#39;的内存地址,列表2的内存地址]
+# l2 &#x3D; [&#39;yyy&#39;的内存地址,列表1的内存地址]
+&gt;&gt;&gt; l1
+[&#39;xxx&#39;, [&#39;yyy&#39;, [...]]]
+&gt;&gt;&gt; l2
+[&#39;yyy&#39;, [&#39;xxx&#39;, [...]]]
+&gt;&gt;&gt; l1[1][1][0]
+&#39;xxx&#39;</code></pre></div></figure>
 
 <p>循环引用会导致：值不再被任何名字关联，但是值的引用计数并不会为0，<font color=red>应该被回收但不能被回收</font>，什么意思呢？试想一下，请看如下操作</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-meta">&gt;&gt;&gt; </span><span class="hljs-keyword">del</span> l1 <span class="hljs-comment"># 列表1的引用计数减1，列表1的引用计数变为1</span><br><span class="hljs-meta">&gt;&gt;&gt; </span><span class="hljs-keyword">del</span> l2 <span class="hljs-comment"># 列表2的引用计数减1，列表2的引用计数变为1</span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">&gt;&gt;&gt; del l1 # 列表1的引用计数减1，列表1的引用计数变为1
+&gt;&gt;&gt; del l2 # 列表2的引用计数减1，列表2的引用计数变为1</code></pre></div></figure>
 
 <p>此时，只剩下列表1与列表2之间的相互引用，两个列表的引用计数均不为0，但两个列表不再被任何其他对象关联，没有任何人可以再引用到它们，所以它俩占用内存空间应该被回收，但由于相互引用的存在，每一个对象的引用计数都不为0，因此这些对象所占用的内存永远不会被释放，所以循环引用是致命的，这与手动进行内存管理所产生的内存泄露毫无区别。 所以Python引入了<code>标记-清除</code> 与<code>分代回收</code>来分别解决引用计数的循环引用与效率低的问题</p>
-<h3 id="1-2-4-克服问题：标记-x2F-清除"><a href="#1-2-4-克服问题：标记-x2F-清除" class="headerlink" title="1.2.4 克服问题：标记&#x2F;清除"></a>1.2.4 克服问题：标记&#x2F;清除</h3><p><em>“标记-清除”机制用来解决循环引用的问题</em></p>
+<h3 id="1-2-4-克服问题：标记-清除"><a href="#1-2-4-克服问题：标记-清除" class="headerlink" title="1.2.4 克服问题：标记&#x2F;清除"></a>1.2.4 克服问题：标记&#x2F;清除</h3><p><em>“标记-清除”机制用来解决循环引用的问题</em></p>
 <p>在了解标记清除算法前，我们需要明确一点，关于变量的存储，内存中有两块区域：<code>堆区</code>与<code>栈区</code>，在定义变</p>
 <p>量时，变量名与值内存地址的关联关系存放于栈区，变量值存放于堆区，内存管理回收的则是堆区的内容，详解如下图,</p>
 <p>定义了两个变量x &#x3D; 10、y &#x3D; 20</p>
@@ -358,7 +399,17 @@
 <p>基于引用计数的回收机制，每次回收内存，都需要把所有对象的引用计数都遍历一遍，这是非常消耗时间的，于是引入了分代回收来提高回收效率，分代回收采用的是用“空间换时间”的策略。</p>
 <p><strong>分代：</strong></p>
 <p>分代回收的核心思想是：在历经多次扫描的情况下，都没有被回收的变量，gc机制就会认为，该变量是常用变量，gc对其扫描的频率会降低，具体实现原理如下：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs python">分代指的是根据存活时间来为变量划分不同等级（也就是不同的代）<br><br>新定义的变量，放到新生代这个等级中，假设每隔<span class="hljs-number">1</span>分钟扫描新生代一次，如果发现变量依然被引用，那么该对象的权重（权重<br><br>本质就是个整数）加一，当变量的权重大于某个设定得值（假设为<span class="hljs-number">3</span>），会将它移动到更高一级的青春代，青春代的gc扫描的频<br><br>率低于新生代（扫描时间间隔更长），假设<span class="hljs-number">5</span>分钟扫描青春代一次，这样每次gc需要扫描的变量的总个数就变少了，节省了扫描<br><br>的总时间，接下来，青春代中的对象，也会以同样的方式被移动到老年代中。也就是等级（代）越高，被垃圾回收机制扫描的<br><br>频率越低<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">分代指的是根据存活时间来为变量划分不同等级（也就是不同的代）
+
+新定义的变量，放到新生代这个等级中，假设每隔1分钟扫描新生代一次，如果发现变量依然被引用，那么该对象的权重（权重
+
+本质就是个整数）加一，当变量的权重大于某个设定得值（假设为3），会将它移动到更高一级的青春代，青春代的gc扫描的频
+
+率低于新生代（扫描时间间隔更长），假设5分钟扫描青春代一次，这样每次gc需要扫描的变量的总个数就变少了，节省了扫描
+
+的总时间，接下来，青春代中的对象，也会以同样的方式被移动到老年代中。也就是等级（代）越高，被垃圾回收机制扫描的
+
+频率越低</code></pre></div></figure>
 
 <p><strong>回收：</strong></p>
 <p>回收依然是使用引用计数作为回收的依据</p>
@@ -367,11 +418,17 @@
 <p>例如一个变量刚刚从新生代移入青春代，该变量的绑定关系就解除了，该变量应该被回收，但青春代的扫描频率低</p>
 <p>于新生代，</p>
 <h1 id="二、用户交互"><a href="#二、用户交互" class="headerlink" title="二、用户交互"></a>二、用户交互</h1><h2 id="2-1-输入"><a href="#2-1-输入" class="headerlink" title="2.1 输入"></a>2.1 输入</h2><p>计算机接收用户的输入，案例如下：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-meta">&gt;&gt;&gt; </span>username = <span class="hljs-built_in">input</span>(<span class="hljs-string">&#x27;请输入用户名: &#x27;</span>)<br>请输入用户名: Goosh<br><span class="hljs-meta">&gt;&gt;&gt; </span><span class="hljs-built_in">print</span>(username, <span class="hljs-built_in">type</span>(username))<br>Goosh &lt;<span class="hljs-class"><span class="hljs-keyword">class</span> &#x27;<span class="hljs-title">str</span>&#x27;&gt;</span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">&gt;&gt;&gt; username &#x3D; input(&#39;请输入用户名: &#39;)
+请输入用户名: Goosh
+&gt;&gt;&gt; print(username, type(username))
+Goosh &lt;class &#39;str&#39;&gt;</code></pre></div></figure>
 
 <p>注意：input会将用户输入的所有内容都存储成字符串类型</p>
 <p>如果需要当作其它类型使用，可以使用<code>类型转换</code></p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-meta">&gt;&gt;&gt; </span>num = <span class="hljs-built_in">input</span>(<span class="hljs-string">&#x27;请输入数字:  &#x27;</span>)<br>请输入数字:  <span class="hljs-number">80</span><br><span class="hljs-meta">&gt;&gt;&gt; </span><span class="hljs-number">20</span> &gt; <span class="hljs-built_in">int</span>(num)	<span class="hljs-comment"># 使用int()将字符串转换为整型</span><br><span class="hljs-literal">False</span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">&gt;&gt;&gt; num &#x3D; input(&#39;请输入数字:  &#39;)
+请输入数字:  80
+&gt;&gt;&gt; 20 &gt; int(num)	# 使用int()将字符串转换为整型
+False</code></pre></div></figure>
 
 <blockquote>
 <p>补充：</p>
@@ -394,10 +451,52 @@
 <li>标准库模板（兴趣了解）</li>
 </ul>
 <h3 id="2-2-1-号方式"><a href="#2-2-1-号方式" class="headerlink" title="2.2.1 %号方式"></a>2.2.1 %号方式</h3><p>从python诞生之初就有，官方未弃用这种方式，但是并不推荐使用</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 普通方式传入：传入的值与s%必须位置对应</span><br>name = <span class="hljs-string">&#x27;Goosh&#x27;</span><br>age = <span class="hljs-number">60</span><br><span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;My name is %s, age is %s&#x27;</span> % (name, age))<br><br><span class="hljs-comment"># 字典方式传入：不需位置对应</span><br><span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;My name is %(name)s, age is %(age)s&#x27;</span> % &#123;<span class="hljs-string">&#x27;age&#x27;</span>:<span class="hljs-number">28</span>, <span class="hljs-string">&#x27;name&#x27;</span>:<span class="hljs-string">&#x27;Goosh&#x27;</span>&#125;)<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"># 普通方式传入：传入的值与s%必须位置对应
+name &#x3D; &#39;Goosh&#39;
+age &#x3D; 60
+print(&#39;My name is %s, age is %s&#39; % (name, age))
+
+# 字典方式传入：不需位置对应
+print(&#39;My name is %(name)s, age is %(age)s&#39; % &#123;&#39;age&#39;:28, &#39;name&#39;:&#39;Goosh&#39;&#125;)</code></pre></div></figure>
 
 <h3 id="2-2-2-str-format方式"><a href="#2-2-2-str-format方式" class="headerlink" title="2.2.2 str.format方式"></a>2.2.2 str.format方式</h3><p>在Python2.6种引入，是字符串类型的内置方法，该方法在性能和使用灵活性上都优于s%，推荐使用</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 使用位置参数</span><br><span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;&#123;&#125; asked &#123;&#125; to do something&#x27;</span>.<span class="hljs-built_in">format</span>(<span class="hljs-string">&#x27;Rick&#x27;</span>, <span class="hljs-string">&#x27;Mody&#x27;</span>))<br><span class="hljs-comment"># 输出：Rick asked Mody to do something</span><br><br><span class="hljs-comment"># 使用索引对应位置的值</span><br><span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;&#123;0&#125;-&#123;0&#125;-&#123;1&#125;-&#123;0&#125;&#x27;</span>.<span class="hljs-built_in">format</span>(<span class="hljs-string">&#x27;x&#x27;</span>, <span class="hljs-string">&#x27;y&#x27;</span>))<br><span class="hljs-comment"># 输出：x-x-y-x</span><br><br><span class="hljs-comment"># 使用关键字参数</span><br><span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;My name is &#123;name&#125;, age is &#123;age&#125;&#x27;</span>.<span class="hljs-built_in">format</span>(name=<span class="hljs-string">&#x27;Rick&#x27;</span>, age=<span class="hljs-number">18</span>))<br><span class="hljs-comment"># 输出：My name is Rick, age is 18</span><br><br><span class="hljs-comment"># 填充与格式化</span><br><span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;&#123;0:*&lt;10&#125;&#x27;</span>.<span class="hljs-built_in">format</span>(<span class="hljs-string">&#x27;开始执行&#x27;</span>))  <span class="hljs-comment"># 左对齐，不足10个字符用*不全</span><br><span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;&#123;0:*&gt;10&#125;&#x27;</span>.<span class="hljs-built_in">format</span>(<span class="hljs-string">&#x27;开始执行&#x27;</span>))  <span class="hljs-comment"># 右对齐，不足10个字符用*不全</span><br><span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;&#123;0:*^10&#125;&#x27;</span>.<span class="hljs-built_in">format</span>(<span class="hljs-string">&#x27;开始执行&#x27;</span>))  <span class="hljs-comment"># 居中，不足10个字符用*不全</span><br><span class="hljs-string">&#x27;&#x27;&#x27;</span><br><span class="hljs-string">输出：</span><br><span class="hljs-string">开始执行******</span><br><span class="hljs-string">******开始执行</span><br><span class="hljs-string">***开始执行***</span><br><span class="hljs-string">&#x27;&#x27;&#x27;</span><br><br><span class="hljs-comment"># 精度与进制转换</span><br><span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;&#123;salary:.3f&#125;&#x27;</span>.<span class="hljs-built_in">format</span>(salary=<span class="hljs-number">123.456789</span>))  <span class="hljs-comment"># 保留3位小数</span><br><span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;&#123;0:b&#125;&#x27;</span>.<span class="hljs-built_in">format</span>(<span class="hljs-number">123</span>))  <span class="hljs-comment"># 将123转换为2进制</span><br><span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;&#123;0:o&#125;&#x27;</span>.<span class="hljs-built_in">format</span>(<span class="hljs-number">123</span>))  <span class="hljs-comment"># 将123转换为8进制</span><br><span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;&#123;0:x&#125;&#x27;</span>.<span class="hljs-built_in">format</span>(<span class="hljs-number">123</span>))  <span class="hljs-comment"># 将123转换为16进制</span><br><span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;&#123;0:,&#125;&#x27;</span>.<span class="hljs-built_in">format</span>(<span class="hljs-number">998998998998</span>))  <span class="hljs-comment"># 千分位显示</span><br><span class="hljs-string">&#x27;&#x27;&#x27;</span><br><span class="hljs-string">输出</span><br><span class="hljs-string">123.457</span><br><span class="hljs-string">1111011</span><br><span class="hljs-string">173</span><br><span class="hljs-string">7b</span><br><span class="hljs-string">998,998,998,998</span><br><span class="hljs-string">&#x27;&#x27;&#x27;</span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python"># 使用位置参数
+print(&#39;&#123;&#125; asked &#123;&#125; to do something&#39;.format(&#39;Rick&#39;, &#39;Mody&#39;))
+# 输出：Rick asked Mody to do something
+
+# 使用索引对应位置的值
+print(&#39;&#123;0&#125;-&#123;0&#125;-&#123;1&#125;-&#123;0&#125;&#39;.format(&#39;x&#39;, &#39;y&#39;))
+# 输出：x-x-y-x
+
+# 使用关键字参数
+print(&#39;My name is &#123;name&#125;, age is &#123;age&#125;&#39;.format(name&#x3D;&#39;Rick&#39;, age&#x3D;18))
+# 输出：My name is Rick, age is 18
+
+# 填充与格式化
+print(&#39;&#123;0:*&lt;10&#125;&#39;.format(&#39;开始执行&#39;))  # 左对齐，不足10个字符用*不全
+print(&#39;&#123;0:*&gt;10&#125;&#39;.format(&#39;开始执行&#39;))  # 右对齐，不足10个字符用*不全
+print(&#39;&#123;0:*^10&#125;&#39;.format(&#39;开始执行&#39;))  # 居中，不足10个字符用*不全
+&#39;&#39;&#39;
+输出：
+开始执行******
+******开始执行
+***开始执行***
+&#39;&#39;&#39;
+
+# 精度与进制转换
+print(&#39;&#123;salary:.3f&#125;&#39;.format(salary&#x3D;123.456789))  # 保留3位小数
+print(&#39;&#123;0:b&#125;&#39;.format(123))  # 将123转换为2进制
+print(&#39;&#123;0:o&#125;&#39;.format(123))  # 将123转换为8进制
+print(&#39;&#123;0:x&#125;&#39;.format(123))  # 将123转换为16进制
+print(&#39;&#123;0:,&#125;&#39;.format(998998998998))  # 千分位显示
+&#39;&#39;&#39;
+输出
+123.457
+1111011
+173
+7b
+998,998,998,998
+&#39;&#39;&#39;</code></pre></div></figure>
 
 <h1 id="三、基本运算符"><a href="#三、基本运算符" class="headerlink" title="三、基本运算符"></a>三、基本运算符</h1><h2 id="3-1-算术运算符"><a href="#3-1-算术运算符" class="headerlink" title="3.1 算术运算符"></a>3.1 算术运算符</h2><p> python支持的算数运算符与数学上计算的符号使用是一致的，我们以x&#x3D;9，y&#x3D;2为例来依次介绍它们</p>
 <p><img src="https://pic3.zhimg.com/80/v2-1e691dd00888ffbc6a6a91fd6b871fb2_720w.jpg" srcset="/img/loading.gif" lazyload alt="img"></p>
@@ -406,50 +505,142 @@
 <h2 id="3-3-赋值运算符"><a href="#3-3-赋值运算符" class="headerlink" title="3.3 赋值运算符"></a>3.3 赋值运算符</h2><p> python语法中除了有&#x3D;号这种简单的赋值运算外，还支持增量赋值、链式赋值、交叉赋值、解压赋值，这些赋值运算符存在的意义都是为了让我们的代码看起来更加精简。我们以x&#x3D;9，y&#x3D;2为例先来介绍一下增量赋值</p>
 <h3 id="3-3-1-增量赋值"><a href="#3-3-1-增量赋值" class="headerlink" title="3.3.1 增量赋值"></a>3.3.1 增量赋值</h3><p><img src="https://pic4.zhimg.com/80/v2-b70005b039398a63c6e28fe7d31ab147_720w.jpg" srcset="/img/loading.gif" lazyload alt="img"></p>
 <h3 id="3-3-2-链式赋值"><a href="#3-3-2-链式赋值" class="headerlink" title="3.3.2 链式赋值"></a>3.3.2 链式赋值</h3><p>如果我们想把同一个值同时赋值给多个变量名，可以这么做</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-meta">&gt;&gt;&gt; </span>z=<span class="hljs-number">10</span><br><span class="hljs-meta">&gt;&gt;&gt; </span>y=z<br><span class="hljs-meta">&gt;&gt;&gt; </span>x=y<br><span class="hljs-meta">&gt;&gt;&gt; </span>x,y,z<br>(<span class="hljs-number">10</span>, <span class="hljs-number">10</span>, <span class="hljs-number">10</span>)<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">&gt;&gt;&gt; z&#x3D;10
+&gt;&gt;&gt; y&#x3D;z
+&gt;&gt;&gt; x&#x3D;y
+&gt;&gt;&gt; x,y,z
+(10, 10, 10)</code></pre></div></figure>
 
 <p>链式赋值指的是可以用一行代码搞定这件事</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-meta">&gt;&gt;&gt; </span>x=y=z=<span class="hljs-number">10</span><br><span class="hljs-meta">&gt;&gt;&gt; </span>x,y,z<br>(<span class="hljs-number">10</span>, <span class="hljs-number">10</span>, <span class="hljs-number">10</span>)<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">&gt;&gt;&gt; x&#x3D;y&#x3D;z&#x3D;10
+&gt;&gt;&gt; x,y,z
+(10, 10, 10)</code></pre></div></figure>
 
 <h3 id="3-3-3-交叉赋值"><a href="#3-3-3-交叉赋值" class="headerlink" title="3.3.3 交叉赋值"></a>3.3.3 交叉赋值</h3><p>我们定义两个变量m与n</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-meta">&gt;&gt;&gt; </span>m=<span class="hljs-number">10</span><br><span class="hljs-meta">&gt;&gt;&gt; </span>n=<span class="hljs-number">20</span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">&gt;&gt;&gt; m&#x3D;10
+&gt;&gt;&gt; n&#x3D;20</code></pre></div></figure>
 
 <p>如果我们想将m与n的值交换过来，可以这么做</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-meta">&gt;&gt;&gt; </span>temp=m<br><span class="hljs-meta">&gt;&gt;&gt; </span>m=n<br><span class="hljs-meta">&gt;&gt;&gt; </span>n=temp<br><span class="hljs-meta">&gt;&gt;&gt; </span>m,n<br>(<span class="hljs-number">20</span>, <span class="hljs-number">10</span>)<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">&gt;&gt;&gt; temp&#x3D;m
+&gt;&gt;&gt; m&#x3D;n
+&gt;&gt;&gt; n&#x3D;temp
+&gt;&gt;&gt; m,n
+(20, 10)</code></pre></div></figure>
 
 <p>交叉赋值指的是一行代码可以搞定这件事</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-meta">&gt;&gt;&gt; </span>m=<span class="hljs-number">10</span><br><span class="hljs-meta">&gt;&gt;&gt; </span>n=<span class="hljs-number">20</span><br><span class="hljs-meta">&gt;&gt;&gt; </span>m,n=n,m <span class="hljs-comment"># 交叉赋值</span><br><span class="hljs-meta">&gt;&gt;&gt; </span>m,n<br>(<span class="hljs-number">20</span>, <span class="hljs-number">10</span>)<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">&gt;&gt;&gt; m&#x3D;10
+&gt;&gt;&gt; n&#x3D;20
+&gt;&gt;&gt; m,n&#x3D;n,m # 交叉赋值
+&gt;&gt;&gt; m,n
+(20, 10)</code></pre></div></figure>
 
 <h3 id="3-3-4-解压赋值"><a href="#3-3-4-解压赋值" class="headerlink" title="3.3.4 解压赋值"></a>3.3.4 解压赋值</h3><p>如果我们想把列表中的多个值取出来依次赋值给多个变量名，可以这么做</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-meta">&gt;&gt;&gt; </span>nums=[<span class="hljs-number">11</span>,<span class="hljs-number">22</span>,<span class="hljs-number">33</span>,<span class="hljs-number">44</span>,<span class="hljs-number">55</span>]<br><span class="hljs-meta">&gt;&gt;&gt; </span><br><span class="hljs-meta">&gt;&gt;&gt; </span>a=nums[<span class="hljs-number">0</span>]<br><span class="hljs-meta">&gt;&gt;&gt; </span>b=nums[<span class="hljs-number">1</span>]<br><span class="hljs-meta">&gt;&gt;&gt; </span>c=nums[<span class="hljs-number">2</span>]<br><span class="hljs-meta">&gt;&gt;&gt; </span>d=nums[<span class="hljs-number">3</span>]<br><span class="hljs-meta">&gt;&gt;&gt; </span>e=nums[<span class="hljs-number">4</span>]<br><span class="hljs-meta">&gt;&gt;&gt; </span>a,b,c,d,e<br>(<span class="hljs-number">11</span>, <span class="hljs-number">22</span>, <span class="hljs-number">33</span>, <span class="hljs-number">44</span>, <span class="hljs-number">55</span>)<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">&gt;&gt;&gt; nums&#x3D;[11,22,33,44,55]
+&gt;&gt;&gt; 
+&gt;&gt;&gt; a&#x3D;nums[0]
+&gt;&gt;&gt; b&#x3D;nums[1]
+&gt;&gt;&gt; c&#x3D;nums[2]
+&gt;&gt;&gt; d&#x3D;nums[3]
+&gt;&gt;&gt; e&#x3D;nums[4]
+&gt;&gt;&gt; a,b,c,d,e
+(11, 22, 33, 44, 55)</code></pre></div></figure>
 
 <p>解压赋值指的是一行代码可以搞定这件事</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-meta">&gt;&gt;&gt; </span>a,b,c,d,e=nums <span class="hljs-comment"># nums包含多个值，就好比一个压缩包，解压赋值因此得名</span><br><span class="hljs-meta">&gt;&gt;&gt; </span>a,b,c,d,e<br>(<span class="hljs-number">11</span>, <span class="hljs-number">22</span>, <span class="hljs-number">33</span>, <span class="hljs-number">44</span>, <span class="hljs-number">55</span>)<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">&gt;&gt;&gt; a,b,c,d,e&#x3D;nums # nums包含多个值，就好比一个压缩包，解压赋值因此得名
+&gt;&gt;&gt; a,b,c,d,e
+(11, 22, 33, 44, 55)</code></pre></div></figure>
 
 <p>注意，上述解压赋值，等号左边的变量名个数必须与右面包含值的个数相同,否则会报错</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment">#1、变量名少了</span><br><span class="hljs-meta">&gt;&gt;&gt; </span>a,b=nums<br>Traceback (most recent call last):<br>  File <span class="hljs-string">&quot;&lt;stdin&gt;&quot;</span>, line <span class="hljs-number">1</span>, <span class="hljs-keyword">in</span> &lt;module&gt;<br>ValueError: too many values to unpack (expected <span class="hljs-number">2</span>)<br><br><span class="hljs-comment">#2、变量名多了</span><br><span class="hljs-meta">&gt;&gt;&gt; </span>a,b,c,d,e,f=nums<br>Traceback (most recent call last):<br>  File <span class="hljs-string">&quot;&lt;stdin&gt;&quot;</span>, line <span class="hljs-number">1</span>, <span class="hljs-keyword">in</span> &lt;module&gt;<br>ValueError: <span class="hljs-keyword">not</span> enough values to unpack (expected <span class="hljs-number">6</span>, got <span class="hljs-number">5</span>)<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">#1、变量名少了
+&gt;&gt;&gt; a,b&#x3D;nums
+Traceback (most recent call last):
+  File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;
+ValueError: too many values to unpack (expected 2)
+
+#2、变量名多了
+&gt;&gt;&gt; a,b,c,d,e,f&#x3D;nums
+Traceback (most recent call last):
+  File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;
+ValueError: not enough values to unpack (expected 6, got 5)</code></pre></div></figure>
 
 <p>但如果我们只想取头尾的几个值，可以用*_匹配</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-meta">&gt;&gt;&gt; </span>a,b,*_=nums<br><span class="hljs-meta">&gt;&gt;&gt; </span>a,b<br>(<span class="hljs-number">11</span>, <span class="hljs-number">22</span>)<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">&gt;&gt;&gt; a,b,*_&#x3D;nums
+&gt;&gt;&gt; a,b
+(11, 22)</code></pre></div></figure>
 
 <p>ps：字符串、字典、元组、集合类型都支持解压赋值</p>
 <h2 id="3-4-逻辑运算符"><a href="#3-4-逻辑运算符" class="headerlink" title="3.4 逻辑运算符"></a>3.4 逻辑运算符</h2><p> 逻辑运算符用于连接多个条件，进行关联判断，会返回布尔值True或False</p>
 <p><img src="https://pic2.zhimg.com/80/v2-e4c3abe3eeb2546d6d093f1e5d690055_720w.jpg" srcset="/img/loading.gif" lazyload alt="img"></p>
 <h3 id="3-4-1-连续多个and"><a href="#3-4-1-连续多个and" class="headerlink" title="3.4.1 连续多个and"></a>3.4.1 连续多个and</h3><p>可以用and连接多个条件，会按照从左到右的顺序依次判断，一旦某一个条件为False，则无需再往右判断，可以立即判定最终结果就为False，只有在所有条件的结果都为True的情况下，最终结果才为True。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-meta">&gt;&gt;&gt; </span><span class="hljs-number">2</span> &gt; <span class="hljs-number">1</span> <span class="hljs-keyword">and</span> <span class="hljs-number">1</span> != <span class="hljs-number">1</span> <span class="hljs-keyword">and</span> <span class="hljs-literal">True</span> <span class="hljs-keyword">and</span> <span class="hljs-number">3</span> &gt; <span class="hljs-number">2</span> <span class="hljs-comment"># 判断完第二个条件，就立即结束，得的最终结果为False</span><br><span class="hljs-literal">False</span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">&gt;&gt;&gt; 2 &gt; 1 and 1 !&#x3D; 1 and True and 3 &gt; 2 # 判断完第二个条件，就立即结束，得的最终结果为False
+False</code></pre></div></figure>
 
 <h3 id="3-4-2-连续多个or"><a href="#3-4-2-连续多个or" class="headerlink" title="3.4.2 连续多个or"></a>3.4.2 连续多个or</h3><p>可以用or连接多个条件，会按照从左到右的顺序依次判断，一旦某一个条件为True，则无需再往右判断，可以立即判定最终结果就为True，只有在所有条件的结果都为False的情况下，最终结果才为False</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-meta">&gt;&gt;&gt; </span><span class="hljs-number">2</span> &gt; <span class="hljs-number">1</span> <span class="hljs-keyword">or</span> <span class="hljs-number">1</span> != <span class="hljs-number">1</span> <span class="hljs-keyword">or</span> <span class="hljs-literal">True</span> <span class="hljs-keyword">or</span> <span class="hljs-number">3</span> &gt; <span class="hljs-number">2</span> <span class="hljs-comment"># 判断完第一个条件，就立即结束，得的最终结果为True</span><br><span class="hljs-literal">True</span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">&gt;&gt;&gt; 2 &gt; 1 or 1 !&#x3D; 1 or True or 3 &gt; 2 # 判断完第一个条件，就立即结束，得的最终结果为True
+True</code></pre></div></figure>
 
-<h3 id="3-4-3-优先级not-gt-and-gt-or"><a href="#3-4-3-优先级not-gt-and-gt-or" class="headerlink" title="3.4.3 优先级not&gt;and&gt;or"></a>3.4.3 优先级not&gt;and&gt;or</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment">#1、三者的优先级关系：not&gt;and&gt;or，同一优先级默认从左往右计算。</span><br><span class="hljs-meta">&gt;&gt;&gt; </span><span class="hljs-number">3</span>&gt;<span class="hljs-number">4</span> <span class="hljs-keyword">and</span> <span class="hljs-number">4</span>&gt;<span class="hljs-number">3</span> <span class="hljs-keyword">or</span> <span class="hljs-number">1</span>==<span class="hljs-number">3</span> <span class="hljs-keyword">and</span> <span class="hljs-string">&#x27;x&#x27;</span> == <span class="hljs-string">&#x27;x&#x27;</span> <span class="hljs-keyword">or</span> <span class="hljs-number">3</span> &gt;<span class="hljs-number">3</span><br><span class="hljs-literal">False</span><br><br><span class="hljs-comment">#2、最好使用括号来区别优先级，其实意义与上面的一样</span><br><span class="hljs-string">&#x27;&#x27;&#x27;</span><br><span class="hljs-string">原理为：</span><br><span class="hljs-string">(1) not的优先级最高，就是把紧跟其后的那个条件结果取反，所以not与紧跟其后的条件不可分割</span><br><span class="hljs-string"></span><br><span class="hljs-string">(2) 如果语句中全部是用and连接，或者全部用or连接，那么按照从左到右的顺序依次计算即可</span><br><span class="hljs-string"></span><br><span class="hljs-string">(3) 如果语句中既有and也有or，那么先用括号把and的左右两个条件给括起来，然后再进行运算</span><br><span class="hljs-string">&#x27;&#x27;&#x27;</span><br><span class="hljs-meta">&gt;&gt;&gt; </span>(<span class="hljs-number">3</span>&gt;<span class="hljs-number">4</span> <span class="hljs-keyword">and</span> <span class="hljs-number">4</span>&gt;<span class="hljs-number">3</span>) <span class="hljs-keyword">or</span> (<span class="hljs-number">1</span>==<span class="hljs-number">3</span> <span class="hljs-keyword">and</span> <span class="hljs-string">&#x27;x&#x27;</span> == <span class="hljs-string">&#x27;x&#x27;</span>) <span class="hljs-keyword">or</span> <span class="hljs-number">3</span> &gt;<span class="hljs-number">3</span><br><span class="hljs-literal">False</span> <br><br><span class="hljs-comment">#3、短路运算：逻辑运算的结果一旦可以确定，那么就以当前处计算到的值作为最终结果返回</span><br><span class="hljs-meta">&gt;&gt;&gt; </span><span class="hljs-number">10</span> <span class="hljs-keyword">and</span> <span class="hljs-number">0</span> <span class="hljs-keyword">or</span> <span class="hljs-string">&#x27;&#x27;</span> <span class="hljs-keyword">and</span> <span class="hljs-number">0</span> <span class="hljs-keyword">or</span> <span class="hljs-string">&#x27;abc&#x27;</span> <span class="hljs-keyword">or</span> <span class="hljs-string">&#x27;egon&#x27;</span> == <span class="hljs-string">&#x27;dsb&#x27;</span> <span class="hljs-keyword">and</span> <span class="hljs-number">333</span> <span class="hljs-keyword">or</span> <span class="hljs-number">10</span> &gt; <span class="hljs-number">4</span><br>我们用括号来明确一下优先级<br><span class="hljs-meta">&gt;&gt;&gt; </span>(<span class="hljs-number">10</span> <span class="hljs-keyword">and</span> <span class="hljs-number">0</span>) <span class="hljs-keyword">or</span> (<span class="hljs-string">&#x27;&#x27;</span> <span class="hljs-keyword">and</span> <span class="hljs-number">0</span>) <span class="hljs-keyword">or</span> <span class="hljs-string">&#x27;abc&#x27;</span> <span class="hljs-keyword">or</span> (<span class="hljs-string">&#x27;egon&#x27;</span> == <span class="hljs-string">&#x27;dsb&#x27;</span> <span class="hljs-keyword">and</span> <span class="hljs-number">333</span>) <span class="hljs-keyword">or</span> <span class="hljs-number">10</span> &gt; <span class="hljs-number">4</span><br>短路：       <span class="hljs-number">0</span>      <span class="hljs-string">&#x27;&#x27;</span>            <span class="hljs-string">&#x27;abc&#x27;</span>                    <br>            假     假              真<br><br>返回：                            <span class="hljs-string">&#x27;abc&#x27;</span><br><br><span class="hljs-comment">#4、短路运算面试题：</span><br><span class="hljs-meta">&gt;&gt;&gt; </span><span class="hljs-number">1</span> <span class="hljs-keyword">or</span> <span class="hljs-number">3</span><br><span class="hljs-number">1</span><br><span class="hljs-meta">&gt;&gt;&gt; </span><span class="hljs-number">1</span> <span class="hljs-keyword">and</span> <span class="hljs-number">3</span><br><span class="hljs-number">3</span><br><span class="hljs-meta">&gt;&gt;&gt; </span><span class="hljs-number">0</span> <span class="hljs-keyword">and</span> <span class="hljs-number">2</span> <span class="hljs-keyword">and</span> <span class="hljs-number">1</span><br><span class="hljs-number">0</span><br><span class="hljs-meta">&gt;&gt;&gt; </span><span class="hljs-number">0</span> <span class="hljs-keyword">and</span> <span class="hljs-number">2</span> <span class="hljs-keyword">or</span> <span class="hljs-number">1</span><br><span class="hljs-number">1</span><br><span class="hljs-meta">&gt;&gt;&gt; </span><span class="hljs-number">0</span> <span class="hljs-keyword">and</span> <span class="hljs-number">2</span> <span class="hljs-keyword">or</span> <span class="hljs-number">1</span> <span class="hljs-keyword">or</span> <span class="hljs-number">4</span><br><span class="hljs-number">1</span><br><span class="hljs-meta">&gt;&gt;&gt; </span><span class="hljs-number">0</span> <span class="hljs-keyword">or</span> <span class="hljs-literal">False</span> <span class="hljs-keyword">and</span> <span class="hljs-number">1</span><br><span class="hljs-literal">False</span> <br></code></pre></td></tr></table></figure>
+<h3 id="3-4-3-优先级not-and-or"><a href="#3-4-3-优先级not-and-or" class="headerlink" title="3.4.3 优先级not&gt;and&gt;or"></a>3.4.3 优先级not&gt;and&gt;or</h3><figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">#1、三者的优先级关系：not&gt;and&gt;or，同一优先级默认从左往右计算。
+&gt;&gt;&gt; 3&gt;4 and 4&gt;3 or 1&#x3D;&#x3D;3 and &#39;x&#39; &#x3D;&#x3D; &#39;x&#39; or 3 &gt;3
+False
+
+#2、最好使用括号来区别优先级，其实意义与上面的一样
+&#39;&#39;&#39;
+原理为：
+(1) not的优先级最高，就是把紧跟其后的那个条件结果取反，所以not与紧跟其后的条件不可分割
+
+(2) 如果语句中全部是用and连接，或者全部用or连接，那么按照从左到右的顺序依次计算即可
+
+(3) 如果语句中既有and也有or，那么先用括号把and的左右两个条件给括起来，然后再进行运算
+&#39;&#39;&#39;
+&gt;&gt;&gt; (3&gt;4 and 4&gt;3) or (1&#x3D;&#x3D;3 and &#39;x&#39; &#x3D;&#x3D; &#39;x&#39;) or 3 &gt;3
+False 
+
+#3、短路运算：逻辑运算的结果一旦可以确定，那么就以当前处计算到的值作为最终结果返回
+&gt;&gt;&gt; 10 and 0 or &#39;&#39; and 0 or &#39;abc&#39; or &#39;egon&#39; &#x3D;&#x3D; &#39;dsb&#39; and 333 or 10 &gt; 4
+我们用括号来明确一下优先级
+&gt;&gt;&gt; (10 and 0) or (&#39;&#39; and 0) or &#39;abc&#39; or (&#39;egon&#39; &#x3D;&#x3D; &#39;dsb&#39; and 333) or 10 &gt; 4
+短路：       0      &#39;&#39;            &#39;abc&#39;                    
+            假     假              真
+
+返回：                            &#39;abc&#39;
+
+#4、短路运算面试题：
+&gt;&gt;&gt; 1 or 3
+1
+&gt;&gt;&gt; 1 and 3
+3
+&gt;&gt;&gt; 0 and 2 and 1
+0
+&gt;&gt;&gt; 0 and 2 or 1
+1
+&gt;&gt;&gt; 0 and 2 or 1 or 4
+1
+&gt;&gt;&gt; 0 or False and 1
+False </code></pre></div></figure>
 
 <h2 id="3-5-成员运算符"><a href="#3-5-成员运算符" class="headerlink" title="3.5 成员运算符"></a>3.5 成员运算符</h2><p><img src="https://pic1.zhimg.com/80/v2-beecc7750f15f6600edce6b64ee41c18_720w.jpg" srcset="/img/loading.gif" lazyload alt="img"></p>
 <p>注意：虽然下述两种判断可以达到相同的效果，但我们推荐使用第二种格式，因为not in语义更加明确</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-meta">&gt;&gt;&gt; </span><span class="hljs-keyword">not</span> <span class="hljs-string">&#x27;lili&#x27;</span> <span class="hljs-keyword">in</span> [<span class="hljs-string">&#x27;jack&#x27;</span>,<span class="hljs-string">&#x27;tom&#x27;</span>,<span class="hljs-string">&#x27;robin&#x27;</span>]<br><span class="hljs-literal">True</span><br><span class="hljs-meta">&gt;&gt;&gt; </span><span class="hljs-string">&#x27;lili&#x27;</span> <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> [<span class="hljs-string">&#x27;jack&#x27;</span>,<span class="hljs-string">&#x27;tom&#x27;</span>,<span class="hljs-string">&#x27;robin&#x27;</span>]<br><span class="hljs-literal">True</span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">&gt;&gt;&gt; not &#39;lili&#39; in [&#39;jack&#39;,&#39;tom&#39;,&#39;robin&#39;]
+True
+&gt;&gt;&gt; &#39;lili&#39; not in [&#39;jack&#39;,&#39;tom&#39;,&#39;robin&#39;]
+True</code></pre></div></figure>
 
 <h2 id="3-6-身份运算符"><a href="#3-6-身份运算符" class="headerlink" title="3.6 身份运算符"></a>3.6 身份运算符</h2><p><img src="https://pic3.zhimg.com/80/v2-7a653e8151847e64a6b97d6488e51766_720w.jpg" srcset="/img/loading.gif" lazyload alt="img"></p>
 <p>需要强调的是：&#x3D;&#x3D;双等号比较的是value是否相等，而is比较的是id是否相等</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment">#1. id相同，内存地址必定相同，意味着type和value必定相同</span><br><span class="hljs-comment">#2. value相同type肯定相同，但id可能不同,如下</span><br><span class="hljs-meta">&gt;&gt;&gt; </span>x=<span class="hljs-string">&#x27;Info Tony:18&#x27;</span><br><span class="hljs-meta">&gt;&gt;&gt; </span>y=<span class="hljs-string">&#x27;Info Tony:18&#x27;</span><br><span class="hljs-meta">&gt;&gt;&gt; </span><span class="hljs-built_in">id</span>(x),<span class="hljs-built_in">id</span>(y) <span class="hljs-comment"># x与y的id不同，但是二者的值相同</span><br>(<span class="hljs-number">4327422640</span>, <span class="hljs-number">4327422256</span>)<br><br><br><span class="hljs-meta">&gt;&gt;&gt; </span>x == y <span class="hljs-comment"># 等号比较的是value</span><br><span class="hljs-literal">True</span><br><span class="hljs-meta">&gt;&gt;&gt; </span><span class="hljs-built_in">type</span>(x),<span class="hljs-built_in">type</span>(y) <span class="hljs-comment"># 值相同type肯定相同</span><br>(&lt;<span class="hljs-class"><span class="hljs-keyword">class</span> &#x27;<span class="hljs-title">str</span>&#x27;&gt;, &lt;<span class="hljs-title">class</span> &#x27;<span class="hljs-title">str</span>&#x27;&gt;)</span><br><span class="hljs-class">&gt;&gt;&gt; <span class="hljs-title">x</span> <span class="hljs-title">is</span> <span class="hljs-title">y</span> # <span class="hljs-title">is</span>比较的是<span class="hljs-title">id</span>，<span class="hljs-title">x</span>与<span class="hljs-title">y</span>的值相等但<span class="hljs-title">id</span>可以不同</span><br><span class="hljs-class"><span class="hljs-title">False</span></span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-python" data-language="python"><code class="language-python">#1. id相同，内存地址必定相同，意味着type和value必定相同
+#2. value相同type肯定相同，但id可能不同,如下
+&gt;&gt;&gt; x&#x3D;&#39;Info Tony:18&#39;
+&gt;&gt;&gt; y&#x3D;&#39;Info Tony:18&#39;
+&gt;&gt;&gt; id(x),id(y) # x与y的id不同，但是二者的值相同
+(4327422640, 4327422256)
+
+
+&gt;&gt;&gt; x &#x3D;&#x3D; y # 等号比较的是value
+True
+&gt;&gt;&gt; type(x),type(y) # 值相同type肯定相同
+(&lt;class &#39;str&#39;&gt;, &lt;class &#39;str&#39;&gt;)
+&gt;&gt;&gt; x is y # is比较的是id，x与y的值相等但id可以不同
+False</code></pre></div></figure>
 
                 
               </div>
@@ -519,9 +710,9 @@
             
               
               
-                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
                   <span class="hint--top hint--rounded" aria-label="BY - 署名">
-                    <i class="iconfont icon-by"></i>
+                    <i class="iconfont icon-cc-by"></i>
                   </span>
                 </a>
               
@@ -569,16 +760,6 @@
 
     <div class="side-col d-none d-lg-block col-lg-2">
       
-  <aside class="sidebar" style="margin-left: -1rem">
-    <div id="toc">
-  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
-  <div class="toc-body" id="toc-body"></div>
-</div>
-
-
-
-  </aside>
-
 
     </div>
   </div>
@@ -656,7 +837,6 @@
   
   
   
-  
 </div>
 
   </footer>
@@ -675,7 +855,7 @@
   </script>
 
 
-<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
 <script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
 <script  src="/js/events.js" ></script>
 <script  src="/js/plugins.js" ></script>
@@ -708,7 +888,7 @@
 
   
 <script>
-  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
     var toc = jQuery('#toc');
     if (toc.length === 0 || !window.tocbot) { return; }
     var boardCtn = jQuery('#board-ctn');
@@ -746,6 +926,12 @@
 </script>
 
 
+  <script  src="https://lib.baomitu.com/prism/1.29.0/components/prism-core.min.js" ></script>
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js" ></script>
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
+
   <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
 
   <script>Fluid.plugins.codeWidget();</script>
@@ -753,7 +939,7 @@
 
   
 <script>
-  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
     window.anchors.options = {
       placement: CONFIG.anchorjs.placement,
       visible  : CONFIG.anchorjs.visible

@@ -7,8 +7,11 @@
 
 <head>
   <meta charset="UTF-8">
+
   <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
   <link rel="icon" href="/img/fluid.png">
+  
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   
@@ -16,12 +19,12 @@
   <meta name="author" content="GongSheng">
   <meta name="keywords" content="">
   
-    <meta name="description" content="Devops架构-Jenkins-03">
+    <meta name="description" content="Devops架构-Jenkins-03今日内容：  Jenkins构建docker项目 SonarQube漏洞分析工具上手  一、案例06：基于Docker的案例实现静态代码1.1 环境准备1、主机准备    主机 角色 IP    gitlab 代码仓库 10.0.0.71&#x2F;172.16.1.71   jenkins jenkins、生成docker镜像 10.0.0.72&#x2F;">
 <meta property="og:type" content="article">
 <meta property="og:title" content="day77-Devops-Jenkins(三)">
 <meta property="og:url" content="http://gsproj.github.io/2024/07/16/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/03_%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9E%B6%E6%9E%84/day77-Devops-Jenkins-3/index.html">
 <meta property="og:site_name" content="迎风之豚的博客">
-<meta property="og:description" content="Devops架构-Jenkins-03">
+<meta property="og:description" content="Devops架构-Jenkins-03今日内容：  Jenkins构建docker项目 SonarQube漏洞分析工具上手  一、案例06：基于Docker的案例实现静态代码1.1 环境准备1、主机准备    主机 角色 IP    gitlab 代码仓库 10.0.0.71&#x2F;172.16.1.71   jenkins jenkins、生成docker镜像 10.0.0.72&#x2F;">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240716154349441.png">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240716154631903.png">
@@ -65,6 +68,8 @@
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
 
+  <link  rel="stylesheet" href="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" />
+
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
 
@@ -72,11 +77,11 @@
 <!-- 主题依赖的图标库，不要自行修改 -->
 <!-- Do not modify the link that theme dependent icons -->
 
-<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
 
 
 
-<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
 
 
 <link  rel="stylesheet" href="/css/main.css" />
@@ -93,7 +98,7 @@
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
     Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"left","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
 
     if (CONFIG.web_analytics.follow_dnt) {
       var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
@@ -106,7 +111,7 @@
 
 
   
-<meta name="generator" content="Hexo 5.4.2"></head>
+<meta name="generator" content="Hexo 7.3.0"></head>
 
 
 <body>
@@ -119,7 +124,7 @@
   <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand" href="/">
-      <strong>&#34;迎风之豚的博客&#34;</strong>
+      <strong>Haris的博客</strong>
     </a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
@@ -137,9 +142,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/">
+              <a class="nav-link" href="/" target="_self">
                 <i class="iconfont icon-home-fill"></i>
-                首页
+                <span>首页</span>
               </a>
             </li>
           
@@ -149,9 +154,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/archives/">
+              <a class="nav-link" href="/archives/" target="_self">
                 <i class="iconfont icon-archive-fill"></i>
-                归档
+                <span>归档</span>
               </a>
             </li>
           
@@ -161,9 +166,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/categories/">
+              <a class="nav-link" href="/categories/" target="_self">
                 <i class="iconfont icon-category-fill"></i>
-                分类
+                <span>分类</span>
               </a>
             </li>
           
@@ -173,9 +178,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/tags/">
+              <a class="nav-link" href="/tags/" target="_self">
                 <i class="iconfont icon-tags-fill"></i>
-                标签
+                <span>标签</span>
               </a>
             </li>
           
@@ -185,9 +190,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/about/">
+              <a class="nav-link" href="/about/" target="_self">
                 <i class="iconfont icon-user-fill"></i>
-                关于
+                <span>关于</span>
               </a>
             </li>
           
@@ -195,15 +200,16 @@
         
           <li class="nav-item" id="search-btn">
             <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
-              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+              <i class="iconfont icon-search"></i>
             </a>
           </li>
           
         
         
           <li class="nav-item" id="color-toggle-btn">
-            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
-                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
           </li>
         
       </ul>
@@ -243,7 +249,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          8.8k 字
+          2.5k 字
         
       </span>
     
@@ -254,7 +260,7 @@
         
         
         
-          74 分钟
+          22 分钟
         
       </span>
     
@@ -284,6 +290,19 @@
   <div class="row nomargin-x">
     <div class="side-col d-none d-lg-block col-lg-2">
       
+  <aside class="sidebar" style="padding-left: 2rem; margin-right: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
 
     </div>
 
@@ -291,8 +310,7 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <!-- SEO header -->
-            <h1 style="display: none">day77-Devops-Jenkins(三)</h1>
+            <h1 id="seo-header">day77-Devops-Jenkins(三)</h1>
             
             
               <div class="markdown-body">
@@ -330,43 +348,84 @@
 <p>2、静态页面代码准备</p>
 <p>使用github的开源项目：JS-Flappy-Bird-master</p>
 <p>创建一个gitlab项目，并把源码上传上去</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs shell">git init<br>git remote add origin git@gitlab.test.cn:dev/bird.git<br>git status<br>git add .<br>git commit -m &#x27;添加birds站点代码&#x27;<br>git tag -a v1.0 -m v1.0<br>git push origin master<br>git push -u origin --tags<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">git init
+git remote add origin git@gitlab.test.cn:dev&#x2F;bird.git
+git status
+git add .
+git commit -m &#39;添加birds站点代码&#39;
+git tag -a v1.0 -m v1.0
+git push origin master
+git push -u origin --tags</code></pre></div></figure>
 
 <p>添加完如图所示：</p>
 <p><img src="/../../../img/image-20240716154349441.png" srcset="/img/loading.gif" lazyload alt="image-20240716154349441"></p>
 <h2 id="1-2-创建Docker镜像（手动）"><a href="#1-2-创建Docker镜像（手动）" class="headerlink" title="1.2 创建Docker镜像（手动）"></a>1.2 创建Docker镜像（手动）</h2><p>基于Nginx官方镜像，结合bird代码制作一个新的镜像</p>
 <p>1、安装Docker，并配置阿里云加速</p>
 <p>参考之前的笔记：<a target="_blank" rel="noopener" href="https://gblog.site/2024/05/24/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/03_%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9E%B6%E6%9E%84/day59-%E5%AE%B9%E5%99%A8%E6%9E%B6%E6%9E%84-docker-1/">https://gblog.site/2024/05/24/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/03_%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9E%B6%E6%9E%84/day59-%E5%AE%B9%E5%99%A8%E6%9E%B6%E6%9E%84-docker-1/</a></p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@devops02 /app/code/bird]#docker --version<br>Docker version 26.1.4, build 5650f9b<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@devops02 &#x2F;app&#x2F;code&#x2F;bird]#docker --version
+Docker version 26.1.4, build 5650f9b</code></pre></div></figure>
 
 <p>2、bird代码放到指定目录中</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@devops02 /app/code/bird]#ls<br>flappy.css  index.html  flappy.js  img  README.md<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@devops02 &#x2F;app&#x2F;code&#x2F;bird]#ls
+flappy.css  index.html  flappy.js  img  README.md</code></pre></div></figure>
 
 <p>3、书写Dokerfile</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">FROM nginx:stable-alpine<br>LABEL author=gs url=gblog.site version=v1.0<br>COPY . /usr/share/nginx/html/<br>EXPOSE 80<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">FROM nginx:stable-alpine
+LABEL author&#x3D;gs url&#x3D;gblog.site version&#x3D;v1.0
+COPY . &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html&#x2F;
+EXPOSE 80</code></pre></div></figure>
 
 <p>4、构建镜像，测试运行</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 构建</span><br>docker build -t web:ngx_bird_v1.0 .<br><span class="hljs-meta">#</span><span class="bash"> 运行容器</span><br>docker run -d --name &quot;ngx_bird_v1.0&quot; -p 8848:80 --rm web:ngx_bird_v1.0<br><span class="hljs-meta">#</span><span class="bash"> 查看运行情况</span><br>[root@devops02 /app/code/bird]#docker ps<br>CONTAINER ID   IMAGE               COMMAND                  CREATED          STATUS          PORTS                                   NAMES<br>a6f717ddde44   web:ngx_bird_v1.0   &quot;/docker-entrypoint.…&quot;   10 seconds ago   Up 10 seconds   0.0.0.0:8848-&gt;80/tcp, :::8848-&gt;80/tcp   ngx_bird_v1.0<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 构建
+docker build -t web:ngx_bird_v1.0 .
+# 运行容器
+docker run -d --name &quot;ngx_bird_v1.0&quot; -p 8848:80 --rm web:ngx_bird_v1.0
+# 查看运行情况
+[root@devops02 &#x2F;app&#x2F;code&#x2F;bird]#docker ps
+CONTAINER ID   IMAGE               COMMAND                  CREATED          STATUS          PORTS                                   NAMES
+a6f717ddde44   web:ngx_bird_v1.0   &quot;&#x2F;docker-entrypoint.…&quot;   10 seconds ago   Up 10 seconds   0.0.0.0:8848-&gt;80&#x2F;tcp, :::8848-&gt;80&#x2F;tcp   ngx_bird_v1.0</code></pre></div></figure>
 
 <p>网页访问，镜像能正常使用</p>
 <p><img src="/../../../img/image-20240716154631903.png" srcset="/img/loading.gif" lazyload alt="image-20240716154631903"></p>
 <h2 id="1-3-将镜像上传到私有仓库（手动）"><a href="#1-3-将镜像上传到私有仓库（手动）" class="headerlink" title="1.3 将镜像上传到私有仓库（手动）"></a>1.3 将镜像上传到私有仓库（手动）</h2><p>准备Docker私有仓库（registry），将制作好的Bird镜像，上传到私有仓库中</p>
 <p>1、创建私有仓库</p>
 <p>在docker02机器中，运行registry容器</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker run -d --name &quot;my_registry&quot; -p 5000:5000 -v registry:/var/lib/registry --restart=always registry:latest<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">docker run -d --name &quot;my_registry&quot; -p 5000:5000 -v registry:&#x2F;var&#x2F;lib&#x2F;registry --restart&#x3D;always registry:latest</code></pre></div></figure>
 
 <p>2、jenkins机器配置通过http方式访问私有仓库</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 配置hosts</span><br>[root@devops02 /app/code/bird]#echo &quot;172.16.1.82 reg.test.cn&quot; &gt;&gt; /etc/hosts<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 配置registry地址</span><br><span class="hljs-meta">#</span><span class="bash"><span class="hljs-comment"># 第一条是阿里云的Docker镜像加速</span></span><br><span class="hljs-meta">#</span><span class="bash"><span class="hljs-comment"># 第二条是配置registry仓库路径</span></span><br>[root@devops02 /app/code/bird]#cat /etc/docker/daemon.json <br>&#123;    <br>	&quot;registry-mirrors&quot;:[&quot;https://ej7rbvxb.mirror.aliyuncs.com&quot;],<br>	&quot;insecure-registries&quot;:[&quot;http://reg.test.cn:5000&quot;]<br>&#125; <br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 重启服务</span><br>[root@devops02 /app/code/bird]#systemctl daemon-reload<br>[root@devops02 /app/code/bird]#systemctl restart docker<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 配置hosts
+[root@devops02 &#x2F;app&#x2F;code&#x2F;bird]#echo &quot;172.16.1.82 reg.test.cn&quot; &gt;&gt; &#x2F;etc&#x2F;hosts
+
+# 配置registry地址
+## 第一条是阿里云的Docker镜像加速
+## 第二条是配置registry仓库路径
+[root@devops02 &#x2F;app&#x2F;code&#x2F;bird]#cat &#x2F;etc&#x2F;docker&#x2F;daemon.json 
+&#123;    
+	&quot;registry-mirrors&quot;:[&quot;https:&#x2F;&#x2F;ej7rbvxb.mirror.aliyuncs.com&quot;],
+	&quot;insecure-registries&quot;:[&quot;http:&#x2F;&#x2F;reg.test.cn:5000&quot;]
+&#125; 
+
+# 重启服务
+[root@devops02 &#x2F;app&#x2F;code&#x2F;bird]#systemctl daemon-reload
+[root@devops02 &#x2F;app&#x2F;code&#x2F;bird]#systemctl restart docker</code></pre></div></figure>
 
 <p>3、重新生成镜像，并上传到私有仓库</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 打标签，创建镜像</span><br>docker build -t reg.test.cn:5000/gblog/web:ngx_bird_v2.0 .<br><span class="hljs-meta">#</span><span class="bash"> 上传镜像</span><br>docker push reg.test.cn:5000/gblog/web:ngx_bird_v2.0<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 打标签，创建镜像
+docker build -t reg.test.cn:5000&#x2F;gblog&#x2F;web:ngx_bird_v2.0 .
+# 上传镜像
+docker push reg.test.cn:5000&#x2F;gblog&#x2F;web:ngx_bird_v2.0</code></pre></div></figure>
 
 
 
 <h2 id="1-4-创建jenkins任务"><a href="#1-4-创建jenkins任务" class="headerlink" title="1.4 创建jenkins任务"></a>1.4 创建jenkins任务</h2><p>将2、3创建和推送Docker镜像的任务自动化，并完成将容器部署在web服务器的任务。</p>
 <p>0、前提准备</p>
 <p>需要把Dockerfile放到到bird项目中，重新打tag – 2.0</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">$</span><span class="bash"> ls</span><br>Dockerfile  flappy.css  flappy.js  img/  index.html  README.md<br><span class="hljs-meta">$</span><span class="bash"> git tag</span><br>v1.0<br>v1.1<br>v2.0<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ ls
+Dockerfile  flappy.css  flappy.js  img&#x2F;  index.html  README.md
+$ git tag
+v1.0
+v1.1
+v2.0</code></pre></div></figure>
 
 <p>1、新建自由风格任务</p>
 <p><img src="/../../../img/image-20240716161225090.png" srcset="/img/loading.gif" lazyload alt="image-20240716161225090"></p>
@@ -377,7 +436,38 @@
 <p>4、添加shell执行步骤（包含容器部署）</p>
 <p><img src="/../../../img/image-20240716161721908.png" srcset="/img/loading.gif" lazyload alt="image-20240716161721908"></p>
 <p>具体命令如下：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash">vars</span><br>web_servers=&quot;172.16.1.82&quot;<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash">0.判断git_tag是否为默认</span><br>if [ &quot;$git_tag&quot; = &quot;origin/master&quot; ];then<br>  git_tag=latest<br>fi<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash">1. 构建镜像</span><br>docker build -t reg.test.cn:5000/gblog/web:ngx_bird_$&#123;git_tag&#125; .<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash">2. 推送到私有仓库</span><br><span class="hljs-meta">#</span><span class="bash">docker login -uxxx -pxxx 私有仓库地址</span><br>docker push reg.test.cn:5000/gblog/web:ngx_bird_$&#123;git_tag&#125;<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash">3. 部署web服务器</span><br>for ip in $&#123;web_servers&#125;<br>do<br>  ssh root@$&#123;ip&#125; &quot;<br>    # 判断端口是否占用<br>    docker ps |grep -w 80 |awk &#x27;&#123;print $NF&#125;&#x27; | xargs docker rm -f<br><br>    # 判断容器的名字是否有冲突.<br>    if [ `docker ps -a |grep -w &quot;ngx_bird_$&#123;git_tag&#125;&quot; |wc -l ` -eq 1 ];then<br>      docker rm -f ngx_bird_$&#123;git_tag&#125;<br>    fi<br>    <br>    #启动容器<br>    docker run -d --name &quot;ngx_bird_$&#123;git_tag&#125;&quot; \<br>    -p 80:80 --restart=always \<br>    http://reg.test.cn:5000/gblog/web:ngx_bird_$&#123;git_tag&#125;&quot;<br>done<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">#vars
+web_servers&#x3D;&quot;172.16.1.82&quot;
+
+#0.判断git_tag是否为默认
+if [ &quot;$git_tag&quot; &#x3D; &quot;origin&#x2F;master&quot; ];then
+  git_tag&#x3D;latest
+fi
+
+#1. 构建镜像
+docker build -t reg.test.cn:5000&#x2F;gblog&#x2F;web:ngx_bird_$&#123;git_tag&#125; .
+
+#2. 推送到私有仓库
+#docker login -uxxx -pxxx 私有仓库地址
+docker push reg.test.cn:5000&#x2F;gblog&#x2F;web:ngx_bird_$&#123;git_tag&#125;
+
+#3. 部署web服务器
+for ip in $&#123;web_servers&#125;
+do
+  ssh root@$&#123;ip&#125; &quot;
+    # 判断端口是否占用
+    docker ps |grep -w 80 |awk &#39;&#123;print $NF&#125;&#39; | xargs docker rm -f
+
+    # 判断容器的名字是否有冲突.
+    if [ &#96;docker ps -a |grep -w &quot;ngx_bird_$&#123;git_tag&#125;&quot; |wc -l &#96; -eq 1 ];then
+      docker rm -f ngx_bird_$&#123;git_tag&#125;
+    fi
+    
+    #启动容器
+    docker run -d --name &quot;ngx_bird_$&#123;git_tag&#125;&quot; \
+    -p 80:80 --restart&#x3D;always \
+    http:&#x2F;&#x2F;reg.test.cn:5000&#x2F;gblog&#x2F;web:ngx_bird_$&#123;git_tag&#125;&quot;
+done</code></pre></div></figure>
 
 <h2 id="1-5-测试运行"><a href="#1-5-测试运行" class="headerlink" title="1.5 测试运行"></a>1.5 测试运行</h2><h3 id="1-5-1-正常流程"><a href="#1-5-1-正常流程" class="headerlink" title="1.5.1 正常流程"></a>1.5.1 正常流程</h3><p>1、选择tag并运行</p>
 <p><img src="/../../../img/image-20240716170105062.png" srcset="/img/loading.gif" lazyload alt="image-20240716170105062"></p>
@@ -386,10 +476,19 @@
 <p>3、测试访问页面</p>
 <p><img src="/../../../img/image-20240716170153166.png" srcset="/img/loading.gif" lazyload alt="image-20240716170153166"></p>
 <h3 id="1-5-1-问题汇总"><a href="#1-5-1-问题汇总" class="headerlink" title="1.5.1 问题汇总"></a>1.5.1 问题汇总</h3><p>1、docker机器没有配置registry仓库，导致项目运行失败，不能download镜像，报错内容</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell">Remove one or more containers<br>Unable to find image &#x27;reg.test.cn:5000/gblog/web:ngx_bird_v2.0&#x27; locally<br>docker: Error response from daemon: Get &quot;https://reg.test.cn:5000/v2/&quot;: http: server gave HTTP response to HTTPS client.<br>See &#x27;docker run --help&#x27;.<br>Build step &#x27;Execute shell&#x27; marked build as failure<br>Finished: FAILURE<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">Remove one or more containers
+Unable to find image &#39;reg.test.cn:5000&#x2F;gblog&#x2F;web:ngx_bird_v2.0&#39; locally
+docker: Error response from daemon: Get &quot;https:&#x2F;&#x2F;reg.test.cn:5000&#x2F;v2&#x2F;&quot;: http: server gave HTTP response to HTTPS client.
+See &#39;docker run --help&#39;.
+Build step &#39;Execute shell&#39; marked build as failure
+Finished: FAILURE</code></pre></div></figure>
 
 <p>解决方法：在客户端机器加上配置</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@docker02 ~]#cat /etc/docker/daemon.json <br>&#123;<br>  &quot;registry-mirrors&quot;:[&quot;https://bjjtv7cs.mirror.aliyuncs.com&quot;],<br>  &quot;insecure-registries&quot;: [&quot;reg.test.cn:5000&quot;]<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@docker02 ~]#cat &#x2F;etc&#x2F;docker&#x2F;daemon.json 
+&#123;
+  &quot;registry-mirrors&quot;:[&quot;https:&#x2F;&#x2F;bjjtv7cs.mirror.aliyuncs.com&quot;],
+  &quot;insecure-registries&quot;: [&quot;reg.test.cn:5000&quot;]
+&#125;</code></pre></div></figure>
 
 <p>2、HOSTS不能解析</p>
 <p>解决方法：在客户端机器加上hosts解析</p>
@@ -421,46 +520,95 @@
 <p>以下操作在devops03机器（10.0.0.73）操作</p>
 <p>配置：1C2G</p>
 </blockquote>
-<h3 id="2-2-1-关闭防火墙和SELinux"><a href="#2-2-1-关闭防火墙和SELinux" class="headerlink" title="2.2.1 关闭防火墙和SELinux"></a>2.2.1 关闭防火墙和SELinux</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@devops03 ~]#systemctl stop firewalld<br>[root@devops03 ~]#systemctl disable firewalld<br>[root@devops03 ~]#setenforce 0<br></code></pre></td></tr></table></figure>
+<h3 id="2-2-1-关闭防火墙和SELinux"><a href="#2-2-1-关闭防火墙和SELinux" class="headerlink" title="2.2.1 关闭防火墙和SELinux"></a>2.2.1 关闭防火墙和SELinux</h3><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@devops03 ~]#systemctl stop firewalld
+[root@devops03 ~]#systemctl disable firewalld
+[root@devops03 ~]#setenforce 0</code></pre></div></figure>
 
 
 
 <h3 id="2-2-2-部署PSQL数据库"><a href="#2-2-2-部署PSQL数据库" class="headerlink" title="2.2.2 部署PSQL数据库"></a>2.2.2 部署PSQL数据库</h3><p>1、安装依赖</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">yum install -y java-11 unzip wget<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">yum install -y java-11 unzip wget</code></pre></div></figure>
 
 <p>2、配置PSQL的yum源（版本15）</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@devops03 ~]#cat /etc/yum.repos.d/psql.repo <br>[psql]<br>name=psql repo<br>baseurl=https://mirror.tuna.tsinghua.edu.cn/postgresql/repos/yum/15/redhat/rhel-7.9-x86_64<br>enabled=1<br>gpgcheck=0<br><br>[root@devops03 ~]#yum clean all &amp;&amp; yum makecache<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@devops03 ~]#cat &#x2F;etc&#x2F;yum.repos.d&#x2F;psql.repo 
+[psql]
+name&#x3D;psql repo
+baseurl&#x3D;https:&#x2F;&#x2F;mirror.tuna.tsinghua.edu.cn&#x2F;postgresql&#x2F;repos&#x2F;yum&#x2F;15&#x2F;redhat&#x2F;rhel-7.9-x86_64
+enabled&#x3D;1
+gpgcheck&#x3D;0
+
+[root@devops03 ~]#yum clean all &amp;&amp; yum makecache</code></pre></div></figure>
 
 <p>3、安装PSQL15</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@devops03 ~]#yum install -y postgresql15-server<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@devops03 ~]#yum install -y postgresql15-server</code></pre></div></figure>
 
 <p>4、初始化数据库</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@devops03 ~]#postgresql-15-setup initdb<br>Initializing database ... OK<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@devops03 ~]#postgresql-15-setup initdb
+Initializing database ... OK</code></pre></div></figure>
 
 <p>5、启动服务，查看端口在5432</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@devops03 ~]#systemctl start postgresql-15.service <br>[root@devops03 ~]#ss -lntup | grep post<br>tcp    LISTEN     0      128    127.0.0.1:5432                  *:*                   users:((&quot;postmaster&quot;,pid=17205,fd=7))<br>tcp    LISTEN     0      128       [::1]:5432               [::]:*                   users:((&quot;postmaster&quot;,pid=17205,fd=6))<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@devops03 ~]#systemctl start postgresql-15.service 
+[root@devops03 ~]#ss -lntup | grep post
+tcp    LISTEN     0      128    127.0.0.1:5432                  *:*                   users:((&quot;postmaster&quot;,pid&#x3D;17205,fd&#x3D;7))
+tcp    LISTEN     0      128       [::1]:5432               [::]:*                   users:((&quot;postmaster&quot;,pid&#x3D;17205,fd&#x3D;6))</code></pre></div></figure>
 
 <p>6、创建sonar数据库和sonar用户，并授权访问</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 用root用户不能创建数据库</span><br>[root@devops03 ~]#psql<br>psql: error: connection to server on socket &quot;/run/postgresql/.s.PGSQL.5432&quot; failed: FATAL:  role &quot;root&quot; does not exist<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 需要切换到自带的postgres用户</span><br>[root@devops03 ~]#tail -1 /etc/passwd<br>postgres:x:26:26:PostgreSQL Server:/var/lib/pgsql:/bin/bash<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 切换用户</span><br>[root@devops03 ~]#su - postgres<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 进到数据库交互命令行</span><br>[postgres@devops03 ~]$psql<br>psql (15.7)<br>Type &quot;help&quot; for help.<br><br>postgres=# CREATE USER sonar WITH PASSWORD &#x27;redhat123&#x27;;<br>CREATE ROLE<br>postgres=# CREATE DATABASE sonar OWNER sonar;<br>CREATE DATABASE<br>postgres=# GRANT ALL PRIVILEGES ON DATABASE sonar TO sonar;<br>GRANT<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 用root用户不能创建数据库
+[root@devops03 ~]#psql
+psql: error: connection to server on socket &quot;&#x2F;run&#x2F;postgresql&#x2F;.s.PGSQL.5432&quot; failed: FATAL:  role &quot;root&quot; does not exist
+
+# 需要切换到自带的postgres用户
+[root@devops03 ~]#tail -1 &#x2F;etc&#x2F;passwd
+postgres:x:26:26:PostgreSQL Server:&#x2F;var&#x2F;lib&#x2F;pgsql:&#x2F;bin&#x2F;bash
+
+# 切换用户
+[root@devops03 ~]#su - postgres
+
+# 进到数据库交互命令行
+[postgres@devops03 ~]$psql
+psql (15.7)
+Type &quot;help&quot; for help.
+
+postgres&#x3D;# CREATE USER sonar WITH PASSWORD &#39;redhat123&#39;;
+CREATE ROLE
+postgres&#x3D;# CREATE DATABASE sonar OWNER sonar;
+CREATE DATABASE
+postgres&#x3D;# GRANT ALL PRIVILEGES ON DATABASE sonar TO sonar;
+GRANT</code></pre></div></figure>
 
 <p>7、修改PSQL配置文件，把认证方法改为<code>md5</code></p>
 <p><img src="/../../../img/image-20240716201120469.png" srcset="/img/loading.gif" lazyload alt="image-20240716201120469"></p>
 <p>8、修改系统配置文件</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 文件描述符增大</span><br>[root@devops03 ~]#ulimit -n 65536<br>[root@devops03 ~]#echo &#x27;*        -       nofile       65535&#x27; &gt;&gt; /etc/security/limits.conf <br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 修改内核参数</span><br>[root@devops03 ~]#echo &#x27;vm.max_map_count=262144&#x27; &gt;&gt; /etc/sysctl.conf<br>[root@devops03 ~]#sysctl -p<br>vm.max_map_count = 262144<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 文件描述符增大
+[root@devops03 ~]#ulimit -n 65536
+[root@devops03 ~]#echo &#39;*        -       nofile       65535&#39; &gt;&gt; &#x2F;etc&#x2F;security&#x2F;limits.conf 
+
+# 修改内核参数
+[root@devops03 ~]#echo &#39;vm.max_map_count&#x3D;262144&#39; &gt;&gt; &#x2F;etc&#x2F;sysctl.conf
+[root@devops03 ~]#sysctl -p
+vm.max_map_count &#x3D; 262144</code></pre></div></figure>
 
 
 
 <h3 id="2-2-3-部署SonarQube"><a href="#2-2-3-部署SonarQube" class="headerlink" title="2.2.3 部署SonarQube"></a>2.2.3 部署SonarQube</h3><p>1、获取二进制包</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-10.6.0.92116.zip<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">https:&#x2F;&#x2F;binaries.sonarsource.com&#x2F;Distribution&#x2F;sonarqube&#x2F;sonarqube-10.6.0.92116.zip</code></pre></div></figure>
 
 <p>2、部署到&#x2F;usr&#x2F;local</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 解压</span><br>unzip sonarqube-10.6.0.92116.zip -d /usr/local<br><span class="hljs-meta">#</span><span class="bash"> 创建软连接</span><br>ln -s /usr/local/sonarqube-10.6.0.92116/ /usr/local/sonarqube<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 解压
+unzip sonarqube-10.6.0.92116.zip -d &#x2F;usr&#x2F;local
+# 创建软连接
+ln -s &#x2F;usr&#x2F;local&#x2F;sonarqube-10.6.0.92116&#x2F; &#x2F;usr&#x2F;local&#x2F;sonarqube</code></pre></div></figure>
 
 <p>3、创建sonar用户</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">useradd sonar<br>chown -R sonar:sonar /usr/local/sonarqube -R<br>chown sonar:sonar /usr/local/sonarqube-10.6.0.92116/ -R<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">useradd sonar
+chown -R sonar:sonar &#x2F;usr&#x2F;local&#x2F;sonarqube -R
+chown sonar:sonar &#x2F;usr&#x2F;local&#x2F;sonarqube-10.6.0.92116&#x2F; -R</code></pre></div></figure>
 
 <p>4、sonarqube连接psql数据库</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@devops03 /usr/local/sonarqube]#grep -rn &#x27;^[a-Z]&#x27; conf/sonar.properties <br>25:sonar.jdbc.username=sonar<br>26:sonar.jdbc.password=redhat123<br>44:sonar.jdbc.url=jdbc:postgresql://localhost/sonar<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@devops03 &#x2F;usr&#x2F;local&#x2F;sonarqube]#grep -rn &#39;^[a-Z]&#39; conf&#x2F;sonar.properties 
+25:sonar.jdbc.username&#x3D;sonar
+26:sonar.jdbc.password&#x3D;redhat123
+44:sonar.jdbc.url&#x3D;jdbc:postgresql:&#x2F;&#x2F;localhost&#x2F;sonar</code></pre></div></figure>
 
 <p>5、启动sonarqube（<font color=red>不能用ROOT启动！启动前需要先启动PSQL</font>）</p>
 <blockquote>
@@ -468,11 +616,17 @@
 <p>像组件中带的elasticsearch</p>
 <p><img src="/../../../img/image-20240719145429109.png" srcset="/img/loading.gif" lazyload alt="image-20240719145429109"></p>
 </blockquote>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 不能用root启动，只能普通用户</span><br>[root@devops03 /usr/local/sonarqube]#su - sonar<br><span class="hljs-meta">#</span><span class="bash"> 启动服务</span><br>[sonar@devops03 ~]$/usr/local/sonarqube/bin/linux-x86-64/sonar.sh start<br>/bin/java<br>Starting SonarQube...<br>Started SonarQube.<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 不能用root启动，只能普通用户
+[root@devops03 &#x2F;usr&#x2F;local&#x2F;sonarqube]#su - sonar
+# 启动服务
+[sonar@devops03 ~]$&#x2F;usr&#x2F;local&#x2F;sonarqube&#x2F;bin&#x2F;linux-x86-64&#x2F;sonar.sh start
+&#x2F;bin&#x2F;java
+Starting SonarQube...
+Started SonarQube.</code></pre></div></figure>
 
 <p>6、查看日志</p>
 <p>确保服务已经成功启动，如果启动失败可以查看对应的日志文件夹</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">/usr/local/sonarqube/logs<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">&#x2F;usr&#x2F;local&#x2F;sonarqube&#x2F;logs</code></pre></div></figure>
 
 <h2 id="2-3-安装插件"><a href="#2-3-安装插件" class="headerlink" title="2.3 安装插件"></a>2.3 安装插件</h2><p>网页访问sonarque的管理页面，默认端口9000</p>
 <p>默认账户：admin&#x2F;admin</p>
@@ -489,13 +643,18 @@
 <p>4、创建令牌</p>
 <p><img src="/../../../img/image-20240716210508932.png" srcset="/img/loading.gif" lazyload alt="image-20240716210508932"></p>
 <p>保存生成的令牌</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">Analyze &quot;java-simple&quot;: sqp_81b02625e00ab44168ad7199face27a56d1aa1ae<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">Analyze &quot;java-simple&quot;: sqp_81b02625e00ab44168ad7199face27a56d1aa1ae</code></pre></div></figure>
 
 <p>5、选择分析的技术 — maven</p>
 <p><img src="/../../../img/image-20240716210608809.png" srcset="/img/loading.gif" lazyload alt="image-20240716210608809"></p>
 <p>6、按指示执行命令，分析代码</p>
 <p>分析day76用到的hello-world-war的代码</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 代码目录</span><br>[root@devops02 /app/code/hello-world-war-master]#ls<br>dist  pom.xml  README.md  src  target<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 分析</span><br>[root@devops02 /app/code/hello-world-war-master]#mvn clean verify sonar:sonar   -Dsonar.projectKey=java-simple   -Dsonar.projectName=&#x27;java-simple&#x27;   -Dsonar.host.url=http://10.0.0.73:9000   -Dsonar.token=sqp_81b02625e00ab44168ad7199face27a56d1aa1ae<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 代码目录
+[root@devops02 &#x2F;app&#x2F;code&#x2F;hello-world-war-master]#ls
+dist  pom.xml  README.md  src  target
+
+# 分析
+[root@devops02 &#x2F;app&#x2F;code&#x2F;hello-world-war-master]#mvn clean verify sonar:sonar   -Dsonar.projectKey&#x3D;java-simple   -Dsonar.projectName&#x3D;&#39;java-simple&#39;   -Dsonar.host.url&#x3D;http:&#x2F;&#x2F;10.0.0.73:9000   -Dsonar.token&#x3D;sqp_81b02625e00ab44168ad7199face27a56d1aa1ae</code></pre></div></figure>
 
 <p>结果分析成功</p>
 <p><img src="/../../../img/image-20240716211140310.png" srcset="/img/loading.gif" lazyload alt="image-20240716211140310"></p>
@@ -504,10 +663,21 @@
 <p>未实践，了解即可，后续涉及到直接百度</p>
 </blockquote>
 <p>1、对于java代码如何处理？需要使用sonar-scanner扫描，在jenkins主机上面部署sonar-scanner即可。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell">unzip sonar-scanner-cli-4.6.2.2472-linux.zip -d<br>/app/tools/<br>ln -s /app/tools/sonar-scanner-4.6.2.2472-linux/<br>/app/tools/sonar-scanner<br>ln -s /app/tools/sonar-scanner/bin/sonar-scanner<br>/sbin/<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">unzip sonar-scanner-cli-4.6.2.2472-linux.zip -d
+&#x2F;app&#x2F;tools&#x2F;
+ln -s &#x2F;app&#x2F;tools&#x2F;sonar-scanner-4.6.2.2472-linux&#x2F;
+&#x2F;app&#x2F;tools&#x2F;sonar-scanner
+ln -s &#x2F;app&#x2F;tools&#x2F;sonar-scanner&#x2F;bin&#x2F;sonar-scanner
+&#x2F;sbin&#x2F;</code></pre></div></figure>
 
 <p>2、使用sonar-scanner扫描代码  </p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs shell">cd /var/lib/jenkins/workspace/04-html-gitlab-cdshell-tag<br>sonar-scanner \<br>-Dsonar.projectKey=frontend-html \<br>-Dsonar.sources=. \<br>-Dsonar.host.url=http:Վˌsonar.oldboylinux.cn:9000 \<br>-<br>Dsonar.login=dbc24813677df3a6a5847ef61b86d47d4ae7fcd8<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">cd &#x2F;var&#x2F;lib&#x2F;jenkins&#x2F;workspace&#x2F;04-html-gitlab-cdshell-tag
+sonar-scanner \
+-Dsonar.projectKey&#x3D;frontend-html \
+-Dsonar.sources&#x3D;. \
+-Dsonar.host.url&#x3D;http:Վˌsonar.oldboylinux.cn:9000 \
+-
+Dsonar.login&#x3D;dbc24813677df3a6a5847ef61b86d47d4ae7fcd8</code></pre></div></figure>
 
 
 
@@ -532,7 +702,9 @@
 </tr>
 </tbody></table>
 <p>互相设置hosts</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">10.0.0.71 gitlab.test.cn<br>10.0.0.72 jk.test.cn<br>10.0.0.73 sonar.test.cn<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">10.0.0.71 gitlab.test.cn
+10.0.0.72 jk.test.cn
+10.0.0.73 sonar.test.cn</code></pre></div></figure>
 
 
 
@@ -540,7 +712,7 @@
 <p>修改前</p>
 <p><img src="/../../../img/image-20240716212244091.png" srcset="/img/loading.gif" lazyload alt="image-20240716212244091"></p>
 <p>修改后</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">clean package sonar:sonar   -Dsonar.projectKey=$&#123;JOB_BASE_NAME&#125;   -Dsonar.projectName=$&#123;JOB_BASE_NAME&#125;   -Dsonar.host.url=http://10.0.0.73:9000   -Dsonar.token=sqp_81b02625e00ab44168ad7199face27a56d1aa1ae<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">clean package sonar:sonar   -Dsonar.projectKey&#x3D;$&#123;JOB_BASE_NAME&#125;   -Dsonar.projectName&#x3D;$&#123;JOB_BASE_NAME&#125;   -Dsonar.host.url&#x3D;http:&#x2F;&#x2F;10.0.0.73:9000   -Dsonar.token&#x3D;sqp_81b02625e00ab44168ad7199face27a56d1aa1ae</code></pre></div></figure>
 
 <blockquote>
 <p>注意事项：</p>
@@ -626,9 +798,9 @@
             
               
               
-                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
                   <span class="hint--top hint--rounded" aria-label="BY - 署名">
-                    <i class="iconfont icon-by"></i>
+                    <i class="iconfont icon-cc-by"></i>
                   </span>
                 </a>
               
@@ -676,16 +848,6 @@
 
     <div class="side-col d-none d-lg-block col-lg-2">
       
-  <aside class="sidebar" style="margin-left: -1rem">
-    <div id="toc">
-  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
-  <div class="toc-body" id="toc-body"></div>
-</div>
-
-
-
-  </aside>
-
 
     </div>
   </div>
@@ -763,7 +925,6 @@
   
   
   
-  
 </div>
 
   </footer>
@@ -782,7 +943,7 @@
   </script>
 
 
-<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
 <script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
 <script  src="/js/events.js" ></script>
 <script  src="/js/plugins.js" ></script>
@@ -815,7 +976,7 @@
 
   
 <script>
-  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
     var toc = jQuery('#toc');
     if (toc.length === 0 || !window.tocbot) { return; }
     var boardCtn = jQuery('#board-ctn');
@@ -853,6 +1014,12 @@
 </script>
 
 
+  <script  src="https://lib.baomitu.com/prism/1.29.0/components/prism-core.min.js" ></script>
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js" ></script>
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
+
   <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
 
   <script>Fluid.plugins.codeWidget();</script>
@@ -860,7 +1027,7 @@
 
   
 <script>
-  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
     window.anchors.options = {
       placement: CONFIG.anchorjs.placement,
       visible  : CONFIG.anchorjs.visible

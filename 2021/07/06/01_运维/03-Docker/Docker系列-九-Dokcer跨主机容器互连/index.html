@@ -7,8 +7,11 @@
 
 <head>
   <meta charset="UTF-8">
+
   <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
   <link rel="icon" href="/img/fluid.png">
+  
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   
@@ -16,12 +19,12 @@
   <meta name="author" content="GongSheng">
   <meta name="keywords" content="">
   
-    <meta name="description" content="一、Docker容器的四种网络类型">
+    <meta name="description" content="一、Docker容器的四种网络类型 哪四种？  bridge（默认）：NAT桥接模式 none：不分配网络，什么服务都访问不了 host：与宿主机共享网络，共享主机名，端口共用(宿主机用了的端口，容器也不能用)，【网络性能最高】 container:容器id：与容器xx共享网络，共享主机名、hosts、hostname、端口等….【K8S常用】   1 指定与查看容器网络类型的方法指定容器网络类型">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Docker系列(九)-Dokcer跨主机容器互连">
 <meta property="og:url" content="http://gsproj.github.io/2021/07/06/01_%E8%BF%90%E7%BB%B4/03-Docker/Docker%E7%B3%BB%E5%88%97-%E4%B9%9D-Dokcer%E8%B7%A8%E4%B8%BB%E6%9C%BA%E5%AE%B9%E5%99%A8%E4%BA%92%E8%BF%9E/index.html">
 <meta property="og:site_name" content="迎风之豚的博客">
-<meta property="og:description" content="一、Docker容器的四种网络类型">
+<meta property="og:description" content="一、Docker容器的四种网络类型 哪四种？  bridge（默认）：NAT桥接模式 none：不分配网络，什么服务都访问不了 host：与宿主机共享网络，共享主机名，端口共用(宿主机用了的端口，容器也不能用)，【网络性能最高】 container:容器id：与容器xx共享网络，共享主机名、hosts、hostname、端口等….【K8S常用】   1 指定与查看容器网络类型的方法指定容器网络类型">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://gsproj.github.io/2021/07/06/01_%E8%BF%90%E7%BB%B4/03-Docker/Docker%E7%B3%BB%E5%88%97-%E4%B9%9D-Dokcer%E8%B7%A8%E4%B8%BB%E6%9C%BA%E5%AE%B9%E5%99%A8%E4%BA%92%E8%BF%9E/overlay%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE.png">
 <meta property="article:published_time" content="2021-07-06T13:21:33.000Z">
@@ -42,6 +45,8 @@
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
 
+  <link  rel="stylesheet" href="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" />
+
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
 
@@ -49,11 +54,11 @@
 <!-- 主题依赖的图标库，不要自行修改 -->
 <!-- Do not modify the link that theme dependent icons -->
 
-<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
 
 
 
-<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
 
 
 <link  rel="stylesheet" href="/css/main.css" />
@@ -70,7 +75,7 @@
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
     Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"left","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
 
     if (CONFIG.web_analytics.follow_dnt) {
       var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
@@ -83,7 +88,7 @@
 
 
   
-<meta name="generator" content="Hexo 5.4.2"></head>
+<meta name="generator" content="Hexo 7.3.0"></head>
 
 
 <body>
@@ -96,7 +101,7 @@
   <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand" href="/">
-      <strong>&#34;迎风之豚的博客&#34;</strong>
+      <strong>Haris的博客</strong>
     </a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
@@ -114,9 +119,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/">
+              <a class="nav-link" href="/" target="_self">
                 <i class="iconfont icon-home-fill"></i>
-                首页
+                <span>首页</span>
               </a>
             </li>
           
@@ -126,9 +131,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/archives/">
+              <a class="nav-link" href="/archives/" target="_self">
                 <i class="iconfont icon-archive-fill"></i>
-                归档
+                <span>归档</span>
               </a>
             </li>
           
@@ -138,9 +143,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/categories/">
+              <a class="nav-link" href="/categories/" target="_self">
                 <i class="iconfont icon-category-fill"></i>
-                分类
+                <span>分类</span>
               </a>
             </li>
           
@@ -150,9 +155,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/tags/">
+              <a class="nav-link" href="/tags/" target="_self">
                 <i class="iconfont icon-tags-fill"></i>
-                标签
+                <span>标签</span>
               </a>
             </li>
           
@@ -162,9 +167,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/about/">
+              <a class="nav-link" href="/about/" target="_self">
                 <i class="iconfont icon-user-fill"></i>
-                关于
+                <span>关于</span>
               </a>
             </li>
           
@@ -172,15 +177,16 @@
         
           <li class="nav-item" id="search-btn">
             <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
-              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+              <i class="iconfont icon-search"></i>
             </a>
           </li>
           
         
         
           <li class="nav-item" id="color-toggle-btn">
-            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
-                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
           </li>
         
       </ul>
@@ -220,7 +226,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          2.7k 字
+          877 字
         
       </span>
     
@@ -231,7 +237,7 @@
         
         
         
-          23 分钟
+          8 分钟
         
       </span>
     
@@ -261,6 +267,19 @@
   <div class="row nomargin-x">
     <div class="side-col d-none d-lg-block col-lg-2">
       
+  <aside class="sidebar" style="padding-left: 2rem; margin-right: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
 
     </div>
 
@@ -268,8 +287,7 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <!-- SEO header -->
-            <h1 style="display: none">Docker系列(九)-Dokcer跨主机容器互连</h1>
+            <h1 id="seo-header">Docker系列(九)-Dokcer跨主机容器互连</h1>
             
             
               <div class="markdown-body">
@@ -284,13 +302,16 @@
 </ul>
 </blockquote>
 <h3 id="1-指定与查看容器网络类型的方法"><a href="#1-指定与查看容器网络类型的方法" class="headerlink" title="1 指定与查看容器网络类型的方法"></a>1 指定与查看容器网络类型的方法</h3><p>指定容器网络类型</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker run --network none # 指定网络类型<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">docker run --network none # 指定网络类型</code></pre></div></figure>
 
 <p>查看容器网络类型</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker instpect 容器id # 可以查看当前的容器网络类型<br><span class="hljs-meta">#</span><span class="bash"> 查看字段</span><br>&quot;NetworkSettings&quot;: &#123;<br>	&quot;Bridge&quot;: &quot;&quot;,<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">docker instpect 容器id # 可以查看当前的容器网络类型
+# 查看字段
+&quot;NetworkSettings&quot;: &#123;
+	&quot;Bridge&quot;: &quot;&quot;,</code></pre></div></figure>
 
 <p>查看有哪些网络类型</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker network ls # 查看有哪些网络类型<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">docker network ls # 查看有哪些网络类型</code></pre></div></figure>
 
 
 
@@ -307,25 +328,28 @@
 <p>​	docker02: 10.0.0.12 网关: 10.0.0.2</p>
 </blockquote>
 <p>宿主机1,2分别创建macvlan</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker network create --driver macvlan --subnet 10.0.0.0/24 --gateway 10.0.0.2 -o parent=ens33 macvlan_1<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">docker network create --driver macvlan --subnet 10.0.0.0&#x2F;24 --gateway 10.0.0.2 -o parent&#x3D;ens33 macvlan_1</code></pre></div></figure>
 
 <p>设置网卡为混杂模式【Ubuntu需要设置】</p>
 <blockquote>
 <p>混杂模式是计算机网络中的术语。 是指一台机器的网卡能够接收所有经过它的数据流，而不论其目的地址是否是它。</p>
 </blockquote>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">ip link set ens33 promisc on<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">ip link set ens33 promisc on</code></pre></div></figure>
 
 <p>宿主机1,2分别使用centos7.9_ssh:v2镜像创建容器，并指定为macvlan_1网络</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> docker01</span><br>docker run -d --network macvlan_1 --ip=10.0.0.100 centos6.9_ssh:v2<br><span class="hljs-meta">#</span><span class="bash"> docker02</span><br>docker run -d --network macvlan_1 --ip=10.0.0.200 centos6.9_ssh:v2<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># docker01
+docker run -d --network macvlan_1 --ip&#x3D;10.0.0.100 centos6.9_ssh:v2
+# docker02
+docker run -d --network macvlan_1 --ip&#x3D;10.0.0.200 centos6.9_ssh:v2</code></pre></div></figure>
 
 <p>测试，docker exec进入docker01中运行容器，开启抓包，并使用docker02中的容器ping它</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">tcpdump icmp<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">tcpdump icmp</code></pre></div></figure>
 
 <p>通过xshell或者mobaxterm可以直接ssh到容器中 (PS:并没有 -p 22端口)</p>
 <blockquote>
 <p>实际测试宿主机并不能ssh到容器，显示No route to host，但是物理机可以连接</p>
 </blockquote>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">ssh root@10.0.0.100<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">ssh root@10.0.0.100</code></pre></div></figure>
 
 
 
@@ -340,33 +364,48 @@
 <blockquote>
 <p>consul是一个key:value类型的存储数据库</p>
 </blockquote>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker run -d -p 8500:8500 --restart=always -h consul --name consul progrium/consul -server -bootstrap<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">docker run -d -p 8500:8500 --restart&#x3D;always -h consul --name consul progrium&#x2F;consul -server -bootstrap</code></pre></div></figure>
 
 <p>docker01,02上设置daemon.json文件</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">vim /etc/docker/daemon.json<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">vim &#x2F;etc&#x2F;docker&#x2F;daemon.json</code></pre></div></figure>
 
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-string">&quot;hosts&quot;</span>:[<span class="hljs-string">&quot;tcp://0.0.0.0:2376&quot;</span>,<span class="hljs-string">&quot;unix:///var/run/docker.sock&quot;</span>],<br><span class="hljs-string">&quot;cluster-store&quot;</span>:<span class="hljs-string">&quot;consul://10.0.0.11:8500&quot;</span>,<br><span class="hljs-string">&quot;cluster-advertise&quot;</span>:<span class="hljs-string">&quot;10.0.0.11:2376&quot;</span> # 此处不同，docker01为<span class="hljs-number">10.0</span><span class="hljs-number">.0</span><span class="hljs-number">.11</span>，docker02为<span class="hljs-number">12</span><br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-json" data-language="json"><code class="language-json">&quot;hosts&quot;:[&quot;tcp:&#x2F;&#x2F;0.0.0.0:2376&quot;,&quot;unix:&#x2F;&#x2F;&#x2F;var&#x2F;run&#x2F;docker.sock&quot;],
+&quot;cluster-store&quot;:&quot;consul:&#x2F;&#x2F;10.0.0.11:8500&quot;,
+&quot;cluster-advertise&quot;:&quot;10.0.0.11:2376&quot; # 此处不同，docker01为10.0.0.11，docker02为12</code></pre></div></figure>
 
 <p>修改docker.service文件</p>
 <blockquote>
 <p>因为daemon.json中的hosts项与docker.service中的-H参数冲突，需要去掉</p>
 </blockquote>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">vim /usr/lib/systemd/system/docker.service<br>ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock<br><span class="hljs-meta">#</span><span class="bash"> 删除-H fd://</span><br>ExecStart=/usr/bin/dockerd --containerd=/run/containerd/containerd.sock<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">vim &#x2F;usr&#x2F;lib&#x2F;systemd&#x2F;system&#x2F;docker.service
+ExecStart&#x3D;&#x2F;usr&#x2F;bin&#x2F;dockerd -H fd:&#x2F;&#x2F; --containerd&#x3D;&#x2F;run&#x2F;containerd&#x2F;containerd.sock
+# 删除-H fd:&#x2F;&#x2F;
+ExecStart&#x3D;&#x2F;usr&#x2F;bin&#x2F;dockerd --containerd&#x3D;&#x2F;run&#x2F;containerd&#x2F;containerd.sock</code></pre></div></figure>
 
 <p>重启docker服务</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">systemctl daemon-reload<br>systemctl restart docker<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">systemctl daemon-reload
+systemctl restart docker</code></pre></div></figure>
 
 <p>测试consul是否搭建成功</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">浏览器访问：http://10.0.0.11:8500/<br>在KEY/VALUE标签页正常显示10.0.0.11和12两台宿主机<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">浏览器访问：http:&#x2F;&#x2F;10.0.0.11:8500&#x2F;
+在KEY&#x2F;VALUE标签页正常显示10.0.0.11和12两台宿主机</code></pre></div></figure>
 
 <p>docker01,02创建overlay网络</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker network create -d overlay --subnet 172.16.1.0/24 --gateway 172.16.1.254 ol1<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">docker network create -d overlay --subnet 172.16.1.0&#x2F;24 --gateway 172.16.1.254 ol1</code></pre></div></figure>
 
 <p>启动容器</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> docker01</span><br>docker run -d --network ol1 --name centos6.9_01 centos6.9_ssh:v2<br><span class="hljs-meta">#</span><span class="bash"> docker02</span><br>docker run -d --network ol1 --name centos6.9_02 centos6.9_ssh:v2<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># docker01
+docker run -d --network ol1 --name centos6.9_01 centos6.9_ssh:v2
+# docker02
+docker run -d --network ol1 --name centos6.9_02 centos6.9_ssh:v2</code></pre></div></figure>
 
 <p>测试容器间网络</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> docker01中的容器ping另一容器的hostname</span><br>[root@e1e8cc01792d /]# ping centos6.9_02<br>PING centos6.9_02 (172.16.1.2) 56(84) bytes of data.<br>64 bytes from centos6.9_02.ol1 (172.16.1.2): icmp_seq=1 ttl=64 time=0.197 ms<br>64 bytes from centos6.9_02.ol1 (172.16.1.2): icmp_seq=2 ttl=64 time=0.269 ms<br>64 bytes from centos6.9_02.ol1 (172.16.1.2): icmp_seq=3 ttl=64 time=1.04 ms<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># docker01中的容器ping另一容器的hostname
+[root@e1e8cc01792d &#x2F;]# ping centos6.9_02
+PING centos6.9_02 (172.16.1.2) 56(84) bytes of data.
+64 bytes from centos6.9_02.ol1 (172.16.1.2): icmp_seq&#x3D;1 ttl&#x3D;64 time&#x3D;0.197 ms
+64 bytes from centos6.9_02.ol1 (172.16.1.2): icmp_seq&#x3D;2 ttl&#x3D;64 time&#x3D;0.269 ms
+64 bytes from centos6.9_02.ol1 (172.16.1.2): icmp_seq&#x3D;3 ttl&#x3D;64 time&#x3D;1.04 ms</code></pre></div></figure>
 
 <h3 id="2-Overlay的网络访问流程图"><a href="#2-Overlay的网络访问流程图" class="headerlink" title="2 Overlay的网络访问流程图"></a>2 Overlay的网络访问流程图</h3><img src="/2021/07/06/01_%E8%BF%90%E7%BB%B4/03-Docker/Docker%E7%B3%BB%E5%88%97-%E4%B9%9D-Dokcer%E8%B7%A8%E4%B8%BB%E6%9C%BA%E5%AE%B9%E5%99%A8%E4%BA%92%E8%BF%9E/overlay%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE.png" srcset="/img/loading.gif" lazyload class="" title="overlay网络访问">
 
@@ -439,9 +478,9 @@
             
               
               
-                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
                   <span class="hint--top hint--rounded" aria-label="BY - 署名">
-                    <i class="iconfont icon-by"></i>
+                    <i class="iconfont icon-cc-by"></i>
                   </span>
                 </a>
               
@@ -489,16 +528,6 @@
 
     <div class="side-col d-none d-lg-block col-lg-2">
       
-  <aside class="sidebar" style="margin-left: -1rem">
-    <div id="toc">
-  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
-  <div class="toc-body" id="toc-body"></div>
-</div>
-
-
-
-  </aside>
-
 
     </div>
   </div>
@@ -576,7 +605,6 @@
   
   
   
-  
 </div>
 
   </footer>
@@ -595,7 +623,7 @@
   </script>
 
 
-<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
 <script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
 <script  src="/js/events.js" ></script>
 <script  src="/js/plugins.js" ></script>
@@ -628,7 +656,7 @@
 
   
 <script>
-  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
     var toc = jQuery('#toc');
     if (toc.length === 0 || !window.tocbot) { return; }
     var boardCtn = jQuery('#board-ctn');
@@ -666,6 +694,12 @@
 </script>
 
 
+  <script  src="https://lib.baomitu.com/prism/1.29.0/components/prism-core.min.js" ></script>
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js" ></script>
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
+
   <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
 
   <script>Fluid.plugins.codeWidget();</script>
@@ -673,7 +707,7 @@
 
   
 <script>
-  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
     window.anchors.options = {
       placement: CONFIG.anchorjs.placement,
       visible  : CONFIG.anchorjs.visible

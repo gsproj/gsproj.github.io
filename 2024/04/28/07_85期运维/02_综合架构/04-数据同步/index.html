@@ -7,8 +7,11 @@
 
 <head>
   <meta charset="UTF-8">
+
   <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
   <link rel="icon" href="/img/fluid.png">
+  
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   
@@ -16,12 +19,12 @@
   <meta name="author" content="GongSheng">
   <meta name="keywords" content="">
   
-    <meta name="description" content="一、Sersync数据实时同步">
+    <meta name="description" content="一、Sersync数据实时同步1.1. sersync实时同步简介 实时同步的3种方法：  inotify(bug需要书写脚本,不推荐使用.):是个命令监控指定目录是否发生变化. sersync(国产开源,内置inotify+rsync命令,一个命令+一个配置文件) 推荐 lsyncd(目前一些公司在使用,课后研究.)   实时同步架构如下：  sersync实时同步的原理:  实时同步通过ino">
 <meta property="og:type" content="article">
 <meta property="og:title" content="04-Sersync数据实时同步">
 <meta property="og:url" content="http://gsproj.github.io/2024/04/28/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/02_%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/04-%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5/index.html">
 <meta property="og:site_name" content="迎风之豚的博客">
-<meta property="og:description" content="一、Sersync数据实时同步">
+<meta property="og:description" content="一、Sersync数据实时同步1.1. sersync实时同步简介 实时同步的3种方法：  inotify(bug需要书写脚本,不推荐使用.):是个命令监控指定目录是否发生变化. sersync(国产开源,内置inotify+rsync命令,一个命令+一个配置文件) 推荐 lsyncd(目前一些公司在使用,课后研究.)   实时同步架构如下：  sersync实时同步的原理:  实时同步通过ino">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240428152051277.png">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240428154558329.png">
@@ -44,6 +47,8 @@
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
 
+  <link  rel="stylesheet" href="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" />
+
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
 
@@ -51,11 +56,11 @@
 <!-- 主题依赖的图标库，不要自行修改 -->
 <!-- Do not modify the link that theme dependent icons -->
 
-<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
 
 
 
-<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
 
 
 <link  rel="stylesheet" href="/css/main.css" />
@@ -72,7 +77,7 @@
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
     Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"left","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
 
     if (CONFIG.web_analytics.follow_dnt) {
       var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
@@ -85,7 +90,7 @@
 
 
   
-<meta name="generator" content="Hexo 5.4.2"></head>
+<meta name="generator" content="Hexo 7.3.0"></head>
 
 
 <body>
@@ -98,7 +103,7 @@
   <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand" href="/">
-      <strong>&#34;迎风之豚的博客&#34;</strong>
+      <strong>Haris的博客</strong>
     </a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
@@ -116,9 +121,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/">
+              <a class="nav-link" href="/" target="_self">
                 <i class="iconfont icon-home-fill"></i>
-                首页
+                <span>首页</span>
               </a>
             </li>
           
@@ -128,9 +133,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/archives/">
+              <a class="nav-link" href="/archives/" target="_self">
                 <i class="iconfont icon-archive-fill"></i>
-                归档
+                <span>归档</span>
               </a>
             </li>
           
@@ -140,9 +145,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/categories/">
+              <a class="nav-link" href="/categories/" target="_self">
                 <i class="iconfont icon-category-fill"></i>
-                分类
+                <span>分类</span>
               </a>
             </li>
           
@@ -152,9 +157,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/tags/">
+              <a class="nav-link" href="/tags/" target="_self">
                 <i class="iconfont icon-tags-fill"></i>
-                标签
+                <span>标签</span>
               </a>
             </li>
           
@@ -164,9 +169,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/about/">
+              <a class="nav-link" href="/about/" target="_self">
                 <i class="iconfont icon-user-fill"></i>
-                关于
+                <span>关于</span>
               </a>
             </li>
           
@@ -174,15 +179,16 @@
         
           <li class="nav-item" id="search-btn">
             <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
-              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+              <i class="iconfont icon-search"></i>
             </a>
           </li>
           
         
         
           <li class="nav-item" id="color-toggle-btn">
-            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
-                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
           </li>
         
       </ul>
@@ -222,7 +228,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          3.2k 字
+          754 字
         
       </span>
     
@@ -233,7 +239,7 @@
         
         
         
-          28 分钟
+          7 分钟
         
       </span>
     
@@ -263,6 +269,19 @@
   <div class="row nomargin-x">
     <div class="side-col d-none d-lg-block col-lg-2">
       
+  <aside class="sidebar" style="padding-left: 2rem; margin-right: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
 
     </div>
 
@@ -270,8 +289,7 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <!-- SEO header -->
-            <h1 style="display: none">04-Sersync数据实时同步</h1>
+            <h1 id="seo-header">04-Sersync数据实时同步</h1>
             
             
               <div class="markdown-body">
@@ -292,32 +310,115 @@
 <li>inotify监控目录，通过rsync把变化的文件推送走</li>
 </ul>
 <h2 id="1-2-配置Sersync"><a href="#1-2-配置Sersync" class="headerlink" title="1.2 配置Sersync"></a>1.2 配置Sersync</h2><h3 id="1-2-1-rysnc服务准备"><a href="#1-2-1-rysnc服务准备" class="headerlink" title="1.2.1 rysnc服务准备"></a>1.2.1 rysnc服务准备</h3><p>备份服务器（作为服务端）</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 配置rsync服务端</span><br>[root@backup01[ /]#cat /etc/rsyncd.conf<br>...<br>[nfsbackup]<br>comment = 实时同步<br>path = /nfsbackup<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 创建目录</span><br>[root@backup01[ /]#mkdir /nfsbackup<br>[root@backup01[ /]#chown rsync.rsync /nfsbackup/<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 配置rsync服务端
+[root@backup01[ &#x2F;]#cat &#x2F;etc&#x2F;rsyncd.conf
+...
+[nfsbackup]
+comment &#x3D; 实时同步
+path &#x3D; &#x2F;nfsbackup
+
+# 创建目录
+[root@backup01[ &#x2F;]#mkdir &#x2F;nfsbackup
+[root@backup01[ &#x2F;]#chown rsync.rsync &#x2F;nfsbackup&#x2F;</code></pre></div></figure>
 
 <p>nfs服务器（作为客户端）</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs shell">echo 123 &gt; /etc/client.rsync<br>chmod 600 /etc/client.rsync<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 测试传输，可以推送成功</span><br>[root@nfs01[ /]#rsync -av /etc/hosts rsync_backup@172.16.1.41::nfsbackup --password-file=/etc/client.rsync<br>sending incremental file list<br>hosts<br><br>sent 247 bytes  received 43 bytes  580.00 bytes/sec<br>total size is 158  speedup is 0.54<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">echo 123 &gt; &#x2F;etc&#x2F;client.rsync
+chmod 600 &#x2F;etc&#x2F;client.rsync
+
+# 测试传输，可以推送成功
+[root@nfs01[ &#x2F;]#rsync -av &#x2F;etc&#x2F;hosts rsync_backup@172.16.1.41::nfsbackup --password-file&#x3D;&#x2F;etc&#x2F;client.rsync
+sending incremental file list
+hosts
+
+sent 247 bytes  received 43 bytes  580.00 bytes&#x2F;sec
+total size is 158  speedup is 0.54</code></pre></div></figure>
 
 <h3 id="1-2-2-sersync部署"><a href="#1-2-2-sersync部署" class="headerlink" title="1.2.2 sersync部署"></a>1.2.2 sersync部署</h3><p>在客户端（nfs）安装</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> github下载sersync</span><br>https://github.com/wsgzao/sersync<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 解压</span><br>tar -vxf sersync2.5.4_64bit_binary_stable_final.tar.gz<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 创建第三方app专用存放路径</span><br>/app/tools/sersync/<br>/app/tools/sersync/bin/<br>/app/tools/sersync/conf/<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 把解压后的文件放进去</span><br>[root@nfs01[ /app/GNU-Linux-x86]#mv sersync2 /app/tools/sersync/bin/<br>[root@nfs01[ /app/GNU-Linux-x86]#mv confxml.xml /app/tools/sersync/conf/<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> 设置软链接</span><br>[root@nfs01[ /app/tools/sersync/bin]#ln /app/tools/sersync/bin/sersync2 -s /bin<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># github下载sersync
+https:&#x2F;&#x2F;github.com&#x2F;wsgzao&#x2F;sersync
+
+# 解压
+tar -vxf sersync2.5.4_64bit_binary_stable_final.tar.gz
+
+# 创建第三方app专用存放路径
+&#x2F;app&#x2F;tools&#x2F;sersync&#x2F;
+&#x2F;app&#x2F;tools&#x2F;sersync&#x2F;bin&#x2F;
+&#x2F;app&#x2F;tools&#x2F;sersync&#x2F;conf&#x2F;
+
+# 把解压后的文件放进去
+[root@nfs01[ &#x2F;app&#x2F;GNU-Linux-x86]#mv sersync2 &#x2F;app&#x2F;tools&#x2F;sersync&#x2F;bin&#x2F;
+[root@nfs01[ &#x2F;app&#x2F;GNU-Linux-x86]#mv confxml.xml &#x2F;app&#x2F;tools&#x2F;sersync&#x2F;conf&#x2F;
+
+# 设置软链接
+[root@nfs01[ &#x2F;app&#x2F;tools&#x2F;sersync&#x2F;bin]#ln &#x2F;app&#x2F;tools&#x2F;sersync&#x2F;bin&#x2F;sersync2 -s &#x2F;bin</code></pre></div></figure>
 
 <p>修改配置文件config.xml</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs shell">&lt;sersync&gt;<br>	&lt;localpath watch=&quot;/data/&quot;&gt;<br>		&lt;remote ip=&quot;172.16.1.41&quot; name=&quot;nfsbackup&quot;/&gt;<br>...<br> 	&lt;rsync&gt;<br> 		&lt;commonParams params=&quot;-az&quot;/&gt;<br> 		&lt;auth start=&quot;true&quot; users=&quot;rsync_backup&quot; passwordfile=&quot;/etc/client.rsync&quot;/&gt;<br>...<br>	&lt;failLog path=&quot;/var/log/rsync_fail_log.sh&quot; timeToExecute=&quot;60&quot;/&gt;&lt;!--default every 60mins execute once--&gt;<br>...<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">&lt;sersync&gt;
+	&lt;localpath watch&#x3D;&quot;&#x2F;data&#x2F;&quot;&gt;
+		&lt;remote ip&#x3D;&quot;172.16.1.41&quot; name&#x3D;&quot;nfsbackup&quot;&#x2F;&gt;
+...
+ 	&lt;rsync&gt;
+ 		&lt;commonParams params&#x3D;&quot;-az&quot;&#x2F;&gt;
+ 		&lt;auth start&#x3D;&quot;true&quot; users&#x3D;&quot;rsync_backup&quot; passwordfile&#x3D;&quot;&#x2F;etc&#x2F;client.rsync&quot;&#x2F;&gt;
+...
+	&lt;failLog path&#x3D;&quot;&#x2F;var&#x2F;log&#x2F;rsync_fail_log.sh&quot; timeToExecute&#x3D;&quot;60&quot;&#x2F;&gt;&lt;!--default every 60mins execute once--&gt;
+...</code></pre></div></figure>
 
 <p>参考如下：</p>
 <p><img src="/../../../img/image-20240428154558329.png" srcset="/img/loading.gif" lazyload alt="image-20240428154558329"></p>
 <p>配置文件的详细解析：</p>
 <p><img src="/../../../img/image-20240428154638896.png" srcset="/img/loading.gif" lazyload alt="image-20240428154638896"></p>
 <p>启动sersync</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@nfs01[ /data]#sersync2 -rdo /app/tools/sersync/conf/confxml.xml<br>set the system param<br>execute：echo 50000000 &gt; /proc/sys/fs/inotify/max_user_watches<br>execute：echo 327679 &gt; /proc/sys/fs/inotify/max_queued_events<br>parse the command param<br>option: -r      rsync all the local files to the remote servers before the sersync work<br>option: -d      run as a daemon<br>option: -o      config xml name：  /app/tools/sersync/conf/confxml.xml<br>daemon thread num: 10<br>parse xml config file<br>host ip : localhost     host port: 8008<br>daemon start，sersync run behind the console<br>use rsync password-file :<br>user is rsync_backup<br>passwordfile is         /etc/client.rsync<br>config xml parse success<br>please set /etc/rsyncd.conf max connections=0 Manually<br>sersync working thread 12  = 1(primary thread) + 1(fail retry thread) + 10(daemon sub threads)<br>Max threads numbers is: 22 = 12(Thread pool nums) + 10(Sub threads)<br>please according your cpu ，use -n param to adjust the cpu rate<br>------------------------------------------<br>rsync the directory recursivly to the remote servers once<br>working please wait...<br>execute command: cd /data &amp;&amp; rsync -az -R --delete ./ rsync_backup@172.16.1.41::nfsbackup --password-file=/etc/client.rsync &gt;/dev/null 2&gt;&amp;1<br>run the sersync:<br>watch path is: /data<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@nfs01[ &#x2F;data]#sersync2 -rdo &#x2F;app&#x2F;tools&#x2F;sersync&#x2F;conf&#x2F;confxml.xml
+set the system param
+execute：echo 50000000 &gt; &#x2F;proc&#x2F;sys&#x2F;fs&#x2F;inotify&#x2F;max_user_watches
+execute：echo 327679 &gt; &#x2F;proc&#x2F;sys&#x2F;fs&#x2F;inotify&#x2F;max_queued_events
+parse the command param
+option: -r      rsync all the local files to the remote servers before the sersync work
+option: -d      run as a daemon
+option: -o      config xml name：  &#x2F;app&#x2F;tools&#x2F;sersync&#x2F;conf&#x2F;confxml.xml
+daemon thread num: 10
+parse xml config file
+host ip : localhost     host port: 8008
+daemon start，sersync run behind the console
+use rsync password-file :
+user is rsync_backup
+passwordfile is         &#x2F;etc&#x2F;client.rsync
+config xml parse success
+please set &#x2F;etc&#x2F;rsyncd.conf max connections&#x3D;0 Manually
+sersync working thread 12  &#x3D; 1(primary thread) + 1(fail retry thread) + 10(daemon sub threads)
+Max threads numbers is: 22 &#x3D; 12(Thread pool nums) + 10(Sub threads)
+please according your cpu ，use -n param to adjust the cpu rate
+------------------------------------------
+rsync the directory recursivly to the remote servers once
+working please wait...
+execute command: cd &#x2F;data &amp;&amp; rsync -az -R --delete .&#x2F; rsync_backup@172.16.1.41::nfsbackup --password-file&#x3D;&#x2F;etc&#x2F;client.rsync &gt;&#x2F;dev&#x2F;null 2&gt;&amp;1
+run the sersync:
+watch path is: &#x2F;data</code></pre></div></figure>
 
 <p>接入nfs服务</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@nfs01[ /app/tools/sersync/bin]#cat /etc/exports<br>/data/  172.16.1.0/24(rw)	# 用这个<br>/nfsdata/       172.16.1.0/24(rw,all_squash,anonuid=1999,anongid=1999)<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@nfs01[ &#x2F;app&#x2F;tools&#x2F;sersync&#x2F;bin]#cat &#x2F;etc&#x2F;exports
+&#x2F;data&#x2F;  172.16.1.0&#x2F;24(rw)	# 用这个
+&#x2F;nfsdata&#x2F;       172.16.1.0&#x2F;24(rw,all_squash,anonuid&#x3D;1999,anongid&#x3D;1999)</code></pre></div></figure>
 
 <p>web服务器挂载nfs盘</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@web01[ /]#mount -t nfs 172.16.1.31:/data /upload<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web01[ &#x2F;]#mount -t nfs 172.16.1.31:&#x2F;data &#x2F;upload</code></pre></div></figure>
 
 <h3 id="1-2-3-联调"><a href="#1-2-3-联调" class="headerlink" title="1.2.3 联调"></a>1.2.3 联调</h3><p>测试实时同步情况</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> web01创建</span><br>[root@web01[ /upload]#&gt;web01.data<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> backup实时同步</span><br>Every 2.0s: tree -F /nfsbackup  <br>/nfsbackup<br>└── web01.data<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> web01删除</span><br>[root@web01[ /upload]#rm web01.data -fr<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash"> backup实时同步</span><br>Every 2.0s: tree -F /nfsbackup                                                                 <br>/nfsbackup<br></code></pre></td></tr></table></figure>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># web01创建
+[root@web01[ &#x2F;upload]#&gt;web01.data
+
+# backup实时同步
+Every 2.0s: tree -F &#x2F;nfsbackup  
+&#x2F;nfsbackup
+└── web01.data
+
+# web01删除
+[root@web01[ &#x2F;upload]#rm web01.data -fr
+
+# backup实时同步
+Every 2.0s: tree -F &#x2F;nfsbackup                                                                 
+&#x2F;nfsbackup</code></pre></div></figure>
 
 
 
@@ -390,9 +491,9 @@
             
               
               
-                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
                   <span class="hint--top hint--rounded" aria-label="BY - 署名">
-                    <i class="iconfont icon-by"></i>
+                    <i class="iconfont icon-cc-by"></i>
                   </span>
                 </a>
               
@@ -440,16 +541,6 @@
 
     <div class="side-col d-none d-lg-block col-lg-2">
       
-  <aside class="sidebar" style="margin-left: -1rem">
-    <div id="toc">
-  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
-  <div class="toc-body" id="toc-body"></div>
-</div>
-
-
-
-  </aside>
-
 
     </div>
   </div>
@@ -527,7 +618,6 @@
   
   
   
-  
 </div>
 
   </footer>
@@ -546,7 +636,7 @@
   </script>
 
 
-<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
 <script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
 <script  src="/js/events.js" ></script>
 <script  src="/js/plugins.js" ></script>
@@ -579,7 +669,7 @@
 
   
 <script>
-  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
     var toc = jQuery('#toc');
     if (toc.length === 0 || !window.tocbot) { return; }
     var boardCtn = jQuery('#board-ctn');
@@ -617,6 +707,12 @@
 </script>
 
 
+  <script  src="https://lib.baomitu.com/prism/1.29.0/components/prism-core.min.js" ></script>
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js" ></script>
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
+
   <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
 
   <script>Fluid.plugins.codeWidget();</script>
@@ -624,7 +720,7 @@
 
   
 <script>
-  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
     window.anchors.options = {
       placement: CONFIG.anchorjs.placement,
       visible  : CONFIG.anchorjs.visible

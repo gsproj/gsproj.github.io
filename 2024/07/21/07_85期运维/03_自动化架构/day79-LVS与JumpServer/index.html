@@ -7,8 +7,11 @@
 
 <head>
   <meta charset="UTF-8">
+
   <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
   <link rel="icon" href="/img/fluid.png">
+  
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   
@@ -16,17 +19,30 @@
   <meta name="author" content="GongSheng">
   <meta name="keywords" content="">
   
-    <meta name="description" content="Devops架构-Jenkins-04">
+    <meta name="description" content="Devops架构-Jenkins-04今日内容：  LVS负载均衡 加密通信隧道 JumpServer  一、负载均衡介绍1.1 常见负载均衡对比   常见负载均衡对比 优势 缺点    硬件：如F5负载均衡 性能好、购买有技术支持 价格昂贵，且一次需要购买2台凑成1对。   LVS 工作在4层，效率极其高 需要部署维护(运维成本较高)   Nginx&#x2F;Tengine&#x2F;Open">
 <meta property="og:type" content="article">
 <meta property="og:title" content="day79-LVS与JumpServer">
 <meta property="og:url" content="http://gsproj.github.io/2024/07/21/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/03_%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9E%B6%E6%9E%84/day79-LVS%E4%B8%8EJumpServer/index.html">
 <meta property="og:site_name" content="迎风之豚的博客">
-<meta property="og:description" content="Devops架构-Jenkins-04">
+<meta property="og:description" content="Devops架构-Jenkins-04今日内容：  LVS负载均衡 加密通信隧道 JumpServer  一、负载均衡介绍1.1 常见负载均衡对比   常见负载均衡对比 优势 缺点    硬件：如F5负载均衡 性能好、购买有技术支持 价格昂贵，且一次需要购买2台凑成1对。   LVS 工作在4层，效率极其高 需要部署维护(运维成本较高)   Nginx&#x2F;Tengine&#x2F;Open">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240816142138132.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240816144825521.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240816145003736.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240816151056982.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240820151554150.png">
+<meta property="og:image" content="c:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821133723790.png">
+<meta property="og:image" content="c:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821155451333.png">
+<meta property="og:image" content="c:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821155504577.png">
+<meta property="og:image" content="c:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821155626815.png">
+<meta property="og:image" content="c:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821171242085.png">
+<meta property="og:image" content="c:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821171312095.png">
+<meta property="og:image" content="c:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821171537460.png">
 <meta property="article:published_time" content="2024-07-21T03:08:52.000Z">
-<meta property="article:modified_time" content="2024-08-02T01:48:34.361Z">
+<meta property="article:modified_time" content="2024-08-27T07:58:26.625Z">
 <meta property="article:author" content="GongSheng">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://gsproj.github.io/img/image-20240816142138132.png">
   
   
   
@@ -40,6 +56,8 @@
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
 
+  <link  rel="stylesheet" href="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" />
+
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
 
@@ -47,11 +65,11 @@
 <!-- 主题依赖的图标库，不要自行修改 -->
 <!-- Do not modify the link that theme dependent icons -->
 
-<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
 
 
 
-<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
 
 
 <link  rel="stylesheet" href="/css/main.css" />
@@ -68,7 +86,7 @@
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
     Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"left","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
 
     if (CONFIG.web_analytics.follow_dnt) {
       var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
@@ -81,7 +99,7 @@
 
 
   
-<meta name="generator" content="Hexo 5.4.2"></head>
+<meta name="generator" content="Hexo 7.3.0"></head>
 
 
 <body>
@@ -94,7 +112,7 @@
   <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand" href="/">
-      <strong>&#34;迎风之豚的博客&#34;</strong>
+      <strong>Haris的博客</strong>
     </a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
@@ -112,9 +130,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/">
+              <a class="nav-link" href="/" target="_self">
                 <i class="iconfont icon-home-fill"></i>
-                首页
+                <span>首页</span>
               </a>
             </li>
           
@@ -124,9 +142,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/archives/">
+              <a class="nav-link" href="/archives/" target="_self">
                 <i class="iconfont icon-archive-fill"></i>
-                归档
+                <span>归档</span>
               </a>
             </li>
           
@@ -136,9 +154,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/categories/">
+              <a class="nav-link" href="/categories/" target="_self">
                 <i class="iconfont icon-category-fill"></i>
-                分类
+                <span>分类</span>
               </a>
             </li>
           
@@ -148,9 +166,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/tags/">
+              <a class="nav-link" href="/tags/" target="_self">
                 <i class="iconfont icon-tags-fill"></i>
-                标签
+                <span>标签</span>
               </a>
             </li>
           
@@ -160,9 +178,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/about/">
+              <a class="nav-link" href="/about/" target="_self">
                 <i class="iconfont icon-user-fill"></i>
-                关于
+                <span>关于</span>
               </a>
             </li>
           
@@ -170,15 +188,16 @@
         
           <li class="nav-item" id="search-btn">
             <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
-              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+              <i class="iconfont icon-search"></i>
             </a>
           </li>
           
         
         
           <li class="nav-item" id="color-toggle-btn">
-            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
-                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
           </li>
         
       </ul>
@@ -218,7 +237,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          53 字
+          4.8k 字
         
       </span>
     
@@ -229,7 +248,7 @@
         
         
         
-          1 分钟
+          41 分钟
         
       </span>
     
@@ -259,6 +278,19 @@
   <div class="row nomargin-x">
     <div class="side-col d-none d-lg-block col-lg-2">
       
+  <aside class="sidebar" style="padding-left: 2rem; margin-right: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
 
     </div>
 
@@ -266,17 +298,862 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <!-- SEO header -->
-            <h1 style="display: none">day79-LVS与JumpServer</h1>
+            <h1 id="seo-header">day79-LVS与JumpServer</h1>
             
             
               <div class="markdown-body">
                 
                 <h1 id="Devops架构-Jenkins-04"><a href="#Devops架构-Jenkins-04" class="headerlink" title="Devops架构-Jenkins-04"></a>Devops架构-Jenkins-04</h1><p>今日内容：</p>
 <ul>
-<li>案例07–jenkins+ansible实现项目自动化</li>
+<li>LVS负载均衡</li>
+<li>加密通信隧道</li>
+<li>JumpServer</li>
 </ul>
-<h1 id="一、"><a href="#一、" class="headerlink" title="一、"></a>一、</h1>
+<h1 id="一、负载均衡介绍"><a href="#一、负载均衡介绍" class="headerlink" title="一、负载均衡介绍"></a>一、负载均衡介绍</h1><h2 id="1-1-常见负载均衡对比"><a href="#1-1-常见负载均衡对比" class="headerlink" title="1.1 常见负载均衡对比"></a>1.1 常见负载均衡对比</h2><table>
+<thead>
+<tr>
+<th>常见负载均衡对比</th>
+<th>优势</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>硬件：如F5负载均衡</td>
+<td>性能好、购买有技术支持</td>
+<td>价格昂贵，且一次需要购买2台凑成1对。</td>
+</tr>
+<tr>
+<td>LVS</td>
+<td>工作在4层，效率极其高</td>
+<td>需要部署维护(运维成本较高)</td>
+</tr>
+<tr>
+<td>Nginx&#x2F;Tengine&#x2F;Openresty(lua)</td>
+<td>使用简单，支持4层(1.9版本后支持)和7层负载均衡、反向代理、缓存、流量镜像(mirror)</td>
+<td>处理数据为 “代理模式”，即替用户去查找，找到后发送给用户。在并发较大(1w以 上)时会卡</td>
+</tr>
+<tr>
+<td>Haproxy</td>
+<td>相对复杂 支持4层和7层 反向代理 动态加载配置文件.</td>
+<td>处理数据为“代理模式”，并发较大(1w以上，但比nginx多) 时会卡</td>
+</tr>
+<tr>
+<td>云服务：如clb(slb)</td>
+<td>支持4层和7层</td>
+<td>只能支持url或者域名的转发</td>
+</tr>
+<tr>
+<td>ALB</td>
+<td>支持更多的7层的转发功能 ，如基于用户请求头 http_user_agent、用户语言、 镜像流量(申请,深圳)</td>
+<td>只支持7层负载均衡</td>
+</tr>
+</tbody></table>
+<p>四层负载均衡和七层负载均衡的对比：</p>
+<ul>
+<li>四层负载均衡：在传输层，负载均衡最多到端口级别</li>
+<li>七层负载均衡，在应用层，URL、URI 转发、HTTP HTTPS</li>
+</ul>
+<h2 id="1-2-反向代理和负载均衡的区别"><a href="#1-2-反向代理和负载均衡的区别" class="headerlink" title="1.2 反向代理和负载均衡的区别"></a>1.2 反向代理和负载均衡的区别</h2><p>反向代理：Nginx &#x2F; Haproxy做<strong>代理</strong>，代替用户找，找到后发给用户</p>
+<p>负载均衡：VS对数据进行<strong>转发</strong></p>
+<p><img src="/../../../img/image-20240816142138132.png" srcset="/img/loading.gif" lazyload alt="image-20240816142138132"></p>
+<h2 id="1-3-ARP地址解析"><a href="#1-3-ARP地址解析" class="headerlink" title="1.3 ARP地址解析"></a>1.3 ARP地址解析</h2><p>DNS域名解析：域名 解析成 IP</p>
+<p>ARP地址解析：IP 解析成  Mac地址</p>
+<p><img src="/../../../img/image-20240816144825521.png" srcset="/img/loading.gif" lazyload alt="image-20240816144825521"></p>
+<h3 id="1-3-1-ARP欺骗"><a href="#1-3-1-ARP欺骗" class="headerlink" title="1.3.1 ARP欺骗"></a>1.3.1 ARP欺骗</h3><p><img src="/../../../img/image-20240816145003736.png" srcset="/img/loading.gif" lazyload alt="image-20240816145003736"></p>
+<h1 id="二、LVS快速上手"><a href="#二、LVS快速上手" class="headerlink" title="二、LVS快速上手"></a>二、LVS快速上手</h1><h2 id="2-1-LVS概述"><a href="#2-1-LVS概述" class="headerlink" title="2.1 LVS概述"></a>2.1 LVS概述</h2><p>LVS的工作模式：</p>
+<ul>
+<li>DR 模式</li>
+<li>NAT 模式</li>
+<li>TUN隧道模式</li>
+<li>FLL NAT 完全NAT模式</li>
+</ul>
+<p>关键词：</p>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>单词</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CIP</td>
+<td>client ip</td>
+<td>客户端ip地址</td>
+</tr>
+<tr>
+<td>VIP</td>
+<td>Virtual ip</td>
+<td>虚拟ip</td>
+</tr>
+<tr>
+<td>DIP</td>
+<td>director ip</td>
+<td>负载均衡本身的ip</td>
+</tr>
+<tr>
+<td>RS服务器</td>
+<td>real server</td>
+<td>真实服务器 处理用户请求.</td>
+</tr>
+<tr>
+<td>RIP</td>
+<td>Real erver IP</td>
+<td>real server ip 真实服务器的ip地址</td>
+</tr>
+</tbody></table>
+<p><img src="/../../../img/image-20240816151056982.png" srcset="/img/loading.gif" lazyload alt="image-20240816151056982"></p>
+<h2 id="2-2-LVS-DR模式上手"><a href="#2-2-LVS-DR模式上手" class="headerlink" title="2.2 LVS-DR模式上手"></a>2.2 LVS-DR模式上手</h2><h3 id="2-2-1-环境准备"><a href="#2-2-1-环境准备" class="headerlink" title="2.2.1 环境准备"></a>2.2.1 环境准备</h3><table>
+<thead>
+<tr>
+<th>主机</th>
+<th>作用</th>
+<th>真实ip</th>
+<th>虚拟IP（vip）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>lb01</td>
+<td>LVS主服务器</td>
+<td>10.0.0.5</td>
+<td>10.0.0.3</td>
+</tr>
+<tr>
+<td>web01</td>
+<td>nginx-01</td>
+<td>10.0.0.7</td>
+<td>数据转向10.0.0.3</td>
+</tr>
+<tr>
+<td>web02</td>
+<td>nginx-02</td>
+<td>10.0.0.8</td>
+<td>数据转向10.0.0.3</td>
+</tr>
+</tbody></table>
+<h3 id="2-2-2-前提处理"><a href="#2-2-2-前提处理" class="headerlink" title="2.2.2 前提处理"></a>2.2.2 前提处理</h3><p>1、web01和web02准备站点</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 站点文件 
+[root@web01 &#x2F;server&#x2F;code&#x2F;lvs]#cat index.html 
+lvs web01
+[root@web02 ~]#cat &#x2F;server&#x2F;code&#x2F;lvs&#x2F;index.html 
+lvs web02
+
+# Nginx虚拟主机，web01&#x2F;02相同
+[root@web02 ~]#cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;lvs.test.cn.conf 
+server &#123;
+  listen 80;
+  server_name lvs.test.cn;
+  root &#x2F;server&#x2F;code&#x2F;lvs;
+  location &#x2F; &#123;
+    index index.html;
+  &#125;
+&#125;
+
+# 重启服务,设置HOSTS，并测试
+[root@web01 &#x2F;etc&#x2F;nginx&#x2F;conf.d]#curl -H Host:lvs.test.cn 10.0.0.7
+lvs web01
+[root@web02 ~]#curl -H Host:lvs.test.cn 10.0.0.8
+lvs web02</code></pre></div></figure>
+
+<p>2、lb01和lb02关闭不需要的服务，安装LVS</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 关闭keepalived和nginx，防止影响负载均衡
+[root@lb01 ~]#systemctl stop keepalived nginx
+[root@lb01 ~]#systemctl disable keepalived nginx
+
+# 安装LVS
+[root@lb01 ~]#yum install -y ipvsadm
+
+# 检查模块是否已加载
+[root@lb01 ~]#lsmod | grep ip_vs
+ip_vs                 145458  0 
+nf_conntrack          139264  1 ip_vs
+libcrc32c              12644  3 xfs,ip_vs,nf_conntrack</code></pre></div></figure>
+
+
+
+<h3 id="2-2-3-DR模式配置流程"><a href="#2-2-3-DR模式配置流程" class="headerlink" title="2.2.3 DR模式配置流程"></a>2.2.3 DR模式配置流程</h3><h4 id="2-2-3-1-LVS服务器配置"><a href="#2-2-3-1-LVS服务器配置" class="headerlink" title="2.2.3.1 LVS服务器配置"></a>2.2.3.1 LVS服务器配置</h4><p>1、手动添加VIP，后面是由Keepalived生成（需先把网卡名改成eth0）</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@lb01 ~]#ifconfig eth0:0 10.0.0.3 netmask 255.255.255.0</code></pre></div></figure>
+
+<p>永久保存</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@lb01 &#x2F;etc&#x2F;sysconfig&#x2F;network-scripts]#cat ifcfg-eth0:0
+DEVICE&#x3D;eth0:0
+IPADDR&#x3D;10.0.0.3
+NETMASK&#x3D;255.255.255.0
+ONBOOT&#x3D;yes
+NAME&#x3D;eth0:0</code></pre></div></figure>
+
+<p>2、添加规则 (类似于nginx的upstream)</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">ipvsadm -A -t 10.0.0.3:80 -s wrr
+#-A --add-service 创建池塘
+#-t --tcp-service tcp协议
+# 10.0.0.3:80 组名称
+# -s scheduler 轮询算法 wrr weight 加权轮询 rrlc wlc
+# -p persistent 会话保持时间（时间别设置太长，不然测试xiao&#39;guo）</code></pre></div></figure>
+
+<p>3、添加规则（类似于向upstream中添加server）</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">ipvsadm -a -t 10.0.0.3:80 -r 10.0.0.7:80 -g -w 1
+ipvsadm -a -t 10.0.0.3:80 -r 10.0.0.8:80 -g -w 2
+
+# -a 添加 rs服务器
+# -t tcp协议
+# -r 指定rs服务器ip
+# -g --gatewaying dr模式 默认的
+# -w 权重</code></pre></div></figure>
+
+<blockquote>
+<p>类似于使用Nginx配置负载均衡</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">&gt;upstream web_pools &#123;
+server 10.0.0.7:80;
+server 10.0.0.8:80;
+&gt;&#125;
+&gt;server &#123;
+location &#x2F; &#123;
+	proxy_pass http:&#x2F;&#x2F;web_pools;
+&#125; 
+&gt;&#125;</code></pre></div></figure>
+</blockquote>
+<p>4、查看LVS规则</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@lb01 ~]#ipvsadm
+# 或者
+[root@lb01 ~]#ipvsadm -ln</code></pre></div></figure>
+
+
+
+<h4 id="2-2-3-2-后端web服务器配置"><a href="#2-2-3-2-后端web服务器配置" class="headerlink" title="2.2.3.2 后端web服务器配置"></a>2.2.3.2 后端web服务器配置</h4><p>1、lo网卡绑定</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web01 &#x2F;etc&#x2F;nginx&#x2F;conf.d]#ifconfig lo:1 10.0.0.3 netmask 255.255.255.255  </code></pre></div></figure>
+
+<p>永久保存</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web01 &#x2F;etc&#x2F;nginx&#x2F;conf.d]#cat &#x2F;etc&#x2F;sysconfig&#x2F;network-scripts&#x2F;ifcfg-lo:1
+DEVICE&#x3D;lo:1
+IPADDR&#x3D;10.0.0.3
+NETMASK&#x3D;255.255.255.255
+ONBOOT&#x3D;yes
+NAME&#x3D;loopback</code></pre></div></figure>
+
+<p>重启网络并查看</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@web01 &#x2F;etc&#x2F;nginx&#x2F;conf.d]#systemctl restart network
+[root@web01 &#x2F;etc&#x2F;nginx&#x2F;conf.d]#ip a s lo
+1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link&#x2F;loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1&#x2F;8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet 10.0.0.3&#x2F;32 brd 10.0.0.3 scope global lo:1
+       valid_lft forever preferred_lft forever
+    inet6 ::1&#x2F;128 scope host 
+       valid_lft forever preferred_lft forever</code></pre></div></figure>
+
+<p>2、抑制ARP解析</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">cat &gt;&gt;&#x2F;etc&#x2F;sysctl.conf&lt;&lt;EOF
+net.ipv4.conf.all.arp_ignore &#x3D; 1
+net.ipv4.conf.all.arp_announce &#x3D; 2
+net.ipv4.conf.lo.arp_ignore &#x3D; 1
+net.ipv4.conf.lo.arp_announce &#x3D; 2
+EOF
+
+# 查看
+[root@web01 &#x2F;etc&#x2F;nginx&#x2F;conf.d]#sysctl -p
+net.ipv4.conf.all.arp_ignore &#x3D; 1
+net.ipv4.conf.all.arp_announce &#x3D; 2
+net.ipv4.conf.lo.arp_ignore &#x3D; 1
+net.ipv4.conf.lo.arp_announce &#x3D; 2</code></pre></div></figure>
+
+
+
+<h4 id="2-2-3-3-测试"><a href="#2-2-3-3-测试" class="headerlink" title="2.2.3.3 测试"></a>2.2.3.3 测试</h4><p>多次访问<a href="http://10.0.0.3:80，应该指向不同的web服务端">http://10.0.0.3:80，应该指向不同的web服务端</a></p>
+<p><img src="/../../../img/image-20240820151554150.png" srcset="/img/loading.gif" lazyload alt="image-20240820151554150"></p>
+<h3 id="2-2-4-LVS规则的备份和恢复"><a href="#2-2-4-LVS规则的备份和恢复" class="headerlink" title="2.2.4 LVS规则的备份和恢复"></a>2.2.4 LVS规则的备份和恢复</h3><p>1、保存配置和还原</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 导出配置
+ipvsadm-save -n &gt;&#x2F;root&#x2F;ipvs.txt
+# 还原配置
+ipvsadm-restore &lt;&#x2F;root&#x2F;ipvs.txt</code></pre></div></figure>
+
+<p>2、清空LVS规则，记得清空前备份</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@lb01 ~]#ipvsadm -C</code></pre></div></figure>
+
+
+
+<h2 id="2-3-LVS与keepalived结合"><a href="#2-3-LVS与keepalived结合" class="headerlink" title="2.3 LVS与keepalived结合"></a>2.3 LVS与keepalived结合</h2><h3 id="2-3-1-环境准备"><a href="#2-3-1-环境准备" class="headerlink" title="2.3.1 环境准备"></a>2.3.1 环境准备</h3><table>
+<thead>
+<tr>
+<th>主机</th>
+<th>作用</th>
+<th>真实ip</th>
+<th>虚拟IP（vip）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>lb01</td>
+<td>LVS主服务器</td>
+<td>10.0.0.5</td>
+<td>10.0.0.3</td>
+</tr>
+<tr>
+<td>lb01</td>
+<td>LVS备服务器</td>
+<td>10.0.0.6</td>
+<td>10.0.0.3</td>
+</tr>
+<tr>
+<td>web01</td>
+<td>nginx-01</td>
+<td>10.0.0.7</td>
+<td>数据转向10.0.0.3</td>
+</tr>
+<tr>
+<td>web02</td>
+<td>nginx-02</td>
+<td>10.0.0.8</td>
+<td>数据转向10.0.0.3</td>
+</tr>
+</tbody></table>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">                              |
+             +----------------+-----------------+
+             |                                  |
+10.0.0.5     |----       VIP:10.0.0.3       ----|     10.0.0.6
+     +-------+--------+                +--------+-------+
+     | 	    DS1       |                |       DS2      |
+     | LVS+Keepalived |                | LVS+Keepalived |
+     +-------+--------+                +--------+-------+
+             |			                |
+             +----------------+-----------------+
+                              |
+  +------------+              |               +------------+
+  |     RS1    |10.0.0.7      |       10.0.0.8|     RS2    |
+  | Web Server +--------------+---------------+ Web Server |
+  +------------+                              +------------+</code></pre></div></figure>
+
+
+
+<h3 id="2-3-2-DS服务器配置"><a href="#2-3-2-DS服务器配置" class="headerlink" title="2.3.2 DS服务器配置"></a>2.3.2 DS服务器配置</h3><h4 id="1）DS1配置LVS-Keepalived"><a href="#1）DS1配置LVS-Keepalived" class="headerlink" title="1）DS1配置LVS+Keepalived"></a>1）DS1配置LVS+Keepalived</h4><blockquote>
+<p>配置前，先清空LVS的规则和eth0:0接口，因为keepalived会自动创建</p>
+</blockquote>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">cat &#x2F;etc&#x2F;keepalived&#x2F;keepalived.conf
+! Configuration File for keepalived
+
+global_defs &#123;
+  router_id LVS_DEVEL
+&#125;
+
+
+vrrp_instance VI_1 &#123;
+    state MASTER            # 两个 DS，一个为 MASTER 一个为 BACKUP
+    interface eth0        # 当前 IP 对应的网络接口，通过 ifconfig 查询
+    virtual_router_id 62    # 虚拟路由 ID(0-255)，在一个 VRRP 实例中主备服务器 ID 必须一样
+    priority 200            # 优先级值设定：MASTER 要比 BACKUP 的值大
+    advert_int 1            # 通告时间间隔：单位秒，主备要一致
+    authentication &#123;        # 认证机制，主从节点保持一致即可
+        auth_type PASS
+        auth_pass 1111
+    &#125;
+    virtual_ipaddress &#123;
+        10.0.0.3       # VIP，可配置多个
+    &#125;
+&#125;
+
+# LB 配置
+virtual_server 10.0.0.3 80  &#123;
+    delay_loop 3                    # 设置健康状态检查时间
+    lb_algo rr                      # 调度算法，这里用了 rr 轮询算法
+    lb_kind DR                      # 这里测试用了 Direct Route 模式
+    persistence_timeout 50          # 持久连接超时时间
+    protocol TCP
+    real_server 10.0.0.7 80 &#123;
+        weight 1
+        TCP_CHECK &#123;
+            connect_timeout 10　　　
+            retry 3　　　　　　      # 旧版本为 nb_get_retry 
+            delay_before_retry 3　　　
+            connect_port 80
+        &#125;
+    &#125;
+    real_server 10.0.0.8 80 &#123;
+        weight 1
+        TCP_CHECK &#123;
+            connect_timeout 10
+            retry 3
+            delay_before_retry 3
+            connect_port 80
+        &#125;
+    &#125;
+&#125;</code></pre></div></figure>
+
+
+
+<h4 id="2）DS2配置LVS-Keepalived"><a href="#2）DS2配置LVS-Keepalived" class="headerlink" title="2）DS2配置LVS+Keepalived"></a>2）DS2配置LVS+Keepalived</h4><p>把配置文件中的<code>MASTER</code>改为<code>BACKUP</code>即可</p>
+<h3 id="2-3-3-RS服务器配置"><a href="#2-3-3-RS服务器配置" class="headerlink" title="2.3.3 RS服务器配置"></a>2.3.3 RS服务器配置</h3><p>两台服务器参考<code>2.2.3.2</code>章节配置即可</p>
+<h3 id="2-3-4-测试"><a href="#2-3-4-测试" class="headerlink" title="2.3.4 测试"></a>2.3.4 测试</h3><h4 id="1）-keepalived的主备切换"><a href="#1）-keepalived的主备切换" class="headerlink" title="1） keepalived的主备切换"></a>1） keepalived的主备切换</h4><p>启动服务后，默认lb01是主，并且有生成10.0.0.3的网络接口</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@lb01 &#x2F;etc&#x2F;sysconfig&#x2F;network-scripts]#systemctl status keepalived.service 
+● keepalived.service - LVS and VRRP High Availability Monitor
+...
+Aug 20 16:43:06 lb01 Keepalived_vrrp[5888]: Sending gratuitous ARP on eth0 for 10.0.0.3
+Aug 20 16:43:11 lb01 Keepalived_vrrp[5888]: VRRP_Instance(VI_1) Sending&#x2F;queueing gratuitous ARPs on eth0 for 10.0.0.3
+...</code></pre></div></figure>
+
+<p>lb02为备，不生成10.0.0.3网络接口</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@lb02 ~]#systemctl status keepalived.service 
+● keepalived.service - LVS and VRRP High Availability Monitor
+...
+Aug 20 16:43:06 lb02 Keepalived_vrrp[5049]: VRRP_Instance(VI_1) Entering BACKUP STATE
+...</code></pre></div></figure>
+
+<p>关闭lb01的keepalived服务，手动造成故障</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@lb01 &#x2F;etc&#x2F;sysconfig&#x2F;network-scripts]#systemctl stop keepalived.service </code></pre></div></figure>
+
+<p>lb02切换为主，验证成功</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@lb02 ~]#systemctl status keepalived.service 
+● keepalived.service - LVS and VRRP High Availability Monitor
+...
+Aug 20 16:55:14 lb02 Keepalived_vrrp[5162]: VRRP_Instance(VI_1) Transition to MASTER STATE
+Aug 20 16:55:15 lb02 Keepalived_vrrp[5162]: Sending gratuitous ARP on eth0 for 10.0.0.3
+Aug 20 16:55:15 lb02 Keepalived_vrrp[5162]: VRRP_Instance(VI_1) Sending&#x2F;queueing gratuitous ARPs on eth0 for 10.0.0.3
+Aug 20 16:55:15 lb02 Keepalived_vrrp[5162]: Sending gratuitous ARP on eth0 for 10.0.0.3</code></pre></div></figure>
+
+
+
+<h4 id="2）-LVS的负载均衡测试"><a href="#2）-LVS的负载均衡测试" class="headerlink" title="2） LVS的负载均衡测试"></a>2） LVS的负载均衡测试</h4><p>访问<a href="http://10.0.0.3:80，可见访问web01和web02循环。">http://10.0.0.3:80，可见访问web01和web02循环。</a></p>
+<p>查看LVS规则流量信息，确保两条路都有流量，验证成功</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@lb01 &#x2F;etc&#x2F;sysconfig&#x2F;network-scripts]#ipvsadm -ln --stats
+IP Virtual Server version 1.2.1 (size&#x3D;4096)
+Prot LocalAddress:Port               Conns   InPkts  OutPkts  InBytes OutBytes
+  -&gt; RemoteAddress:Port
+TCP  10.0.0.3:80                         8      132        0    34840        0
+  -&gt; 10.0.0.7:80                         4       90        0    24476        0
+  -&gt; 10.0.0.8:80                         4       42        0    10364        0</code></pre></div></figure>
+
+
+
+<h1 id="二、加密隧道服务"><a href="#二、加密隧道服务" class="headerlink" title="二、加密隧道服务"></a>二、加密隧道服务</h1><h2 id="2-1-应用场景"><a href="#2-1-应用场景" class="headerlink" title="2.1 应用场景"></a>2.1 应用场景</h2><p>两点之间如何传输数据最安全？</p>
+<ul>
+<li>方案1：铺设专线，成本高昂</li>
+<li>方案2：使用硬件3层路由、硬件VPN设备（如深信服VPN）</li>
+<li>方案3：使用公有云等商业产品，通过网络传输</li>
+<li>方案4：使用开源软件搭建VPN（如OpenVPN）</li>
+</ul>
+<p>加密隧道服务即是其中的方案4，OpenVPN有如下应用场景：</p>
+<ul>
+<li>运营：通过OpenVPN实现网站安全登录（后台地址，设置为只能通过VPN登录）</li>
+<li>开发：通过OpenVPN实现开发与测试人员连接网站，进行开发测试</li>
+<li>运维：通过OpenVPN连接内网服务器进行管理</li>
+</ul>
+<h2 id="2-2-OpenVPN原理图"><a href="#2-2-OpenVPN原理图" class="headerlink" title="2.2 OpenVPN原理图"></a>2.2 OpenVPN原理图</h2><p><img src="C:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821133723790.png" srcset="/img/loading.gif" lazyload alt="image-20240821133723790"></p>
+<h2 id="2-3-OpenVPN快速上手"><a href="#2-3-OpenVPN快速上手" class="headerlink" title="2.3 OpenVPN快速上手"></a>2.3 OpenVPN快速上手</h2><h3 id="2-3-1-环境准备-1"><a href="#2-3-1-环境准备-1" class="headerlink" title="2.3.1 环境准备"></a>2.3.1 环境准备</h3><table>
+<thead>
+<tr>
+<th>主机</th>
+<th>ip</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>m01</td>
+<td>10.0.0.61  &#x2F; 172.16.1.61</td>
+<td>openvpn server服务端</td>
+</tr>
+<tr>
+<td>db01</td>
+<td>10.0.0.51 &#x2F; 172.16.1.51</td>
+<td>内网服务器</td>
+</tr>
+<tr>
+<td>windows 笔记本</td>
+<td>192.168.1.103</td>
+<td>openvpn客户端</td>
+</tr>
+</tbody></table>
+<h3 id="2-3-2-服务端创建证书"><a href="#2-3-2-服务端创建证书" class="headerlink" title="2.3.2 服务端创建证书"></a>2.3.2 服务端创建证书</h3><h4 id="1）安装工具"><a href="#1）安装工具" class="headerlink" title="1）安装工具"></a>1）安装工具</h4><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 安装
+[root@mn01 ~]#yum install -y openvpn easy-rsa</code></pre></div></figure>
+
+<h4 id="2）创建CA证书"><a href="#2）创建CA证书" class="headerlink" title="2）创建CA证书"></a>2）创建CA证书</h4><p>修改vars文件，配置证书参数</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 充当权威机构,修改vars文件
+mkdir -p &#x2F;opt&#x2F;easy-rsa
+cp -a &#x2F;usr&#x2F;share&#x2F;easy-rsa&#x2F;3.0.8&#x2F;* &#x2F;opt&#x2F;easy-rsa&#x2F;
+cp &#x2F;usr&#x2F;share&#x2F;doc&#x2F;easy-rsa-3.0.8&#x2F;vars.example &#x2F;opt&#x2F;easy-rsa&#x2F;vars
+
+
+cat &gt;&#x2F;opt&#x2F;easy-rsa&#x2F;vars&lt;&lt;&#39;EOF&#39;
+if [ -z &quot;$EASYRSA_CALLER&quot; ]; then
+	echo &quot;You appear to be sourcing an Easy-RSA &#39;vars&#39; file.&quot; &gt;&amp;2
+	echo &quot;This is no longer necessary and is disallowed. See the section called&quot; &gt;&amp;2
+	echo &quot;&#39;How to use this file&#39; near the top comments for more details.&quot; &gt;&amp;2
+	return 1
+fi
+
+set_var EASYRSA_DN &quot;cn_only&quot;
+set_var EASYRSA_REQ_COUNTRY &quot;CN&quot;
+set_var EASYRSA_REQ_PROVINCE &quot;Beijing&quot;
+set_var EASYRSA_REQ_CITY &quot;Beijing&quot;
+set_var EASYRSA_REQ_ORG &quot;oldboylinux&quot;
+set_var EASYRSA_REQ_EMAIL &quot;oldboy@qq.com&quot;
+set_var EASYRSA_NS_SUPPORT &quot;yes&quot;
+EOF</code></pre></div></figure>
+
+<p>初始化</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01 &#x2F;opt&#x2F;easy-rsa]#.&#x2F;easyrsa init-pki
+
+# 初始化完成，显示可以创建CA证书
+Note: using Easy-RSA configuration from: &#x2F;opt&#x2F;easy-rsa&#x2F;vars
+# 初始化后的目录，在pki里面
+init-pki complete; you may now create a CA or requests.
+Your newly created PKI dir is: &#x2F;opt&#x2F;easy-rsa&#x2F;pki</code></pre></div></figure>
+
+<p>生成证书</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01 &#x2F;opt&#x2F;easy-rsa]#.&#x2F;easyrsa build-ca
+# 需要输入密码和姓名信息</code></pre></div></figure>
+
+<p>生成后的证书文件</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01 &#x2F;opt&#x2F;easy-rsa]#tree
+...
+├── pki
+│   ├── ca.crt	# ca证书文件
+....
+│   ├── private
+│   │   └── ca.key	# ca私钥
+....
+14 directories, 18 files</code></pre></div></figure>
+
+
+
+<h4 id="3）创建server证书"><a href="#3）创建server证书" class="headerlink" title="3）创建server证书"></a>3）创建server证书</h4><p>1、创建server证书请求文件与服务器私钥，nopass表示不加密私钥文件，其他默认即可</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01 &#x2F;opt&#x2F;easy-rsa]#.&#x2F;easyrsa gen-req server nopass
+...
+Keypair and certificate request completed. Your files are:
+# req文件为请求文件，用于请求创建证书
+req: &#x2F;opt&#x2F;easy-rsa&#x2F;pki&#x2F;reqs&#x2F;server.req	
+# key文件为server私钥文件
+key: &#x2F;opt&#x2F;easy-rsa&#x2F;pki&#x2F;private&#x2F;server.key</code></pre></div></figure>
+
+<p>2、给server端证书签名，并生成server证书文件</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01 &#x2F;opt&#x2F;easy-rsa]#.&#x2F;easyrsa sign server server
+...
+Certificate created at: &#x2F;opt&#x2F;easy-rsa&#x2F;pki&#x2F;issued&#x2F;server.crt
+
+# 需要输入yes和前面设置的密码</code></pre></div></figure>
+
+
+
+<h4 id="4）创建client证书"><a href="#4）创建client证书" class="headerlink" title="4）创建client证书"></a>4）创建client证书</h4><p>1、创建client证书请求文件和私钥</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01 &#x2F;opt&#x2F;easy-rsa]#.&#x2F;easyrsa gen-req client nopass
+...
+req: &#x2F;opt&#x2F;easy-rsa&#x2F;pki&#x2F;reqs&#x2F;client.req
+key: &#x2F;opt&#x2F;easy-rsa&#x2F;pki&#x2F;private&#x2F;client.key</code></pre></div></figure>
+
+<p>2、给client端证书签名，生成client证书文件</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01 &#x2F;opt&#x2F;easy-rsa]#.&#x2F;easyrsa sign client client
+...
+Certificate created at: &#x2F;opt&#x2F;easy-rsa&#x2F;pki&#x2F;issued&#x2F;client.crt</code></pre></div></figure>
+
+
+
+<h4 id="5）创建dh-pem算法文件"><a href="#5）创建dh-pem算法文件" class="headerlink" title="5）创建dh-pem算法文件"></a>5）创建dh-pem算法文件</h4><p>密钥交换时的认证方法</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01 &#x2F;opt&#x2F;easy-rsa]#.&#x2F;easyrsa gen-dh
+...
+DH parameters of size 2048 created at &#x2F;opt&#x2F;easy-rsa&#x2F;pki&#x2F;dh.pem</code></pre></div></figure>
+
+
+
+<h4 id="6）目录汇总"><a href="#6）目录汇总" class="headerlink" title="6）目录汇总"></a>6）目录汇总</h4><p>服务端生成文件的作用</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01 &#x2F;opt&#x2F;easy-rsa]#tree
+.
+├── easyrsa
+├── openssl-easyrsa.cnf
+├── pki
+│   ├── ca.crt	# CA证书
+│   ├── certs_by_serial
+│   │   ├── C3D54868BA8E3E17F9B7413AC6B14344.pem
+│   │   └── DDF5E7679F3F220F3BB2466868D040F3.pem
+│   ├── dh.pem	# dh算法文件
+│   ├── index.txt
+│   ├── index.txt.attr
+│   ├── index.txt.attr.old
+│   ├── index.txt.old
+│   ├── issued
+│   │   ├── client.crt	# client证书
+│   │   └── server.crt	# server证书
+│   ├── openssl-easyrsa.cnf
+│   ├── private
+│   │   ├── ca.key
+│   │   ├── client.key	# server私钥
+│   │   └── server.key	# client私钥
+...
+14 directories, 30 files</code></pre></div></figure>
+
+
+
+<h3 id="2-3-3-服务端配置文件，启动服务"><a href="#2-3-3-服务端配置文件，启动服务" class="headerlink" title="2.3.3 服务端配置文件，启动服务"></a>2.3.3 服务端配置文件，启动服务</h3><p>openvpn安装完之后的目录</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01 &#x2F;opt&#x2F;easy-rsa]#cd &#x2F;etc&#x2F;openvpn&#x2F;
+[root@mn01 &#x2F;etc&#x2F;openvpn]#tree
+.
+├── client
+└── server</code></pre></div></figure>
+
+<p>创建服务端配置文件</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01 &#x2F;etc&#x2F;openvpn]#cat server&#x2F;server.conf
+port 1194 #端口
+proto udp #协议
+dev tun #采用路由隧道模式tun
+ca ca.crt #ca证书文件位置，放在&#x2F;etc&#x2F;opnevpnr中
+cert server.crt # 服务端公钥文件
+key server.key #服务端私钥文件
+dh dh.pem #加密算法文件
+server 10.8.0.0 255.255.255.0 #给客户端分配地址池(ip地址范围)，注意：不能和VPN服务器内网网段有相同
+push &quot;route 172.16.1.0 255.255.255.0&quot; #客户端连接后,推送给客户端的路由规则
+#ifconfig-pool-persist ipp.txt #地址池记录文件位置 未来让openvpn 客户端固定ip地址使用的.
+keepalive 10 120 #存活时间，10秒ping一次,120 如未收到响应则视为断线
+max-clients 100 #最多允许100个客户端连接
+
+status &#x2F;var&#x2F;log&#x2F;openvpn-status.log # 服务状态文件存放路径
+log &#x2F;var&#x2F;log&#x2F;openvpn.log # openvpn日志记录位置
+verb 3 # verbose日志输出级别 数字越大越详细 最多11(debug)
+client-to-client # 客户端与客户端之间支持通信
+persist-key # 通过keepalive检测超时后，重新启动VPN，不重新读取keys，保留第一次使用的keys 对私钥进行缓存.
+persist-tun #检测超时后，重新启动VPN，一直保持tun是linkup的。否则网络会先linkdown然后再linkup
+duplicate-cn #客户端密钥(证书和私钥)是否可以重复</code></pre></div></figure>
+
+<p>拷贝证书到对应目录中</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01 &#x2F;etc&#x2F;openvpn]#cd &#x2F;opt&#x2F;easy-rsa&#x2F;pki&#x2F;
+[root@mn01 &#x2F;opt&#x2F;easy-rsa&#x2F;pki]#cp  ca.crt  &#x2F;etc&#x2F;openvpn&#x2F;server&#x2F;
+[root@mn01 &#x2F;opt&#x2F;easy-rsa&#x2F;pki]#cp dh.pem &#x2F;etc&#x2F;openvpn&#x2F;server&#x2F;
+[root@mn01 &#x2F;opt&#x2F;easy-rsa&#x2F;pki]#cp issued&#x2F;server.crt private&#x2F;server.key &#x2F;etc&#x2F;openvpn&#x2F;server&#x2F;</code></pre></div></figure>
+
+<p>启动服务</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01 &#x2F;]#systemctl daemon-reload 
+[root@mn01 &#x2F;]#systemctl enable --now openvpn-server@server</code></pre></div></figure>
+
+<p>启动后如果设置了密码，需要输入</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01 &#x2F;etc&#x2F;openvpn]#ss -lntup |grep 1194
+Broadcast message from root@mn01 (Wed 2024-08-21 15:35:54 CST):
+
+Password entry required for &#39;Enter Private Key Password:&#39; (PID 4787).
+Please enter password with the systemd-tty-ask-password-agent tool!
+
+[root@mn01 &#x2F;etc&#x2F;openvpn]#systemd-tty-ask-password-agent
+Enter Private Key Password: *********</code></pre></div></figure>
+
+<p>查看进程状态</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01 &#x2F;etc&#x2F;openvpn]#ss -lntup |grep 1194
+udp    UNCONN     0      0         *:1194                  *:*                   users:((&quot;openvpn&quot;,pid&#x3D;4786,fd&#x3D;5))
+[root@mn01 &#x2F;etc&#x2F;openvpn]#ip a s tun0
+4: tun0: &lt;POINTOPOINT,MULTICAST,NOARP,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UNKNOWN group default qlen 100
+    link&#x2F;none 
+    inet 10.8.0.1 peer 10.8.0.2&#x2F;32 scope global tun0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::34d5:c7f6:e5ac:1b53&#x2F;64 scope link flags 800 
+       valid_lft forever preferred_lft forever</code></pre></div></figure>
+
+<p>查看路由状态</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01 &#x2F;etc&#x2F;openvpn]#route -n
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+0.0.0.0         10.0.0.2        0.0.0.0         UG    102    0        0 ens33
+10.0.0.0        0.0.0.0         255.255.255.0   U     102    0        0 ens33
+10.8.0.0        10.8.0.2        255.255.255.0   UG    0      0        0 tun0
+10.8.0.2        0.0.0.0         255.255.255.255 UH    0      0        0 tun0
+172.16.1.0      0.0.0.0         255.255.255.0   U     101    0        0 ens36</code></pre></div></figure>
+
+
+
+<h3 id="2-3-4-客户端配置文件，连接访问"><a href="#2-3-4-客户端配置文件，连接访问" class="headerlink" title="2.3.4 客户端配置文件，连接访问"></a>2.3.4 客户端配置文件，连接访问</h3><h4 id="1）安装OpenVPN客户端"><a href="#1）安装OpenVPN客户端" class="headerlink" title="1）安装OpenVPN客户端"></a>1）安装OpenVPN客户端</h4><p>windows下载安装OpenVPN-GUI</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">https:&#x2F;&#x2F;openvpn.net&#x2F;community-downloads&#x2F;</code></pre></div></figure>
+
+<h4 id="2）准备配置文件"><a href="#2）准备配置文件" class="headerlink" title="2）准备配置文件"></a>2）准备配置文件</h4><p>将客户端需要的文件拷贝出来，放到一起</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01 &#x2F;tmp]#ls client-gs&#x2F;
+ca.crt  client.crt  client.key</code></pre></div></figure>
+
+<p>创建ovpn文件</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">client #指定当前VPN是客户端
+dev tun #使用tun隧道传输协议
+proto udp #使用udp协议传输数据
+remote 10.0.0.61 1194 #openvpn服务器IP地址端口号
+resolv-retry infinite #断线自动重新连接，在网络不稳定的情况下非常有用
+nobind #不绑定本地特定的端口号
+ca ca.crt #指定CA证书的文件路径
+cert client.crt #指定当前客户端的证书文件路径
+key client.key #指定当前客户端的私钥文件路径
+verb 3 #指定日志文件的记录详细级别，可选0-9，等级越高日志内容越详细
+persist-key #通过keepalive检测超时后，重新启动VPN，不重新读取keys，保留第一次使用的keys</code></pre></div></figure>
+
+<p>存放的目录可以在OpenVPN客户端中指定</p>
+<p><img src="C:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821155451333.png" srcset="/img/loading.gif" lazyload alt="image-20240821155451333"></p>
+<p>全部文件如下</p>
+<p><img src="C:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821155504577.png" srcset="/img/loading.gif" lazyload alt="image-20240821155504577"></p>
+<h4 id="3）连接OpenVPN和测试"><a href="#3）连接OpenVPN和测试" class="headerlink" title="3）连接OpenVPN和测试"></a>3）连接OpenVPN和测试</h4><p>右键小图标 — 连接，成功后变为绿色状态</p>
+<p><img src="C:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821155626815.png" srcset="/img/loading.gif" lazyload alt="image-20240821155626815"></p>
+<p>测试访问服务端内网的172网段，测试成功</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 开启VPN可以访问
+C:\Users\gs&gt;ping 172.16.1.61
+正在 Ping 172.16.1.61 具有 32 字节的数据:
+来自 172.16.1.61 的回复: 字节&#x3D;32 时间&lt;1ms TTL&#x3D;64
+来自 172.16.1.61 的回复: 字节&#x3D;32 时间&lt;1ms TTL&#x3D;64
+来自 172.16.1.61 的回复: 字节&#x3D;32 时间&#x3D;6ms TTL&#x3D;64
+来自 172.16.1.61 的回复: 字节&#x3D;32 时间&#x3D;1ms TTL&#x3D;64
+
+# 关闭VPN无法访问
+C:\Users\gs&gt;ping 172.16.1.61
+正在 Ping 172.16.1.61 具有 32 字节的数据:
+请求超时。</code></pre></div></figure>
+
+
+
+<h2 id="2-4-OpenVPN连接内网"><a href="#2-4-OpenVPN连接内网" class="headerlink" title="2.4 OpenVPN连接内网"></a>2.4 OpenVPN连接内网</h2><p>应用场景：</p>
+<p>​	目前我们可以已经可以通过OpenVPN来连接内网的mn01服务器（172.16.1.61），但是内网的其他的服务器仍是访问不到的，比如db01（172.16.1.51）</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[C:\~]$ ping 172.16.1.51
+正在 Ping 172.16.1.51 具有 32 字节的数据:
+请求超时。
+请求超时。</code></pre></div></figure>
+
+<p>原因是什么？</p>
+<ul>
+<li>流量可以过去，但是回来没有路由，过不来</li>
+</ul>
+<p>让我们来解决这个问题吧！</p>
+<p>1、服务端mn01：开启内核转发功能</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01 &#x2F;tmp]#echo &#39;net.ipv4.ip_forward &#x3D; 1&#39; &gt;&gt;&#x2F;etc&#x2F;sysctl.conf
+[root@mn01 &#x2F;tmp]#sysctl -p
+net.ipv4.ip_forward &#x3D; 1</code></pre></div></figure>
+
+<p>2、内网服务器db01：添加路由规则（回来的路由）</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@db01 ~]#route add -net 10.8.0.0&#x2F;24 gw 172.16.1.61</code></pre></div></figure>
+
+
+
+<p>OK，再试试，已经通了！</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[C:\~]$ ping 172.16.1.51
+正在 Ping 172.16.1.51 具有 32 字节的数据:
+来自 172.16.1.51 的回复: 字节&#x3D;32 时间&#x3D;1ms TTL&#x3D;63
+来自 172.16.1.51 的回复: 字节&#x3D;32 时间&#x3D;1ms TTL&#x3D;63
+来自 172.16.1.51 的回复: 字节&#x3D;32 时间&#x3D;5ms TTL&#x3D;63
+来自 172.16.1.51 的回复: 字节&#x3D;32 时间&lt;1ms TTL&#x3D;63</code></pre></div></figure>
+
+
+
+<h2 id="2-5-OpenVPN密码认证"><a href="#2-5-OpenVPN密码认证" class="headerlink" title="2.5 OpenVPN密码认证"></a>2.5 OpenVPN密码认证</h2><p>方便设置客户端帐号，如：</p>
+<table>
+<thead>
+<tr>
+<th>用户分离</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>服务端</strong></td>
+</tr>
+<tr>
+<td>ca.crt</td>
+</tr>
+<tr>
+<td>server.key</td>
+</tr>
+<tr>
+<td>server.crt</td>
+</tr>
+<tr>
+<td><strong>客户端-张三</strong></td>
+</tr>
+<tr>
+<td>ca.crt</td>
+</tr>
+<tr>
+<td>zhangsan.key</td>
+</tr>
+<tr>
+<td>zhangsan.crt</td>
+</tr>
+<tr>
+<td>zhagnsan.ovpn</td>
+</tr>
+<tr>
+<td><strong>客户端-托马斯-gao</strong></td>
+</tr>
+<tr>
+<td>ca.crt</td>
+</tr>
+<tr>
+<td>tomcat-gao.key</td>
+</tr>
+<tr>
+<td>tomcat-gao.crt</td>
+</tr>
+<tr>
+<td>tomcat-gao.ovpn</td>
+</tr>
+</tbody></table>
+<h3 id="2-5-1-服务端开启密码认证功能"><a href="#2-5-1-服务端开启密码认证功能" class="headerlink" title="2.5.1 服务端开启密码认证功能"></a>2.5.1 服务端开启密码认证功能</h3><p>1、修改配置文件，添加四行</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">script-security 3 # 允许使用自定义脚本
+auth-user-pass-verify &#x2F;etc&#x2F;openvpn&#x2F;check.sh via-env # 指定认证脚本
+username-as-common-name # 开启用户密码登陆方式验证
+client-cert-not-required # 只使用用户密码方式验证登录，不加则代表需要证书和用户名密码双重验证登录</code></pre></div></figure>
+
+<p>2、创建check.sh脚本文件</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-she" data-language="she"><code class="language-she">#!&#x2F;bin&#x2F;bash
+##############################################################
+# File Name:check.sh
+# Version:V1.0
+# Author:Haris Gong
+# Organization:gsproj.github.io
+# Desc:
+##############################################################
+
+PASSFILE&#x3D;&quot;&#x2F;etc&#x2F;openvpn&#x2F;openvpnfile&quot; #密码文件 用户名 密码明文
+LOG_FILE&#x3D;&quot;&#x2F;var&#x2F;log&#x2F;openvpn-password.log&quot; #用户登录情况的日志
+TIME_STAMP&#x3D;&#96;date &quot;+%Y-%m-%d %T&quot;&#96;
+
+if [ ! -r &quot;$&#123;PASSFILE&#125;&quot; ]; then
+  echo &quot;$&#123;TIME_STAMP&#125;: Could not open password file \&quot;$&#123;PASSFILE&#125;\&quot; for reading.&quot; &gt;&gt; $&#123;LOG_FILE&#125;
+  exit 1
+fi
+
+CORRECT_PASSWORD&#x3D;&#96;awk &#39;!&#x2F;^;&#x2F;&amp;&amp;!&#x2F;^#&#x2F;&amp;&amp;$1&#x3D;&#x3D;&quot;&#39;$&#123;username&#125;&#39;&quot;&#123;print $2;exit&#125;&#39; $&#123;PASSFILE&#125;&#96;
+
+if [ &quot;$&#123;CORRECT_PASSWORD&#125;&quot; &#x3D; &quot;&quot; ]; then 
+  echo &quot;$&#123;TIME_STAMP&#125;: User does not exist: username&#x3D;\&quot;$&#123;username&#125;\&quot;, password&#x3D;\&quot;$&#123;password&#125;\&quot;.&quot; &gt;&gt; $&#123;LOG_FILE&#125;
+  exit 1
+fi
+
+if [ &quot;$&#123;password&#125;&quot; &#x3D; &quot;$&#123;CORRECT_PASSWORD&#125;&quot; ]; then 
+  echo &quot;$&#123;TIME_STAMP&#125;: Successful authentication: username&#x3D;\&quot;$&#123;username&#125;\&quot;.&quot; &gt;&gt; $&#123;LOG_FILE&#125;
+  exit 0
+fi
+
+echo &quot;$&#123;TIME_STAMP&#125;: Incorrect password: username&#x3D;\&quot;$&#123;username&#125;\&quot;, password&#x3D;\&quot;$&#123;password&#125;\&quot;.&quot; &gt;&gt; $&#123;LOG_FILE&#125;
+exit 1
+</code></pre></div></figure>
+
+<p>3、脚本设置执行权限</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">chmod 700 check.sh</code></pre></div></figure>
+
+<p>4、创建用户和密码文件</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01 &#x2F;etc&#x2F;openvpn]#cat openvpnfile 
+xiaoming 123
+xiaozhou 223</code></pre></div></figure>
+
+<p>5、重启服务</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">systemctl restart openvpn-server@server.service</code></pre></div></figure>
+
+
+
+<h3 id="2-5-2-客户端连接"><a href="#2-5-2-客户端连接" class="headerlink" title="2.5.2 客户端连接"></a>2.5.2 客户端连接</h3><h4 id="1）手动输入帐号密码的方式"><a href="#1）手动输入帐号密码的方式" class="headerlink" title="1）手动输入帐号密码的方式"></a>1）手动输入帐号密码的方式</h4><p>修改配置文件，关闭秘钥认证，开启密码认证</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">client #指定当前VPN是客户端
+dev tun #使用tun隧道传输协议
+proto udp #使用udp协议传输数据
+remote 10.0.0.61 1194 #openvpn服务器IP地址端口号
+resolv-retry infinite #断线自动重新连接，在网络不稳定的情况下非常有用
+nobind #不绑定本地特定的端口号
+ca ca.crt #指定CA证书的文件路径
+;cert client.crt # 注释，因为不需要密钥认证了
+;key client.key # 注释，因为不需要密钥认证了
+verb 3 #指定日志文件的记录详细级别，可选0-9，等级越高日志内容越详细
+persist-key #通过keepalive检测超时后，重新启动VPN，不重新读取keys，保留第一次使用的keys
+auth-user-pass # 开启密码认证</code></pre></div></figure>
+
+<p>测试连接，会弹出输入帐号密码的框</p>
+<p><img src="C:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821171242085.png" srcset="/img/loading.gif" lazyload alt="image-20240821171242085"></p>
+<p>连接成功</p>
+<p><img src="C:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821171312095.png" srcset="/img/loading.gif" lazyload alt="image-20240821171312095"></p>
+<h4 id="2）保存到文件的方式"><a href="#2）保存到文件的方式" class="headerlink" title="2）保存到文件的方式"></a>2）保存到文件的方式</h4><p>创建一个保存帐号密码的文件</p>
+<p><img src="C:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821171537460.png" srcset="/img/loading.gif" lazyload alt="image-20240821171537460"></p>
+<p>在ovpn配置文件中指定即可</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">auth-user-pass login.conf</code></pre></div></figure>
+
+
                 
               </div>
             
@@ -345,9 +1222,9 @@
             
               
               
-                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
                   <span class="hint--top hint--rounded" aria-label="BY - 署名">
-                    <i class="iconfont icon-by"></i>
+                    <i class="iconfont icon-cc-by"></i>
                   </span>
                 </a>
               
@@ -395,16 +1272,6 @@
 
     <div class="side-col d-none d-lg-block col-lg-2">
       
-  <aside class="sidebar" style="margin-left: -1rem">
-    <div id="toc">
-  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
-  <div class="toc-body" id="toc-body"></div>
-</div>
-
-
-
-  </aside>
-
 
     </div>
   </div>
@@ -482,7 +1349,6 @@
   
   
   
-  
 </div>
 
   </footer>
@@ -501,7 +1367,7 @@
   </script>
 
 
-<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
 <script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
 <script  src="/js/events.js" ></script>
 <script  src="/js/plugins.js" ></script>
@@ -534,7 +1400,7 @@
 
   
 <script>
-  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
     var toc = jQuery('#toc');
     if (toc.length === 0 || !window.tocbot) { return; }
     var boardCtn = jQuery('#board-ctn');
@@ -572,6 +1438,12 @@
 </script>
 
 
+  <script  src="https://lib.baomitu.com/prism/1.29.0/components/prism-core.min.js" ></script>
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js" ></script>
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
+
   <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
 
   <script>Fluid.plugins.codeWidget();</script>
@@ -579,7 +1451,7 @@
 
   
 <script>
-  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
     window.anchors.options = {
       placement: CONFIG.anchorjs.placement,
       visible  : CONFIG.anchorjs.visible

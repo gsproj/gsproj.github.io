@@ -7,8 +7,11 @@
 
 <head>
   <meta charset="UTF-8">
+
   <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
   <link rel="icon" href="/img/fluid.png">
+  
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   
@@ -16,12 +19,12 @@
   <meta name="author" content="GongSheng">
   <meta name="keywords" content="">
   
-    <meta name="description" content="一、Sersync服务介绍">
+    <meta name="description" content="一、Sersync服务介绍  1 为什么要用sersync sersync是基于inotify开发的，类似于inotify-tools的工具 sersync可以记录下被监听目录中发生变化的（包括增加、删除、修改）具体某一个文件或者某一个目录的名字，然后使用rsync同步的时候，只同步发生变化的文件或者目录 因为服务异常导致的同步失败有记录，便于恢复，确保高可用！  2 rsync+inotify-">
 <meta property="og:type" content="article">
 <meta property="og:title" content="运维之综合架构--04--Sersync实时备份">
 <meta property="og:url" content="http://gsproj.github.io/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/04-sersync%E5%AE%9E%E6%97%B6%E5%90%8C%E6%AD%A5%E5%A4%87%E4%BB%BD/index.html">
 <meta property="og:site_name" content="迎风之豚的博客">
-<meta property="og:description" content="一、Sersync服务介绍">
+<meta property="og:description" content="一、Sersync服务介绍  1 为什么要用sersync sersync是基于inotify开发的，类似于inotify-tools的工具 sersync可以记录下被监听目录中发生变化的（包括增加、删除、修改）具体某一个文件或者某一个目录的名字，然后使用rsync同步的时候，只同步发生变化的文件或者目录 因为服务异常导致的同步失败有记录，便于恢复，确保高可用！  2 rsync+inotify-">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://gsproj.github.io/img/sersync%E6%B5%81%E7%A8%8B-1628145534424.png">
 <meta property="article:published_time" content="2022-07-06T03:19:52.000Z">
@@ -42,6 +45,8 @@
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
 
+  <link  rel="stylesheet" href="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" />
+
   <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
 
 
@@ -49,11 +54,11 @@
 <!-- 主题依赖的图标库，不要自行修改 -->
 <!-- Do not modify the link that theme dependent icons -->
 
-<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
 
 
 
-<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
 
 
 <link  rel="stylesheet" href="/css/main.css" />
@@ -70,7 +75,7 @@
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
     Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"left","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
 
     if (CONFIG.web_analytics.follow_dnt) {
       var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
@@ -83,7 +88,7 @@
 
 
   
-<meta name="generator" content="Hexo 5.4.2"></head>
+<meta name="generator" content="Hexo 7.3.0"></head>
 
 
 <body>
@@ -96,7 +101,7 @@
   <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand" href="/">
-      <strong>&#34;迎风之豚的博客&#34;</strong>
+      <strong>Haris的博客</strong>
     </a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
@@ -114,9 +119,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/">
+              <a class="nav-link" href="/" target="_self">
                 <i class="iconfont icon-home-fill"></i>
-                首页
+                <span>首页</span>
               </a>
             </li>
           
@@ -126,9 +131,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/archives/">
+              <a class="nav-link" href="/archives/" target="_self">
                 <i class="iconfont icon-archive-fill"></i>
-                归档
+                <span>归档</span>
               </a>
             </li>
           
@@ -138,9 +143,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/categories/">
+              <a class="nav-link" href="/categories/" target="_self">
                 <i class="iconfont icon-category-fill"></i>
-                分类
+                <span>分类</span>
               </a>
             </li>
           
@@ -150,9 +155,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/tags/">
+              <a class="nav-link" href="/tags/" target="_self">
                 <i class="iconfont icon-tags-fill"></i>
-                标签
+                <span>标签</span>
               </a>
             </li>
           
@@ -162,9 +167,9 @@
           
           
             <li class="nav-item">
-              <a class="nav-link" href="/about/">
+              <a class="nav-link" href="/about/" target="_self">
                 <i class="iconfont icon-user-fill"></i>
-                关于
+                <span>关于</span>
               </a>
             </li>
           
@@ -172,15 +177,16 @@
         
           <li class="nav-item" id="search-btn">
             <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
-              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+              <i class="iconfont icon-search"></i>
             </a>
           </li>
           
         
         
           <li class="nav-item" id="color-toggle-btn">
-            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
-                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
           </li>
         
       </ul>
@@ -220,7 +226,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          6.1k 字
+          2k 字
         
       </span>
     
@@ -231,7 +237,7 @@
         
         
         
-          51 分钟
+          17 分钟
         
       </span>
     
@@ -261,6 +267,19 @@
   <div class="row nomargin-x">
     <div class="side-col d-none d-lg-block col-lg-2">
       
+  <aside class="sidebar" style="padding-left: 2rem; margin-right: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
 
     </div>
 
@@ -268,8 +287,7 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <!-- SEO header -->
-            <h1 style="display: none">运维之综合架构--04--Sersync实时备份</h1>
+            <h1 id="seo-header">运维之综合架构--04--Sersync实时备份</h1>
             
             
               <div class="markdown-body">
@@ -336,13 +354,182 @@
 </tr>
 </tbody></table>
 <p><img src="/img/sersync%E6%B5%81%E7%A8%8B-1628145534424.png" srcset="/img/loading.gif" lazyload alt="sersync流程"></p>
-<h3 id="1-web上传视频至nfs存储"><a href="#1-web上传视频至nfs存储" class="headerlink" title="1 web上传视频至nfs存储"></a>1 web上传视频至nfs存储</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><code class="hljs shell">nfs存储服务  172.16.1.31<br>	1.安装<br>		[root@nfs ~]# yum install nfs-utils -y<br>	2.配置<br>		[root@nfs ~]# cat /etc/exports<br>		/data 172.16.1.0/24(rw,sync,all_squash,anonuid=666,anongid=666)<br>		<br>		[root@nfs ~]# groupadd -g666 www<br>		[root@nfs ~]# useradd -u666 -g666 www<br>		<br>		[root@nfs ~]# mkdir /data<br>		[root@nfs ~]# chown -R www.www /data<br>		<br>	3.启动<br>		[root@nfs ~]# systemctl restart nfs-server<br>		[root@nfs ~]# sysytemctl enable nfs-server<br>		<br>web服务器操作：172.16.1.7<br>	1.安装<br>		[root@web01 ~]# yum install httpd php -y<br>	2.配置<br>		进程运行的身份（最好是和nfs的匿名用户保持一致）<br><span class="hljs-meta">			#</span><span class="bash"> sed c 匹配到User开头的字段，替换为User www</span><br>			[root@web01 html]# sed -i &#x27;/^User/c User www&#x27; /etc/httpd/conf/httpd.conf 	<br>			[root@web01 html]# sed -i &#x27;/^Group/c Group www&#x27; /etc/httpd/conf/httpd.conf<br>		挂载<br>			[root@web01 ~]# mount -t nfs 172.16.1.31:/data /var/www/html		#核心<br>		上传代码<br>			[root@web01 ~]# cd /var/www/html/<br>			[root@web01 html]# rz kaoshi.zip<br>			[root@web01 html]# unzip kaoshi.zip<br>	3.启动<br>		[root@web01 ~]# systemctl start httpd<br><br>	4.修改上传大小<br>		[root@web01 ~]# vim /etc/php.ini中设置：<br>		upload_max_filesize = 200M;<br>		post_max_size = 200M;<br>	<br>	5.注意: 修改完配置记得重启服务<br>	[root@web01 ~]#  systemctl restart httpd<br></code></pre></td></tr></table></figure>
+<h3 id="1-web上传视频至nfs存储"><a href="#1-web上传视频至nfs存储" class="headerlink" title="1 web上传视频至nfs存储"></a>1 web上传视频至nfs存储</h3><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">nfs存储服务  172.16.1.31
+	1.安装
+		[root@nfs ~]# yum install nfs-utils -y
+	2.配置
+		[root@nfs ~]# cat &#x2F;etc&#x2F;exports
+		&#x2F;data 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
+		
+		[root@nfs ~]# groupadd -g666 www
+		[root@nfs ~]# useradd -u666 -g666 www
+		
+		[root@nfs ~]# mkdir &#x2F;data
+		[root@nfs ~]# chown -R www.www &#x2F;data
+		
+	3.启动
+		[root@nfs ~]# systemctl restart nfs-server
+		[root@nfs ~]# sysytemctl enable nfs-server
+		
+web服务器操作：172.16.1.7
+	1.安装
+		[root@web01 ~]# yum install httpd php -y
+	2.配置
+		进程运行的身份（最好是和nfs的匿名用户保持一致）
+			# sed c 匹配到User开头的字段，替换为User www
+			[root@web01 html]# sed -i &#39;&#x2F;^User&#x2F;c User www&#39; &#x2F;etc&#x2F;httpd&#x2F;conf&#x2F;httpd.conf 	
+			[root@web01 html]# sed -i &#39;&#x2F;^Group&#x2F;c Group www&#39; &#x2F;etc&#x2F;httpd&#x2F;conf&#x2F;httpd.conf
+		挂载
+			[root@web01 ~]# mount -t nfs 172.16.1.31:&#x2F;data &#x2F;var&#x2F;www&#x2F;html		#核心
+		上传代码
+			[root@web01 ~]# cd &#x2F;var&#x2F;www&#x2F;html&#x2F;
+			[root@web01 html]# rz kaoshi.zip
+			[root@web01 html]# unzip kaoshi.zip
+	3.启动
+		[root@web01 ~]# systemctl start httpd
 
-<h3 id="2-web和nfs的数据都备份在备份服务器的-x2F-backup"><a href="#2-web和nfs的数据都备份在备份服务器的-x2F-backup" class="headerlink" title="2 web和nfs的数据都备份在备份服务器的&#x2F;backup"></a>2 web和nfs的数据都备份在备份服务器的&#x2F;backup</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><code class="hljs shell">备份服务器操作如下：172.16.1.41<br>	1.安装<br>		[root@backup ~]# yum install rsync -y<br>	2.配置<br>		[root@backup ~]# cat /etc/rsyncd.conf<br>		uid = www<br>		gid = www<br>		port = 873<br>		fake super = yes<br>		use chroot = no<br>		max connections = 200<br>		timeout = 600<br>		ignore errors<br>		read only = false<br>		list = true<br>		auth users = rsync_backup<br>		secrets file = /etc/rsync.passwd<br>		log file = /var/log/rsyncd.log<br><span class="hljs-meta">		#</span><span class="bash"><span class="hljs-comment">####################################</span></span><br>		[backup]<br>		path = /backup<br>		<br>		[data]<br>		path = /data<br>		<br>		创建用户<br>			[root@backup ~]# groupadd -g666 www<br>			[root@backup ~]# useradd -u666 -g666 www<br>		<br>		准备虚拟连接用户账号和密码<br>		[root@backup ~]# cat /etc/rsync.passwd <br>		rsync_backup:123456<br>		[root@backup ~]# chmod 600 /etc/rsync.passwd<br>		<br>		创建数据存放的目录<br>		[root@backup ~]# mkdir -p /data /backup<br>		[root@backup ~]# chown -R www.www /data/ /backup/<br><br>	3.启动<br>		[root@backup ~]# systemctl restart rsyncd<br><br>	4.客户端执行脚本。测试rsync的备份是否ok   （客户端的数据都写入到/backup目录中） 172.16.1.7 172.16.1.31<br>	[root@web01 ~]# sh /server/scripts/client_push_data.sh <br>	sending incremental file list<br>	web01_172.16.1.7_2019-01-08/<br>	web01_172.16.1.7_2019-01-08/flag_2019-01-08<br>	web01_172.16.1.7_2019-01-08/other.tar.gz<br>	web01_172.16.1.7_2019-01-08/sys.tar.gz<br></code></pre></td></tr></table></figure>
+	4.修改上传大小
+		[root@web01 ~]# vim &#x2F;etc&#x2F;php.ini中设置：
+		upload_max_filesize &#x3D; 200M;
+		post_max_size &#x3D; 200M;
+	
+	5.注意: 修改完配置记得重启服务
+	[root@web01 ~]#  systemctl restart httpd</code></pre></div></figure>
 
-<h3 id="3-如何将nfs的数据实时的同步到备份服务器的-x2F-data目录"><a href="#3-如何将nfs的数据实时的同步到备份服务器的-x2F-data目录" class="headerlink" title="3 如何将nfs的数据实时的同步到备份服务器的&#x2F;data目录"></a>3 如何将nfs的数据实时的同步到备份服务器的&#x2F;data目录</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><code class="hljs shell">监控nfs服务器上面的/data目录，如果发生变化则触发动作，动作可以是执行一次同步。<br>1.安装<br>	[root@nfs ~]# yum install inotify-tools		监控工具<br>	<br>	[root@nfs ~]# rz -E sersync2.5.4_64bit_binary_stable_final.tar.gz	<br>	[root@nfs ~]# tar xf sersync2.5.4_64bit_binary_stable_final.tar.gz<br>	[root@nfs ~]# mv GNU-Linux-x86/ /usr/local/sersync<br>2.配置<br>	[root@nfs sersync]# diff confxml.xml confxml.xml.bak<br>       5c5<br>       &lt;     &lt;fileSystem xfs=&quot;true&quot;/&gt;<br>       ---<br>       &gt;     &lt;fileSystem xfs=&quot;false&quot;/&gt;<br>       15c15<br>       &lt;       &lt;createFile start=&quot;true&quot;/&gt;<br>       ---<br>       &gt;       &lt;createFile start=&quot;false&quot;/&gt;<br>       19,20c19,20<br>       &lt;       &lt;attrib start=&quot;true&quot;/&gt;<br>       &lt;       &lt;modify start=&quot;true&quot;/&gt;<br>       ---<br>       &gt;       &lt;attrib start=&quot;false&quot;/&gt;<br>       &gt;       &lt;modify start=&quot;false&quot;/&gt;<br>       24,25c24,25<br>       &lt;       &lt;localpath watch=&quot;/data&quot;&gt;<br>       &lt;           &lt;remote ip=&quot;172.16.1.41&quot; name=&quot;data&quot;/&gt;<br>       ---<br>       &gt;       &lt;localpath watch=&quot;/opt/tongbu&quot;&gt;<br>       &gt;           &lt;remote ip=&quot;127.0.0.1&quot; name=&quot;tongbu1&quot;/&gt;<br>       30,31c30,31<br>       &lt;           &lt;commonParams params=&quot;-az&quot;/&gt;<br>       &lt;           &lt;auth start=&quot;true&quot; users=&quot;rsync_backup&quot; passwordfile=&quot;/etc/rsync.pass&quot;/&gt;<br>       ---<br>       &gt;           &lt;commonParams params=&quot;-artuz&quot;/&gt;<br>       &gt;           &lt;auth start=&quot;false&quot; users=&quot;root&quot; passwordfile=&quot;/etc/rsync.pas&quot;/&gt;<br>       33c33<br>       &lt;           &lt;timeout start=&quot;true&quot; time=&quot;100&quot;/&gt;&lt;!-- timeout=100 --&gt;<br>       ---<br>       &gt;           &lt;timeout start=&quot;false&quot; time=&quot;100&quot;/&gt;&lt;!-- timeout=100 --&gt;<br><br>	创建客户端密码文件<br>	[root@nfs ~]# cat /etc/rsync.pass<br>	123456<br>	[root@nfs ~]# chmod 600 /etc/rsync.pass<br><br>3.启动<br>[root@nfs ~]# /usr/local/sersync/sersync2  -h<br>set the system param<br>execute：echo 50000000 &gt; /proc/sys/fs/inotify/max_user_watches<br>execute：echo 327679 &gt; /proc/sys/fs/inotify/max_queued_events<br>parse the command param<br>_______________________________________________________<br>参数-d:启用守护进程模式<br>参数-r:在监控前，将监控目录与远程主机用rsync命令推送一遍<br>参数-n: 指定开启守护线程的数量，默认为10个<br>参数-o:指定配置文件，默认使用confxml.xml文件<br>参数-m:单独启用其他模块，使用 -m refreshCDN 开启刷新CDN模块<br>参数-m:单独启用其他模块，使用 -m socket 开启socket模块<br>参数-m:单独启用其他模块，使用 -m http 开启http模块<br>不加-m参数，则默认执行同步程序<br><br>启动<br>[root@nfs ~]#  /usr/local/sersync/sersync2 -dro /usr/local/sersync/confxml.xml<br><span class="hljs-meta"></span><br><span class="hljs-meta">#</span><span class="bash">启动sersync后一定要提取同步的命令，手动运行一次，检查是否存在错误</span><br>[root@nfs ~]#  cd /data &amp;&amp; rsync -az -R --delete ./  --timeout=100 rsync_backup@172.16.1.41::data --password-file=/etc/rsync.pass<br><br>停止<br>[root@nfs data]# pkill sersync<br></code></pre></td></tr></table></figure>
+<h3 id="2-web和nfs的数据都备份在备份服务器的-backup"><a href="#2-web和nfs的数据都备份在备份服务器的-backup" class="headerlink" title="2 web和nfs的数据都备份在备份服务器的&#x2F;backup"></a>2 web和nfs的数据都备份在备份服务器的&#x2F;backup</h3><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">备份服务器操作如下：172.16.1.41
+	1.安装
+		[root@backup ~]# yum install rsync -y
+	2.配置
+		[root@backup ~]# cat &#x2F;etc&#x2F;rsyncd.conf
+		uid &#x3D; www
+		gid &#x3D; www
+		port &#x3D; 873
+		fake super &#x3D; yes
+		use chroot &#x3D; no
+		max connections &#x3D; 200
+		timeout &#x3D; 600
+		ignore errors
+		read only &#x3D; false
+		list &#x3D; true
+		auth users &#x3D; rsync_backup
+		secrets file &#x3D; &#x2F;etc&#x2F;rsync.passwd
+		log file &#x3D; &#x2F;var&#x2F;log&#x2F;rsyncd.log
+		#####################################
+		[backup]
+		path &#x3D; &#x2F;backup
+		
+		[data]
+		path &#x3D; &#x2F;data
+		
+		创建用户
+			[root@backup ~]# groupadd -g666 www
+			[root@backup ~]# useradd -u666 -g666 www
+		
+		准备虚拟连接用户账号和密码
+		[root@backup ~]# cat &#x2F;etc&#x2F;rsync.passwd 
+		rsync_backup:123456
+		[root@backup ~]# chmod 600 &#x2F;etc&#x2F;rsync.passwd
+		
+		创建数据存放的目录
+		[root@backup ~]# mkdir -p &#x2F;data &#x2F;backup
+		[root@backup ~]# chown -R www.www &#x2F;data&#x2F; &#x2F;backup&#x2F;
 
-<h3 id="4-如何平滑的迁移nfs数据到backup服务器。并且让后续的上传都是上传至backup-（不能出现业务中断）"><a href="#4-如何平滑的迁移nfs数据到backup服务器。并且让后续的上传都是上传至backup-（不能出现业务中断）" class="headerlink" title="4 如何平滑的迁移nfs数据到backup服务器。并且让后续的上传都是上传至backup   （不能出现业务中断）"></a>4 如何平滑的迁移nfs数据到backup服务器。并且让后续的上传都是上传至backup   （不能出现业务中断）</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs shell">1.backup服务器上需要运行和nfs服务器上一样的业务环境 <br>	创建用户<br>	[root@backup ~]# groupadd -g 666 www<br>	[root@backup ~]# useradd -u666 -g666 www<br>	配置<br>	[root@backup ~]# yum install -y nfs-utils -y<br>	[root@backup ~]# cat /etc/exports<br>	/data 172.16.1.0/24(rw,sync,all_squash,anonuid=666,anongid=666)<br>	启动<br>	[root@backup ~]# systemctl restart nfs-server<br>	<br>2.先实现实时的同步 √<br><br>3.在web上实现切换，卸载nfs的/data目录，重新挂载backup服务的/data目录<br>	[root@web01 ~]# umount -lf /var/www/html/ &amp;&amp; mount -t nfs 172.16.1.41:/data /var/www/html/<br></code></pre></td></tr></table></figure>
+	3.启动
+		[root@backup ~]# systemctl restart rsyncd
+
+	4.客户端执行脚本。测试rsync的备份是否ok   （客户端的数据都写入到&#x2F;backup目录中） 172.16.1.7 172.16.1.31
+	[root@web01 ~]# sh &#x2F;server&#x2F;scripts&#x2F;client_push_data.sh 
+	sending incremental file list
+	web01_172.16.1.7_2019-01-08&#x2F;
+	web01_172.16.1.7_2019-01-08&#x2F;flag_2019-01-08
+	web01_172.16.1.7_2019-01-08&#x2F;other.tar.gz
+	web01_172.16.1.7_2019-01-08&#x2F;sys.tar.gz</code></pre></div></figure>
+
+<h3 id="3-如何将nfs的数据实时的同步到备份服务器的-data目录"><a href="#3-如何将nfs的数据实时的同步到备份服务器的-data目录" class="headerlink" title="3 如何将nfs的数据实时的同步到备份服务器的&#x2F;data目录"></a>3 如何将nfs的数据实时的同步到备份服务器的&#x2F;data目录</h3><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">监控nfs服务器上面的&#x2F;data目录，如果发生变化则触发动作，动作可以是执行一次同步。
+1.安装
+	[root@nfs ~]# yum install inotify-tools		监控工具
+	
+	[root@nfs ~]# rz -E sersync2.5.4_64bit_binary_stable_final.tar.gz	
+	[root@nfs ~]# tar xf sersync2.5.4_64bit_binary_stable_final.tar.gz
+	[root@nfs ~]# mv GNU-Linux-x86&#x2F; &#x2F;usr&#x2F;local&#x2F;sersync
+2.配置
+	[root@nfs sersync]# diff confxml.xml confxml.xml.bak
+       5c5
+       &lt;     &lt;fileSystem xfs&#x3D;&quot;true&quot;&#x2F;&gt;
+       ---
+       &gt;     &lt;fileSystem xfs&#x3D;&quot;false&quot;&#x2F;&gt;
+       15c15
+       &lt;       &lt;createFile start&#x3D;&quot;true&quot;&#x2F;&gt;
+       ---
+       &gt;       &lt;createFile start&#x3D;&quot;false&quot;&#x2F;&gt;
+       19,20c19,20
+       &lt;       &lt;attrib start&#x3D;&quot;true&quot;&#x2F;&gt;
+       &lt;       &lt;modify start&#x3D;&quot;true&quot;&#x2F;&gt;
+       ---
+       &gt;       &lt;attrib start&#x3D;&quot;false&quot;&#x2F;&gt;
+       &gt;       &lt;modify start&#x3D;&quot;false&quot;&#x2F;&gt;
+       24,25c24,25
+       &lt;       &lt;localpath watch&#x3D;&quot;&#x2F;data&quot;&gt;
+       &lt;           &lt;remote ip&#x3D;&quot;172.16.1.41&quot; name&#x3D;&quot;data&quot;&#x2F;&gt;
+       ---
+       &gt;       &lt;localpath watch&#x3D;&quot;&#x2F;opt&#x2F;tongbu&quot;&gt;
+       &gt;           &lt;remote ip&#x3D;&quot;127.0.0.1&quot; name&#x3D;&quot;tongbu1&quot;&#x2F;&gt;
+       30,31c30,31
+       &lt;           &lt;commonParams params&#x3D;&quot;-az&quot;&#x2F;&gt;
+       &lt;           &lt;auth start&#x3D;&quot;true&quot; users&#x3D;&quot;rsync_backup&quot; passwordfile&#x3D;&quot;&#x2F;etc&#x2F;rsync.pass&quot;&#x2F;&gt;
+       ---
+       &gt;           &lt;commonParams params&#x3D;&quot;-artuz&quot;&#x2F;&gt;
+       &gt;           &lt;auth start&#x3D;&quot;false&quot; users&#x3D;&quot;root&quot; passwordfile&#x3D;&quot;&#x2F;etc&#x2F;rsync.pas&quot;&#x2F;&gt;
+       33c33
+       &lt;           &lt;timeout start&#x3D;&quot;true&quot; time&#x3D;&quot;100&quot;&#x2F;&gt;&lt;!-- timeout&#x3D;100 --&gt;
+       ---
+       &gt;           &lt;timeout start&#x3D;&quot;false&quot; time&#x3D;&quot;100&quot;&#x2F;&gt;&lt;!-- timeout&#x3D;100 --&gt;
+
+	创建客户端密码文件
+	[root@nfs ~]# cat &#x2F;etc&#x2F;rsync.pass
+	123456
+	[root@nfs ~]# chmod 600 &#x2F;etc&#x2F;rsync.pass
+
+3.启动
+[root@nfs ~]# &#x2F;usr&#x2F;local&#x2F;sersync&#x2F;sersync2  -h
+set the system param
+execute：echo 50000000 &gt; &#x2F;proc&#x2F;sys&#x2F;fs&#x2F;inotify&#x2F;max_user_watches
+execute：echo 327679 &gt; &#x2F;proc&#x2F;sys&#x2F;fs&#x2F;inotify&#x2F;max_queued_events
+parse the command param
+_______________________________________________________
+参数-d:启用守护进程模式
+参数-r:在监控前，将监控目录与远程主机用rsync命令推送一遍
+参数-n: 指定开启守护线程的数量，默认为10个
+参数-o:指定配置文件，默认使用confxml.xml文件
+参数-m:单独启用其他模块，使用 -m refreshCDN 开启刷新CDN模块
+参数-m:单独启用其他模块，使用 -m socket 开启socket模块
+参数-m:单独启用其他模块，使用 -m http 开启http模块
+不加-m参数，则默认执行同步程序
+
+启动
+[root@nfs ~]#  &#x2F;usr&#x2F;local&#x2F;sersync&#x2F;sersync2 -dro &#x2F;usr&#x2F;local&#x2F;sersync&#x2F;confxml.xml
+
+#启动sersync后一定要提取同步的命令，手动运行一次，检查是否存在错误
+[root@nfs ~]#  cd &#x2F;data &amp;&amp; rsync -az -R --delete .&#x2F;  --timeout&#x3D;100 rsync_backup@172.16.1.41::data --password-file&#x3D;&#x2F;etc&#x2F;rsync.pass
+
+停止
+[root@nfs data]# pkill sersync</code></pre></div></figure>
+
+<h3 id="4-如何平滑的迁移nfs数据到backup服务器。并且让后续的上传都是上传至backup-（不能出现业务中断）"><a href="#4-如何平滑的迁移nfs数据到backup服务器。并且让后续的上传都是上传至backup-（不能出现业务中断）" class="headerlink" title="4 如何平滑的迁移nfs数据到backup服务器。并且让后续的上传都是上传至backup   （不能出现业务中断）"></a>4 如何平滑的迁移nfs数据到backup服务器。并且让后续的上传都是上传至backup   （不能出现业务中断）</h3><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">1.backup服务器上需要运行和nfs服务器上一样的业务环境 
+	创建用户
+	[root@backup ~]# groupadd -g 666 www
+	[root@backup ~]# useradd -u666 -g666 www
+	配置
+	[root@backup ~]# yum install -y nfs-utils -y
+	[root@backup ~]# cat &#x2F;etc&#x2F;exports
+	&#x2F;data 172.16.1.0&#x2F;24(rw,sync,all_squash,anonuid&#x3D;666,anongid&#x3D;666)
+	启动
+	[root@backup ~]# systemctl restart nfs-server
+	
+2.先实现实时的同步 √
+
+3.在web上实现切换，卸载nfs的&#x2F;data目录，重新挂载backup服务的&#x2F;data目录
+	[root@web01 ~]# umount -lf &#x2F;var&#x2F;www&#x2F;html&#x2F; &amp;&amp; mount -t nfs 172.16.1.41:&#x2F;data &#x2F;var&#x2F;www&#x2F;html&#x2F;</code></pre></div></figure>
 
 
 
@@ -419,9 +606,9 @@
             
               
               
-                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
                   <span class="hint--top hint--rounded" aria-label="BY - 署名">
-                    <i class="iconfont icon-by"></i>
+                    <i class="iconfont icon-cc-by"></i>
                   </span>
                 </a>
               
@@ -440,9 +627,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/02-Rsync%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/" title="运维之综合架构--02--Rsync服务器搭建">
+                      <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/03-NFS%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/" title="运维之综合架构--03-NFS服务器搭建">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">运维之综合架构--02--Rsync服务器搭建</span>
+                        <span class="hidden-mobile">运维之综合架构--03-NFS服务器搭建</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -450,8 +637,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/03-NFS%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/" title="运维之综合架构--03-NFS服务器搭建">
-                        <span class="hidden-mobile">运维之综合架构--03-NFS服务器搭建</span>
+                      <a href="/2022/07/06/01_%E8%BF%90%E7%BB%B4/02-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/05-ssh%E6%9C%8D%E5%8A%A1%E8%B7%B3%E6%9D%BF%E6%9C%BA%E6%90%AD%E5%BB%BA/" title="运维之综合架构--05--SSH服务器搭建">
+                        <span class="hidden-mobile">运维之综合架构--05--SSH服务器搭建</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
@@ -469,16 +656,6 @@
 
     <div class="side-col d-none d-lg-block col-lg-2">
       
-  <aside class="sidebar" style="margin-left: -1rem">
-    <div id="toc">
-  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
-  <div class="toc-body" id="toc-body"></div>
-</div>
-
-
-
-  </aside>
-
 
     </div>
   </div>
@@ -556,7 +733,6 @@
   
   
   
-  
 </div>
 
   </footer>
@@ -575,7 +751,7 @@
   </script>
 
 
-<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
 <script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
 <script  src="/js/events.js" ></script>
 <script  src="/js/plugins.js" ></script>
@@ -608,7 +784,7 @@
 
   
 <script>
-  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
     var toc = jQuery('#toc');
     if (toc.length === 0 || !window.tocbot) { return; }
     var boardCtn = jQuery('#board-ctn');
@@ -646,6 +822,12 @@
 </script>
 
 
+  <script  src="https://lib.baomitu.com/prism/1.29.0/components/prism-core.min.js" ></script>
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js" ></script>
+
+  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
+
   <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
 
   <script>Fluid.plugins.codeWidget();</script>
@@ -653,7 +835,7 @@
 
   
 <script>
-  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
     window.anchors.options = {
       placement: CONFIG.anchorjs.placement,
       visible  : CONFIG.anchorjs.visible
