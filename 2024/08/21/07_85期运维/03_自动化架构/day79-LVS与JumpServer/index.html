@@ -19,12 +19,12 @@
   <meta name="author" content="GongSheng">
   <meta name="keywords" content="">
   
-    <meta name="description" content="Devops架构-Jenkins-04今日内容：  LVS负载均衡 加密通信隧道 JumpServer  一、负载均衡介绍1.1 常见负载均衡对比   常见负载均衡对比 优势 缺点    硬件：如F5负载均衡 性能好、购买有技术支持 价格昂贵，且一次需要购买2台凑成1对。   LVS 工作在4层，效率极其高 需要部署维护(运维成本较高)   Nginx&#x2F;Tengine&#x2F;Open">
+    <meta name="description" content="今日内容：  LVS负载均衡 OpenVPN加密通信隧道 JumpServer跳板机  一、负载均衡介绍1.1 常见负载均衡对比   常见负载均衡对比 优势 缺点    硬件：如F5负载均衡 性能好、购买有技术支持 价格昂贵，且一次需要购买2台凑成1对。   LVS 工作在4层，效率极其高 需要部署维护(运维成本较高)   Nginx&#x2F;Tengine&#x2F;Openresty(lua">
 <meta property="og:type" content="article">
 <meta property="og:title" content="day79-LVS与JumpServer">
 <meta property="og:url" content="http://gsproj.github.io/2024/08/21/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/03_%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9E%B6%E6%9E%84/day79-LVS%E4%B8%8EJumpServer/index.html">
 <meta property="og:site_name" content="迎风之豚的博客">
-<meta property="og:description" content="Devops架构-Jenkins-04今日内容：  LVS负载均衡 加密通信隧道 JumpServer  一、负载均衡介绍1.1 常见负载均衡对比   常见负载均衡对比 优势 缺点    硬件：如F5负载均衡 性能好、购买有技术支持 价格昂贵，且一次需要购买2台凑成1对。   LVS 工作在4层，效率极其高 需要部署维护(运维成本较高)   Nginx&#x2F;Tengine&#x2F;Open">
+<meta property="og:description" content="今日内容：  LVS负载均衡 OpenVPN加密通信隧道 JumpServer跳板机  一、负载均衡介绍1.1 常见负载均衡对比   常见负载均衡对比 优势 缺点    硬件：如F5负载均衡 性能好、购买有技术支持 价格昂贵，且一次需要购买2台凑成1对。   LVS 工作在4层，效率极其高 需要部署维护(运维成本较高)   Nginx&#x2F;Tengine&#x2F;Openresty(lua">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240816142138132.png">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240816144825521.png">
@@ -34,12 +34,12 @@
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240821133723790.png">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240821155451333.png">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240821155504577.png">
-<meta property="og:image" content="c:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821155626815.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240821155626815.png">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240821171242085.png">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240821171312095.png">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240821171537460.png">
 <meta property="article:published_time" content="2024-08-21T03:08:52.000Z">
-<meta property="article:modified_time" content="2024-08-21T09:35:31.425Z">
+<meta property="article:modified_time" content="2024-08-22T03:08:01.248Z">
 <meta property="article:author" content="GongSheng">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="http://gsproj.github.io/img/image-20240816142138132.png">
@@ -237,7 +237,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          4.8k 字
+          5.1k 字
         
       </span>
     
@@ -248,7 +248,7 @@
         
         
         
-          41 分钟
+          43 分钟
         
       </span>
     
@@ -303,11 +303,11 @@
             
               <div class="markdown-body">
                 
-                <h1 id="Devops架构-Jenkins-04"><a href="#Devops架构-Jenkins-04" class="headerlink" title="Devops架构-Jenkins-04"></a>Devops架构-Jenkins-04</h1><p>今日内容：</p>
+                <p>今日内容：</p>
 <ul>
 <li>LVS负载均衡</li>
-<li>加密通信隧道</li>
-<li>JumpServer</li>
+<li>OpenVPN加密通信隧道</li>
+<li>JumpServer跳板机</li>
 </ul>
 <h1 id="一、负载均衡介绍"><a href="#一、负载均衡介绍" class="headerlink" title="一、负载均衡介绍"></a>一、负载均衡介绍</h1><h2 id="1-1-常见负载均衡对比"><a href="#1-1-常见负载均衡对比" class="headerlink" title="1.1 常见负载均衡对比"></a>1.1 常见负载均衡对比</h2><table>
 <thead>
@@ -977,7 +977,7 @@ persist-key #通过keepalive检测超时后，重新启动VPN，不重新读取k
 <p>全部文件如下</p>
 <p><img src="/../../../img/image-20240821155504577.png" srcset="/img/loading.gif" lazyload alt="image-20240821155504577"></p>
 <h4 id="3）连接OpenVPN和测试"><a href="#3）连接OpenVPN和测试" class="headerlink" title="3）连接OpenVPN和测试"></a>3）连接OpenVPN和测试</h4><p>右键小图标 — 连接，成功后变为绿色状态</p>
-<p><img src="C:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821155626815.png" srcset="/img/loading.gif" lazyload alt="image-20240821155626815"></p>
+<p><img src="/../../../img/image-20240821155626815.png" srcset="/img/loading.gif" lazyload alt="image-20240821155626815"></p>
 <p>测试访问服务端内网的172网段，测试成功</p>
 <figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 开启VPN可以访问
 C:\Users\gs&gt;ping 172.16.1.61
@@ -1152,6 +1152,105 @@ auth-user-pass # 开启密码认证</code></pre></div></figure>
 <p><img src="/../../../img/image-20240821171537460.png" srcset="/img/loading.gif" lazyload alt="image-20240821171537460"></p>
 <p>在ovpn配置文件中指定即可</p>
 <figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">auth-user-pass login.conf</code></pre></div></figure>
+
+
+
+<h1 id="三、JumpServer跳板机"><a href="#三、JumpServer跳板机" class="headerlink" title="三、JumpServer跳板机"></a>三、JumpServer跳板机</h1><p>为什么需要使用跳板机？</p>
+<ul>
+<li>普通日常运维一般使用远程连接工具，一台台登录，这种方式虽然方便，但是不方便做行为审计，如何时何地做了什么？难以批量管理。</li>
+<li>自动化运维推荐使用跳板机管理服务器，不仅方便审计，还可以利用自动化工具对服务器进行批量管理。</li>
+</ul>
+<h2 id="3-1-常用跳板机选择"><a href="#3-1-常用跳板机选择" class="headerlink" title="3.1 常用跳板机选择"></a>3.1 常用跳板机选择</h2><table>
+<thead>
+<tr>
+<th>跳板机</th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>teleport</td>
+<td>功能简单，使用方便，简约风</td>
+</tr>
+<tr>
+<td>Jms(JumpServer)</td>
+<td>功能详细，需要系统配置要求会更高</td>
+</tr>
+<tr>
+<td>其他开源软件…</td>
+<td></td>
+</tr>
+<tr>
+<td>商业软件&#x2F;硬件</td>
+<td></td>
+</tr>
+</tbody></table>
+<h2 id="3-2-实验环境准备"><a href="#3-2-实验环境准备" class="headerlink" title="3.2 实验环境准备"></a>3.2 实验环境准备</h2><table>
+<thead>
+<tr>
+<th>主机</th>
+<th>IP</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>jms01</td>
+<td>10.0.0.65</td>
+<td>跳板机</td>
+</tr>
+<tr>
+<td>web01</td>
+<td>10.0.0.5</td>
+<td>被管理机器</td>
+</tr>
+<tr>
+<td>web02</td>
+<td>10.0.0.6</td>
+<td>被管理机器</td>
+</tr>
+</tbody></table>
+<h2 id="3-3-快速上手"><a href="#3-3-快速上手" class="headerlink" title="3.3 快速上手"></a>3.3 快速上手</h2><blockquote>
+<p>选用开源软件 JumpServer</p>
+</blockquote>
+<p>1、准备安装包，上传至服务器</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">jumpserver-offline-installer-v3.0.4-amd64-247.tar.gz</code></pre></div></figure>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
                 
