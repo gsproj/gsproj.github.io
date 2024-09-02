@@ -1,19 +1,17 @@
 ---
 title: day79-LVS与JumpServer
-date: 2024-7-21 11:08:52
+date: 2024-8-21 11:08:52
 categories:
 - 运维
 - （二）综合架构
 tag: 
 ---
 
-# Devops架构-Jenkins-04
-
 今日内容：
 
 - LVS负载均衡
-- 加密通信隧道
-- JumpServer
+- OpenVPN加密通信隧道
+- JumpServer跳板机
 
 # 一、负载均衡介绍
 
@@ -479,7 +477,7 @@ TCP  10.0.0.3:80                         8      132        0    34840        0
 
 ## 2.2 OpenVPN原理图
 
-![image-20240821133723790](C:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821133723790.png)
+![image-20240821133723790](../../../img/image-20240821133723790.png)
 
 
 
@@ -793,11 +791,11 @@ persist-key #通过keepalive检测超时后，重新启动VPN，不重新读取k
 
 存放的目录可以在OpenVPN客户端中指定
 
-![image-20240821155451333](C:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821155451333.png)
+![image-20240821155451333](../../../img/image-20240821155451333.png)
 
 全部文件如下
 
-![image-20240821155504577](C:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821155504577.png)
+![image-20240821155504577](../../../img/image-20240821155504577.png)
 
 
 
@@ -805,7 +803,7 @@ persist-key #通过keepalive检测超时后，重新启动VPN，不重新读取k
 
 右键小图标 --- 连接，成功后变为绿色状态
 
-![image-20240821155626815](C:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821155626815.png)
+![image-20240821155626815](../../../img/image-20240821155626815.png)
 
 测试访问服务端内网的172网段，测试成功
 
@@ -993,21 +991,101 @@ auth-user-pass # 开启密码认证
 
 测试连接，会弹出输入帐号密码的框
 
-![image-20240821171242085](C:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821171242085.png)
+![image-20240821171242085](../../../img/image-20240821171242085.png)
 
 连接成功
 
-![image-20240821171312095](C:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821171312095.png)
+![image-20240821171312095](../../../img/image-20240821171312095.png)
 
 #### 2）保存到文件的方式
 
 创建一个保存帐号密码的文件
 
-![image-20240821171537460](C:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821171537460.png)
+![image-20240821171537460](../../..//img/image-20240821171537460.png)
 
 在ovpn配置文件中指定即可
 
 ```shell
 auth-user-pass login.conf
 ```
+
+
+
+# 三、JumpServer跳板机
+
+为什么需要使用跳板机？
+
+- 普通日常运维一般使用远程连接工具，一台台登录，这种方式虽然方便，但是不方便做行为审计，如何时何地做了什么？难以批量管理。
+- 自动化运维推荐使用跳板机管理服务器，不仅方便审计，还可以利用自动化工具对服务器进行批量管理。
+
+
+
+## 3.1 常用跳板机选择
+
+| 跳板机          |                                  |
+| --------------- | -------------------------------- |
+| teleport        | 功能简单，使用方便，简约风       |
+| Jms(JumpServer) | 功能详细，需要系统配置要求会更高 |
+| 其他开源软件... |                                  |
+| 商业软件/硬件   |                                  |
+
+
+
+## 3.2 实验环境准备
+
+| 主机  | IP        | 用途       |
+| ----- | --------- | ---------- |
+| jms01 | 10.0.0.65 | 跳板机     |
+| web01 | 10.0.0.5  | 被管理机器 |
+| web02 | 10.0.0.6  | 被管理机器 |
+
+
+
+## 3.3 快速上手
+
+>选用开源软件 JumpServer
+
+1、准备安装包，上传至服务器
+
+```shell
+jumpserver-offline-installer-v3.0.4-amd64-247.tar.gz
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

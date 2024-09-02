@@ -6,7 +6,9 @@ categories:
 tags:
 ---
 
-# CentOS改网卡名
+掌握如何将Centos的网卡名修改为eth命令格式
+
+# 一、临时生效
 
 为防止重启后网卡名乱变，统一改成eth0，eth1这种格式
 
@@ -45,4 +47,31 @@ vim ifcfg-eth0
 ```shell
 systemctl restart network
 ```
+
+
+
+# 二、永久生效
+
+如需永久生效，在Centos中需要修改grub文件
+
+```shell
+vim /etc/default/grub 
+...
+GRUB_CMDLINE_LINUX="rd.lvm.lv=centos/root rd.lvm.lv=centos/swap rhgb quiet net.ifnames=0 biosdevname=0"
+...
+```
+
+最后用`grub2-mkconfig`命令重新生成grub配置并更新内核
+
+```shell
+grub2-mkconfig -o /boot/grub2/grub.cfg 
+```
+
+配置完后重启
+
+```shell
+reboot
+```
+
+
 
