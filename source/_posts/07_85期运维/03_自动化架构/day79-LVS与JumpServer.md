@@ -1041,15 +1041,251 @@ auth-user-pass login.conf
 
 
 
-## 3.3 快速上手
+## 3.3 快速上手  - 单机部署
 
 >选用开源软件 JumpServer
+>
+>官网：https://www.jumpserver.org/
 
-1、准备安装包，上传至服务器
+### 3.3.1 下载安装包
+
+1、下载安装包，上传至服务器
 
 ```shell
-jumpserver-offline-installer-v3.0.4-amd64-247.tar.gz
+# 选择LTS版本：3.10.13 
+jumpserver-offline-installer-v3.10.13-amd64.tar.gz
 ```
+
+2、安装依赖包
+
+```shell
+yum install -y wget curl tar gettext iptables
+```
+
+
+
+### 3.3.2 部署数据库和缓存
+
+1、部署MySQL数据库，（PostgreSQL、MySQL 或 MariaDB 三选一）
+
+安装方式[参考连接](http://gsproj.github.io/2024/05/13/07_85期运维/02_综合架构/19-web集群-Tomcat-2-完结/)中的5.2.2节，至服务启动
+
+```shell
+[root@h3cy02 tools]# systemctl start mysqld
+[root@h3cy02 tools]# systemctl status mysqld
+● mysqld.service - LSB: start and stop MySQL
+   Loaded: loaded (/etc/rc.d/init.d/mysqld; bad; vendor preset: disabled)
+   Active: active (running) since Fri 2024-09-06 10:03:15 CST; 4s ago
+...
+Sep 06 10:03:15 h3cy02 mysqld[51584]: SUCCESS!
+Sep 06 10:03:15 h3cy02 systemd[1]: Started LSB: start and stop MySQL.
+[root@h3cy02 tools]# mysql -uroot -p
+Enter password: 
+...
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+mysql> 
+```
+
+创建jumpserver数据库
+
+```shell
+mysql> show create database jumpserver;
+```
+
+创建jumpserver用户，用于连接jumpserver数据库
+
+```shell
+mysql> create user jumpserver@'localhost' identified with mysql_native_password by 'redhat123';
+Query OK, 0 rows affected (0.01 sec)
+mysql> grant all on jumpserver.* to jumpserver@'localhost';
+Query OK, 0 rows affected (0.00 sec)
+```
+
+修改MySQL的ROOT密码
+
+```shell
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'rxxxx3';
+```
+
+
+
+2、部署Redis（源码方式）
+
+```shell
+# 下载源码
+wget https://download.redis.io/releases/redis-6.2.6.tar.gz
+# 解压
+tar -xf redis-6.2.6.tar.gz 
+# 编译安装
+make -j 8 && make install
+# 测试
+[root@h3cy02 redis-6.2.6]# redis-cli  --version
+redis-cli 6.2.6
+
+# 创建服务文件
+[root@h3cy02 ~]# cat /usr/lib/systemd/system/redis-server.service 
+[Unit]
+Description=Redis Server
+After=network.target
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/redis-server
+KillMode=process
+[Install]
+WantedBy=multi-user.target
+
+# 启动服务
+[root@h3cy02 systemd]# systemctl enable --now redis-server.service 
+Created symlink from /etc/systemd/system/multi-user.target.wants/redis-server.service to /usr/lib/systemd/system/redis-server.service.
+[root@h3cy02 systemd]# systemctl status redis-server.service 
+● redis-server.service - Redis Server
+   Loaded: loaded (/usr/lib/systemd/system/redis-server.service; enabled; vendor preset: disabled)
+   Active: active (running) since Fri 2024-09-06 10:24:52 CST; 5s ago
+ Main PID: 57145 (redis-server)
+   CGroup: /system.slice/redis-server.service
+           └─57145 /usr/local/bin/redis-server *:6379
+```
+
+
+
+### 3.3.4 部署docker和docker-compose
+
+在线安装方法
+
+```shell
+# 添加阿里源
+yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+
+# 列出列表
+[root@h3cy02 yum.repos.d]# yum list docker-ce --showduplicates | sort -r
+Loaded plugins: fastestmirror, langpacks
+docker-ce.x86_64            3:26.1.4-1.el7                      docker-ce-stable
+docker-ce.x86_64            3:26.1.3-1.el7                      docker-ce-stable
+....
+
+# 安装Docker18
+yum install -y docker-ce
+```
+
+离线安装方法**（采用）**
+
+```shell
+# 下载
+wget https://mirrors.aliyun.com/docker-ce/linux/static/stable/x86_64/docker-27.2.0.tgz
+# 解压
+tar -xf docker-27.2.0.tgz
+# 部署
+cp -a ./* /usr/local/bin/
+# 设置服务文件
+# vim /usr/lib/systemd/system/docker.service
+[Unit]
+Description=Docker Application Container Engine
+Documentation=https://docs.docker.com
+After=network-online.target firewalld.service
+Wants=network-online.target
+
+[Service]
+Type=notify
+ExecStart=/usr/local/bin/dockerd
+ExecReload=/bin/kill -s HUP $MAINPID
+TimeoutStartSec=0
+RestartSec=2
+Restart=always
+StartLimitBurst=3
+StartLimitInterval=60s
+LimitNOFILE=infinity
+LimitNPROC=infinity
+LimitCORE=infinity
+TasksMax=infinity
+Delegate=yes
+KillMode=process
+OOMScoreAdjust=-500
+
+[Install]
+WantedBy=multi-user.target
+
+# 启动服务
+systemctl enable --now docker.service
+```
+
+安装docker-compose
+
+```shell
+# 下载
+curl -SL https://github.com/docker/compose/releases/download/v2.16.0/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
+# 执行权限
+chmod a+x /usr/local/bin/docker-compose
+# 测试
+[root@h3cy02 docker]# docker-compose -v
+Docker Compose version v2.16.0
+```
+
+
+
+### 3.3.3 部署Jumpserver（离线安装）
+
+离线安装目前只支持 linux/amd64架构，其他架构需要在线安装
+
+1、设置
+
+```shell
+# 解压安装包，放到/opt文件夹
+[root@h3cy02 tarball]# tar -xf jumpserver-offline-installer-v3.10.13-amd64.tar.gz -C /opt/
+
+# 软连接
+ln -s /opt/jumpserver-offline-installer-v3.10.13-amd64/ /opt/jumpserver
+
+# 根据需要修改配置文件模板
+mkdir config
+cp config-example.txt /config/config.txt
+# 修改mysql的部分
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=jumpserver
+DB_PASSWORD=rxxxx3
+DB_NAME=jumpserver
+
+```
+
+2、执行安装
+
+```shell
+# 进入目录
+cd /opt/jumpserver
+# 安装
+[root@h3cy02 jumpserver]# ./jmsctl.sh install
+```
+
+安装成功的显示
+
+![image-20240906121933414](../../../img/image-20240906121933414.png)
+
+3、启动命令
+
+```shell
+# 启动
+./jmsctl.sh start
+# 停止
+./jmsctl.sh down
+# 卸载
+./jmsctl.sh uninstall
+# 帮助
+./jmsctl.sh -h
+```
+
+4、80端口访问站点
+
+![image-20240909094020576](../../../img/image-20240909094020576.png)
+
+初始密码：admin / admin
+
+
+
+5、进入管理页面后，配置资产、授权等页面，实现跳板机访问内网服务器
+
+![image-20240909103404023](../../../img/image-20240909103404023.png)
+
+
 
 
 
