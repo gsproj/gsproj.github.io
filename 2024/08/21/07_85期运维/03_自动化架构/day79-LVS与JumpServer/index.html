@@ -19,27 +19,30 @@
   <meta name="author" content="GongSheng">
   <meta name="keywords" content="">
   
-    <meta name="description" content="Devops架构-Jenkins-04今日内容：  LVS负载均衡 加密通信隧道 JumpServer  一、负载均衡介绍1.1 常见负载均衡对比   常见负载均衡对比 优势 缺点    硬件：如F5负载均衡 性能好、购买有技术支持 价格昂贵，且一次需要购买2台凑成1对。   LVS 工作在4层，效率极其高 需要部署维护(运维成本较高)   Nginx&#x2F;Tengine&#x2F;Open">
+    <meta name="description" content="今日内容：  LVS负载均衡 OpenVPN加密通信隧道 JumpServer跳板机  一、负载均衡介绍1.1 常见负载均衡对比   常见负载均衡对比 优势 缺点    硬件：如F5负载均衡 性能好、购买有技术支持 价格昂贵，且一次需要购买2台凑成1对。   LVS 工作在4层，效率极其高 需要部署维护(运维成本较高)   Nginx&#x2F;Tengine&#x2F;Openresty(lua">
 <meta property="og:type" content="article">
 <meta property="og:title" content="day79-LVS与JumpServer">
-<meta property="og:url" content="http://gsproj.github.io/2024/07/21/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/03_%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9E%B6%E6%9E%84/day79-LVS%E4%B8%8EJumpServer/index.html">
+<meta property="og:url" content="http://gsproj.github.io/2024/08/21/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/03_%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9E%B6%E6%9E%84/day79-LVS%E4%B8%8EJumpServer/index.html">
 <meta property="og:site_name" content="迎风之豚的博客">
-<meta property="og:description" content="Devops架构-Jenkins-04今日内容：  LVS负载均衡 加密通信隧道 JumpServer  一、负载均衡介绍1.1 常见负载均衡对比   常见负载均衡对比 优势 缺点    硬件：如F5负载均衡 性能好、购买有技术支持 价格昂贵，且一次需要购买2台凑成1对。   LVS 工作在4层，效率极其高 需要部署维护(运维成本较高)   Nginx&#x2F;Tengine&#x2F;Open">
+<meta property="og:description" content="今日内容：  LVS负载均衡 OpenVPN加密通信隧道 JumpServer跳板机  一、负载均衡介绍1.1 常见负载均衡对比   常见负载均衡对比 优势 缺点    硬件：如F5负载均衡 性能好、购买有技术支持 价格昂贵，且一次需要购买2台凑成1对。   LVS 工作在4层，效率极其高 需要部署维护(运维成本较高)   Nginx&#x2F;Tengine&#x2F;Openresty(lua">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240816142138132.png">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240816144825521.png">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240816145003736.png">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240816151056982.png">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20240820151554150.png">
-<meta property="og:image" content="c:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821133723790.png">
-<meta property="og:image" content="c:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821155451333.png">
-<meta property="og:image" content="c:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821155504577.png">
-<meta property="og:image" content="c:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821155626815.png">
-<meta property="og:image" content="c:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821171242085.png">
-<meta property="og:image" content="c:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821171312095.png">
-<meta property="og:image" content="c:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821171537460.png">
-<meta property="article:published_time" content="2024-07-21T03:08:52.000Z">
-<meta property="article:modified_time" content="2024-08-27T07:58:26.625Z">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240821133723790.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240821155451333.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240821155504577.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240821155626815.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240821171242085.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240821171312095.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240821171537460.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240906121933414.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240909094020576.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20240909103404023.png">
+<meta property="article:published_time" content="2024-08-21T03:08:52.000Z">
+<meta property="article:modified_time" content="2024-10-12T03:34:55.992Z">
 <meta property="article:author" content="GongSheng">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="http://gsproj.github.io/img/image-20240816142138132.png">
@@ -225,8 +228,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2024-07-21 11:08" pubdate>
-          2024年7月21日 上午
+        <time datetime="2024-08-21 11:08" pubdate>
+          2024年8月21日 上午
         </time>
       </span>
     
@@ -237,7 +240,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          4.8k 字
+          6k 字
         
       </span>
     
@@ -248,7 +251,7 @@
         
         
         
-          41 分钟
+          50 分钟
         
       </span>
     
@@ -303,11 +306,11 @@
             
               <div class="markdown-body">
                 
-                <h1 id="Devops架构-Jenkins-04"><a href="#Devops架构-Jenkins-04" class="headerlink" title="Devops架构-Jenkins-04"></a>Devops架构-Jenkins-04</h1><p>今日内容：</p>
+                <p>今日内容：</p>
 <ul>
 <li>LVS负载均衡</li>
-<li>加密通信隧道</li>
-<li>JumpServer</li>
+<li>OpenVPN加密通信隧道</li>
+<li>JumpServer跳板机</li>
 </ul>
 <h1 id="一、负载均衡介绍"><a href="#一、负载均衡介绍" class="headerlink" title="一、负载均衡介绍"></a>一、负载均衡介绍</h1><h2 id="1-1-常见负载均衡对比"><a href="#1-1-常见负载均衡对比" class="headerlink" title="1.1 常见负载均衡对比"></a>1.1 常见负载均衡对比</h2><table>
 <thead>
@@ -735,7 +738,7 @@ TCP  10.0.0.3:80                         8      132        0    34840        0
 <li>开发：通过OpenVPN实现开发与测试人员连接网站，进行开发测试</li>
 <li>运维：通过OpenVPN连接内网服务器进行管理</li>
 </ul>
-<h2 id="2-2-OpenVPN原理图"><a href="#2-2-OpenVPN原理图" class="headerlink" title="2.2 OpenVPN原理图"></a>2.2 OpenVPN原理图</h2><p><img src="C:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821133723790.png" srcset="/img/loading.gif" lazyload alt="image-20240821133723790"></p>
+<h2 id="2-2-OpenVPN原理图"><a href="#2-2-OpenVPN原理图" class="headerlink" title="2.2 OpenVPN原理图"></a>2.2 OpenVPN原理图</h2><p><img src="/../../../img/image-20240821133723790.png" srcset="/img/loading.gif" lazyload alt="image-20240821133723790"></p>
 <h2 id="2-3-OpenVPN快速上手"><a href="#2-3-OpenVPN快速上手" class="headerlink" title="2.3 OpenVPN快速上手"></a>2.3 OpenVPN快速上手</h2><h3 id="2-3-1-环境准备-1"><a href="#2-3-1-环境准备-1" class="headerlink" title="2.3.1 环境准备"></a>2.3.1 环境准备</h3><table>
 <thead>
 <tr>
@@ -973,11 +976,11 @@ verb 3 #指定日志文件的记录详细级别，可选0-9，等级越高日志
 persist-key #通过keepalive检测超时后，重新启动VPN，不重新读取keys，保留第一次使用的keys</code></pre></div></figure>
 
 <p>存放的目录可以在OpenVPN客户端中指定</p>
-<p><img src="C:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821155451333.png" srcset="/img/loading.gif" lazyload alt="image-20240821155451333"></p>
+<p><img src="/../../../img/image-20240821155451333.png" srcset="/img/loading.gif" lazyload alt="image-20240821155451333"></p>
 <p>全部文件如下</p>
-<p><img src="C:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821155504577.png" srcset="/img/loading.gif" lazyload alt="image-20240821155504577"></p>
+<p><img src="/../../../img/image-20240821155504577.png" srcset="/img/loading.gif" lazyload alt="image-20240821155504577"></p>
 <h4 id="3）连接OpenVPN和测试"><a href="#3）连接OpenVPN和测试" class="headerlink" title="3）连接OpenVPN和测试"></a>3）连接OpenVPN和测试</h4><p>右键小图标 — 连接，成功后变为绿色状态</p>
-<p><img src="C:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821155626815.png" srcset="/img/loading.gif" lazyload alt="image-20240821155626815"></p>
+<p><img src="/../../../img/image-20240821155626815.png" srcset="/img/loading.gif" lazyload alt="image-20240821155626815"></p>
 <p>测试访问服务端内网的172网段，测试成功</p>
 <figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 开启VPN可以访问
 C:\Users\gs&gt;ping 172.16.1.61
@@ -1145,14 +1148,253 @@ persist-key #通过keepalive检测超时后，重新启动VPN，不重新读取k
 auth-user-pass # 开启密码认证</code></pre></div></figure>
 
 <p>测试连接，会弹出输入帐号密码的框</p>
-<p><img src="C:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821171242085.png" srcset="/img/loading.gif" lazyload alt="image-20240821171242085"></p>
+<p><img src="/../../../img/image-20240821171242085.png" srcset="/img/loading.gif" lazyload alt="image-20240821171242085"></p>
 <p>连接成功</p>
-<p><img src="C:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821171312095.png" srcset="/img/loading.gif" lazyload alt="image-20240821171312095"></p>
+<p><img src="/../../../img/image-20240821171312095.png" srcset="/img/loading.gif" lazyload alt="image-20240821171312095"></p>
 <h4 id="2）保存到文件的方式"><a href="#2）保存到文件的方式" class="headerlink" title="2）保存到文件的方式"></a>2）保存到文件的方式</h4><p>创建一个保存帐号密码的文件</p>
-<p><img src="C:/Users/gs/Desktop/gsproj.github.io/source/img/image-20240821171537460.png" srcset="/img/loading.gif" lazyload alt="image-20240821171537460"></p>
+<p><img src="/../../../img/image-20240821171537460.png" srcset="/img/loading.gif" lazyload alt="image-20240821171537460"></p>
 <p>在ovpn配置文件中指定即可</p>
 <figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">auth-user-pass login.conf</code></pre></div></figure>
 
+
+
+<h1 id="三、JumpServer跳板机"><a href="#三、JumpServer跳板机" class="headerlink" title="三、JumpServer跳板机"></a>三、JumpServer跳板机</h1><p>为什么需要使用跳板机？</p>
+<ul>
+<li>普通日常运维一般使用远程连接工具，一台台登录，这种方式虽然方便，但是不方便做行为审计，如何时何地做了什么？难以批量管理。</li>
+<li>自动化运维推荐使用跳板机管理服务器，不仅方便审计，还可以利用自动化工具对服务器进行批量管理。</li>
+</ul>
+<h2 id="3-1-常用跳板机选择"><a href="#3-1-常用跳板机选择" class="headerlink" title="3.1 常用跳板机选择"></a>3.1 常用跳板机选择</h2><table>
+<thead>
+<tr>
+<th>跳板机</th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>teleport</td>
+<td>功能简单，使用方便，简约风</td>
+</tr>
+<tr>
+<td>Jms(JumpServer)</td>
+<td>功能详细，需要系统配置要求会更高</td>
+</tr>
+<tr>
+<td>其他开源软件…</td>
+<td></td>
+</tr>
+<tr>
+<td>商业软件&#x2F;硬件</td>
+<td></td>
+</tr>
+</tbody></table>
+<h2 id="3-2-实验环境准备"><a href="#3-2-实验环境准备" class="headerlink" title="3.2 实验环境准备"></a>3.2 实验环境准备</h2><table>
+<thead>
+<tr>
+<th>主机</th>
+<th>IP</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>jms01</td>
+<td>10.0.0.65</td>
+<td>跳板机</td>
+</tr>
+<tr>
+<td>web01</td>
+<td>10.0.0.5</td>
+<td>被管理机器</td>
+</tr>
+<tr>
+<td>web02</td>
+<td>10.0.0.6</td>
+<td>被管理机器</td>
+</tr>
+</tbody></table>
+<h2 id="3-3-快速上手-单机部署"><a href="#3-3-快速上手-单机部署" class="headerlink" title="3.3 快速上手  - 单机部署"></a>3.3 快速上手  - 单机部署</h2><blockquote>
+<p>选用开源软件 JumpServer</p>
+<p>官网：<a target="_blank" rel="noopener" href="https://www.jumpserver.org/">https://www.jumpserver.org/</a></p>
+</blockquote>
+<h3 id="3-3-1-下载安装包"><a href="#3-3-1-下载安装包" class="headerlink" title="3.3.1 下载安装包"></a>3.3.1 下载安装包</h3><p>1、下载安装包，上传至服务器</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 选择LTS版本：3.10.13 
+jumpserver-offline-installer-v3.10.13-amd64.tar.gz</code></pre></div></figure>
+
+<p>2、安装依赖包</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">yum install -y wget curl tar gettext iptables</code></pre></div></figure>
+
+
+
+<h3 id="3-3-2-部署数据库和缓存"><a href="#3-3-2-部署数据库和缓存" class="headerlink" title="3.3.2 部署数据库和缓存"></a>3.3.2 部署数据库和缓存</h3><p>1、部署MySQL数据库，（PostgreSQL、MySQL 或 MariaDB 三选一）</p>
+<p>安装方式<a href="http://gsproj.github.io/2024/05/13/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/02_%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/19-web%E9%9B%86%E7%BE%A4-Tomcat-2-%E5%AE%8C%E7%BB%93/">参考连接</a>中的5.2.2节，至服务启动</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@h3cy02 tools]# systemctl start mysqld
+[root@h3cy02 tools]# systemctl status mysqld
+● mysqld.service - LSB: start and stop MySQL
+   Loaded: loaded (&#x2F;etc&#x2F;rc.d&#x2F;init.d&#x2F;mysqld; bad; vendor preset: disabled)
+   Active: active (running) since Fri 2024-09-06 10:03:15 CST; 4s ago
+...
+Sep 06 10:03:15 h3cy02 mysqld[51584]: SUCCESS!
+Sep 06 10:03:15 h3cy02 systemd[1]: Started LSB: start and stop MySQL.
+[root@h3cy02 tools]# mysql -uroot -p
+Enter password: 
+...
+Type &#39;help;&#39; or &#39;\h&#39; for help. Type &#39;\c&#39; to clear the current input statement.
+mysql&gt; </code></pre></div></figure>
+
+<p>创建jumpserver数据库</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">mysql&gt; show create database jumpserver;</code></pre></div></figure>
+
+<p>创建jumpserver用户，用于连接jumpserver数据库</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">mysql&gt; create user jumpserver@&#39;localhost&#39; identified with mysql_native_password by &#39;redhat123&#39;;
+Query OK, 0 rows affected (0.01 sec)
+mysql&gt; grant all on jumpserver.* to jumpserver@&#39;localhost&#39;;
+Query OK, 0 rows affected (0.00 sec)</code></pre></div></figure>
+
+<p>修改MySQL的ROOT密码</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">ALTER USER &#39;root&#39;@&#39;localhost&#39; IDENTIFIED BY &#39;rxxxx3&#39;;</code></pre></div></figure>
+
+
+
+<p>2、部署Redis（源码方式）</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 下载源码
+wget https:&#x2F;&#x2F;download.redis.io&#x2F;releases&#x2F;redis-6.2.6.tar.gz
+# 解压
+tar -xf redis-6.2.6.tar.gz 
+# 编译安装
+make -j 8 &amp;&amp; make install
+# 测试
+[root@h3cy02 redis-6.2.6]# redis-cli  --version
+redis-cli 6.2.6
+
+# 创建服务文件
+[root@h3cy02 ~]# cat &#x2F;usr&#x2F;lib&#x2F;systemd&#x2F;system&#x2F;redis-server.service 
+[Unit]
+Description&#x3D;Redis Server
+After&#x3D;network.target
+[Service]
+Type&#x3D;simple
+ExecStart&#x3D;&#x2F;usr&#x2F;local&#x2F;bin&#x2F;redis-server
+KillMode&#x3D;process
+[Install]
+WantedBy&#x3D;multi-user.target
+
+# 启动服务
+[root@h3cy02 systemd]# systemctl enable --now redis-server.service 
+Created symlink from &#x2F;etc&#x2F;systemd&#x2F;system&#x2F;multi-user.target.wants&#x2F;redis-server.service to &#x2F;usr&#x2F;lib&#x2F;systemd&#x2F;system&#x2F;redis-server.service.
+[root@h3cy02 systemd]# systemctl status redis-server.service 
+● redis-server.service - Redis Server
+   Loaded: loaded (&#x2F;usr&#x2F;lib&#x2F;systemd&#x2F;system&#x2F;redis-server.service; enabled; vendor preset: disabled)
+   Active: active (running) since Fri 2024-09-06 10:24:52 CST; 5s ago
+ Main PID: 57145 (redis-server)
+   CGroup: &#x2F;system.slice&#x2F;redis-server.service
+           └─57145 &#x2F;usr&#x2F;local&#x2F;bin&#x2F;redis-server *:6379</code></pre></div></figure>
+
+
+
+<h3 id="3-3-4-部署docker和docker-compose"><a href="#3-3-4-部署docker和docker-compose" class="headerlink" title="3.3.4 部署docker和docker-compose"></a>3.3.4 部署docker和docker-compose</h3><p>在线安装方法</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 添加阿里源
+yum-config-manager --add-repo http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;docker-ce&#x2F;linux&#x2F;centos&#x2F;docker-ce.repo
+
+# 列出列表
+[root@h3cy02 yum.repos.d]# yum list docker-ce --showduplicates | sort -r
+Loaded plugins: fastestmirror, langpacks
+docker-ce.x86_64            3:26.1.4-1.el7                      docker-ce-stable
+docker-ce.x86_64            3:26.1.3-1.el7                      docker-ce-stable
+....
+
+# 安装Docker18
+yum install -y docker-ce</code></pre></div></figure>
+
+<p>离线安装方法<strong>（采用）</strong></p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 下载
+wget https:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;docker-ce&#x2F;linux&#x2F;static&#x2F;stable&#x2F;x86_64&#x2F;docker-27.2.0.tgz
+# 解压
+tar -xf docker-27.2.0.tgz
+# 部署
+cp -a .&#x2F;* &#x2F;usr&#x2F;local&#x2F;bin&#x2F;
+# 设置服务文件
+# vim &#x2F;usr&#x2F;lib&#x2F;systemd&#x2F;system&#x2F;docker.service
+[Unit]
+Description&#x3D;Docker Application Container Engine
+Documentation&#x3D;https:&#x2F;&#x2F;docs.docker.com
+After&#x3D;network-online.target firewalld.service
+Wants&#x3D;network-online.target
+
+[Service]
+Type&#x3D;notify
+ExecStart&#x3D;&#x2F;usr&#x2F;local&#x2F;bin&#x2F;dockerd
+ExecReload&#x3D;&#x2F;bin&#x2F;kill -s HUP $MAINPID
+TimeoutStartSec&#x3D;0
+RestartSec&#x3D;2
+Restart&#x3D;always
+StartLimitBurst&#x3D;3
+StartLimitInterval&#x3D;60s
+LimitNOFILE&#x3D;infinity
+LimitNPROC&#x3D;infinity
+LimitCORE&#x3D;infinity
+TasksMax&#x3D;infinity
+Delegate&#x3D;yes
+KillMode&#x3D;process
+OOMScoreAdjust&#x3D;-500
+
+[Install]
+WantedBy&#x3D;multi-user.target
+
+# 启动服务
+systemctl enable --now docker.service</code></pre></div></figure>
+
+<p>安装docker-compose</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 下载
+curl -SL https:&#x2F;&#x2F;github.com&#x2F;docker&#x2F;compose&#x2F;releases&#x2F;download&#x2F;v2.16.0&#x2F;docker-compose-linux-x86_64 -o &#x2F;usr&#x2F;local&#x2F;bin&#x2F;docker-compose
+# 执行权限
+chmod a+x &#x2F;usr&#x2F;local&#x2F;bin&#x2F;docker-compose
+# 测试
+[root@h3cy02 docker]# docker-compose -v
+Docker Compose version v2.16.0</code></pre></div></figure>
+
+
+
+<h3 id="3-3-3-部署Jumpserver（离线安装）"><a href="#3-3-3-部署Jumpserver（离线安装）" class="headerlink" title="3.3.3 部署Jumpserver（离线安装）"></a>3.3.3 部署Jumpserver（离线安装）</h3><p>离线安装目前只支持 linux&#x2F;amd64架构，其他架构需要在线安装</p>
+<p>1、设置</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 解压安装包，放到&#x2F;opt文件夹
+[root@h3cy02 tarball]# tar -xf jumpserver-offline-installer-v3.10.13-amd64.tar.gz -C &#x2F;opt&#x2F;
+
+# 软连接
+ln -s &#x2F;opt&#x2F;jumpserver-offline-installer-v3.10.13-amd64&#x2F; &#x2F;opt&#x2F;jumpserver
+
+# 根据需要修改配置文件模板
+mkdir config
+cp config-example.txt &#x2F;config&#x2F;config.txt
+# 修改mysql的部分
+DB_HOST&#x3D;localhost
+DB_PORT&#x3D;3306
+DB_USER&#x3D;jumpserver
+DB_PASSWORD&#x3D;rxxxx3
+DB_NAME&#x3D;jumpserver
+</code></pre></div></figure>
+
+<p>2、执行安装</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 进入目录
+cd &#x2F;opt&#x2F;jumpserver
+# 安装
+[root@h3cy02 jumpserver]# .&#x2F;jmsctl.sh install</code></pre></div></figure>
+
+<p>安装成功的显示</p>
+<p><img src="/../../../img/image-20240906121933414.png" srcset="/img/loading.gif" lazyload alt="image-20240906121933414"></p>
+<p>3、启动命令</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 启动
+.&#x2F;jmsctl.sh start
+# 停止
+.&#x2F;jmsctl.sh down
+# 卸载
+.&#x2F;jmsctl.sh uninstall
+# 帮助
+.&#x2F;jmsctl.sh -h</code></pre></div></figure>
+
+<p>4、80端口访问站点</p>
+<p><img src="/../../../img/image-20240909094020576.png" srcset="/img/loading.gif" lazyload alt="image-20240909094020576"></p>
+<p>初始密码：admin &#x2F; admin</p>
+<p>5、进入管理页面后，配置资产、授权等页面，实现跳板机访问内网服务器</p>
+<p><img src="/../../../img/image-20240909103404023.png" srcset="/img/loading.gif" lazyload alt="image-20240909103404023"></p>
 
                 
               </div>
@@ -1199,7 +1441,7 @@ auth-user-pass # 开启密码认证</code></pre></div></figure>
   <div class="license-box my-3">
     <div class="license-title">
       <div>day79-LVS与JumpServer</div>
-      <div>http://gsproj.github.io/2024/07/21/07_85期运维/03_自动化架构/day79-LVS与JumpServer/</div>
+      <div>http://gsproj.github.io/2024/08/21/07_85期运维/03_自动化架构/day79-LVS与JumpServer/</div>
     </div>
     <div class="license-meta">
       
@@ -1211,7 +1453,7 @@ auth-user-pass # 开启密码认证</code></pre></div></figure>
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2024年7月21日</div>
+          <div>2024年8月21日</div>
         </div>
       
       
@@ -1243,9 +1485,9 @@ auth-user-pass # 开启密码认证</code></pre></div></figure>
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2024/07/27/08_%E7%BD%91%E7%BB%9C/day03-HCIA%E8%AF%BE%E7%A8%8B-01/" title="day03-HCIA课程(一)">
+                      <a href="/2024/09/09/06_%E6%9D%82%E8%AE%B0/Mellanox%E7%BD%91%E5%8D%A1%E5%AE%89%E8%A3%85%E9%A9%B1%E5%8A%A8/" title="Mellanox网卡安装驱动">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">day03-HCIA课程(一)</span>
+                        <span class="hidden-mobile">Mellanox网卡安装驱动</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -1253,8 +1495,8 @@ auth-user-pass # 开启密码认证</code></pre></div></figure>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2024/07/18/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/03_%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9E%B6%E6%9E%84/day78-Devops-Jenkins-4/" title="day78-Devops-Jenkins(四)-完结">
-                        <span class="hidden-mobile">day78-Devops-Jenkins(四)-完结</span>
+                      <a href="/2024/08/02/06_%E6%9D%82%E8%AE%B0/Centos%E6%94%B9%E7%BD%91%E5%8D%A1%E5%90%8D/" title="Centos改网卡名">
+                        <span class="hidden-mobile">Centos改网卡名</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
