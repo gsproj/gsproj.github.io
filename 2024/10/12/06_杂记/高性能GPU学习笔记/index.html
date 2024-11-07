@@ -29,23 +29,15 @@
 <meta property="og:image" content="http://gsproj.github.io/img/image-20241012131712609.png">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20241012132051768.png">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20241012132200770.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20241012131712609.png">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20241012132323761.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20241012154412755.png">
+<meta property="og:image" content="http://gsproj.github.io/img/image-20241012160300087.png">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20241012132627792.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20241012131712609.png">
 <meta property="og:image" content="http://gsproj.github.io/img/NVIDIA-DGX-A100-Block-Diagram.png">
 <meta property="og:image" content="http://gsproj.github.io/img/image-20241012133420998.png">
 <meta property="og:image" content="http://gsproj.github.io/img/a100-idc-network.png">
-<meta property="og:image" content="http://gsproj.github.io/img/8x-a100-bw-limits.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20241012134446643.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20241012134550723.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20241012134613017.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20241012134804131.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20241012135201064.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20241012135239994.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20241012135328084.png">
 <meta property="article:published_time" content="2024-10-12T05:15:05.648Z">
-<meta property="article:modified_time" content="2024-10-12T07:02:43.846Z">
+<meta property="article:modified_time" content="2024-10-12T09:46:11.102Z">
 <meta property="article:author" content="GongSheng">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="http://gsproj.github.io/img/image-20241012131712609.png">
@@ -243,7 +235,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          3.6k 字
+          5.2k 字
         
       </span>
     
@@ -254,7 +246,7 @@
         
         
         
-          31 分钟
+          44 分钟
         
       </span>
     
@@ -315,44 +307,78 @@
 </blockquote>
 <h1 id="1-术语与基础"><a href="#1-术语与基础" class="headerlink" title="1 术语与基础"></a>1 术语与基础</h1><p>大模型训练一般都是用单机 8 卡 GPU 主机组成集群，机型包括 <code>8*&#123;A100,A800,H100,H800&#125;</code> 。 下面一台典型 8*A100 GPU 的主机内硬件拓扑：</p>
 <p><img src="/../../img/image-20241012131712609.png" srcset="/img/loading.gif" lazyload alt="典型 8 卡 A100 主机硬件拓扑"></p>
+<p>需要重点理解的组成部件包括：</p>
+<ul>
+<li>PCIE交换芯片</li>
+<li>NVSwitch</li>
+<li>NVLink Switch</li>
+<li>HBM</li>
+</ul>
 <p>本节将基于这张图来介绍一些概念和术语，有基础的可直接跳过。</p>
-<h2 id="1-1-PCIe-交换芯片"><a href="#1-1-PCIe-交换芯片" class="headerlink" title="1.1 PCIe 交换芯片"></a>1.1 PCIe 交换芯片</h2><p>CPU、内存、存储（NVME）、GPU、网卡等<strong>支持 PICe 的设备</strong>，都可以连接到 PCIe 总线或专门的 PCIe 交换芯片，实现互联互通。</p>
+<h2 id="1-1-PCIe-交换芯片"><a href="#1-1-PCIe-交换芯片" class="headerlink" title="1.1 PCIe 交换芯片"></a>1.1 PCIe 交换芯片</h2><p>用于连接CPU、内存、存储（NVME）、GPU、网卡等<strong>支持 PICe 的设备</strong>，实现互联互通。</p>
 <p>PCIe 目前有 5 代产品，最新的是 **<code>Gen5</code>**。</p>
-<h2 id="1-2-NVLink"><a href="#1-2-NVLink" class="headerlink" title="1.2 NVLink"></a>1.2 <code>NVLink</code></h2><h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>Wikipedia 上 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/NVLink">NVLink</a> 上的定义：</p>
+<h2 id="1-2-NVLink技术"><a href="#1-2-NVLink技术" class="headerlink" title="1.2 NVLink技术"></a>1.2 NVLink技术</h2><h3 id="1）定义"><a href="#1）定义" class="headerlink" title="1）定义"></a>1）定义</h3><p>Wikipedia 上 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/NVLink">NVLink</a> 上的定义：</p>
 <blockquote>
 <p>NVLink is a wire-based serial multi-lane near-range communications link developed by Nvidia. Unlike PCI Express, a device can consist of multiple NVLinks, and devices use mesh networking to communicate instead of a central hub. The protocol was first announced in March 2014 and uses a proprietary high-speed signaling interconnect (NVHS).</p>
 </blockquote>
-<p>简单总结：同主机内不同 GPU 之间的一种高速互联方式，</p>
+<p>简单总结：同主机内多个GPU之间的一种高速互联方式，由NVSwitch连接同一主机内的多个GPU而构成。</p>
 <ol>
-<li>是一种短距离<strong>通信链路</strong>，保证包的成功传输，更高性能，替代 PCIe，</li>
-<li>支持多 lane，link 带宽随 lane 数量线性增长，</li>
-<li>同一台 node 内的 GPU 通过 NVLink 以 <strong>full-mesh</strong> 方式（类似 spine-leaf）互联，</li>
-<li>NVIDIA 专利技术。</li>
+<li>是一种短距离<strong>通信链路</strong>，能保证包的成功传输，提高性能，用于替代 PCIe；</li>
+<li>支持多 lane，链路带宽随 lane 数量线性增长；</li>
+<li>同一台 node 内的 GPU 通过 NVLink 以 <strong>full-mesh</strong> 方式（类似 spine-leaf）互联；</li>
+<li>是NVIDIA的专利技术。</li>
 </ol>
-<h3 id="演进：1-2-3-4-代"><a href="#演进：1-2-3-4-代" class="headerlink" title="演进：1&#x2F;2&#x2F;3&#x2F;4 代"></a>演进：1&#x2F;2&#x2F;3&#x2F;4 代</h3><p>主要区别是单条 NVLink 链路的 <strong>lane 数量</strong>、每个 <strong>lane 的带宽</strong>（图中给的都是双向带宽）等：</p>
+<h3 id="2）NVLink技术演进"><a href="#2）NVLink技术演进" class="headerlink" title="2）NVLink技术演进"></a>2）NVLink技术演进</h3><p>从2016年的第1代开始，到2022年已升级到第4 代。</p>
+<p>图示为版本差异：主要区别是单条 NVLink 链路的 <strong>lane 数量</strong>以及每个 <strong>lane 的带宽</strong>（图中给的都是双向带宽）等：</p>
 <p><img src="/./../../img/image-20241012132051768.png" srcset="/img/loading.gif" lazyload alt="NVLink 演进。Image from: HotChips 2022 [1]"></p>
-<p>例如，</p>
-<ul>
-<li>A100 是 <strong><code>2 lanes/NVSwitch \* 6 NVSwitch \* 50GB/s/lane= 600GB/s</code></strong> 双向带宽（单向 300GB&#x2F;s）。注意：这是<strong>一个 GPU 到所有 NVSwitch 的总带宽</strong>；</li>
-<li>A800 被阉割了 4 条 lane，所以是 <strong><code>8 lane \* 50GB/s/lane = 400GB/s</code></strong> 双向带宽（单向 200GB&#x2F;s）。</li>
+<h3 id="3）NVLink总带宽的计算方式"><a href="#3）NVLink总带宽的计算方式" class="headerlink" title="3）NVLink总带宽的计算方式"></a>3）NVLink总带宽的计算方式</h3><ul>
+<li>A100的双向带宽是600GB&#x2F;s，单向带宽是300GB&#x2F;s</li>
 </ul>
-<h3 id="监控"><a href="#监控" class="headerlink" title="监控"></a>监控</h3><p>基于 DCGM 可以采集到实时 NVLink 带宽：</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># A100双向带宽的计算公式
+# 一台8卡的A100服务器里总共有6个NVSwitch，每个NVSwitch中有两条lane，每条lane的速度是50GB&#x2F;s,
+2 lanes&#x2F;NVSwitch * 6 NVSwitch * 50GB&#x2F;s&#x2F;lane &#x3D; 600GB&#x2F;s</code></pre></div></figure>
+
+<ul>
+<li>A800 被阉割了 4 条 lane，所以是双向带宽是400GB&#x2F;s，单向带宽是200GB&#x2F;s</li>
+</ul>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">8 lane * 50GB&#x2F;s&#x2F;lane &#x3D; 400GB&#x2F;s</code></pre></div></figure>
+
+
+
+<h3 id="4）监控NVLink带宽的方法"><a href="#4）监控NVLink带宽的方法" class="headerlink" title="4）监控NVLink带宽的方法"></a>4）监控NVLink带宽的方法</h3><p>基于 DCGM 可以采集到实时 NVLink 带宽</p>
 <p><img src="/./../../img/image-20241012132200770.png" srcset="/img/loading.gif" lazyload alt="Metrics from dcgm-exporter [5]"></p>
-<h2 id="1-3-NVSwitch"><a href="#1-3-NVSwitch" class="headerlink" title="1.3 NVSwitch"></a>1.3 <code>NVSwitch</code></h2><p>还是参考下图</p>
-<p><img src="/../../img/image-20241012131712609.png" srcset="/img/loading.gif" lazyload alt="典型 8 卡 A100 主机硬件拓扑"></p>
-<p>NVSwitch 是 NVIDIA 的一款<strong>交换芯片</strong>，封装在 GPU module 上，并<strong>不是主机外的独立交换机</strong>。</p>
-<p>下面是真机图，浪潮的机器，图中 8 个盒子就是 8 片 A100，右边的 6 块超厚散热片下面就是 NVSwitch 芯片：</p>
+<h2 id="1-3-NVSwitch芯片"><a href="#1-3-NVSwitch芯片" class="headerlink" title="1.3 NVSwitch芯片"></a>1.3 NVSwitch芯片</h2><p>NVSwitch 是 NVIDIA 的一款<strong>交换芯片</strong>，封装在 GPU模组（module）上，用于<strong>连接同一主机内GPU。</strong></p>
+<p>如下图所示，为浪潮机器的真机图，左侧的8 个nvdia盒子就是 8 片 A100 GPU，而右侧的 6 块超厚散热片下面就是 NVSwitch 芯片。</p>
 <p><img src="/./../../img/image-20241012132323761.png" srcset="/img/loading.gif" lazyload alt="Inspur NF5488A5 NVIDIA HGX A100 8 GPU Assembly Side View. Image source: [2]"></p>
-<h2 id="1-4-NVLink-Switch"><a href="#1-4-NVLink-Switch" class="headerlink" title="1.4 NVLink Switch"></a>1.4 NVLink Switch</h2><p><strong><code>NVSwitch</code></strong> 听名字像是交换机，但实际上是 GPU module 上的交换芯片，用来<strong>连接同一台主机内的 GPU</strong>。</p>
-<p>2022 年，NVIDIA 把这块芯片拿出来真的做成了交换机，叫 <strong><code>NVLink Switch</code></strong> [3]， 用来<strong>跨主机连接 GPU 设备</strong>。</p>
-<p>这俩名字很容易让人混淆。</p>
-<h2 id="1-5-HBM-High-Bandwidth-Memory"><a href="#1-5-HBM-High-Bandwidth-Memory" class="headerlink" title="1.5 HBM (High Bandwidth Memory)"></a>1.5 HBM (High Bandwidth Memory)</h2><h3 id="由来"><a href="#由来" class="headerlink" title="由来"></a>由来</h3><p>传统上，GPU 显存和普通内存（DDR）一样插在主板上，通过 PCIe 连接到处理器（CPU、GPU）， 因此速度瓶颈在 PCIe，Gen4 是 64GB&#x2F;s，Gen5 是 128GB&#x2F;s。</p>
-<p>因此，一些 GPU 厂商（不是只有 NVIDIA 一家这么做）将<strong>将多个 DDR 芯片堆叠之后与 GPU 芯片封装到一起</strong> （后文讲到 H100 时有图），这样每片 GPU 和它自己的显存交互时，就不用再去 PCIe 交换芯片绕一圈，速度最高可以提升一个量级。 这种<strong>“高带宽内存”</strong>（High Bandwidth Memory）缩写就是 HBM。</p>
+<h2 id="1-4-NVLink-Switch"><a href="#1-4-NVLink-Switch" class="headerlink" title="1.4 NVLink Switch"></a>1.4 NVLink Switch</h2><blockquote>
+<p>请注意，别和NVSwitch弄混淆了！</p>
+</blockquote>
+<p>2022 年，NVIDIA 把NVSwitch芯片拿出来，做成了交换机，叫 NVLink Switch， 用来<strong>跨主机连接 GPU 设备</strong>。</p>
+<p><img src="/./../../img/image-20241012154412755.png" srcset="/img/loading.gif" lazyload alt="image-20241012154412755"></p>
+<h2 id="1-5-HBM"><a href="#1-5-HBM" class="headerlink" title="1.5 HBM"></a>1.5 HBM</h2><h3 id="1）什么是HBM？"><a href="#1）什么是HBM？" class="headerlink" title="1）什么是HBM？"></a>1）什么是HBM？</h3><blockquote>
+<p>美光副总裁暨计算与网络事业部计算产品事	业群总经理Praveen Vaidyanathan指出，芯片性能表现与存储器的频宽和容量成正相关，随着大语言模型（LLM）参数量增加，也需要更高频宽存储器，AI处理器才能顺利运行。</p>
+</blockquote>
+<p>GDDR类型（传统）：（Graphics Double Data Rate）</p>
+<ul>
+<li>在传统显卡中，GPU的显存采用GDDR类型，以平铺的方式封装在 GPU 周围，通过<strong>较长的总线</strong>与GPU相连。（单层设计，绕远路）</li>
+<li>GDDR6 的单芯片带宽通常在 14-18 Gbps 左右</li>
+<li>功耗高，单芯片容量小，需要更高的频率来提高带宽，而且总线也长，需要更多能耗来驱动</li>
+</ul>
+<p>HBM类型（新技术）：（High Bandwidth Memory）</p>
+<ul>
+<li>可简单理解为多个DRAM透过先进封装堆叠起来，并且通过硅中介层（interposer）<strong>与 GPU 直接连接</strong>，减少了总线的长度和复杂性传输速度快，储存空间也更大。（多层设计，直连）</li>
+<li>HBM2 的带宽可以达到 256-512 GB&#x2F;s 或更高。</li>
+<li>HBM 的能效更高，它的总线更宽，但工作频率较低，且通过堆叠设计缩短了显存和 GPU 之间的距离。这种设计显著降低了功耗。</li>
+</ul>
+<p>HBM 的市场目前被 SK 海力士和三星等韩国公司垄断。</p>
+<p><img src="/./../../img/image-20241012160300087.png" srcset="/img/loading.gif" lazyload alt="image-20241012160300087"></p>
 <blockquote>
 <p>现在 CPU 也有用 HBM 的了，比如 <a target="_blank" rel="noopener" href="https://www.intel.com/content/www/us/en/products/details/processors/xeon/max-series.html">Intel Xeon CPU Max Series</a> 就自带了 64GB HBM2e。</p>
 </blockquote>
-<p>HBM 的市场目前被 SK 海力士和三星等韩国公司垄断。</p>
-<h3 id="演进：HBM-1-2-2e-3-3e"><a href="#演进：HBM-1-2-2e-3-3e" class="headerlink" title="演进：HBM 1&#x2F;2&#x2F;2e&#x2F;3&#x2F;3e"></a>演进：HBM 1&#x2F;2&#x2F;2e&#x2F;3&#x2F;3e</h3><p>From wikipedia <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/High_Bandwidth_Memory">HBM</a></p>
+<h3 id="2）HDM技术演进："><a href="#2）HDM技术演进：" class="headerlink" title="2）HDM技术演进："></a>2）HDM技术演进：</h3><blockquote>
+<p>From wikipedia <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/High_Bandwidth_Memory">HBM</a></p>
+</blockquote>
+<p>HBM已有5代：</p>
 <table>
 <thead>
 <tr>
@@ -404,264 +430,332 @@
 <li>其他模块带宽基本用 <code>byte/sedond (B/s)</code> 或 <code>transactions/second (T/s)</code> 表示，并且一般都是<strong>双向总带宽</strong>。</li>
 </ul>
 <p>比较带宽时注意区分和转换。</p>
-<h1 id="2-典型-8-A100-8-A800-主机"><a href="#2-典型-8-A100-8-A800-主机" class="headerlink" title="2 典型 8*A100/8*A800 主机"></a>2 典型 <code>8*A100/8*A800</code> 主机</h1><h2 id="2-1-主机内拓扑：2-2-4-6-8-8"><a href="#2-1-主机内拓扑：2-2-4-6-8-8" class="headerlink" title="2.1 主机内拓扑：2-2-4-6-8-8"></a>2.1 主机内拓扑：<code>2-2-4-6-8-8</code></h2><ul>
-<li>2 片 CPU（及两边的内存，NUMA）</li>
-<li>2 张<strong>存储网卡</strong>（<strong>访问分布式存储</strong>，带内管理等）</li>
-<li>4 个 PCIe Gen4 Switch 芯片</li>
-<li>6 个 NVSwitch 芯片</li>
+<h1 id="2-典型8卡A100-A800主机构成"><a href="#2-典型8卡A100-A800主机构成" class="headerlink" title="2 典型8卡A100&#x2F;A800主机构成"></a>2 典型8卡A100&#x2F;A800主机构成</h1><h2 id="2-1-主要部件"><a href="#2-1-主要部件" class="headerlink" title="2.1 主要部件"></a>2.1 主要部件</h2><ul>
+<li>2 片 CPU（以及两边的内存[DRAM]，NUMA）</li>
+<li>2 张网卡（用于连接存储、带内管理等）</li>
+<li>4 个 PCIe Gen4 Switch 芯片（用于CPU与显卡连接）</li>
+<li>6 个 NVSwitch 芯片（用于连接主机内的8块GPU）</li>
 <li>8 个 GPU</li>
-<li>8 个 <strong>GPU 专属网卡</strong></li>
+<li>8 个 GPU 专属网卡（GPU卡 - PCIE总线 - Infiniband网卡）</li>
 </ul>
-<p><img src="/../../img/image-20241012131712609.png" srcset="/img/loading.gif" lazyload alt="典型 8 卡 A100 主机硬件拓扑"></p>
-<p>下面这个图画的更专业，需要更多细节的可参考：</p>
+<p>可参考下图构成：</p>
 <p><img src="/./../../img/NVIDIA-DGX-A100-Block-Diagram.png" srcset="/img/loading.gif" lazyload alt="NVIDIA DGX A100 主机（官方 8 卡机器）硬件拓扑"></p>
-<h3 id="存储网卡"><a href="#存储网卡" class="headerlink" title="存储网卡"></a>存储网卡</h3><p>通过 PCIe <strong>直连 CPU</strong>。用途：</p>
+<h3 id="1）存储网卡"><a href="#1）存储网卡" class="headerlink" title="1）存储网卡"></a>1）存储网卡</h3><p>通过 PCIe 直连 CPU，用途：</p>
 <ol>
-<li>从分布式存储读写数据，例如<strong>读训练数据</strong>、<strong>写 checkpoint</strong> 等；</li>
+<li>从分布式存储读写数据，例如读训练数据，写checkpoint等。</li>
 <li>正常的 node 管理，ssh，监控采集等等。</li>
 </ol>
 <p>官方推荐用 BF3 DPU。但其实只要带宽达标，用什么都行。组网经济点的话用 RoCE，追求最好的性能用 IB。</p>
-<h3 id="NVSwitch-fabric：intra-node-full-mesh"><a href="#NVSwitch-fabric：intra-node-full-mesh" class="headerlink" title="NVSwitch fabric：intra-node full-mesh"></a>NVSwitch fabric：intra-node full-mesh</h3><p>8 个 GPU 通过 6 个 NVSwitch 芯片 full-mesh 连接，这个 full-mesh 也叫 <strong><code>NVSwitch fabric</code><strong>； full-mesh 里面的</strong>每根线的带宽是 n * bw-per-nvlink-lane</strong>，</p>
-<ul>
-<li>A100 用的 NVLink3，**<code>50GB/s/lane</code>**，所以 full-mesh 里的每条线就是 **<code>12\*50GB/s=600GB/s</code>**，注意这个是双向带宽，单向只有 300GB&#x2F;s。</li>
-<li>A800 是阉割版，<strong>12 lane 变成 8 lane</strong>，所以每条线 8*50GB&#x2F;s&#x3D;400GB&#x2F;s，单向 200GB&#x2F;s。</li>
-</ul>
-<h3 id="用-nvidia-smi-topo-查看拓扑"><a href="#用-nvidia-smi-topo-查看拓扑" class="headerlink" title="用 nvidia-smi topo 查看拓扑"></a>用 <code>nvidia-smi topo</code> 查看拓扑</h3><p>下面是一台 8*A800 机器上 <strong><code>nvidia-smi</code></strong> 显示的实际拓扑（网卡两两做了 bond，NIC 0~3 都是 bond）：</p>
+<h3 id="2）NVSwitch-删除"><a href="#2）NVSwitch-删除" class="headerlink" title="2）NVSwitch(删除)"></a>2）NVSwitch(删除)</h3><p>8 个 GPU 通过 6 个 NVSwitch 芯片 full-mesh 连接，这个 full-mesh 也叫 **<code>NVSwitch fabric</code>**； </p>
+<p>full-mesh 里面的<strong>每根线的带宽是 n * bw-per-nvlink-lane</strong>，比如：</p>
+<p>A100 用的 NVLink3，每条lane的带宽是50GB&#x2F;s</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">所以 full-mesh 里的每条线就是 12*50GB&#x2F;s&#x3D;600GB&#x2F;s，注意这个是双向带宽，单向只有 300GB&#x2F;s。</code></pre></div></figure>
+
+<p>A800 是阉割版，12 lane 变成 8 lane</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">所以每条线 8*50GB&#x2F;s&#x3D;400GB&#x2F;s，单向 200GB&#x2F;s。</code></pre></div></figure>
+
+
+
+
+
+<h3 id="3）查看拓扑"><a href="#3）查看拓扑" class="headerlink" title="3）查看拓扑"></a>3）查看拓扑</h3><p>使用<code>nvidia-smi topo</code>命令可以查看部件连接拓扑：</p>
+<p>下面是一台 8*A800 机器上 <strong><code>nvidia-smi</code></strong> 显示的实际拓扑（网卡两两做了 bond，NIC 0~3 都是 bond）：</p>
 <p><img src="/./../../img/image-20241012133420998.png" srcset="/img/loading.gif" lazyload alt="image-20241012133420998"></p>
 <ul>
-<li>GPU 之间（左上角区域）：都是 **<code>NV8</code>**，表示 <strong>8 条 NVLink</strong> 连接；</li>
-<li>NIC 之间：<ul>
+<li><p>GPU 之间（左上角区域）：都是 **<code>NV8</code>**，表示 <strong>8 条 NVLink</strong> 连接；</p>
+</li>
+<li><p>NIC 之间：</p>
+<ul>
 <li>在同一片 CPU 上：**<code>NODE</code><strong>，表示</strong>不需要跨 NUMA，但需要跨 PCIe 交换芯片**；</li>
 <li>不在同一片 CPU 上：**<code>SYS</code><strong>，表示</strong>需要跨 NUMA**；</li>
 </ul>
 </li>
-<li>GPU 和 NIC 之间：<ul>
+<li><p>GPU 和 NIC 之间：</p>
+<ul>
 <li>在同一片 CPU 上，且在同一个 PCIe Switch 芯片下面：**<code>PXB</code><strong>，表示</strong>只需要跨 PCIe 交换芯片**；</li>
 <li>在同一片 CPU 上，且不在同一个 PCIe Switch 芯片下面：**<code>NODE</code><strong>，表示</strong>需要跨 PCIe 交换芯片和 PCIe Host Bridge**；</li>
 <li>不在同一片 CPU 上：**<code>SYS</code><strong>，表示</strong>需要跨 NUMA、PCIe 交换芯片，距离最远**；</li>
 </ul>
 </li>
 </ul>
-<h2 id="2-2-GPU-训练集群组网：IDC-GPU-fabirc"><a href="#2-2-GPU-训练集群组网：IDC-GPU-fabirc" class="headerlink" title="2.2 GPU 训练集群组网：IDC GPU fabirc"></a>2.2 GPU 训练集群组网：IDC GPU fabirc</h2><p>GPU node 互联架构：</p>
+<h2 id="2-2-GPU-训练集群组网"><a href="#2-2-GPU-训练集群组网" class="headerlink" title="2.2 GPU 训练集群组网"></a>2.2 GPU 训练集群组网</h2><p>计算节点互联的网络架构：主要连接<strong>计算网络</strong>和<strong>存储网络</strong></p>
 <p><img src="/./../../img/a100-idc-network.png" srcset="/img/loading.gif" lazyload alt="a100-idc-network"></p>
-<h3 id="计算网络"><a href="#计算网络" class="headerlink" title="计算网络"></a>计算网络</h3><p>GPU 网卡直连到置顶交换机（leaf），leaf 通过 full-mesh 连接到 spine，形成跨主机 GPU 计算网络。</p>
+<h3 id="1）计算网络"><a href="#1）计算网络" class="headerlink" title="1）计算网络"></a>1）计算网络</h3><p>GPU 网卡直连到叶层交换机（leaf），leaf 通过 full-mesh（点对点直连）的方式连接到脊层交换机（spine），形成跨主机 GPU 计算网络。</p>
 <ul>
-<li>这个网络的目的是 GPU 与其他 node 的 GPU <strong>交换数据</strong>；</li>
-<li>每个 GPU 和自己的网卡之间通过 <strong>PCIe 交换芯片连接</strong>：<code>GPU &lt;--&gt; PCIe Switch &lt;--&gt; NIC</code>。</li>
-</ul>
-<h3 id="存储网络"><a href="#存储网络" class="headerlink" title="存储网络"></a>存储网络</h3><p>直连 CPU 的两张网卡，连接到另一张网络里，主要作用是读写数据，以及 SSH 管理等等。</p>
-<h3 id="RoCE-vs-InfiniBand"><a href="#RoCE-vs-InfiniBand" class="headerlink" title="RoCE vs. InfiniBand"></a>RoCE vs. InfiniBand</h3><p>不管是计算网络还是存储网络，都需要 RDMA 才能实现 AI 所需的高性能。RDMA 目前有两种选择：</p>
-<ul>
-<li>RoCEv2：公有云卖的 8 卡 GPU 主机基本都是这种网络，比如 CX6 <strong><code>8\*100Gbps</code></strong> 配置；在性能达标的前提下，（相对）便宜；</li>
-<li>InfiniBand (IB)：同等网卡带宽下，性能比 RoCEv2 好 20% 以上，但是价格贵一倍。</li>
-</ul>
-<h2 id="2-3-数据链路带宽瓶颈分析"><a href="#2-3-数据链路带宽瓶颈分析" class="headerlink" title="2.3 数据链路带宽瓶颈分析"></a>2.3 数据链路带宽瓶颈分析</h2><p><img src="/./../../img/8x-a100-bw-limits.png" srcset="/img/loading.gif" lazyload alt="单机 8 卡 A100 GPU 主机带宽瓶颈分析"></p>
-<p>几个关键链路带宽都标在图上了，</p>
-<ol>
-<li><p>同主机 GPU 之间：走 NVLink，双向 600GB&#x2F;s，单向 **<code>300GB/s</code>**；</p>
+<li><p>这个网络的目的是 GPU 与其他计算节点的 GPU交换数据；</p>
 </li>
-<li><p>同主机 GPU 和自己的网卡之间：走 PICe Gen4 Switch 芯片，双向 64GB&#x2F;s，单向 **<code>32GB/s</code>**；</p>
-</li>
-<li><p>跨主机 GPU 之间：需要通过网卡收发数据，这个就看网卡带宽了，目前国内 A100&#x2F;A800 机型配套的主流带宽是（单向） **<code>100Gbps=12.5GB/s</code>**。 所以跨机通信相比主机内通信性能要下降很多。</p>
-<ul>
-<li><code>200Gbps==25GB/s</code>：已经<strong>接近</strong> PCIe Gen4 的单向带宽；</li>
-<li><code>400Gbps==50GB/s</code>：已经<strong>超过</strong> PCIe Gen4 的单向带宽。</li>
-</ul>
-<p>所以在这种机型里用 400Gbps 网卡作用不大，400Gbps 需要 PCIe Gen5 性能才能发挥出来。</p>
-</li>
-</ol>
-<h1 id="3-典型-8-H100-8-H800-主机"><a href="#3-典型-8-H100-8-H800-主机" class="headerlink" title="3 典型 8*H100/8*H800 主机"></a>3 典型 <code>8*H100/8*H800</code> 主机</h1><p>GPU Board Form Factor 分为两种类型：</p>
-<ul>
-<li>PCIe Gen5</li>
-<li>SXM5：性能更高一些</li>
-</ul>
-<h2 id="3-1-H100-芯片-layout"><a href="#3-1-H100-芯片-layout" class="headerlink" title="3.1 H100 芯片 layout"></a>3.1 H100 芯片 layout</h2><p>下面是一片 H100 GPU 芯片的内部结构：</p>
-<p><img src="/./../../img/image-20241012134446643.png" srcset="/img/loading.gif" lazyload alt="单片H100GPU内部逻辑布局"></p>
-<ul>
-<li><strong><code>4nm</code></strong> 工艺；</li>
-<li>最下面一排是 18 根 Gen4 NVLink；双向总带宽 **<code>18 lanes \* 50GB/s/lane = 900GB/s</code>**；</li>
-<li>中间蓝色的是 L2 cache；</li>
-<li>左右两侧是 <strong><code>HBM</code></strong> 芯片，即显存；</li>
-</ul>
-<h2 id="3-2-主机内硬件拓扑"><a href="#3-2-主机内硬件拓扑" class="headerlink" title="3.2 主机内硬件拓扑"></a>3.2 主机内硬件拓扑</h2><p>跟 A100 8 卡机结构大致类似，区别：</p>
-<ol>
-<li>NVSwitch 芯片从 6 个减少到了 4 个；真机图如下，</li>
-</ol>
-<p><img src="/./../../img/image-20241012134550723.png" srcset="/img/loading.gif" lazyload alt="A100-8卡真机图"></p>
-<p>2.与 CPU 的互联从 PCIe Gen4 x16 升级到 **<code>PCIe Gen5 x16</code>**，双向带宽 **<code>128GB/s</code>**；</p>
-<p><img src="/./../../img/image-20241012134613017.png" srcset="/img/loading.gif" lazyload alt="image-20241012134613017"></p>
-<h2 id="3-3-组网"><a href="#3-3-组网" class="headerlink" title="3.3 组网"></a>3.3 组网</h2><p>与 A100 也类似，只是标配改成了 <strong><code>400Gbps</code></strong> 的 CX7 网卡， 否则网络带宽与 PCIe Switch 和 NVLink&#x2F;NVSwitch 之间的差距更大了。</p>
-<h1 id="4-典型-4-L40S-8-L40S-主机"><a href="#4-典型-4-L40S-8-L40S-主机" class="headerlink" title="4 典型 4*L40S/8*L40S 主机"></a>4 典型 <code>4*L40S/8*L40S</code> 主机</h1><p>L40S 是今年（2023）即将上市的新一代“性价比款”多功能 GPU，<strong>对标 A100</strong>。 除了不适合训练基座大模型之外（后面会看到为什么），官方的宣传里它几乎什么都能干。 <del>价格的话，目前第三方服务器厂商给到的口头报价都是 A100 的 8 折左右</del>。</p>
-<h2 id="4-1-L40S-vs-A100-配置及特点对比"><a href="#4-1-L40S-vs-A100-配置及特点对比" class="headerlink" title="4.1 L40S vs A100 配置及特点对比"></a>4.1 L40S vs A100 配置及特点对比</h2><p>L40S 最大的特点之一是 <strong>time-to-market 时间短</strong>，也就是从订货到拿到货周期比 A100&#x2F;A800&#x2F;H800 快很多。 这里面技术和非技术原因都有，比如：</p>
-<ul>
-<li><del>不存在被美国禁售的功能</del>（根据 2023.10 的新规定，已经禁售了），比如 <strong>FP64 和 NVLink 都干掉了</strong>；</li>
-<li>使用 <strong><code>GDDR6</code></strong> 显存，不依赖 HBM 产能（及先进封装）；</li>
-</ul>
-<p>价格便宜也有几方面原因，后面会详细介绍：</p>
-<ol>
-<li>大头可能来自 GPU 本身价格降低：因为去掉了一些模块和功能，或者用便宜的产品替代；</li>
-<li>整机成本也有节省：例如去掉了一层 PCIe Gen4 Swtich；不过相比于 4x&#x2F;8x GPU，整机的其他部分都可以说送的了；</li>
-</ol>
-<h2 id="4-2-L40S-与-A100-性能对比"><a href="#4-2-L40S-与-A100-性能对比" class="headerlink" title="4.2 L40S 与 A100 性能对比"></a>4.2 L40S 与 A100 性能对比</h2><p>下面是一个官方标称性能对比：</p>
-<p><img src="/./../../img/image-20241012134804131.png" srcset="/img/loading.gif" lazyload alt="L40S与A100性能对比"></p>
-<p>具体场景的性能对比网上也有很多官方资料，这里就不列举了。简单来，</p>
-<ul>
-<li>性能 1.2x ~ 2x（看具体场景）。</li>
-<li>功耗：两台 L40S 和单台 A100 差不多</li>
-</ul>
-<p>需要注意，<strong>L40S 主机官方推荐的是单机 4 卡而不是 8 卡</strong>（后面会介绍为什么）， 所以对比一般是用 <code>两台 4*L40S</code> vs <code>单台 8*A100</code>。另外，很多场景的性能提升有个 <strong>大前提</strong>：网络需要是 200Gbps RoCE 或 IB 网络，接下来介绍为什么。</p>
-<h2 id="4-3-L40S-攒机"><a href="#4-3-L40S-攒机" class="headerlink" title="4.3 L40S 攒机"></a>4.3 L40S 攒机</h2><h3 id="推荐架构：2-2-4"><a href="#推荐架构：2-2-4" class="headerlink" title="推荐架构：2-2-4"></a>推荐架构：<code>2-2-4</code></h3><p>相比于 A100 的 <strong><code>2-2-4-6-8-8</code></strong> 架构， 官方推荐的 L40S GPU 主机是 2-2-4 架构，一台机器物理拓扑如下：</p>
-<p><img src="/./../../img/image-20241012135201064.png" srcset="/img/loading.gif" lazyload alt="单机4卡L40S GPU"></p>
-<p>最明显的变化是<strong>去掉了 CPU 和 GPU 之间的 PCIe Switch 芯片</strong>， 网卡和 GPU 都是直连 CPU 上自带的 PCIe Gen4 x16（64GB&#x2F;s），</p>
-<ul>
-<li>2 片 CPU（NUMA）</li>
-<li>2 张双口 CX7 网卡（每张网卡 **<code>2\*200Gbps</code>**）</li>
-<li>4 片 L40S GPU</li>
-<li>另外，存储网卡只配 1 张（双口），直连在任意一片 CPU 上</li>
-</ul>
-<p>这样<strong>每片 GPU 平均 200Gbps 网络带宽</strong>。</p>
-<h3 id="不推荐架构：2-2-8"><a href="#不推荐架构：2-2-8" class="headerlink" title="不推荐架构：2-2-8"></a>不推荐架构：<code>2-2-8</code></h3><p><img src="/./../../img/image-20241012135239994.png" srcset="/img/loading.gif" lazyload alt="单机 8 卡 L40S GPU 主机拓扑，来自 NVIDIA L40S 官方推介材料"></p>
-<p>如图，跟单机 4 卡相比，单机 8 卡需要引入两片 PCIe Gen5 Switch 芯片：</p>
-<ul>
-<li>说是现在<strong>PCIe Gen5 Switch 单片价格 1w 刀</strong>（不知真假），一台机器需要 2 片；价格不划算；</li>
-<li>PCIe switch 只有一家在生产，产能受限，周期很长；</li>
-<li>平摊到每片 GPU 的网络带宽减半；</li>
-</ul>
-<h2 id="4-4-组网"><a href="#4-4-组网" class="headerlink" title="4.4 组网"></a>4.4 组网</h2><p>官方建议 4 卡机型，搭配 200Gbps RoCE&#x2F;IB 组网。</p>
-<h2 id="4-5-数据链路带宽瓶颈分析"><a href="#4-5-数据链路带宽瓶颈分析" class="headerlink" title="4.5 数据链路带宽瓶颈分析"></a>4.5 数据链路带宽瓶颈分析</h2><p><img src="/./../../img/image-20241012135328084.png" srcset="/img/loading.gif" lazyload alt="单机 4 卡 L40S GPU 主机带宽瓶颈分析"></p>
-<p>以同 CPU 下面的两种 L40S 为例，这里面有两条链路可选：</p>
-<ol>
-<li>直接通过 CPU 处理：<code>GPU0 &lt;--PCIe--&gt; CPU &lt;--PCIe--&gt; GPU1</code><ul>
-<li>PCIe Gen4 x16 双向 64GB&#x2F;s，单向 **<code>32GB/s</code>**；</li>
-<li><strong>CPU 处理瓶颈？TODO</strong></li>
-</ul>
-</li>
-<li>完全绕过 CPU 处理，<strong>通过网卡去外面绕一圈再回来</strong>：<code>GPU0 &lt;--PCIe--&gt; NIC &lt;-- RoCe/IB Switch --&gt; NIC &lt;--PCIe--&gt; GPU1</code><ul>
-<li>PCIe Gen4 x16 双向 64GB&#x2F;s，单向 **<code>32GB/s</code>**；</li>
-<li>平均每个 GPU 一个单向 200Gbps 网口，单向折算 **<code>25GB/s</code>**；</li>
-<li><strong>需要 NCCL 支持</strong>，官方说新版本 NCCL 正在针对 L40S 适配，默认行为就是去外面绕一圈回来；</li>
-</ul>
-</li>
-</ol>
-<p>第二种方式看着长了很多，但官方说其实比方式一还要快很多（这里还每太搞懂，CPU 那里是怎么处理的？）—— <strong>前提是网卡和交换机配到位</strong>：200Gbps RoCE&#x2F;IB 网络。在这种网络架构下（网络带宽充足），</p>
-<ul>
-<li><strong>任何两片 GPU 的通信带宽和延迟都是一样的</strong>，是否在一台机器内或一片 CPU 下面并不重要，集群可以<strong>横向扩展</strong>（scaling up，compared with scaling in）；</li>
-<li>GPU 机器成本降低；但其实对于那些对网络带宽要求没那么高的业务来说，是<strong>把 NVLINK 的成本转嫁给了网络</strong>，这时候必须要组建 200Gbps 网络，否则发挥不出 L40S 多卡训练的性能。</li>
-</ul>
-<p>如果是方式二，同主机内 GPU 卡间的带宽瓶颈在网卡速度。即使网络是推荐的 2*CX7 配置，</p>
-<ul>
-<li>L40S： 200Gbps（网卡单向线速）</li>
-<li>A100： 300GB&#x2F;s（NVLINK3 单向） &#x3D;&#x3D; **<code>12x</code>**200Gbps</li>
-<li>A800： 200GB&#x2F;s（NVLINK3 单向） &#x3D;&#x3D; **<code>8x</code>**200Gbps</li>
-</ul>
-<p>可以看到，<strong>L40S 卡间带宽还是比 A100 NVLINK 慢了 12 倍</strong>， 比 A800 NVLink 慢了 8 倍，所以<strong>不适合数据密集交互的基础大模型训练</strong>。</p>
-<h2 id="4-6-测试注意事项"><a href="#4-6-测试注意事项" class="headerlink" title="4.6 测试注意事项"></a>4.6 测试注意事项</h2><p>如上，即便只测试单机 4 卡 L40S 机器，也需要搭配 200Gbps 交换机，否则卡间性能发挥不出来。</p>
-<h1 id="5-典型-8-H20-GPU-服务器（2024-更新）"><a href="#5-典型-8-H20-GPU-服务器（2024-更新）" class="headerlink" title="5 典型 8*H20 GPU 服务器（2024 更新）"></a>5 典型 <code>8*H20</code> GPU 服务器（2024 更新）</h1><p>H20 是 2023 年发布，2024 年正式开始交付的 GPU。面向中国大陆市场，填补 A800&#x2F;L40S 等等被禁之后的产品空缺。</p>
-<h2 id="5-1-显存：-8-96GB"><a href="#5-1-显存：-8-96GB" class="headerlink" title="5.1 显存：**8\*96GB**"></a>5.1 显存：**<code>8\*96GB</code>**</h2><figure><div class="code-wrapper"><pre class="line-numbers language-none"><code class="language-none">$ nvidia-smi
-+---------------------------------------------------------------------------------------+
-| NVIDIA-SMI 535.161.03             Driver Version: 535.161.03   CUDA Version: 12.2     |
-|-----------------------------------------+----------------------+----------------------+
-| GPU  Name                 Persistence-M | Bus-Id        Disp.A | Volatile Uncorr. ECC |
-| Fan  Temp   Perf          Pwr:Usage&#x2F;Cap |         Memory-Usage | GPU-Util  Compute M. |
-|                                         |                      |               MIG M. |
-|&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;+&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;+&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;|
-|   0  NVIDIA H20                     On  | 00000000:04:00.0 Off |                    0 |
-| N&#x2F;A   24C    P0              72W &#x2F; 500W |      0MiB &#x2F; 97871MiB |      0%      Default |
-|                                         |                      |             Disabled |
-+-----------------------------------------+----------------------+----------------------+
-|   1  NVIDIA H20                     On  | 00000000:23:00.0 Off |                    0 |
-| N&#x2F;A   24C    P0              71W &#x2F; 500W |      0MiB &#x2F; 97871MiB |      0%      Default |
-|                                         |                      |             Disabled |
-+-----------------------------------------+----------------------+----------------------+
-...
-+-----------------------------------------+----------------------+----------------------+
-|   7  NVIDIA H20                     On  | 00000000:E4:00.0 Off |                    0 |
-| N&#x2F;A   24C    P0              72W &#x2F; 500W |      0MiB &#x2F; 97871MiB |      0%      Default |
-|                                         |                      |             Disabled |
-+-----------------------------------------+----------------------+----------------------+</code></pre></div></figure>
-
-<p>GPU 最大功耗 <code>8*500W</code>。</p>
-<h2 id="5-2-卡间互联：NVLINK-x18-lanes-900GB-s"><a href="#5-2-卡间互联：NVLINK-x18-lanes-900GB-s" class="headerlink" title="5.2 卡间互联：NVLINK x18 lanes = 900GB/s"></a>5.2 卡间互联：NVLINK <code>x18 lanes = 900GB/s</code></h2><figure><div class="code-wrapper"><pre class="line-numbers language-none"><code class="language-none">$ nvidia-smi topo -m
-        GPU0    GPU1    GPU2    GPU3    GPU4    GPU5    GPU6    GPU7    NIC0    NIC1    CPU Affinity    NUMA Affinity   GPU NUMA ID
-GPU0     X      NV18    NV18    NV18    NV18    NV18    NV18    NV18    SYS     SYS     0-95,192-287    0               N&#x2F;A
-GPU1    NV18     X      NV18    NV18    NV18    NV18    NV18    NV18    SYS     SYS     0-95,192-287    0               N&#x2F;A
-GPU2    NV18    NV18     X      NV18    NV18    NV18    NV18    NV18    SYS     SYS     0-95,192-287    0               N&#x2F;A
-GPU3    NV18    NV18    NV18     X      NV18    NV18    NV18    NV18    SYS     SYS     0-95,192-287    0               N&#x2F;A
-GPU4    NV18    NV18    NV18    NV18     X      NV18    NV18    NV18    NODE    NODE    96-191,288-383  1               N&#x2F;A
-GPU5    NV18    NV18    NV18    NV18    NV18     X      NV18    NV18    NODE    NODE    96-191,288-383  1               N&#x2F;A
-GPU6    NV18    NV18    NV18    NV18    NV18    NV18     X      NV18    PHB     PHB     96-191,288-383  1               N&#x2F;A
-GPU7    NV18    NV18    NV18    NV18    NV18    NV18    NV18     X      NODE    NODE    96-191,288-383  1               N&#x2F;A
-NIC0    SYS     SYS     SYS     SYS     NODE    NODE    PHB     NODE     X      PIX
-NIC1    SYS     SYS     SYS     SYS     NODE    NODE    PHB     NODE    PIX      X</code></pre></div></figure>
-
-<p>可以看到双向 **<code>18 lanes \* 50GB/s/lane= 900GB/s</code>**（单向 450GB&#x2F;s）。 作为对比，<code>8*A800</code> NVLINK 是 8 lanes，见前面章节。</p>
-<h2 id="5-3-网络"><a href="#5-3-网络" class="headerlink" title="5.3 网络"></a>5.3 网络</h2><p>这个看各服务器厂商怎么配了。下面是国内某家的 PCIe 和网卡信息：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-none"><code class="language-none">$ lspci
-00:00.0 Host bridge: Advanced Micro Devices, Inc. [AMD] Device 14a4 (rev 01)
-c0:00.2 IOMMU: Advanced Micro Devices, Inc. [AMD] Device 149e (rev 01)
-c0:01.1 PCI bridge: Advanced Micro Devices, Inc. [AMD] Device 14ab (rev 01)
-c1:00.0 PCI bridge: Broadcom &#x2F; LSI PEX890xx PCIe Gen 5 Switch (rev b0)           # &lt;-- PCIe Gen5
-c2:00.0 PCI bridge: Broadcom &#x2F; LSI PEX890xx PCIe Gen 5 Switch (rev b0)
-c3:00.0 3D controller: NVIDIA Corporation Device 2329 (rev a1)
-c6:00.0 Ethernet controller: Mellanox Technologies MT2894 Family [ConnectX-6 Lx] # &lt;-- Mellanox CX6
-c6:00.1 Ethernet controller: Mellanox Technologies MT2894 Family [ConnectX-6 Lx]
-...</code></pre></div></figure>
-
-<p>RDMA：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-none"><code class="language-none">$ ibstat
-CA &#39;mlx5_0&#39;
-        CA type: MT4127
-        Number of ports: 1
-        Port 1:
-                State: Down
-                Physical state: Disabled
-                Rate: 40
-                Base lid: 0
-                LMC: 0
-                SM lid: 0
-                Capability mask: 0x00010000
-                Link layer: Ethernet
-CA &#39;mlx5_1&#39;
-        CA type: MT4127
-        Number of ports: 1
-        Port 1:
-                State: Down
-                Physical state: Disabled
-                Rate: 40
-                Base lid: 0
-                LMC: 0
-                SM lid: 0
-                Capability mask: 0x00010000
-                Link layer: Ethernet</code></pre></div></figure>
+<li><p>服务器内部的GPU和存储网卡通过PCIe 交换芯片连接</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">  GPU &lt;--&gt; PCIe Switch &lt;--&gt; 存储网卡
 
 
 
-<h2 id="5-4-训练性能：8-H20-vs-8-A800"><a href="#5-4-训练性能：8-H20-vs-8-A800" class="headerlink" title="5.4 训练性能：8*H20 vs 8*A800"></a>5.4 训练性能：<code>8*H20 vs 8*A800</code></h2><p>单机 8 卡训练性能（实测数据，但大家用的模型、框架、数据集等可能各不相同，因此这里的结果仅供参考）：</p>
-<table>
-<thead>
-<tr>
-<th align="left">GPU Node (NVLINK interconnect)</th>
-<th align="left">Throughput</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="left">8*A800-80GB</td>
-<td align="left"><strong><code>~30</code></strong> samples&#x2F;sec</td>
-</tr>
-<tr>
-<td align="left"><strong><code>8\*H20-96GB</code></strong></td>
-<td align="left"><strong><code>~21</code></strong> samples&#x2F;sec</td>
-</tr>
-</tbody></table>
-<p>相比 A800，H20 纸面算力阉割了一半左右 [6]，但在 NVLINK&#x2F;cache 等地方补了一下，所以实际性能（只）下降了 1&#x2F;3。</p>
-<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ol>
-<li><a target="_blank" rel="noopener" href="https://hc34.hotchips.org/">NVLink-Network Switch - NVIDIA’s Switch Chip for High Communication-Bandwidth SuperPODs</a>, Hot Chips 2022</li>
-<li><a target="_blank" rel="noopener" href="https://www.servethehome.com/chatgpt-hardware-a-look-at-8x-nvidia-a100-systems-powering-the-tool-openai-microsoft-azure-supermicro-inspur-asus-dell-gigabyte/">ChatGPT Hardware a Look at 8x NVIDIA A100 Powering the Tool</a>, 2023</li>
-<li><a target="_blank" rel="noopener" href="https://developer.nvidia.com/blog/nvidia-hopper-architecture-in-depth/">NVIDIA Hopper Architecture In-Depth</a>, nvidia.com, 2022</li>
-<li><a target="_blank" rel="noopener" href="https://www.microway.com/hpc-tech-tips/dgx-a100-review-throughput-and-hardware-summary/">DGX A100 review: Throughput and Hardware Summary</a>, 2020</li>
-<li><a target="_blank" rel="noopener" href="http://arthurchiao.art/blog/understanding-gpu-performance/">Understanding NVIDIA GPU Performance: Utilization vs. Saturation</a>, 2023</li>
-<li><a target="_blank" rel="noopener" href="http://arthurchiao.art/blog/gpu-data-sheets/">GPU Performance (Data Sheets) Quick Reference (2023)</a></li>
-</ol>
+### 2）存储网络
+
+直连 CPU 的两张网卡，连接到另一张网络里，主要作用是读写数据，以及 SSH 管理等等。
+
+
+
+### 3）RDMA概念
+
+在了解RDMA之前，需要先了解DMA（全称为Direct Memory Access，即直接内存访问。意思是外设对内存的读写过程可以不用CPU参与而直接进行）
+
+没有DMA的时候，外部设备读写内存需要绕道CPU走一圈。假设I&#x2F;O设备为一个普通网卡，为了从内存拿到需要发送的数据，然后组装数据包发送到物理链路上，网卡需要通过总线告知CPU自己的数据请求。然后CPU将会把内存缓冲区中的数据复制到自己内部的寄存器中，再复制到I&#x2F;O设备的存储空间中。如果数据量比较大，那么很长一段时间内CPU都会忙于搬移数据，而无法投入到其他工作中去。
+
+![image-20241012170122410](.&#x2F;..&#x2F;..&#x2F;img&#x2F;image-20241012170122410.png)
+
+CPU的最主要工作是计算，而不是进行数据复制，这种工作属于白白浪费了它的计算能力。为了给CPU“减负”，让它投入到更有意义的工作中去，后来人们设计了DMA机制：
+
+![image-20241012170404114](.&#x2F;..&#x2F;..&#x2F;img&#x2F;image-20241012170404114.png)
+
+可以看到总线上又挂了一个DMA控制器，它是专门用来读写内存的设备。有了它以后，当我们的网卡想要从内存中拷贝数据时，除了一些必要的控制命令外，整个数据复制过程都是由DMA控制器完成的。过程跟CPU复制是一样的，只不过这次是把内存中的数据通过总线复制到DMA控制器内部的寄存器中，再复制到I&#x2F;O设备的存储空间中。CPU除了关注一下这个过程的开始和结束以外，其他时间可以去做其他事情。DMA控制器一般是和I&#x2F;O设备在一起的，也就是说一块网卡中既有负责数据收发的模块，也有DMA模块。
+
+好了，现在可以来学习RDMA了。
+
+RDMA（Remote Direct Memory Access，远程直接内存访问）是一种高速网络互联技术，该技术主要设计目的是减少在数据传输过程中收发端的处理延迟以及资源消耗。RDMA技术使计算机能够直接访问远程计算机的内存，在内存层面进行数据传输而无需CPU频繁介入，从而显著增强网络通信性能。
+
+传统网卡的通信方式：传统网络中，&quot;服务器1给服务器2发消息&quot;实际上做的是“把&quot;服务器1内存中的一段数据，通过网络链路搬移到&quot;服务器2的内存中”，而这一过程无论是发端还是收段，都需要CPU的指挥和控制，包括网卡的控制，中断的处理，报文的封装和解析等等。
+
+![image-20241012171059302](.&#x2F;..&#x2F;..&#x2F;img&#x2F;image-20241012171059302.png)
+
+使用RDMA网卡的通信方式：同样是把本端内存中的一段数据，复制到对端内存中，在使用了RDMA技术时，两端的CPU几乎不用参与数据传输过程（只参与控制面）。本端的网卡直接从内存的用户空间DMA拷贝数据到内部存储空间，然后硬件进行各层报文的组装后，通过物理链路发送到对端网卡。对端的RDMA网卡收到数据后，剥离各层报文头和校验码，通过DMA将数据直接拷贝到用户空间内存中。
+
+![image-20241012171217209](.&#x2F;..&#x2F;..&#x2F;img&#x2F;image-20241012171217209.png)
+
+
+
+### 3）RoCE vs. InfiniBand
+
+不管是计算网络还是存储网络，都需要RDMA技术才能实现 AI 所需的高性能。RDMA**技术**的实现目前有**两种协议**选择：
+
+- RoCEv2：公有云卖的 8 卡 GPU 主机基本都是这种网络；在性能达标的前提下，（相对）便宜；
+- InfiniBand (IB)：同等网卡带宽下，性能比 RoCEv2 好 20% 以上，但是价格贵一倍。
+
+
+
+## 2.3 数据链路带宽瓶颈分析
+
+![单机 8 卡 A100 GPU 主机带宽瓶颈分析](.&#x2F;..&#x2F;..&#x2F;img&#x2F;8x-a100-bw-limits.png)
+
+几个关键链路带宽都标在图上了，
+
+1、同主机 GPU 之间：走 NVLink，双向 600GB&#x2F;s，单向 **&#96;300GB&#x2F;s&#96;**；
+
+2、同主机 GPU 和自己的网卡之间：走 PICe Gen4 Switch 芯片，双向 64GB&#x2F;s，单向 **&#96;32GB&#x2F;s&#96;**；
+
+3、跨主机 GPU 之间：需要通过网卡收发数据，这个就看网卡带宽了，
+
+- &#96;100Gbps&#x3D;12.5GB&#x2F;s&#96;： 远低于PCIe Gen4 的单向带宽，所以跨机通信相比主机内通信性能要下降很多。
+- &#96;200Gbps&#x3D;&#x3D;25GB&#x2F;s&#96;：已经**接近** PCIe Gen4 的单向带宽（推荐）。
+- &#96;400Gbps&#x3D;&#x3D;50GB&#x2F;s&#96;：已经**超过** PCIe Gen4 的单向带宽。
+
+因此在这种机型里，用 400Gbps 网卡作用不大，400Gbps 需要 PCIe Gen5 性能才能发挥出来。
+
+
+
+# 3 典型8卡H100&#x2F;H800主机构成
+
+H系列的GPU按照主板规格（Board Form Factor）分为两种类型：
+
+- PCIe Gen5
+- SXM-5：性能更高一些
+
+
+
+## 3.1 H100 芯片 layout
+
+下面是一片 H100 GPU 芯片的内部结构：
+
+![单片H100GPU内部逻辑布局](.&#x2F;..&#x2F;..&#x2F;img&#x2F;image-20241012134446643.png)
+
+- 台积电4nm工艺
+- 采用第四代NVlink技术，最下面的绿色条是18条lane；NVLINK的双向总带宽900GB&#x2F;s（18 * 50）
+- 中间蓝色的是 L2 cache；
+- 左右两侧是 **&#96;HBM&#96;** 芯片，即显存；
+
+## 3.2 主机内硬件拓扑
+
+跟 A100 8 卡机结构大致类似，区别：
+
+1. NVSwitch 芯片从 6 个减少到了 4 个；真机图如下，
+
+![A100-8卡真机图](.&#x2F;..&#x2F;..&#x2F;img&#x2F;image-20241012134550723.png)
+
+2.与 CPU 的互联从 PCIe Gen4 x16 升级到 **&#96;PCIe Gen5 x16&#96;**，双向带宽 **&#96;128GB&#x2F;s&#96;**；
+
+![image-20241012134613017](.&#x2F;..&#x2F;..&#x2F;img&#x2F;image-20241012134613017.png)
+
+## 3.3 组网
+
+与 A100 也类似，只是标配改成了 **&#96;400Gbps&#96;** 的 CX7 网卡， 否则网络带宽与 PCIe Switch 和 NVLink&#x2F;NVSwitch 之间的差距更大了。
+
+
+
+# 4 典型 &#96;4*L40S&#x2F;8*L40S&#96; 主机
+
+L40S 是今年（2023）即将上市的新一代“性价比款”多功能 GPU，**对标 A100**。 除了不适合训练基座大模型之外（后面会看到为什么），官方的宣传里它几乎什么都能干。 ~~价格的话，目前第三方服务器厂商给到的口头报价都是 A100 的 8 折左右~~。
+
+
+
+## 4.1 L40S vs A100 配置及特点对比
+
+L40S 最大的特点之一是 **time-to-market 时间短**，也就是从订货到拿到货周期比 A100&#x2F;A800&#x2F;H800 快很多。 这里面技术和非技术原因都有，比如：
+
+- ~~不存在被美国禁售的功能~~（根据 2023.10 的新规定，已经禁售了），比如 **FP64 和 NVLink 都干掉了**；
+- 使用 **&#96;GDDR6&#96;** 显存，不依赖 HBM 产能（及先进封装）；
+
+价格便宜也有几方面原因，后面会详细介绍：
+
+1. 大头可能来自 GPU 本身价格降低：因为去掉了一些模块和功能，或者用便宜的产品替代；
+2. 整机成本也有节省：例如去掉了一层 PCIe Gen4 Swtich；不过相比于 4x&#x2F;8x GPU，整机的其他部分都可以说送的了；
+
+
+
+## 4.2 L40S 与 A100 性能对比
+
+下面是一个官方标称性能对比：
+
+![L40S与A100性能对比](.&#x2F;..&#x2F;..&#x2F;img&#x2F;image-20241012134804131.png)
+
+
+
+具体场景的性能对比网上也有很多官方资料，这里就不列举了。简单来，
+
+- 性能 1.2x ~ 2x（看具体场景）。
+- 功耗：两台 L40S 和单台 A100 差不多
+
+
+
+需要注意，**L40S 主机官方推荐的是单机 4 卡而不是 8 卡**（后面会介绍为什么）， 所以对比一般是用 &#96;两台 4*L40S&#96; vs &#96;单台 8*A100&#96;。另外，很多场景的性能提升有个 **大前提**：网络需要是 200Gbps RoCE 或 IB 网络，接下来介绍为什么。
+
+
+
+## 4.3 L40S 攒机
+
+### 推荐架构：&#96;2-2-4&#96;
+
+相比于 A100 的 **&#96;2-2-4-6-8-8&#96;** 架构， 官方推荐的 L40S GPU 主机是 2-2-4 架构，一台机器物理拓扑如下：
+
+![单机4卡L40S GPU](.&#x2F;..&#x2F;..&#x2F;img&#x2F;image-20241012135201064.png)
+
+最明显的变化是**去掉了 CPU 和 GPU 之间的 PCIe Switch 芯片**， 网卡和 GPU 都是直连 CPU 上自带的 PCIe Gen4 x16（64GB&#x2F;s），
+
+- 2 片 CPU（NUMA）
+- 2 张双口 CX7 网卡（每张网卡 **&#96;2\*200Gbps&#96;**）
+- 4 片 L40S GPU
+- 另外，存储网卡只配 1 张（双口），直连在任意一片 CPU 上
+
+这样**每片 GPU 平均 200Gbps 网络带宽**。
+
+
+
+### 不推荐架构：&#96;2-2-8&#96;
+
+![单机 8 卡 L40S GPU 主机拓扑，来自 NVIDIA L40S 官方推介材料](.&#x2F;..&#x2F;..&#x2F;img&#x2F;image-20241012135239994.png)
+
+如图，跟单机 4 卡相比，单机 8 卡需要引入两片 PCIe Gen5 Switch 芯片：
+
+- 说是现在**PCIe Gen5 Switch 单片价格 1w 刀**（不知真假），一台机器需要 2 片；价格不划算；
+- PCIe switch 只有一家在生产，产能受限，周期很长；
+- 平摊到每片 GPU 的网络带宽减半；
+
+
+
+## 4.4 组网
+
+官方建议 4 卡机型，搭配 200Gbps RoCE&#x2F;IB 组网。
+
+
+
+## 4.5 数据链路带宽瓶颈分析
+
+![单机 4 卡 L40S GPU 主机带宽瓶颈分析](.&#x2F;..&#x2F;..&#x2F;img&#x2F;image-20241012135328084.png)
+
+以同 CPU 下面的两种 L40S 为例，这里面有两条链路可选：
+
+1. 直接通过 CPU 处理：&#96;GPU0 &lt;--PCIe--&gt; CPU &lt;--PCIe--&gt; GPU1&#96;
+   - PCIe Gen4 x16 双向 64GB&#x2F;s，单向 **&#96;32GB&#x2F;s&#96;**；
+   - **CPU 处理瓶颈？TODO**
+2. 完全绕过 CPU 处理，**通过网卡去外面绕一圈再回来**：&#96;GPU0 &lt;--PCIe--&gt; NIC &lt;-- RoCe&#x2F;IB Switch --&gt; NIC &lt;--PCIe--&gt; GPU1&#96;
+   - PCIe Gen4 x16 双向 64GB&#x2F;s，单向 **&#96;32GB&#x2F;s&#96;**；
+   - 平均每个 GPU 一个单向 200Gbps 网口，单向折算 **&#96;25GB&#x2F;s&#96;**；
+   - **需要 NCCL 支持**，官方说新版本 NCCL 正在针对 L40S 适配，默认行为就是去外面绕一圈回来；
+
+第二种方式看着长了很多，但官方说其实比方式一还要快很多（这里还每太搞懂，CPU 那里是怎么处理的？）—— **前提是网卡和交换机配到位**：200Gbps RoCE&#x2F;IB 网络。在这种网络架构下（网络带宽充足），
+
+- **任何两片 GPU 的通信带宽和延迟都是一样的**，是否在一台机器内或一片 CPU 下面并不重要，集群可以**横向扩展**（scaling up，compared with scaling in）；
+- GPU 机器成本降低；但其实对于那些对网络带宽要求没那么高的业务来说，是**把 NVLINK 的成本转嫁给了网络**，这时候必须要组建 200Gbps 网络，否则发挥不出 L40S 多卡训练的性能。
+
+如果是方式二，同主机内 GPU 卡间的带宽瓶颈在网卡速度。即使网络是推荐的 2*CX7 配置，
+
+- L40S： 200Gbps（网卡单向线速）
+- A100： 300GB&#x2F;s（NVLINK3 单向） &#x3D;&#x3D; **&#96;12x&#96;**200Gbps
+- A800： 200GB&#x2F;s（NVLINK3 单向） &#x3D;&#x3D; **&#96;8x&#96;**200Gbps
+
+可以看到，**L40S 卡间带宽还是比 A100 NVLINK 慢了 12 倍**， 比 A800 NVLink 慢了 8 倍，所以**不适合数据密集交互的基础大模型训练**。
+
+
+
+## 4.6 测试注意事项
+
+如上，即便只测试单机 4 卡 L40S 机器，也需要搭配 200Gbps 交换机，否则卡间性能发挥不出来。
+
+
+
+# 5 典型 &#96;8*H20&#96; GPU 服务器（2024 更新）
+
+H20 是 2023 年发布，2024 年正式开始交付的 GPU。面向中国大陆市场，填补 A800&#x2F;L40S 等等被禁之后的产品空缺。
+
+## 5.1 显存：**&#96;8\*96GB&#96;**
+</code></pre></div></figure></li>
+</ul>
+<p>$ nvidia-smi<br>+—————————————————————————————+<br>| NVIDIA-SMI 535.161.03             Driver Version: 535.161.03   CUDA Version: 12.2     |<br>|—————————————–+———————-+———————-+<br>| GPU  Name                 Persistence-M | Bus-Id        Disp.A | Volatile Uncorr. ECC |<br>| Fan  Temp   Perf          Pwr:Usage&#x2F;Cap |         Memory-Usage | GPU-Util  Compute M. |<br>|                                         |                      |               MIG M. |<br>|&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;+&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;+&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;|<br>|   0  NVIDIA H20                     On  | 00000000:04:00.0 Off |                    0 |<br>| N&#x2F;A   24C    P0              72W &#x2F; 500W |      0MiB &#x2F; 97871MiB |      0%      Default |<br>|                                         |                      |             Disabled |<br>+—————————————–+———————-+———————-+<br>|   1  NVIDIA H20                     On  | 00000000:23:00.0 Off |                    0 |<br>| N&#x2F;A   24C    P0              71W &#x2F; 500W |      0MiB &#x2F; 97871MiB |      0%      Default |<br>|                                         |                      |             Disabled |<br>+—————————————–+———————-+———————-+<br>…<br>+—————————————–+———————-+———————-+<br>|   7  NVIDIA H20                     On  | 00000000:E4:00.0 Off |                    0 |<br>| N&#x2F;A   24C    P0              72W &#x2F; 500W |      0MiB &#x2F; 97871MiB |      0%      Default |<br>|                                         |                      |             Disabled |<br>+—————————————–+———————-+———————-+</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-none"><code class="language-none">
+GPU 最大功耗 &#96;8*500W&#96;。
+
+## 5.2 卡间互联：NVLINK &#96;x18 lanes &#x3D; 900GB&#x2F;s&#96;
+</code></pre></div></figure>
+<p>$ nvidia-smi topo -m<br>        GPU0    GPU1    GPU2    GPU3    GPU4    GPU5    GPU6    GPU7    NIC0    NIC1    CPU Affinity    NUMA Affinity   GPU NUMA ID<br>GPU0     X      NV18    NV18    NV18    NV18    NV18    NV18    NV18    SYS     SYS     0-95,192-287    0               N&#x2F;A<br>GPU1    NV18     X      NV18    NV18    NV18    NV18    NV18    NV18    SYS     SYS     0-95,192-287    0               N&#x2F;A<br>GPU2    NV18    NV18     X      NV18    NV18    NV18    NV18    NV18    SYS     SYS     0-95,192-287    0               N&#x2F;A<br>GPU3    NV18    NV18    NV18     X      NV18    NV18    NV18    NV18    SYS     SYS     0-95,192-287    0               N&#x2F;A<br>GPU4    NV18    NV18    NV18    NV18     X      NV18    NV18    NV18    NODE    NODE    96-191,288-383  1               N&#x2F;A<br>GPU5    NV18    NV18    NV18    NV18    NV18     X      NV18    NV18    NODE    NODE    96-191,288-383  1               N&#x2F;A<br>GPU6    NV18    NV18    NV18    NV18    NV18    NV18     X      NV18    PHB     PHB     96-191,288-383  1               N&#x2F;A<br>GPU7    NV18    NV18    NV18    NV18    NV18    NV18    NV18     X      NODE    NODE    96-191,288-383  1               N&#x2F;A<br>NIC0    SYS     SYS     SYS     SYS     NODE    NODE    PHB     NODE     X      PIX<br>NIC1    SYS     SYS     SYS     SYS     NODE    NODE    PHB     NODE    PIX      X</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-none"><code class="language-none">
+可以看到双向 **&#96;18 lanes \* 50GB&#x2F;s&#x2F;lane&#x3D; 900GB&#x2F;s&#96;**（单向 450GB&#x2F;s）。 作为对比，&#96;8*A800&#96; NVLINK 是 8 lanes，见前面章节。
+
+
+
+## 5.3 网络
+
+这个看各服务器厂商怎么配了。下面是国内某家的 PCIe 和网卡信息：
+</code></pre></div></figure>
+<p>$ lspci<br>00:00.0 Host bridge: Advanced Micro Devices, Inc. [AMD] Device 14a4 (rev 01)<br>c0:00.2 IOMMU: Advanced Micro Devices, Inc. [AMD] Device 149e (rev 01)<br>c0:01.1 PCI bridge: Advanced Micro Devices, Inc. [AMD] Device 14ab (rev 01)<br>c1:00.0 PCI bridge: Broadcom &#x2F; LSI PEX890xx PCIe Gen 5 Switch (rev b0)           # &lt;– PCIe Gen5<br>c2:00.0 PCI bridge: Broadcom &#x2F; LSI PEX890xx PCIe Gen 5 Switch (rev b0)<br>c3:00.0 3D controller: NVIDIA Corporation Device 2329 (rev a1)<br>c6:00.0 Ethernet controller: Mellanox Technologies MT2894 Family [ConnectX-6 Lx] # &lt;– Mellanox CX6<br>c6:00.1 Ethernet controller: Mellanox Technologies MT2894 Family [ConnectX-6 Lx]<br>…</p>
+<figure><div class="code-wrapper"><pre class="line-numbers language-none"><code class="language-none">
+RDMA：
+</code></pre></div></figure>
+<p>$ ibstat<br>CA ‘mlx5_0’<br>        CA type: MT4127<br>        Number of ports: 1<br>        Port 1:<br>                State: Down<br>                Physical state: Disabled<br>                Rate: 40<br>                Base lid: 0<br>                LMC: 0<br>                SM lid: 0<br>                Capability mask: 0x00010000<br>                Link layer: Ethernet<br>CA ‘mlx5_1’<br>        CA type: MT4127<br>        Number of ports: 1<br>        Port 1:<br>                State: Down<br>                Physical state: Disabled<br>                Rate: 40<br>                Base lid: 0<br>                LMC: 0<br>                SM lid: 0<br>                Capability mask: 0x00010000<br>                Link layer: Ethernet</p>
+<figure><div class="code-wrapper"><pre class="language-none"><code class="language-none">
+
+
+## 5.4 训练性能：`8*H20 vs 8*A800`
+
+单机 8 卡训练性能（实测数据，但大家用的模型、框架、数据集等可能各不相同，因此这里的结果仅供参考）：
+
+| GPU Node (NVLINK interconnect) | Throughput            |
+| :----------------------------- | :-------------------- |
+| 8*A800-80GB                    | **`~30`** samples/sec |
+| **`8\*H20-96GB`**              | **`~21`** samples/sec |
+
+
+
+相比 A800，H20 纸面算力阉割了一半左右 [6]，但在 NVLINK/cache 等地方补了一下，所以实际性能（只）下降了 1/3。
+
+
+
+# 参考资料
+
+1. [NVLink-Network Switch - NVIDIA’s Switch Chip for High Communication-Bandwidth SuperPODs](https://hc34.hotchips.org/), Hot Chips 2022
+2. [ChatGPT Hardware a Look at 8x NVIDIA A100 Powering the Tool](https://www.servethehome.com/chatgpt-hardware-a-look-at-8x-nvidia-a100-systems-powering-the-tool-openai-microsoft-azure-supermicro-inspur-asus-dell-gigabyte/), 2023
+3. [NVIDIA Hopper Architecture In-Depth](https://developer.nvidia.com/blog/nvidia-hopper-architecture-in-depth/), nvidia.com, 2022
+4. [DGX A100 review: Throughput and Hardware Summary](https://www.microway.com/hpc-tech-tips/dgx-a100-review-throughput-and-hardware-summary/), 2020
+5. [Understanding NVIDIA GPU Performance: Utilization vs. Saturation](http://arthurchiao.art/blog/understanding-gpu-performance/), 2023
+6. [GPU Performance (Data Sheets) Quick Reference (2023)](http://arthurchiao.art/blog/gpu-data-sheets/)
+</code></pre></div></figure>
 
                 
               </div>
@@ -723,6 +817,12 @@ CA &#39;mlx5_1&#39;
                 <div class="post-prevnext my-3">
                   <article class="post-prev col-6">
                     
+                    
+                      <a href="/2024/10/17/01_%E8%BF%90%E7%BB%B4/06-%E6%99%BA%E7%AE%97%E4%B8%AD%E5%BF%83/02-%E4%B8%80%E6%96%87%E6%90%9E%E6%87%82H100H200%EF%BC%8CB100B200%EF%BC%8CB200GB200%EF%BC%8CHGXDGX%E7%9A%84%E5%8C%BA%E5%88%AB%E5%92%8C%E5%8F%82%E6%95%B0/" title="02-一文搞懂H100H200，B100B200，B200GB200，HGXDGX的区别和参数">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">02-一文搞懂H100H200，B100B200，B200GB200，HGXDGX的区别和参数</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
                     
                   </article>
                   <article class="post-next col-6">
