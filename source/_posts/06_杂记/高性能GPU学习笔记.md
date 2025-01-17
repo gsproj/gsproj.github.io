@@ -1,4 +1,12 @@
-# 高性能GPU服务器硬件拓扑和集群组网
+---
+title: GPU服务器硬件拓扑和集群组网
+date: 2024-11-02 9:29:52
+categories:
+- 杂记
+tags:
+---
+
+# GPU服务器硬件拓扑和集群组网
 
 >转载自：http://arthurchiao.art/blog/gpu-advanced-notes-1-zh/#11-pcie-%E4%BA%A4%E6%8D%A2%E8%8A%AF%E7%89%87
 >
