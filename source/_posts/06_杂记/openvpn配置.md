@@ -275,6 +275,51 @@ crl-verify /etc/openvpn/3.0.6/pki/crl.pem
 [root@openvpn 3.0.6]#
 ```
 
+或者可以参考这一份配置文件
+
+路由器（公网IP + 端口映射）--- 内网服务器（15.1.10.32，部署OpenVPN服务1194端口）
+
+实现的效果：
+
+- Windows客户端连接后，将获取IP，10.8.0.6
+- 测试可以与openvpn服务器ping通，ping 10.8.0.1
+- 测试可以与OpenVPN服务器内网IP互通，ping 15.1.10.32
+
+```shell
+port 1194
+# 改成tcp，默认使用udp，如果使用HTTP Proxy，必须使用tcp协议
+proto tcp
+dev tun
+# # 路径前面加keys，全路径为/etc/openvpn/keys/ca.crt
+ca /etc/openvpn/easy-rsa/pki/ca.crt
+cert /etc/openvpn/easy-rsa/pki/issued/server.crt
+key /etc/openvpn/easy-rsa/pki/private/server.key  # This file should be kept secret
+dh /etc/openvpn/easy-rsa/pki/dh.pem
+
+# # 默认虚拟局域网网段，不要和实际的局域网冲突即可
+server 10.8.0.0 255.255.255.0
+ifconfig-pool-persist ipp.txt
+# # VPN服务器所在的内网的网段
+push "route 15.1.10.0 255.255.255.0"
+# # 让客户端所有的流量都通过VPN转发(全局模式)
+# push "redirect-gateway def1 bypass-dhcp"
+# # 可以让客户端之间相互访问直接通过openvpn程序转发
+# client-to-client
+# # 如果客户端都使用相同的证书和密钥连接VPN，一定要打开这个选项，否则每个证书只允许一个人连接VPN
+# duplicate-cn
+keepalive 10 120
+tls-auth /etc/openvpn/easy-rsa/pki/ta.key 0
+comp-lzo
+persist-key
+persist-tun
+# # OpenVPN的状态日志，默认为/etc/openvpn/openvpn-status.log
+status openvpn-status.log
+# # OpenVPN的运行日志，默认为/etc/openvpn/openvpn.log 
+log-append openvpn.log
+# # 改成verb 5可以多查看一些调试信息
+verb 5
+```
+
 ## 五、启动 openvpn 服务
 
 ```bash
@@ -304,7 +349,7 @@ WantedBy=multi-user.target
 为了可以让客户端访问服务器所在局域网的其它主机，需要配置如下规则
 
 ```bash
-[root@openvpn ~]# iptables -t nat -A POSTROUTING -s 10.8.0.0/8 -j MASQUERADE
+[root@openvpn ~]# iptables -t nat -A POSTROUTING -s 10.8.0.0/24 -j MASQUERADE
 [root@openvpn ~]# cat /proc/sys/net/ipv4/ip_forward
 0
 [root@openvpn ~]# echo "1" > /proc/sys/net/ipv4/ip_forward
