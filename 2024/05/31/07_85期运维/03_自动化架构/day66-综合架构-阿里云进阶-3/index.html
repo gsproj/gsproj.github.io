@@ -1,332 +1,185 @@
-
-
-<!DOCTYPE html>
-<html lang="zh-CN" data-default-color-scheme=auto>
-
-
-
-<head>
-  <meta charset="UTF-8">
-
-  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
-  <link rel="icon" href="/img/fluid.png">
-  
-
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
-  <meta http-equiv="x-ua-compatible" content="ie=edge">
-  
-  <meta name="theme-color" content="#2f4154">
-  <meta name="author" content="GongSheng">
-  <meta name="keywords" content="">
-  
-    <meta name="description" content="综合架构-阿里云进阶-03今日内容：  CDN 阿里云NAT配置 阿里云安全管理  一、CDN1.1 CDN概述CDN的作用：  为网站进行加速 一般用于缓存静态资源: html,css,js,图片,视频.  实现的原理：  将网站内容缓存到CDN服务商的服务器中 缓存是分布式缓存，全国各地都有 根据用户距离，就近提供数据，实现加速访问  CDN厂商：  阿里云&#x2F;腾讯云 蓝汛 网宿 Go">
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>day66-综合架构-阿里云进阶（三） | 迎风之豚的博客</title><meta name="author" content="Haris"><meta name="copyright" content="Haris"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="综合架构-阿里云进阶-03今日内容：  CDN 阿里云NAT配置 阿里云安全管理  一、CDN1.1 CDN概述CDN的作用：  为网站进行加速 一般用于缓存静态资源: html,css,js,图片,视频.  实现的原理：  将网站内容缓存到CDN服务商的服务器中 缓存是分布式缓存，全国各地都有 根据用户距离，就近提供数据，实现加速访问  CDN厂商：  阿里云&#x2F;腾讯云 蓝汛 网宿 Go">
 <meta property="og:type" content="article">
 <meta property="og:title" content="day66-综合架构-阿里云进阶（三）">
 <meta property="og:url" content="http://gsproj.github.io/2024/05/31/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/03_%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9E%B6%E6%9E%84/day66-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84-%E9%98%BF%E9%87%8C%E4%BA%91%E8%BF%9B%E9%98%B6-3/index.html">
 <meta property="og:site_name" content="迎风之豚的博客">
 <meta property="og:description" content="综合架构-阿里云进阶-03今日内容：  CDN 阿里云NAT配置 阿里云安全管理  一、CDN1.1 CDN概述CDN的作用：  为网站进行加速 一般用于缓存静态资源: html,css,js,图片,视频.  实现的原理：  将网站内容缓存到CDN服务商的服务器中 缓存是分布式缓存，全国各地都有 根据用户距离，就近提供数据，实现加速访问  CDN厂商：  阿里云&#x2F;腾讯云 蓝汛 网宿 Go">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240603160008673.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240603160106460.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240603160933406.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240603161008778.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240603161037051.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240603161141292.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240603161741121.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240603162057025.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240603161255392.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240603161421240.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240603161442951.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240603161502275.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240603161530455.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240603164100624.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240603164142787.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240603164243277.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240603164311642.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240603164459171.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240603164536139.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240603164636308.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240603165222196.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240603165235031.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240603165255999.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240603165706960.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240603165751327.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240603165840371.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240603165116165.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240603170020581.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240603170036775.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240605101952569.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240605103219773.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240605103426270.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240605104745091.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240605104809815.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240605105805960.png">
+<meta property="og:image" content="http://gsproj.github.io/img/%E7%BA%A2%E7%8C%AA.png">
 <meta property="article:published_time" content="2024-05-31T08:08:52.000Z">
 <meta property="article:modified_time" content="2024-08-02T01:48:34.361Z">
-<meta property="article:author" content="GongSheng">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://gsproj.github.io/img/image-20240603160008673.png">
-  
-  
-  
-  <title>day66-综合架构-阿里云进阶（三） - 迎风之豚的博客</title>
-
-  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
-
-
-
-  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
-
-  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
-
-  <link  rel="stylesheet" href="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" />
-
-  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
-
-
-
-<!-- 主题依赖的图标库，不要自行修改 -->
-<!-- Do not modify the link that theme dependent icons -->
-
-<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
-
-
-
-<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
-
-
-<link  rel="stylesheet" href="/css/main.css" />
-
-
-  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
-  
-    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
-  
-
-
-
-
-  <script id="fluid-configs">
-    var Fluid = window.Fluid || {};
-    Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"left","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
-
-    if (CONFIG.web_analytics.follow_dnt) {
-      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
-      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+<meta property="article:author" content="Haris">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://gsproj.github.io/img/%E7%BA%A2%E7%8C%AA.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "day66-综合架构-阿里云进阶（三）",
+  "url": "http://gsproj.github.io/2024/05/31/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/03_%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9E%B6%E6%9E%84/day66-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84-%E9%98%BF%E9%87%8C%E4%BA%91%E8%BF%9B%E9%98%B6-3/",
+  "image": "http://gsproj.github.io/img/%E7%BA%A2%E7%8C%AA.png",
+  "datePublished": "2024-05-31T08:08:52.000Z",
+  "dateModified": "2024-08-02T01:48:34.361Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Haris",
+      "url": "http://gsproj.github.io/"
     }
-  </script>
-  <script  src="/js/utils.js" ></script>
-  <script  src="/js/color-schema.js" ></script>
-  
-
-
-  
-<meta name="generator" content="Hexo 7.3.0"></head>
-
-
-<body>
-  
-
-  <header>
-    
-
-<div class="header-inner" style="height: 70vh;">
-  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
-  <div class="container">
-    <a class="navbar-brand" href="/">
-      <strong>Haris的博客</strong>
-    </a>
-
-    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
-            data-target="#navbarSupportedContent"
-            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <div class="animated-icon"><span></span><span></span><span></span></div>
-    </button>
-
-    <!-- Collapsible content -->
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav ml-auto text-center">
-        
-          
-          
-          
-          
-            <li class="nav-item">
-              <a class="nav-link" href="/" target="_self">
-                <i class="iconfont icon-home-fill"></i>
-                <span>首页</span>
-              </a>
-            </li>
-          
-        
-          
-          
-          
-          
-            <li class="nav-item">
-              <a class="nav-link" href="/archives/" target="_self">
-                <i class="iconfont icon-archive-fill"></i>
-                <span>归档</span>
-              </a>
-            </li>
-          
-        
-          
-          
-          
-          
-            <li class="nav-item">
-              <a class="nav-link" href="/categories/" target="_self">
-                <i class="iconfont icon-category-fill"></i>
-                <span>分类</span>
-              </a>
-            </li>
-          
-        
-          
-          
-          
-          
-            <li class="nav-item">
-              <a class="nav-link" href="/tags/" target="_self">
-                <i class="iconfont icon-tags-fill"></i>
-                <span>标签</span>
-              </a>
-            </li>
-          
-        
-          
-          
-          
-          
-            <li class="nav-item">
-              <a class="nav-link" href="/about/" target="_self">
-                <i class="iconfont icon-user-fill"></i>
-                <span>关于</span>
-              </a>
-            </li>
-          
-        
-        
-          <li class="nav-item" id="search-btn">
-            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
-              <i class="iconfont icon-search"></i>
-            </a>
-          </li>
-          
-        
-        
-          <li class="nav-item" id="color-toggle-btn">
-            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
-              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
-            </a>
-          </li>
-        
-      </ul>
-    </div>
-  </div>
-</nav>
-
-  
-
-<div id="banner" class="banner" parallax=true
-     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
-  <div class="full-bg-img">
-    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
-      <div class="banner-text text-center fade-in-up">
-        <div class="h2">
-          
-            <span id="subtitle" data-typed-text="day66-综合架构-阿里云进阶（三）"></span>
-          
-        </div>
-
-        
-          
-  <div class="mt-3">
-    
-    
-      <span class="post-meta">
-        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2024-05-31 16:08" pubdate>
-          2024年5月31日 下午
-        </time>
-      </span>
-    
-  </div>
-
-  <div class="mt-1">
-    
-      <span class="post-meta mr-2">
-        <i class="iconfont icon-chart"></i>
-        
-          1.9k 字
-        
-      </span>
-    
-
-    
-      <span class="post-meta mr-2">
-        <i class="iconfont icon-clock-fill"></i>
-        
-        
-        
-          17 分钟
-        
-      </span>
-    
-
-    
-    
-  </div>
-
-
-        
-      </div>
-
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://gsproj.github.io/2024/05/31/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/03_%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9E%B6%E6%9E%84/day66-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84-%E9%98%BF%E9%87%8C%E4%BA%91%E8%BF%9B%E9%98%B6-3/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
       
-    </div>
-  </div>
-</div>
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
 
-</div>
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
 
-  </header>
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
 
-  <main>
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
     
       
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'day66-综合架构-阿里云进阶（三）',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
 
-<div class="container-fluid nopadding-x">
-  <div class="row nomargin-x">
-    <div class="side-col d-none d-lg-block col-lg-2">
-      
-  <aside class="sidebar" style="padding-left: 2rem; margin-right: -1rem">
-    <div id="toc">
-  <p class="toc-header">
-    <i class="iconfont icon-list"></i>
-    <span>目录</span>
-  </p>
-  <div class="toc-body" id="toc-body"></div>
-</div>
+  preloader.initLoading()
+  window.addEventListener('load', preloader.endLoading)
 
-
-
-  </aside>
-
-
-    </div>
-
-    <div class="col-lg-8 nopadding-x-md">
-      <div class="container nopadding-x-md" id="board-ctn">
-        <div id="board">
-          <article class="post-content mx-auto">
-            <h1 id="seo-header">day66-综合架构-阿里云进阶（三）</h1>
-            
-            
-              <div class="markdown-body">
-                
-                <h1 id="综合架构-阿里云进阶-03"><a href="#综合架构-阿里云进阶-03" class="headerlink" title="综合架构-阿里云进阶-03"></a>综合架构-阿里云进阶-03</h1><p>今日内容：</p>
+  if (false) {
+    btf.addGlobalFn('pjaxSend', preloader.initLoading, 'preloader_init')
+    btf.addGlobalFn('pjaxComplete', preloader.endLoading, 'preloader_end')
+  }
+})()</script><div id="web_bg" style="background-image: url(/img/吊床.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/%E7%BA%A2%E7%8C%AA.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">208</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">1</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">29</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/吊床.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">迎风之豚的博客</span></a><a class="nav-page-title" href="/"><span class="site-name">day66-综合架构-阿里云进阶（三）</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">day66-综合架构-阿里云进阶（三）</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-05-31T08:08:52.000Z" title="发表于 2024-05-31 16:08:52">2024-05-31</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-08-02T01:48:34.361Z" title="更新于 2024-08-02 09:48:34">2024-08-02</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E8%BF%90%E7%BB%B4/">运维</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/">（二）综合架构</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="综合架构-阿里云进阶-03"><a href="#综合架构-阿里云进阶-03" class="headerlink" title="综合架构-阿里云进阶-03"></a>综合架构-阿里云进阶-03</h1><p>今日内容：</p>
 <ul>
 <li>CDN</li>
 <li>阿里云NAT配置</li>
@@ -363,7 +216,7 @@
 </ul>
 </li>
 </ul>
-<p><img src="/../../../img/image-20240603160008673.png" srcset="/img/loading.gif" lazyload alt="image-20240603160008673"></p>
+<p><img src="/../../../img/image-20240603160008673.png" alt="image-20240603160008673"></p>
 <p>使用CDN后</p>
 <ul>
 <li>用户向DNS服务器请求IP<ul>
@@ -376,19 +229,19 @@
 </ul>
 </li>
 </ul>
-<p><img src="/../../../img/image-20240603160106460.png" srcset="/img/loading.gif" lazyload alt="image-20240603160106460"></p>
+<p><img src="/../../../img/image-20240603160106460.png" alt="image-20240603160106460"></p>
 <h2 id="1-3-配置CDN"><a href="#1-3-配置CDN" class="headerlink" title="1.3 配置CDN"></a>1.3 配置CDN</h2><h3 id="1-3-1-配置流程"><a href="#1-3-1-配置流程" class="headerlink" title="1.3.1 配置流程"></a>1.3.1 配置流程</h3><p>开通CDN服务</p>
-<p><img src="/../../../img/image-20240603160933406.png" srcset="/img/loading.gif" lazyload alt="image-20240603160933406"></p>
+<p><img src="/../../../img/image-20240603160933406.png" alt="image-20240603160933406"></p>
 <p>添加加速域名</p>
-<p><img src="/../../../img/image-20240603161008778.png" srcset="/img/loading.gif" lazyload alt="image-20240603161008778"></p>
+<p><img src="/../../../img/image-20240603161008778.png" alt="image-20240603161008778"></p>
 <p>获取域名对应的cname链接</p>
-<p><img src="/../../../img/image-20240603161037051.png" srcset="/img/loading.gif" lazyload alt="image-20240603161037051"></p>
+<p><img src="/../../../img/image-20240603161037051.png" alt="image-20240603161037051"></p>
 <p>cdn cname 配置完成, 对cdn进行刷新预热 (源站数据上传cdn上面)  </p>
-<p><img src="/../../../img/image-20240603161141292.png" srcset="/img/loading.gif" lazyload alt="image-20240603161141292"></p>
+<p><img src="/../../../img/image-20240603161141292.png" alt="image-20240603161141292"></p>
 <p>配置刷新示例：</p>
-<p><img src="/../../../img/image-20240603161741121.png" srcset="/img/loading.gif" lazyload alt="image-20240603161741121"></p>
+<p><img src="/../../../img/image-20240603161741121.png" alt="image-20240603161741121"></p>
 <p>配置预热示例：</p>
-<p><img src="/../../../img/image-20240603162057025.png" srcset="/img/loading.gif" lazyload alt="image-20240603162057025"></p>
+<p><img src="/../../../img/image-20240603162057025.png" alt="image-20240603162057025"></p>
 <blockquote>
 <p>刷新vs预热</p>
 <ul>
@@ -402,15 +255,15 @@
 <li>浏览器F12检查，是否命中CDN</li>
 </ul>
 <p>访问站点，浏览器F12看”x-cache”</p>
-<p><img src="/../../../img/image-20240603161255392.png" srcset="/img/loading.gif" lazyload alt="image-20240603161255392"></p>
+<p><img src="/../../../img/image-20240603161255392.png" alt="image-20240603161255392"></p>
 <h3 id="1-3-2-CDN开启HTTPS"><a href="#1-3-2-CDN开启HTTPS" class="headerlink" title="1.3.2 CDN开启HTTPS"></a>1.3.2 CDN开启HTTPS</h3><p>默认是关闭</p>
-<p><img src="/../../../img/image-20240603161421240.png" srcset="/img/loading.gif" lazyload alt="image-20240603161421240"></p>
+<p><img src="/../../../img/image-20240603161421240.png" alt="image-20240603161421240"></p>
 <p>HTTPS设置开启</p>
-<p><img src="/../../../img/image-20240603161442951.png" srcset="/img/loading.gif" lazyload alt="image-20240603161442951"></p>
+<p><img src="/../../../img/image-20240603161442951.png" alt="image-20240603161442951"></p>
 <p>配置完之后，是开启状态</p>
-<p><img src="/../../../img/image-20240603161502275.png" srcset="/img/loading.gif" lazyload alt="image-20240603161502275"></p>
+<p><img src="/../../../img/image-20240603161502275.png" alt="image-20240603161502275"></p>
 <p>配置https跳转</p>
-<p><img src="/../../../img/image-20240603161530455.png" srcset="/img/loading.gif" lazyload alt="image-20240603161530455"></p>
+<p><img src="/../../../img/image-20240603161530455.png" alt="image-20240603161530455"></p>
 <h2 id="1-4-CDN收费计算方法"><a href="#1-4-CDN收费计算方法" class="headerlink" title="1.4 CDN收费计算方法"></a>1.4 CDN收费计算方法</h2><ul>
 <li>按峰值带宽计费说明</li>
 <li>按流量计费说明</li>
@@ -424,36 +277,36 @@
 <li>dnat	端口映射（建议少用，比较危险）</li>
 </ul>
 <h2 id="2-2-案例"><a href="#2-2-案例" class="headerlink" title="2.2 案例"></a>2.2 案例</h2><h3 id="2-2-1-前期准备"><a href="#2-2-1-前期准备" class="headerlink" title="2.2.1 前期准备"></a>2.2.1 前期准备</h3><p>创建一台只有<code>内网IP</code>的ECS</p>
-<p><img src="/../../../img/image-20240603164100624.png" srcset="/img/loading.gif" lazyload alt="image-20240603164100624"></p>
+<p><img src="/../../../img/image-20240603164100624.png" alt="image-20240603164100624"></p>
 <p>创建NAT网关</p>
-<p><img src="/../../../img/image-20240603164142787.png" srcset="/img/loading.gif" lazyload alt="image-20240603164142787"></p>
+<p><img src="/../../../img/image-20240603164142787.png" alt="image-20240603164142787"></p>
 <p>按需配置</p>
-<p><img src="/../../../img/image-20240603164243277.png" srcset="/img/loading.gif" lazyload alt="image-20240603164243277"></p>
+<p><img src="/../../../img/image-20240603164243277.png" alt="image-20240603164243277"></p>
 <p>确认订单</p>
-<p><img src="/../../../img/image-20240603164311642.png" srcset="/img/loading.gif" lazyload alt="image-20240603164311642"></p>
+<p><img src="/../../../img/image-20240603164311642.png" alt="image-20240603164311642"></p>
 <p>绑定弹性公网IP</p>
-<p><img src="/../../../img/image-20240603164459171.png" srcset="/img/loading.gif" lazyload alt="image-20240603164459171"></p>
+<p><img src="/../../../img/image-20240603164459171.png" alt="image-20240603164459171"></p>
 <h3 id="2-2-2-案例01-共享上网"><a href="#2-2-2-案例01-共享上网" class="headerlink" title="2.2.2 案例01-共享上网"></a>2.2.2 案例01-共享上网</h3><p>设置snat</p>
-<p><img src="/../../../img/image-20240603164536139.png" srcset="/img/loading.gif" lazyload alt="image-20240603164536139"></p>
+<p><img src="/../../../img/image-20240603164536139.png" alt="image-20240603164536139"></p>
 <p>选择粒度和主机</p>
-<p><img src="/../../../img/image-20240603164636308.png" srcset="/img/loading.gif" lazyload alt="image-20240603164636308"></p>
+<p><img src="/../../../img/image-20240603164636308.png" alt="image-20240603164636308"></p>
 <p>添加完之后，只有公网IP的ECS，就能上网了</p>
 <h3 id="2-2-3-案例02-端口映射"><a href="#2-2-3-案例02-端口映射" class="headerlink" title="2.2.3 案例02-端口映射"></a>2.2.3 案例02-端口映射</h3><p>创建DNAT条目</p>
-<p><img src="/../../../img/image-20240603165222196.png" srcset="/img/loading.gif" lazyload alt="image-20240603165222196"></p>
+<p><img src="/../../../img/image-20240603165222196.png" alt="image-20240603165222196"></p>
 <p>按需配置</p>
-<p><img src="/../../../img/image-20240603165235031.png" srcset="/img/loading.gif" lazyload alt="image-20240603165235031"></p>
+<p><img src="/../../../img/image-20240603165235031.png" alt="image-20240603165235031"></p>
 <p>查看配置好的DNAT条目</p>
-<p><img src="/../../../img/image-20240603165255999.png" srcset="/img/loading.gif" lazyload alt="image-20240603165255999"></p>
+<p><img src="/../../../img/image-20240603165255999.png" alt="image-20240603165255999"></p>
 <h1 id="三、阿里云安全管理"><a href="#三、阿里云安全管理" class="headerlink" title="三、阿里云安全管理"></a>三、阿里云安全管理</h1><p>可以查看主机资产信息、漏洞分析、安全处理</p>
 <h2 id="3-1-安全组"><a href="#3-1-安全组" class="headerlink" title="3.1 安全组"></a>3.1 安全组</h2><p>4层和3层，进行处理，默认是白名单</p>
 <p>ECS首页进入配置</p>
-<p><img src="/../../../img/image-20240603165706960.png" srcset="/img/loading.gif" lazyload alt="image-20240603165706960"></p>
+<p><img src="/../../../img/image-20240603165706960.png" alt="image-20240603165706960"></p>
 <p>  预览</p>
-<p><img src="/../../../img/image-20240603165751327.png" srcset="/img/loading.gif" lazyload alt="image-20240603165751327"></p>
+<p><img src="/../../../img/image-20240603165751327.png" alt="image-20240603165751327"></p>
 <p>授权策略</p>
-<p><img src="/../../../img/image-20240603165840371.png" srcset="/img/loading.gif" lazyload alt="image-20240603165840371"></p>
+<p><img src="/../../../img/image-20240603165840371.png" alt="image-20240603165840371"></p>
 <h2 id="3-2-云安全中心"><a href="#3-2-云安全中心" class="headerlink" title="3.2 云安全中心"></a>3.2 云安全中心</h2><p>安全中心webshell告警案例，发现可疑文件</p>
-<p><img src="/../../../img/image-20240603165116165.png" srcset="/img/loading.gif" lazyload alt="image-20240603165116165"></p>
+<p><img src="/../../../img/image-20240603165116165.png" alt="image-20240603165116165"></p>
 <p>根据日志找到可以文件，然后进行处理就行</p>
 <h2 id="3-2-waf防火墙"><a href="#3-2-waf防火墙" class="headerlink" title="3.2 waf防火墙"></a>3.2 waf防火墙</h2><p>用于：</p>
 <ul>
@@ -461,23 +314,19 @@
 <li>iptables &#x2F; 安全组 4层防火墙 (控制 端口和ip)</li>
 </ul>
 <p>配置waf防火墙</p>
-<p><img src="/../../../img/image-20240603170020581.png" srcset="/img/loading.gif" lazyload alt="image-20240603170020581"></p>
+<p><img src="/../../../img/image-20240603170020581.png" alt="image-20240603170020581"></p>
 <p>继续</p>
-<p><img src="/../../../img/image-20240603170036775.png" srcset="/img/loading.gif" lazyload alt="image-20240603170036775"></p>
+<p><img src="/../../../img/image-20240603170036775.png" alt="image-20240603170036775"></p>
 <h1 id="四、BBS-GO项目"><a href="#四、BBS-GO项目" class="headerlink" title="四、BBS-GO项目"></a>四、BBS-GO项目</h1><h2 id="4-1-项目架构"><a href="#4-1-项目架构" class="headerlink" title="4.1 项目架构"></a>4.1 项目架构</h2><p>BBS-GO是一款基于Go语言开发的论坛系统，分为前台页面和后台管理页面，使用阿里云进行部署</p>
-<p><img src="/../../../img/image-20240605101952569.png" srcset="/img/loading.gif" lazyload alt="image-20240605101952569"></p>
+<p><img src="/../../../img/image-20240605101952569.png" alt="image-20240605101952569"></p>
 <blockquote>
 <p>获取源码：gitee bbs-go</p>
 </blockquote>
 <h2 id="4-2-部署步骤"><a href="#4-2-部署步骤" class="headerlink" title="4.2 部署步骤"></a>4.2 部署步骤</h2><h3 id="4-2-1-数据库RDS"><a href="#4-2-1-数据库RDS" class="headerlink" title="4.2.1 数据库RDS"></a>4.2.1 数据库RDS</h3><p>数据库准备  </p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">数据库用户：bbsgo
-数据库名字：bbsgo
-数据库的密码：Bbsgo123
-数据库的地址：rmbp10i499z66iah5zq.mysql.rds.aliyuncs.com
-数据库端口：3306</code></pre></div></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">数据库用户：bbsgo</span><br><span class="line">数据库名字：bbsgo</span><br><span class="line">数据库的密码：Bbsgo123</span><br><span class="line">数据库的地址：rmbp10i499z66iah5zq.mysql.rds.aliyuncs.com</span><br><span class="line">数据库端口：3306</span><br></pre></td></tr></table></figure>
 
 <p>导入数据</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 按项目文档导入</code></pre></div></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">按项目文档导入</span></span><br></pre></td></tr></table></figure>
 
 
 
@@ -486,149 +335,36 @@
 <p>需创建ECS服务器操作</p>
 </blockquote>
 <p>获取代码</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">git clone https:&#x2F;&#x2F;gitee.com&#x2F;mlogclub&#x2F;bbs-go.git
-cd bbs-go</code></pre></div></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git clone https://gitee.com/mlogclub/bbs-go.git</span><br><span class="line">cd bbs-go</span><br></pre></td></tr></table></figure>
 
 <blockquote>
 <p>admin&#x2F; #站点前端,后台管理页面的源代码.<br>server&#x2F; #网站后端,Golang语言源代码.<br>site&#x2F; #用户访问入口站点,前端站点,源代码.  </p>
 </blockquote>
 <p>进入server&#x2F;目录，编译Golang代码，生成命令bbs-go</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">#1. 安装编译Golang语言的环境
-apt install -y golang
-
-#2. 编译的过程中需要自动下载依赖,从github.com下载,速度缓慢.
-echo &#39;export
-GOPROXY&#x3D;https:&#x2F;&#x2F;proxy.golang.com.cn,direct&#39; &gt;&gt; &#x2F;etc&#x2F;profile
-source &#x2F;etc&#x2F;profile
-
-#3. 检查
-root@ubt-ecs:~&#x2F;bbs-go# echo $GOPROXY
-https:&#x2F;&#x2F;proxy.golang.com.cn,direct
-root@ubt-ecs:~&#x2F;bbs-go# go version
-go version go1.18.1 linux&#x2F;amd64
-
-#4. 准备编译
-pwd(在server目录下)
-go build
-
-#5. 修改配置文件
-bbs-go.yml
-mkdir -p &#x2F;app&#x2F;code&#x2F;bbs-go&#x2F;&#123;server,site,admin&#125;
-cp bbs-go bbs-go.example.yaml &#x2F;app&#x2F;code&#x2F;bbsgo&#x2F;server&#x2F;
-
-# 配置文件内容参考项目手册</code></pre></div></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">1. 安装编译Golang语言的环境</span></span><br><span class="line">apt install -y golang</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">2. 编译的过程中需要自动下载依赖,从github.com下载,速度缓慢.</span></span><br><span class="line">echo &#x27;export</span><br><span class="line">GOPROXY=https://proxy.golang.com.cn,direct&#x27; &gt;&gt; /etc/profile</span><br><span class="line">source /etc/profile</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">3. 检查</span></span><br><span class="line">root@ubt-ecs:~/bbs-go# echo $GOPROXY</span><br><span class="line">https://proxy.golang.com.cn,direct</span><br><span class="line">root@ubt-ecs:~/bbs-go# go version</span><br><span class="line">go version go1.18.1 linux/amd64</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">4. 准备编译</span></span><br><span class="line">pwd(在server目录下)</span><br><span class="line">go build</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">5. 修改配置文件</span></span><br><span class="line">bbs-go.yml</span><br><span class="line">mkdir -p /app/code/bbs-go/&#123;server,site,admin&#125;</span><br><span class="line">cp bbs-go bbs-go.example.yaml /app/code/bbsgo/server/</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">配置文件内容参考项目手册</span></span><br></pre></td></tr></table></figure>
 
 <h3 id="4-2-4-部署site前端代码"><a href="#4-2-4-部署site前端代码" class="headerlink" title="4.2.4 部署site前端代码"></a>4.2.4 部署site前端代码</h3><p>vue&#x2F;nuxt 框架<br>通过nodejs编译,npm命令  </p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">#1. 准备Nodejs环境
-##下载
-wget -P &#x2F;app&#x2F;tools&#x2F;
-https&#x2F;&#x2F;mirrors.tuna.tsinghua.edu.cn&#x2F;nodejsrelease&#x2F;v16.19.1&#x2F;node-v16.19.1-linux-x64.tar.xz
-cd &#x2F;app&#x2F;tools&#x2F;
-##解压与软连接
-tar xf node-v16.19.1-linux-x64.tar.xz
-ln -s node-v16.19.1-linux-x64&#x2F; node
-##配置环境变量
-echo &#39;export PATH&#x3D;&#x2F;app&#x2F;tools&#x2F;node&#x2F;bin&#x2F;:$PATH&#39;
-&gt;&gt;&#x2F;etc&#x2F;profile
-. &#x2F;etc&#x2F;profile
-
-#2. 检查
-root@ubt-ecs:&#x2F;app&#x2F;tools# node -v
-v16.19.1
-root@ubt-ecs:&#x2F;app&#x2F;tools# npm -v
-8.19.3
-
-#3. 配置npm命令源,cnpm淘宝二次开发,性能高,速度快.
-##安装cnpm
-npm install -g cnpm Վʔ
-registry&#x3D;https:&#x2F;&#x2F;registry.npmmirror.com
-##永久配置了下npm&#x2F;cnpm源
-npm config set registry
-https:Վˌregistry.npmmirror.com
-
-#4. 前端代码的配置文件
-nuxt.config.js
-前端代码中后端服务的ip和地址.
-proxy: &#123;
-&#39;&#x2F;api&#x2F;&#39;
-: &#39;http:Վˌ127.0.0.1:8082&#39;,
-&#125;,
-
-#5. 编译代码
-进入前端代码目录
-npm install #根据代码的要求下载与安装前端的依赖.
-npm run build #编译与构建
-#6. 启动nuxt
-npm run start</code></pre></div></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">1. 准备Nodejs环境</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment">#下载</span></span></span><br><span class="line">wget -P /app/tools/</span><br><span class="line">https//mirrors.tuna.tsinghua.edu.cn/nodejsrelease/v16.19.1/node-v16.19.1-linux-x64.tar.xz</span><br><span class="line">cd /app/tools/</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment">#解压与软连接</span></span></span><br><span class="line">tar xf node-v16.19.1-linux-x64.tar.xz</span><br><span class="line">ln -s node-v16.19.1-linux-x64/ node</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment">#配置环境变量</span></span></span><br><span class="line">echo &#x27;export PATH=/app/tools/node/bin/:$PATH&#x27;</span><br><span class="line"><span class="meta prompt_">&gt;</span><span class="language-bash">&gt;/etc/profile</span></span><br><span class="line">. /etc/profile</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">2. 检查</span></span><br><span class="line">root@ubt-ecs:/app/tools# node -v</span><br><span class="line">v16.19.1</span><br><span class="line">root@ubt-ecs:/app/tools# npm -v</span><br><span class="line">8.19.3</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">3. 配置npm命令源,cnpm淘宝二次开发,性能高,速度快.</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment">#安装cnpm</span></span></span><br><span class="line">npm install -g cnpm Վʔ</span><br><span class="line">registry=https://registry.npmmirror.com</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment">#永久配置了下npm/cnpm源</span></span></span><br><span class="line">npm config set registry</span><br><span class="line">https:Վˌregistry.npmmirror.com</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">4. 前端代码的配置文件</span></span><br><span class="line">nuxt.config.js</span><br><span class="line">前端代码中后端服务的ip和地址.</span><br><span class="line">proxy: &#123;</span><br><span class="line">&#x27;/api/&#x27;</span><br><span class="line">: &#x27;http:Վˌ127.0.0.1:8082&#x27;,</span><br><span class="line">&#125;,</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">5. 编译代码</span></span><br><span class="line">进入前端代码目录</span><br><span class="line">npm install #根据代码的要求下载与安装前端的依赖.</span><br><span class="line">npm run build #编译与构建</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">6. 启动nuxt</span></span><br><span class="line">npm run start</span><br></pre></td></tr></table></figure>
 
 <p>ngx配置文件</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">root@ubt-ecs:~# cat &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;bbsgo.conf
-server &#123;
-	listen 80;
-	server_name bbs.oldboylinux.cn;
-	location &#x2F; &#123;
-		proxy_pass http:Վˌ127.0.0.1:3000;
-	&#125;
-&#125;</code></pre></div></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">root@ubt-ecs:~# cat /etc/nginx/conf.d/bbsgo.conf</span><br><span class="line">server &#123;</span><br><span class="line">	listen 80;</span><br><span class="line">	server_name bbs.oldboylinux.cn;</span><br><span class="line">	location / &#123;</span><br><span class="line">		proxy_pass http:Վˌ127.0.0.1:3000;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>进行访问，注意配置dns解析  </p>
-<p><img src="/../../../img/image-20240605103219773.png" srcset="/img/loading.gif" lazyload alt="image-20240605103219773"></p>
-<h3 id="4-2-5-部署admin前端代码"><a href="#4-2-5-部署admin前端代码" class="headerlink" title="4.2.5 部署admin前端代码"></a>4.2.5 部署admin前端代码</h3><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 进入admin代码目录
-cnpm install
-cnpm install path-to-regexp
-
-#cnpm run dev #调用.env.development文件
-cnpm run build #调用 .env.production 文件 生成静态文件.
-放在ngx中即可.</code></pre></div></figure>
+<p><img src="/../../../img/image-20240605103219773.png" alt="image-20240605103219773"></p>
+<h3 id="4-2-5-部署admin前端代码"><a href="#4-2-5-部署admin前端代码" class="headerlink" title="4.2.5 部署admin前端代码"></a>4.2.5 部署admin前端代码</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">进入admin代码目录</span></span><br><span class="line">cnpm install</span><br><span class="line">cnpm install path-to-regexp</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">cnpm run dev <span class="comment">#调用.env.development文件</span></span></span><br><span class="line">cnpm run build #调用 .env.production 文件 生成静态文件.</span><br><span class="line">放在ngx中即可.</span><br></pre></td></tr></table></figure>
 
 <blockquote>
 <p>.env.production配置文件说明  </p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">&gt;root@ubt-ecs:~&#x2F;bbs-go&#x2F;admin# cat .env.production
-&gt;# just a flag
-&gt;ENV &#x3D; &#39;production&#39;
-&gt;# base api
-&gt;VUE_APP_BASE_API &#x3D; &#39;http:Վˌbbs.oldboylinux.cn&#39;
-&gt;VUE_APP_BASE_URL &#x3D; &#39;http:Վˌbbs.oldboylinux.cn&#39;
-
-
-&gt;# 接口请求地址HOST，用于admin模块请求服务端接口
-&gt;# 该配置的值一般设置为server端的HOST，或者site端的
-&gt;HOST（因为site端代理了server端的所有接口）
-&gt;VUE_APP_BASE_API &#x3D; &#39;http:Վˌbbs.oldboylinux.cn&#39; #
-&gt;域名或公网ip.
-&gt;# site模块访问根目录，作用：例如后台点击帖子标题时，能够正
-&gt;确跳转到帖子site端的访问路径
-&gt;VUE_APP_BASE_URL &#x3D; &#39;http:Վˌbbs.oldboylinux.cn&#39;</code></pre></div></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">&gt;</span><span class="language-bash">root@ubt-ecs:~/bbs-go/admin# <span class="built_in">cat</span> .env.production</span></span><br><span class="line"><span class="meta prompt_">&gt;</span><span class="language-bash"><span class="comment"># just a flag</span></span></span><br><span class="line"><span class="meta prompt_">&gt;</span><span class="language-bash">ENV = <span class="string">&#x27;production&#x27;</span></span></span><br><span class="line"><span class="meta prompt_">&gt;</span><span class="language-bash"><span class="comment"># base api</span></span></span><br><span class="line"><span class="meta prompt_">&gt;</span><span class="language-bash">VUE_APP_BASE_API = <span class="string">&#x27;http:Վˌbbs.oldboylinux.cn&#x27;</span></span></span><br><span class="line"><span class="meta prompt_">&gt;</span><span class="language-bash">VUE_APP_BASE_URL = <span class="string">&#x27;http:Վˌbbs.oldboylinux.cn&#x27;</span></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">&gt;</span><span class="language-bash"><span class="comment"># 接口请求地址HOST，用于admin模块请求服务端接口</span></span></span><br><span class="line"><span class="meta prompt_">&gt;</span><span class="language-bash"><span class="comment"># 该配置的值一般设置为server端的HOST，或者site端的</span></span></span><br><span class="line"><span class="meta prompt_">&gt;</span><span class="language-bash">HOST（因为site端代理了server端的所有接口）</span></span><br><span class="line"><span class="meta prompt_">&gt;</span><span class="language-bash">VUE_APP_BASE_API = <span class="string">&#x27;http:Վˌbbs.oldboylinux.cn&#x27;</span> <span class="comment">#</span></span></span><br><span class="line"><span class="meta prompt_">&gt;</span><span class="language-bash">域名或公网ip.</span></span><br><span class="line"><span class="meta prompt_">&gt;</span><span class="language-bash"><span class="comment"># site模块访问根目录，作用：例如后台点击帖子标题时，能够正</span></span></span><br><span class="line"><span class="meta prompt_">&gt;</span><span class="language-bash">确跳转到帖子site端的访问路径</span></span><br><span class="line"><span class="meta prompt_">&gt;</span><span class="language-bash">VUE_APP_BASE_URL = <span class="string">&#x27;http:Վˌbbs.oldboylinux.cn&#x27;</span></span></span><br></pre></td></tr></table></figure>
 </blockquote>
 <blockquote>
 <p>admin缺少的依赖  </p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">&gt;cnpm install Վʔsave path-to-regexp</code></pre></div></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">&gt;</span><span class="language-bash">cnpm install Վʔsave path-to-regexp</span></span><br></pre></td></tr></table></figure>
 </blockquote>
 <p>run build成功提示,静态资源生成到dist目录,这个目录下面的内容就可以放到ngx中.  </p>
-<p><img src="/../../../img/image-20240605103426270.png" srcset="/img/loading.gif" lazyload alt="image-20240605103426270"></p>
+<p><img src="/../../../img/image-20240605103426270.png" alt="image-20240605103426270"></p>
 <p>准备web环境</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 复制编译好的文件到ngx中
-mkdir -p &#x2F;app&#x2F;code&#x2F;bbs-go&#x2F;admin&#x2F;
-cp -r dist&#x2F;* &#x2F;app&#x2F;code&#x2F;bbs-go&#x2F;admin&#x2F;
-
-# ngx配置
-root@ubt-ecs:~&#x2F;bbs-go&#x2F;admin# cat
-&#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;bbsgo.conf
-server &#123;
-  listen 80;
-  server_name bbs.oldboylinux.cn;
-  location &#x2F; &#123;
-    proxy_pass http:Վˌ127.0.0.1:3000;
-  &#125;
-&#125;
-server &#123;
-  listen 8080;
-  server_name bbsadmin.oldboylinux.cn;
-  root &#x2F;app&#x2F;code&#x2F;bbs-go&#x2F;admin&#x2F;;
-  location &#x2F; &#123;
-    index index.html;
-  &#125;
-&#125;</code></pre></div></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">复制编译好的文件到ngx中</span></span><br><span class="line">mkdir -p /app/code/bbs-go/admin/</span><br><span class="line">cp -r dist/* /app/code/bbs-go/admin/</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">ngx配置</span></span><br><span class="line">root@ubt-ecs:~/bbs-go/admin# cat</span><br><span class="line">/etc/nginx/conf.d/bbsgo.conf</span><br><span class="line">server &#123;</span><br><span class="line">  listen 80;</span><br><span class="line">  server_name bbs.oldboylinux.cn;</span><br><span class="line">  location / &#123;</span><br><span class="line">    proxy_pass http:Վˌ127.0.0.1:3000;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">server &#123;</span><br><span class="line">  listen 8080;</span><br><span class="line">  server_name bbsadmin.oldboylinux.cn;</span><br><span class="line">  root /app/code/bbs-go/admin/;</span><br><span class="line">  location / &#123;</span><br><span class="line">    index index.html;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 
 
@@ -636,12 +372,12 @@ server &#123;
 <p>价格高，用的较少</p>
 </blockquote>
 <p>VPC高速通道，实现不同VPC之间的网络互通</p>
-<p><img src="/../../../img/image-20240605104745091.png" srcset="/img/loading.gif" lazyload alt="image-20240605104745091"></p>
+<p><img src="/../../../img/image-20240605104745091.png" alt="image-20240605104745091"></p>
 <p>关联VPC即可使用</p>
-<p><img src="/../../../img/image-20240605104809815.png" srcset="/img/loading.gif" lazyload alt="image-20240605104809815"></p>
+<p><img src="/../../../img/image-20240605104809815.png" alt="image-20240605104809815"></p>
 <h1 id="六、弹性伸缩ESS"><a href="#六、弹性伸缩ESS" class="headerlink" title="六、弹性伸缩ESS"></a>六、弹性伸缩ESS</h1><blockquote>
 <p>弹性容器ECI</p>
-<p><img src="/../../../img/image-20240605105805960.png" srcset="/img/loading.gif" lazyload alt="image-20240605105805960"></p>
+<p><img src="/../../../img/image-20240605105805960.png" alt="image-20240605105805960"></p>
 <p>弹性实例ECS</p>
 </blockquote>
 <p> 什么是弹性伸缩？</p>
@@ -656,365 +392,4 @@ server &#123;
 <ul>
 <li>需要购买阿里云配套的服务</li>
 </ul>
-
-                
-              </div>
-            
-            <hr/>
-            <div>
-              <div class="post-metas my-3">
-  
-    <div class="post-meta mr-3 d-flex align-items-center">
-      <i class="iconfont icon-category"></i>
-      
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/%E8%BF%90%E7%BB%B4/" class="category-chain-item">运维</a>
-  
-  
-    <span>></span>
-    
-  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" class="category-chain-item">（二）综合架构</a>
-  
-  
-
-  
-
-      </span>
-    
-  
-</span>
-
-    </div>
-  
-  
-</div>
-
-
-              
-  
-
-  <div class="license-box my-3">
-    <div class="license-title">
-      <div>day66-综合架构-阿里云进阶（三）</div>
-      <div>http://gsproj.github.io/2024/05/31/07_85期运维/03_自动化架构/day66-综合架构-阿里云进阶-3/</div>
-    </div>
-    <div class="license-meta">
-      
-        <div class="license-meta-item">
-          <div>作者</div>
-          <div>GongSheng</div>
-        </div>
-      
-      
-        <div class="license-meta-item license-meta-date">
-          <div>发布于</div>
-          <div>2024年5月31日</div>
-        </div>
-      
-      
-      
-        <div class="license-meta-item">
-          <div>许可协议</div>
-          <div>
-            
-              
-              
-                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
-                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
-                    <i class="iconfont icon-cc-by"></i>
-                  </span>
-                </a>
-              
-            
-          </div>
-        </div>
-      
-    </div>
-    <div class="license-icon iconfont"></div>
-  </div>
-
-
-
-              
-                <div class="post-prevnext my-3">
-                  <article class="post-prev col-6">
-                    
-                    
-                      <a href="/2024/06/05/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/03_%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9E%B6%E6%9E%84/day67-%E7%9B%91%E6%8E%A7%E6%9E%B6%E6%9E%84-Zabbix-1/" title="day67-监控架构-Zabbix(一)">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">day67-监控架构-Zabbix(一)</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
-                  </article>
-                  <article class="post-next col-6">
-                    
-                    
-                      <a href="/2024/05/31/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/03_%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9E%B6%E6%9E%84/day65-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84-%E9%98%BF%E9%87%8C%E4%BA%91%E8%BF%9B%E9%98%B6-2/" title="day65-综合架构-阿里云进阶（二）">
-                        <span class="hidden-mobile">day65-综合架构-阿里云进阶（二）</span>
-                        <span class="visible-mobile">下一篇</span>
-                        <i class="iconfont icon-arrowright"></i>
-                      </a>
-                    
-                  </article>
-                </div>
-              
-            </div>
-
-            
-          </article>
-        </div>
-      </div>
-    </div>
-
-    <div class="side-col d-none d-lg-block col-lg-2">
-      
-
-    </div>
-  </div>
-</div>
-
-
-
-
-
-  
-
-
-
-  
-
-
-
-  
-
-
-
-  
-
-
-
-  
-
-
-
-
-
-
-
-    
-
-    
-      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
-        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
-      </a>
-    
-
-    
-      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
-     aria-hidden="true">
-  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header text-center">
-        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
-        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body mx-3">
-        <div class="md-form mb-5">
-          <input type="text" id="local-search-input" class="form-control validate">
-          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
-        </div>
-        <div class="list-group" id="local-search-result"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-    
-
-    
-  </main>
-
-  <footer>
-    <div class="footer-inner">
-  
-    <div class="footer-content">
-       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
-    </div>
-  
-  
-  
-</div>
-
-  </footer>
-
-  <!-- Scripts -->
-  
-  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
-  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
-
-  <script>
-    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
-    NProgress.start()
-    window.addEventListener('load', function() {
-      NProgress.done();
-    })
-  </script>
-
-
-<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
-<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
-<script  src="/js/events.js" ></script>
-<script  src="/js/plugins.js" ></script>
-
-
-  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
-  <script>
-    (function (window, document) {
-      var typing = Fluid.plugins.typing;
-      var subtitle = document.getElementById('subtitle');
-      if (!subtitle || !typing) {
-        return;
-      }
-      var text = subtitle.getAttribute('data-typed-text');
-      
-        typing(text);
-      
-    })(window, document);
-  </script>
-
-
-
-
-  
-    <script  src="/js/img-lazyload.js" ></script>
-  
-
-
-
-
-  
-<script>
-  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
-    var toc = jQuery('#toc');
-    if (toc.length === 0 || !window.tocbot) { return; }
-    var boardCtn = jQuery('#board-ctn');
-    var boardTop = boardCtn.offset().top;
-
-    window.tocbot.init(Object.assign({
-      tocSelector     : '#toc-body',
-      contentSelector : '.markdown-body',
-      linkClass       : 'tocbot-link',
-      activeLinkClass : 'tocbot-active-link',
-      listClass       : 'tocbot-list',
-      isCollapsedClass: 'tocbot-is-collapsed',
-      collapsibleClass: 'tocbot-is-collapsible',
-      scrollSmooth    : true,
-      includeTitleTags: true,
-      headingsOffset  : -boardTop,
-    }, CONFIG.toc));
-    if (toc.find('.toc-list-item').length > 0) {
-      toc.css('visibility', 'visible');
-    }
-
-    Fluid.events.registerRefreshCallback(function() {
-      if ('tocbot' in window) {
-        tocbot.refresh();
-        var toc = jQuery('#toc');
-        if (toc.length === 0 || !tocbot) {
-          return;
-        }
-        if (toc.find('.toc-list-item').length > 0) {
-          toc.css('visibility', 'visible');
-        }
-      }
-    });
-  });
-</script>
-
-
-  <script  src="https://lib.baomitu.com/prism/1.29.0/components/prism-core.min.js" ></script>
-
-  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js" ></script>
-
-  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
-
-  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
-
-  <script>Fluid.plugins.codeWidget();</script>
-
-
-  
-<script>
-  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
-    window.anchors.options = {
-      placement: CONFIG.anchorjs.placement,
-      visible  : CONFIG.anchorjs.visible
-    };
-    if (CONFIG.anchorjs.icon) {
-      window.anchors.options.icon = CONFIG.anchorjs.icon;
-    }
-    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
-    var res = [];
-    for (var item of el) {
-      res.push('.markdown-body > ' + item.trim());
-    }
-    if (CONFIG.anchorjs.placement === 'left') {
-      window.anchors.options.class = 'anchorjs-link-left';
-    }
-    window.anchors.add(res.join(', '));
-
-    Fluid.events.registerRefreshCallback(function() {
-      if ('anchors' in window) {
-        anchors.removeAll();
-        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
-        var res = [];
-        for (var item of el) {
-          res.push('.markdown-body > ' + item.trim());
-        }
-        if (CONFIG.anchorjs.placement === 'left') {
-          anchors.options.class = 'anchorjs-link-left';
-        }
-        anchors.add(res.join(', '));
-      }
-    });
-  });
-</script>
-
-
-  
-<script>
-  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
-    Fluid.plugins.fancyBox();
-  });
-</script>
-
-
-  <script>Fluid.plugins.imageCaption();</script>
-
-  <script  src="/js/local-search.js" ></script>
-
-
-
-
-
-<!-- 主题的启动项，将它保持在最底部 -->
-<!-- the boot of the theme, keep it at the bottom -->
-<script  src="/js/boot.js" ></script>
-
-
-  
-
-  <noscript>
-    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
-  </noscript>
-</body>
-</html>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://gsproj.github.io">Haris</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://gsproj.github.io/2024/05/31/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/03_%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9E%B6%E6%9E%84/day66-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84-%E9%98%BF%E9%87%8C%E4%BA%91%E8%BF%9B%E9%98%B6-3/">http://gsproj.github.io/2024/05/31/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/03_%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9E%B6%E6%9E%84/day66-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84-%E9%98%BF%E9%87%8C%E4%BA%91%E8%BF%9B%E9%98%B6-3/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://gsproj.github.io" target="_blank">迎风之豚的博客</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="/img/%E7%BA%A2%E7%8C%AA.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2024/05/31/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/03_%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9E%B6%E6%9E%84/day65-%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84-%E9%98%BF%E9%87%8C%E4%BA%91%E8%BF%9B%E9%98%B6-2/" title="day65-综合架构-阿里云进阶（二）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">day65-综合架构-阿里云进阶（二）</div></div><div class="info-2"><div class="info-item-1">综合架构-阿里云进阶-02今日内容：  CLB&#x2F;ALB负载均衡 域名和DNS配置 HTTPS证书配置  一、CLB&#x2F;ALB负载均衡公有云的负载均衡一般都是现成的产品，一般不需要我们关注产品的底层实现 1.1 CLB和ALB概述负载均衡选型：  现成产品： CLB：传统型负载均衡，以前叫SLB ALB   也可以自己搭建：ECS * 2 + keepalived，需要提供VIP（原来叫havip）  CLB 对比 ALB  CLB和ALB的架构图：  1.2 CLB1.2.1 CLB的工作原理高清：https://www.processon.com/view/link/5eea0f6d07912929cb4a5dab   CLB背后的实现架构：  四层和七层的转发  1.2.2 CLB快速上手1.2.1.1 环境准备准备两台ECS    主机名 nginx...</div></div></div></a><a class="pagination-related" href="/2024/06/05/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/03_%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9E%B6%E6%9E%84/day67-%E7%9B%91%E6%8E%A7%E6%9E%B6%E6%9E%84-Zabbix-1/" title="day67-监控架构-Zabbix(一)"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">day67-监控架构-Zabbix(一)</div></div><div class="info-2"><div class="info-item-1">监控架构-Zabbix-01今日内容： -  一、Zabbix概述Zabbix是一个CS(服务端&#x2F;客户端)架构的服务.   它的整体架构：  客户端agent收集集群信息 agent反馈收集的信息给server服务端 通过前端展示数据   二、Zabbix使用指南2.1 主机规划2.1.1 推荐配置   规模 平台 CPU&#x2F;内存 数据库 受监控的主机数 量    小型 CentOS Virtual Appliance MySQL InnoDB 100   中型 CentOS 2 CPU cores&#x2F;2GB MySQL InnoDB 500   大型 RedHat Enterprise Linux 4 CPU cores&#x2F;8GB RAID10 MySQL InnoDB 或 PostgreSQL &gt;1000   极大 型 RedHat Enterprise Linux 8 CPU cores&#x2F;16GB Fast RAID10 MySQL InnoDB PostgreSQL 或 &gt;10000   2.1.2...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/%E7%BA%A2%E7%8C%AA.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Haris</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">208</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">1</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">29</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84-%E9%98%BF%E9%87%8C%E4%BA%91%E8%BF%9B%E9%98%B6-03"><span class="toc-number">1.</span> <span class="toc-text">综合架构-阿里云进阶-03</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81CDN"><span class="toc-number">2.</span> <span class="toc-text">一、CDN</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-CDN%E6%A6%82%E8%BF%B0"><span class="toc-number">2.1.</span> <span class="toc-text">1.1 CDN概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-2-CDN%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90"><span class="toc-number">2.2.</span> <span class="toc-text">1.2 CDN流程分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-3-%E9%85%8D%E7%BD%AECDN"><span class="toc-number">2.3.</span> <span class="toc-text">1.3 配置CDN</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-1-%E9%85%8D%E7%BD%AE%E6%B5%81%E7%A8%8B"><span class="toc-number">2.3.1.</span> <span class="toc-text">1.3.1 配置流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-2-%E9%AA%8C%E8%AF%81"><span class="toc-number">2.3.2.</span> <span class="toc-text">1.3.2 验证</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-2-CDN%E5%BC%80%E5%90%AFHTTPS"><span class="toc-number">2.3.3.</span> <span class="toc-text">1.3.2 CDN开启HTTPS</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-4-CDN%E6%94%B6%E8%B4%B9%E8%AE%A1%E7%AE%97%E6%96%B9%E6%B3%95"><span class="toc-number">2.4.</span> <span class="toc-text">1.4 CDN收费计算方法</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81NAT%E7%BD%91%E5%85%B3"><span class="toc-number">3.</span> <span class="toc-text">二、NAT网关</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-%E6%A6%82%E8%BF%B0"><span class="toc-number">3.1.</span> <span class="toc-text">2.1 概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-%E6%A1%88%E4%BE%8B"><span class="toc-number">3.2.</span> <span class="toc-text">2.2 案例</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-1-%E5%89%8D%E6%9C%9F%E5%87%86%E5%A4%87"><span class="toc-number">3.2.1.</span> <span class="toc-text">2.2.1 前期准备</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-2-%E6%A1%88%E4%BE%8B01-%E5%85%B1%E4%BA%AB%E4%B8%8A%E7%BD%91"><span class="toc-number">3.2.2.</span> <span class="toc-text">2.2.2 案例01-共享上网</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-3-%E6%A1%88%E4%BE%8B02-%E7%AB%AF%E5%8F%A3%E6%98%A0%E5%B0%84"><span class="toc-number">3.2.3.</span> <span class="toc-text">2.2.3 案例02-端口映射</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E9%98%BF%E9%87%8C%E4%BA%91%E5%AE%89%E5%85%A8%E7%AE%A1%E7%90%86"><span class="toc-number">4.</span> <span class="toc-text">三、阿里云安全管理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-%E5%AE%89%E5%85%A8%E7%BB%84"><span class="toc-number">4.1.</span> <span class="toc-text">3.1 安全组</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-%E4%BA%91%E5%AE%89%E5%85%A8%E4%B8%AD%E5%BF%83"><span class="toc-number">4.2.</span> <span class="toc-text">3.2 云安全中心</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-waf%E9%98%B2%E7%81%AB%E5%A2%99"><span class="toc-number">4.3.</span> <span class="toc-text">3.2 waf防火墙</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81BBS-GO%E9%A1%B9%E7%9B%AE"><span class="toc-number">5.</span> <span class="toc-text">四、BBS-GO项目</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#4-1-%E9%A1%B9%E7%9B%AE%E6%9E%B6%E6%9E%84"><span class="toc-number">5.1.</span> <span class="toc-text">4.1 项目架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-2-%E9%83%A8%E7%BD%B2%E6%AD%A5%E9%AA%A4"><span class="toc-number">5.2.</span> <span class="toc-text">4.2 部署步骤</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-1-%E6%95%B0%E6%8D%AE%E5%BA%93RDS"><span class="toc-number">5.2.1.</span> <span class="toc-text">4.2.1 数据库RDS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-2-%E5%AD%98%E5%82%A8OSS"><span class="toc-number">5.2.2.</span> <span class="toc-text">4.2.2 存储OSS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-3-%E7%BC%96%E8%AF%91Go%E4%BB%A3%E7%A0%81"><span class="toc-number">5.2.3.</span> <span class="toc-text">4.2.3 编译Go代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-4-%E9%83%A8%E7%BD%B2site%E5%89%8D%E7%AB%AF%E4%BB%A3%E7%A0%81"><span class="toc-number">5.2.4.</span> <span class="toc-text">4.2.4 部署site前端代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-5-%E9%83%A8%E7%BD%B2admin%E5%89%8D%E7%AB%AF%E4%BB%A3%E7%A0%81"><span class="toc-number">5.2.5.</span> <span class="toc-text">4.2.5 部署admin前端代码</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E4%BA%91%E4%BC%81%E4%B8%9A%E7%BD%91CEN"><span class="toc-number">6.</span> <span class="toc-text">五、云企业网CEN</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%BC%B9%E6%80%A7%E4%BC%B8%E7%BC%A9ESS"><span class="toc-number">7.</span> <span class="toc-text">六、弹性伸缩ESS</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/03/12/09_%E9%9F%A9%E5%85%88%E8%B6%85K8S/01-Docker%E5%9F%BA%E7%A1%80/04-Dockerfile%E5%AE%9E%E6%88%98%E7%AF%87-%E6%9E%84%E5%BB%BA%E4%BC%81%E4%B8%9A%E7%BA%A7%E9%95%9C%E5%83%8F/" title="04-Dockerfile实战篇-构建企业级镜像">04-Dockerfile实战篇-构建企业级镜像</a><time datetime="2025-03-12T07:12:52.000Z" title="发表于 2025-03-12 15:12:52">2025-03-12</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/03/04/09_%E9%9F%A9%E5%85%88%E8%B6%85K8S/01-Docker%E5%9F%BA%E7%A1%80/03-Dockerfile%E5%9F%BA%E7%A1%80%E7%AF%87-%E5%9F%BA%E6%9C%AC%E8%AF%AD%E6%B3%95/" title="03-Dockerfile基础篇-基本语法">03-Dockerfile基础篇-基本语法</a><time datetime="2025-03-04T07:12:52.000Z" title="发表于 2025-03-04 15:12:52">2025-03-04</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/03/03/09_%E9%9F%A9%E5%85%88%E8%B6%85K8S/01-Docker%E5%9F%BA%E7%A1%80/02-%E8%BF%90%E8%A1%8CDocker%E5%AE%B9%E5%99%A8/" title="02-运行Docker容器">02-运行Docker容器</a><time datetime="2025-03-03T07:12:52.000Z" title="发表于 2025-03-03 15:12:52">2025-03-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/03/03/09_%E9%9F%A9%E5%85%88%E8%B6%85K8S/01-Docker%E5%9F%BA%E7%A1%80/01-Dokcer%E5%AE%B9%E5%99%A8%E5%9F%BA%E7%A1%80%E5%85%A5%E9%97%A8/" title="01-Docker基础">01-Docker基础</a><time datetime="2025-03-03T04:30:52.000Z" title="发表于 2025-03-03 12:30:52">2025-03-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/02/25/06_%E6%9D%82%E8%AE%B0/Ubuntu22.04%E6%98%BE%E5%8D%A1%E7%9B%B4%E9%80%9A/" title="Ubuntu22.04显卡直通虚拟机">Ubuntu22.04显卡直通虚拟机</a><time datetime="2025-02-25T09:50:52.000Z" title="发表于 2025-02-25 17:50:52">2025-02-25</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url(/img/footer.png);"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2025 By Haris</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>

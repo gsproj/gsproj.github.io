@@ -1,298 +1,185 @@
-
-
-<!DOCTYPE html>
-<html lang="zh-CN" data-default-color-scheme=auto>
-
-
-
-<head>
-  <meta charset="UTF-8">
-
-  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
-  <link rel="icon" href="/img/fluid.png">
-  
-
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
-  <meta http-equiv="x-ua-compatible" content="ie=edge">
-  
-  <meta name="theme-color" content="#2f4154">
-  <meta name="author" content="GongSheng">
-  <meta name="keywords" content="">
-  
-    <meta name="description" content="一、密钥认证-集群批量管理1.1 概述作用：  使管理更加轻松，两个节点通过密钥形式进行访问，不需要输入密码（单向）  应用场景：  一些服务在使用前要求我们做秘钥认证. 手动写批量管理脚本.  别名：  密钥认证 免密码登录 双机互信  1.2 密钥认证的原理图示如下：   什么是密钥对? 公钥: public key 一般以.pub结尾.私钥: private key 没有特殊的结尾    1">
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>06-密钥认证 | 迎风之豚的博客</title><meta name="author" content="Haris"><meta name="copyright" content="Haris"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="一、密钥认证-集群批量管理1.1 概述作用：  使管理更加轻松，两个节点通过密钥形式进行访问，不需要输入密码（单向）  应用场景：  一些服务在使用前要求我们做秘钥认证. 手动写批量管理脚本.  别名：  密钥认证 免密码登录 双机互信  1.2 密钥认证的原理图示如下：   什么是密钥对? 公钥: public key 一般以.pub结尾.私钥: private key 没有特殊的结尾    1">
 <meta property="og:type" content="article">
 <meta property="og:title" content="06-密钥认证">
 <meta property="og:url" content="http://gsproj.github.io/2024/04/29/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/02_%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/06-%E5%AF%86%E9%92%A5%E8%AE%A4%E8%AF%81/index.html">
 <meta property="og:site_name" content="迎风之豚的博客">
 <meta property="og:description" content="一、密钥认证-集群批量管理1.1 概述作用：  使管理更加轻松，两个节点通过密钥形式进行访问，不需要输入密码（单向）  应用场景：  一些服务在使用前要求我们做秘钥认证. 手动写批量管理脚本.  别名：  密钥认证 免密码登录 双机互信  1.2 密钥认证的原理图示如下：   什么是密钥对? 公钥: public key 一般以.pub结尾.私钥: private key 没有特殊的结尾    1">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20240429145442665.png">
+<meta property="og:image" content="http://gsproj.github.io/img/%E7%BA%A2%E7%8C%AA.png">
 <meta property="article:published_time" content="2024-04-29T08:32:52.000Z">
 <meta property="article:modified_time" content="2024-08-02T01:48:34.361Z">
-<meta property="article:author" content="GongSheng">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://gsproj.github.io/img/image-20240429145442665.png">
-  
-  
-  
-  <title>06-密钥认证 - 迎风之豚的博客</title>
-
-  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
-
-
-
-  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
-
-  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
-
-  <link  rel="stylesheet" href="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" />
-
-  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
-
-
-
-<!-- 主题依赖的图标库，不要自行修改 -->
-<!-- Do not modify the link that theme dependent icons -->
-
-<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
-
-
-
-<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
-
-
-<link  rel="stylesheet" href="/css/main.css" />
-
-
-  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
-  
-    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
-  
-
-
-
-
-  <script id="fluid-configs">
-    var Fluid = window.Fluid || {};
-    Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"left","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
-
-    if (CONFIG.web_analytics.follow_dnt) {
-      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
-      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+<meta property="article:author" content="Haris">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://gsproj.github.io/img/%E7%BA%A2%E7%8C%AA.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "06-密钥认证",
+  "url": "http://gsproj.github.io/2024/04/29/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/02_%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/06-%E5%AF%86%E9%92%A5%E8%AE%A4%E8%AF%81/",
+  "image": "http://gsproj.github.io/img/%E7%BA%A2%E7%8C%AA.png",
+  "datePublished": "2024-04-29T08:32:52.000Z",
+  "dateModified": "2024-08-02T01:48:34.361Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Haris",
+      "url": "http://gsproj.github.io/"
     }
-  </script>
-  <script  src="/js/utils.js" ></script>
-  <script  src="/js/color-schema.js" ></script>
-  
-
-
-  
-<meta name="generator" content="Hexo 7.3.0"></head>
-
-
-<body>
-  
-
-  <header>
-    
-
-<div class="header-inner" style="height: 70vh;">
-  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
-  <div class="container">
-    <a class="navbar-brand" href="/">
-      <strong>Haris的博客</strong>
-    </a>
-
-    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
-            data-target="#navbarSupportedContent"
-            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <div class="animated-icon"><span></span><span></span><span></span></div>
-    </button>
-
-    <!-- Collapsible content -->
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav ml-auto text-center">
-        
-          
-          
-          
-          
-            <li class="nav-item">
-              <a class="nav-link" href="/" target="_self">
-                <i class="iconfont icon-home-fill"></i>
-                <span>首页</span>
-              </a>
-            </li>
-          
-        
-          
-          
-          
-          
-            <li class="nav-item">
-              <a class="nav-link" href="/archives/" target="_self">
-                <i class="iconfont icon-archive-fill"></i>
-                <span>归档</span>
-              </a>
-            </li>
-          
-        
-          
-          
-          
-          
-            <li class="nav-item">
-              <a class="nav-link" href="/categories/" target="_self">
-                <i class="iconfont icon-category-fill"></i>
-                <span>分类</span>
-              </a>
-            </li>
-          
-        
-          
-          
-          
-          
-            <li class="nav-item">
-              <a class="nav-link" href="/tags/" target="_self">
-                <i class="iconfont icon-tags-fill"></i>
-                <span>标签</span>
-              </a>
-            </li>
-          
-        
-          
-          
-          
-          
-            <li class="nav-item">
-              <a class="nav-link" href="/about/" target="_self">
-                <i class="iconfont icon-user-fill"></i>
-                <span>关于</span>
-              </a>
-            </li>
-          
-        
-        
-          <li class="nav-item" id="search-btn">
-            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
-              <i class="iconfont icon-search"></i>
-            </a>
-          </li>
-          
-        
-        
-          <li class="nav-item" id="color-toggle-btn">
-            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
-              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
-            </a>
-          </li>
-        
-      </ul>
-    </div>
-  </div>
-</nav>
-
-  
-
-<div id="banner" class="banner" parallax=true
-     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
-  <div class="full-bg-img">
-    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
-      <div class="banner-text text-center fade-in-up">
-        <div class="h2">
-          
-            <span id="subtitle" data-typed-text="06-密钥认证"></span>
-          
-        </div>
-
-        
-          
-  <div class="mt-3">
-    
-    
-      <span class="post-meta">
-        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2024-04-29 16:32" pubdate>
-          2024年4月29日 下午
-        </time>
-      </span>
-    
-  </div>
-
-  <div class="mt-1">
-    
-      <span class="post-meta mr-2">
-        <i class="iconfont icon-chart"></i>
-        
-          1.4k 字
-        
-      </span>
-    
-
-    
-      <span class="post-meta mr-2">
-        <i class="iconfont icon-clock-fill"></i>
-        
-        
-        
-          12 分钟
-        
-      </span>
-    
-
-    
-    
-  </div>
-
-
-        
-      </div>
-
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://gsproj.github.io/2024/04/29/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/02_%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/06-%E5%AF%86%E9%92%A5%E8%AE%A4%E8%AF%81/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
       
-    </div>
-  </div>
-</div>
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
 
-</div>
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
 
-  </header>
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
 
-  <main>
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
     
       
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '06-密钥认证',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
 
-<div class="container-fluid nopadding-x">
-  <div class="row nomargin-x">
-    <div class="side-col d-none d-lg-block col-lg-2">
-      
-  <aside class="sidebar" style="padding-left: 2rem; margin-right: -1rem">
-    <div id="toc">
-  <p class="toc-header">
-    <i class="iconfont icon-list"></i>
-    <span>目录</span>
-  </p>
-  <div class="toc-body" id="toc-body"></div>
-</div>
+  preloader.initLoading()
+  window.addEventListener('load', preloader.endLoading)
 
-
-
-  </aside>
-
-
-    </div>
-
-    <div class="col-lg-8 nopadding-x-md">
-      <div class="container nopadding-x-md" id="board-ctn">
-        <div id="board">
-          <article class="post-content mx-auto">
-            <h1 id="seo-header">06-密钥认证</h1>
-            
-            
-              <div class="markdown-body">
-                
-                <h1 id="一、密钥认证-集群批量管理"><a href="#一、密钥认证-集群批量管理" class="headerlink" title="一、密钥认证-集群批量管理"></a>一、密钥认证-集群批量管理</h1><h2 id="1-1-概述"><a href="#1-1-概述" class="headerlink" title="1.1 概述"></a>1.1 概述</h2><p>作用：</p>
+  if (false) {
+    btf.addGlobalFn('pjaxSend', preloader.initLoading, 'preloader_init')
+    btf.addGlobalFn('pjaxComplete', preloader.endLoading, 'preloader_end')
+  }
+})()</script><div id="web_bg" style="background-image: url(/img/吊床.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/%E7%BA%A2%E7%8C%AA.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">208</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">1</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">29</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/吊床.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">迎风之豚的博客</span></a><a class="nav-page-title" href="/"><span class="site-name">06-密钥认证</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">06-密钥认证</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-04-29T08:32:52.000Z" title="发表于 2024-04-29 16:32:52">2024-04-29</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-08-02T01:48:34.361Z" title="更新于 2024-08-02 09:48:34">2024-08-02</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E8%BF%90%E7%BB%B4/">运维</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/">（二）综合架构</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="一、密钥认证-集群批量管理"><a href="#一、密钥认证-集群批量管理" class="headerlink" title="一、密钥认证-集群批量管理"></a>一、密钥认证-集群批量管理</h1><h2 id="1-1-概述"><a href="#1-1-概述" class="headerlink" title="1.1 概述"></a>1.1 概述</h2><p>作用：</p>
 <ul>
 <li>使管理更加轻松，两个节点通过密钥形式进行访问，不需要输入密码（单向）</li>
 </ul>
@@ -308,7 +195,7 @@
 <li>双机互信</li>
 </ul>
 <h2 id="1-2-密钥认证的原理"><a href="#1-2-密钥认证的原理" class="headerlink" title="1.2 密钥认证的原理"></a>1.2 密钥认证的原理</h2><p>图示如下：</p>
-<p><img src="/../../../img/image-20240429145442665.png" srcset="/img/loading.gif" lazyload alt="image-20240429145442665"></p>
+<p><img src="/../../../img/image-20240429145442665.png" alt="image-20240429145442665"></p>
 <blockquote>
 <p>什么是密钥对?</p>
 <p>公钥: public key 一般以.pub结尾.<br>私钥: private key 没有特殊的结尾  </p>
@@ -344,79 +231,25 @@
 </tr>
 </tbody></table>
 <h3 id="1-3-1-基本检查"><a href="#1-3-1-基本检查" class="headerlink" title="1.3.1 基本检查"></a>1.3.1 基本检查</h3><p>确保对向机器IP和端口正常</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">#ping
-ping 172.16.1.41
-
-# nmap探测22端口，sshd服务开启或可以访问
-[root@mn01[ ~]#nmap -p 22 172.16.1.31 172.16.1.7 172.16.1.41
-Starting Nmap 6.40 ( http:&#x2F;&#x2F;nmap.org ) at 2024-04-29 15:11 CST
-Nmap scan report for 172.16.1.31
-Host is up (0.00039s latency).
-PORT   STATE SERVICE
-22&#x2F;tcp open  ssh
-MAC Address: 00:0C:29:C7:69:C1 (VMware)
-Nmap scan report for 172.16.1.7
-...
-Nmap scan report for 172.16.1.41
-...
-Nmap done: 3 IP addresses (3 hosts up) scanned in 0.47 seconds</code></pre></div></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">ping</span></span><br><span class="line">ping 172.16.1.41</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">nmap探测22端口，sshd服务开启或可以访问</span></span><br><span class="line">[root@mn01[ ~]#nmap -p 22 172.16.1.31 172.16.1.7 172.16.1.41</span><br><span class="line">Starting Nmap 6.40 ( http://nmap.org ) at 2024-04-29 15:11 CST</span><br><span class="line">Nmap scan report for 172.16.1.31</span><br><span class="line">Host is up (0.00039s latency).</span><br><span class="line">PORT   STATE SERVICE</span><br><span class="line">22/tcp open  ssh</span><br><span class="line">MAC Address: 00:0C:29:C7:69:C1 (VMware)</span><br><span class="line">Nmap scan report for 172.16.1.7</span><br><span class="line">...</span><br><span class="line">Nmap scan report for 172.16.1.41</span><br><span class="line">...</span><br><span class="line">Nmap done: 3 IP addresses (3 hosts up) scanned in 0.47 seconds</span><br></pre></td></tr></table></figure>
 
 <h3 id="1-3-2-创建密钥对"><a href="#1-3-2-创建密钥对" class="headerlink" title="1.3.2 创建密钥对"></a>1.3.2 创建密钥对</h3><p>创建的时候需要按交互提示输入信息</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">ssh-keygen -t rsa
-#注意创建的啥时候也可以不加-t, 默认通过rsa方法对数据进行加密.
-
-[root@mn01[ ~]#ssh-keygen
-Generating public&#x2F;private rsa key pair.
-Enter file in which to save the key (&#x2F;root&#x2F;.ssh&#x2F;id_rsa):
-Created directory &#39;&#x2F;root&#x2F;.ssh&#39;.
-Enter passphrase (empty for no passphrase):
-Enter same passphrase again:
-Your identification has been saved in &#x2F;root&#x2F;.ssh&#x2F;id_rsa.
-Your public key has been saved in &#x2F;root&#x2F;.ssh&#x2F;id_rsa.pub.
-The key fingerprint is:
-SHA256:ry8yEWh6ZJQ8SUDK7KoQbZW86Y3gScBPO1hJMSfuAGo root@mn01
-The key&#39;s randomart image is:
-+---[RSA 2048]----+
-|..oOo+           |
-|*.o.@.           |
-|+E *+o           |
-|ooB.*o.          |
-|.o&#x3D;Xo  .S        |
-|.&#x3D;.+oo.  .       |
-|o o.o ..  .      |
-|o     o ..       |
-|.      o.o.      |
-+----[SHA256]-----+</code></pre></div></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">ssh-keygen -t rsa</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">注意创建的啥时候也可以不加-t, 默认通过rsa方法对数据进行加密.</span></span><br><span class="line"></span><br><span class="line">[root@mn01[ ~]#ssh-keygen</span><br><span class="line">Generating public/private rsa key pair.</span><br><span class="line">Enter file in which to save the key (/root/.ssh/id_rsa):</span><br><span class="line">Created directory &#x27;/root/.ssh&#x27;.</span><br><span class="line">Enter passphrase (empty for no passphrase):</span><br><span class="line">Enter same passphrase again:</span><br><span class="line">Your identification has been saved in /root/.ssh/id_rsa.</span><br><span class="line">Your public key has been saved in /root/.ssh/id_rsa.pub.</span><br><span class="line">The key fingerprint is:</span><br><span class="line">SHA256:ry8yEWh6ZJQ8SUDK7KoQbZW86Y3gScBPO1hJMSfuAGo root@mn01</span><br><span class="line">The key&#x27;s randomart image is:</span><br><span class="line">+---[RSA 2048]----+</span><br><span class="line">|..oOo+           |</span><br><span class="line">|*.o.@.           |</span><br><span class="line">|+E *+o           |</span><br><span class="line">|ooB.*o.          |</span><br><span class="line">|.o=Xo  .S        |</span><br><span class="line">|.=.+oo.  .       |</span><br><span class="line">|o o.o ..  .      |</span><br><span class="line">|o     o ..       |</span><br><span class="line">|.      o.o.      |</span><br><span class="line">+----[SHA256]-----+</span><br></pre></td></tr></table></figure>
 
 <h3 id="1-3-3-分发公钥"><a href="#1-3-3-分发公钥" class="headerlink" title="1.3.3 分发公钥"></a>1.3.3 分发公钥</h3><p>需要按交互提示输入yes &#x2F; no，并输入对向主机密码</p>
 <blockquote>
 <p>yes后会将信息保存到如下文件中：</p>
 <p>[root@mn01[ ~]#ls ~&#x2F;.ssh&#x2F;known_hosts<br>&#x2F;root&#x2F;.ssh&#x2F;known_hosts</p>
 </blockquote>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01[ ~]#ssh-copy-id -i &#x2F;root&#x2F;.ssh&#x2F;id_rsa.pub root@10.0.0.41
-&#x2F;usr&#x2F;bin&#x2F;ssh-copy-id: INFO: Source of key(s) to be installed: &quot;&#x2F;root&#x2F;.ssh&#x2F;id_rsa.pub&quot;
-The authenticity of host &#39;10.0.0.41 (10.0.0.41)&#39; can&#39;t be established.
-ECDSA key fingerprint is SHA256:OVpquCehSKXH4UACbiezs1feEbgyswAvmfM0c1jFOww.
-ECDSA key fingerprint is MD5:00:f4:c5:99:88:a5:d9:f3:5d:fa:65:d4:57:bd:39:a3.
-Are you sure you want to continue connecting (yes&#x2F;no)? yes
-&#x2F;usr&#x2F;bin&#x2F;ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
-&#x2F;usr&#x2F;bin&#x2F;ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
-root@10.0.0.41&#39;s password:
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[root@mn01[ ~]#ssh-copy-id -i /root/.ssh/id_rsa.pub root@10.0.0.41</span><br><span class="line">/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: &quot;/root/.ssh/id_rsa.pub&quot;</span><br><span class="line">The authenticity of host &#x27;10.0.0.41 (10.0.0.41)&#x27; can&#x27;t be established.</span><br><span class="line">ECDSA key fingerprint is SHA256:OVpquCehSKXH4UACbiezs1feEbgyswAvmfM0c1jFOww.</span><br><span class="line">ECDSA key fingerprint is MD5:00:f4:c5:99:88:a5:d9:f3:5d:fa:65:d4:57:bd:39:a3.</span><br><span class="line">Are you sure you want to continue connecting (yes/no)? yes</span><br><span class="line">/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed</span><br><span class="line">/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys</span><br><span class="line">root@10.0.0.41&#x27;s password:</span><br><span class="line"></span><br><span class="line">Number of key(s) added: 1</span><br><span class="line"></span><br><span class="line">Now try logging into the machine, with:   &quot;ssh &#x27;root@10.0.0.41&#x27;&quot;</span><br><span class="line">and check to make sure that only the key(s) you wanted were added.</span><br></pre></td></tr></table></figure>
 
-Number of key(s) added: 1
-
-Now try logging into the machine, with:   &quot;ssh &#39;root@10.0.0.41&#39;&quot;
-and check to make sure that only the key(s) you wanted were added.</code></pre></div></figure>
-
-<h3 id="1-3-4-连接测试"><a href="#1-3-4-连接测试" class="headerlink" title="1.3.4 连接测试"></a>1.3.4 连接测试</h3><figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01[ ~]#ssh 10.0.0.41 hostname -I
-10.0.0.41 172.16.1.41</code></pre></div></figure>
+<h3 id="1-3-4-连接测试"><a href="#1-3-4-连接测试" class="headerlink" title="1.3.4 连接测试"></a>1.3.4 连接测试</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@mn01[ ~]#ssh 10.0.0.41 hostname -I</span><br><span class="line">10.0.0.41 172.16.1.41</span><br></pre></td></tr></table></figure>
 
 <blockquote>
 <p>温馨提示：</p>
 <p>ssh-copy-id后公钥被存放在对方服务器的用户家目录下面的.ssh下面.</p>
 <p>名字叫:authorized_keys，如果不想被密钥认证了，把该文件删了即可</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">&gt;[root@backup01[ ~]#ls ~&#x2F;.ssh&#x2F;
-&gt;authorized_keys</code></pre></div></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">&gt;</span><span class="language-bash">[root@backup01[ ~]#<span class="built_in">ls</span> ~/.ssh/</span></span><br><span class="line"><span class="meta prompt_">&gt;</span><span class="language-bash">authorized_keys</span></span><br></pre></td></tr></table></figure>
 </blockquote>
 <h2 id="1-4-自动化创建与分发密钥"><a href="#1-4-自动化创建与分发密钥" class="headerlink" title="1.4 自动化创建与分发密钥"></a>1.4 自动化创建与分发密钥</h2><p>结合2.3节的创建和分发流程，自动化创建和分发主要<font color=red>面临以下问题</font>：</p>
 <ul>
@@ -425,464 +258,25 @@ and check to make sure that only the key(s) you wanted were added.</code></pre><
 <li>分发公钥的时候需要输入密码  【1.4.2解决】</li>
 </ul>
 <h3 id="1-4-1-自动化创建"><a href="#1-4-1-自动化创建" class="headerlink" title="1.4.1 自动化创建"></a>1.4.1 自动化创建</h3><p>使用选项指定参数，跳过交互式输入环节</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># -f用于指定私钥的位置
-# -P 密码短语 设置为空
-# -t 用于指定加密算法，默认rsa，可以省略
-
-ssh-keygen -f ~&#x2F;.ssh&#x2F;id_rsa -P &#39;&#39;
-# 或者
-ssh-keygen -t rsa -f ~&#x2F;.ssh&#x2F;id_rsa -P &#39;&#39;</code></pre></div></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">-f用于指定私钥的位置</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">-P 密码短语 设置为空</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">-t 用于指定加密算法，默认rsa，可以省略</span></span><br><span class="line"></span><br><span class="line">ssh-keygen -f ~/.ssh/id_rsa -P &#x27;&#x27;</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">或者</span></span><br><span class="line">ssh-keygen -t rsa -f ~/.ssh/id_rsa -P &#x27;&#x27;</span><br></pre></td></tr></table></figure>
 
 <h3 id="1-4-2-自动化分化密钥"><a href="#1-4-2-自动化分化密钥" class="headerlink" title="1.4.2 自动化分化密钥"></a>1.4.2 自动化分化密钥</h3><p>解决输入密码问题，需要使用到<em>sshpass</em>工具，其基本使用如下：</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">#安装工具
-yum install -y sshpass
-
-# 先测试对方机器是否需要输入yes &#x2F; no，并输入yes
-[root@mn01[ ~]#ssh 10.0.0.7 hostname -I
-The authenticity of host &#39;10.0.0.7 (10.0.0.7)&#39; can&#39;t be 
-....
-Are you sure you want to continue connecting (yes&#x2F;no) yes
-
-# 然后使用sshpass测试, -p后面可以指定密码
-[root@mn01[ ~]#sshpass -p &quot;redhat123&quot; ssh 10.0.0.7 hostname -I
-10.0.0.7 172.16.1.7
-
-# 成功解决交互式输入密码的问题</code></pre></div></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">安装工具</span></span><br><span class="line">yum install -y sshpass</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">先测试对方机器是否需要输入<span class="built_in">yes</span> / no，并输入<span class="built_in">yes</span></span></span><br><span class="line">[root@mn01[ ~]#ssh 10.0.0.7 hostname -I</span><br><span class="line">The authenticity of host &#x27;10.0.0.7 (10.0.0.7)&#x27; can&#x27;t be </span><br><span class="line">....</span><br><span class="line">Are you sure you want to continue connecting (yes/no) yes</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">然后使用sshpass测试, -p后面可以指定密码</span></span><br><span class="line">[root@mn01[ ~]#sshpass -p &quot;redhat123&quot; ssh 10.0.0.7 hostname -I</span><br><span class="line">10.0.0.7 172.16.1.7</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">成功解决交互式输入密码的问题</span></span><br></pre></td></tr></table></figure>
 
 <p>解决交互书yes &#x2F; no的问题，需要使用到ssh-copy-id的选项</p>
 <p><code>-oStrictHostKeyChecking=no</code></p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01[ ~]#sshpass -p &quot;redhat123&quot; ssh-copy-id -i ~&#x2F;.ssh&#x2F;id_rsa.pub -oStrictHostKeyChecking&#x3D;no 10.0.0.41
-&#x2F;usr&#x2F;bin&#x2F;ssh-copy-id: INFO: Source of key(s) to be installed: &quot;&#x2F;root&#x2F;.ssh&#x2F;id_rsa.pub&quot;
-...
-Number of key(s) added: 1
-...
-and check to make sure that only the key(s) you wanted were added.
-# 分发成功</code></pre></div></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@mn01[ ~]#sshpass -p &quot;redhat123&quot; ssh-copy-id -i ~/.ssh/id_rsa.pub -oStrictHostKeyChecking=no 10.0.0.41</span><br><span class="line">/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: &quot;/root/.ssh/id_rsa.pub&quot;</span><br><span class="line">...</span><br><span class="line">Number of key(s) added: 1</span><br><span class="line">...</span><br><span class="line">and check to make sure that only the key(s) you wanted were added.</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">分发成功</span></span><br></pre></td></tr></table></figure>
 
 <h3 id="1-4-3-自动化创建与分发脚本"><a href="#1-4-3-自动化创建与分发脚本" class="headerlink" title="1.4.3 自动化创建与分发脚本"></a>1.4.3 自动化创建与分发脚本</h3><p>创建和分发密钥脚本<code>/server/scripts/creatkey.sh</code></p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">#!&#x2F;bin&#x2F;bash 
-#desc: 一键创建和分发密钥对
-
-#1.vars
-pass&#x3D;&quot;redhat123&quot;
-ips&#x3D;&quot;10.0.0.7 10.0.0.31 10.0.0.41&quot;
-
-# 导入模块
-. &#x2F;etc&#x2F;init.d&#x2F;functions
-
-# 判断是否联网可以使用yum
-# 加入判断sshpass命令是否存在，如果不存在则安装
-
-# 2.创建密钥对
-if [ -f ~&#x2F;.ssh&#x2F;id_rsa ];then
-        echo &quot;已经创建过密钥对&quot;
-else
-        echo &quot;正在创建密钥对...&quot;
-        ssh-keygen -t rsa -f ~&#x2F;.ssh&#x2F;id_rsa -P &#39;&#39; &amp;&gt;&#x2F;dev&#x2F;null
-        if [ $? -eq 0 ];then
-                action &quot;密钥创建成功&quot;   &#x2F;bin&#x2F;true
-        else
-                action &quot;密钥创建失败&quot;   &#x2F;bin&#x2F;false
-        fi
-fi
-
-# 3.使用循环发送公钥
-for ip in $ips
-do
-        sshpass -p $&#123;pass&#125; ssh-copy-id -i ~&#x2F;.ssh&#x2F;id_rsa.pub -oStrictHostKeyChecking&#x3D;no $ip &amp;&gt;&#x2F;dev&#x2F;null
-        if [ $? -eq 0 ];then
-                action &quot;密钥分发成功&quot;   &#x2F;bin&#x2F;true
-        else
-                action &quot;密钥分发失败&quot;   &#x2F;bin&#x2F;false
-        fi
-done</code></pre></div></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span> </span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">desc: 一键创建和分发密钥对</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">1.vars</span></span><br><span class="line">pass=&quot;redhat123&quot;</span><br><span class="line">ips=&quot;10.0.0.7 10.0.0.31 10.0.0.41&quot;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">导入模块</span></span><br><span class="line">. /etc/init.d/functions</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">判断是否联网可以使用yum</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">加入判断sshpass命令是否存在，如果不存在则安装</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">2.创建密钥对</span></span><br><span class="line">if [ -f ~/.ssh/id_rsa ];then</span><br><span class="line">        echo &quot;已经创建过密钥对&quot;</span><br><span class="line">else</span><br><span class="line">        echo &quot;正在创建密钥对...&quot;</span><br><span class="line">        ssh-keygen -t rsa -f ~/.ssh/id_rsa -P &#x27;&#x27; &amp;&gt;/dev/null</span><br><span class="line">        if [ $? -eq 0 ];then</span><br><span class="line">                action &quot;密钥创建成功&quot;   /bin/true</span><br><span class="line">        else</span><br><span class="line">                action &quot;密钥创建失败&quot;   /bin/false</span><br><span class="line">        fi</span><br><span class="line">fi</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">3.使用循环发送公钥</span></span><br><span class="line">for ip in $ips</span><br><span class="line">do</span><br><span class="line">        sshpass -p $&#123;pass&#125; ssh-copy-id -i ~/.ssh/id_rsa.pub -oStrictHostKeyChecking=no $ip &amp;&gt;/dev/null</span><br><span class="line">        if [ $? -eq 0 ];then</span><br><span class="line">                action &quot;密钥分发成功&quot;   /bin/true</span><br><span class="line">        else</span><br><span class="line">                action &quot;密钥分发失败&quot;   /bin/false</span><br><span class="line">        fi</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
 
 <p>分发脚本测试</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01[ &#x2F;server&#x2F;scripts]#.&#x2F;createkey.sh
-正在创建密钥对...
-密钥创建成功                                               [  OK  ]
-密钥分发成功                                               [  OK  ]
-密钥分发成功                                               [  OK  ]
-密钥分发成功                                               [  OK  ]
-[root@mn01[ &#x2F;server&#x2F;scripts]#.&#x2F;createkey.sh
-已经创建过密钥对
-密钥分发成功                                               [  OK  ]
-密钥分发成功                                               [  OK  ]
-密钥分发成功                                               [  OK  ]</code></pre></div></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[root@mn01[ /server/scripts]#./createkey.sh</span><br><span class="line">正在创建密钥对...</span><br><span class="line">密钥创建成功                                               [  OK  ]</span><br><span class="line">密钥分发成功                                               [  OK  ]</span><br><span class="line">密钥分发成功                                               [  OK  ]</span><br><span class="line">密钥分发成功                                               [  OK  ]</span><br><span class="line">[root@mn01[ /server/scripts]#./createkey.sh</span><br><span class="line">已经创建过密钥对</span><br><span class="line">密钥分发成功                                               [  OK  ]</span><br><span class="line">密钥分发成功                                               [  OK  ]</span><br><span class="line">密钥分发成功                                               [  OK  ]</span><br></pre></td></tr></table></figure>
 
 <p>检查脚本测试<code>/server/scripts/check.sh</code></p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">#!&#x2F;bin&#x2F;bash
-# desc: 批量在所有机器上执行命令
-for ip in 10.0.0.7 10.0.0.31 10.0.0.41
-do
-        ssh $ip hostname
-done</code></pre></div></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">desc: 批量在所有机器上执行命令</span></span><br><span class="line">for ip in 10.0.0.7 10.0.0.31 10.0.0.41</span><br><span class="line">do</span><br><span class="line">        ssh $ip hostname</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
 
 <p>脚本测试</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">[root@mn01[ &#x2F;server&#x2F;scripts]#.&#x2F;check.sh
-web01
-nfs01
-backup01</code></pre></div></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@mn01[ /server/scripts]#./check.sh</span><br><span class="line">web01</span><br><span class="line">nfs01</span><br><span class="line">backup01</span><br></pre></td></tr></table></figure>
 
-
-                
-              </div>
-            
-            <hr/>
-            <div>
-              <div class="post-metas my-3">
-  
-    <div class="post-meta mr-3 d-flex align-items-center">
-      <i class="iconfont icon-category"></i>
-      
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/%E8%BF%90%E7%BB%B4/" class="category-chain-item">运维</a>
-  
-  
-    <span>></span>
-    
-  <a href="/categories/%E8%BF%90%E7%BB%B4/%EF%BC%88%E4%BA%8C%EF%BC%89%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/" class="category-chain-item">（二）综合架构</a>
-  
-  
-
-  
-
-      </span>
-    
-  
-</span>
-
-    </div>
-  
-  
-</div>
-
-
-              
-  
-
-  <div class="license-box my-3">
-    <div class="license-title">
-      <div>06-密钥认证</div>
-      <div>http://gsproj.github.io/2024/04/29/07_85期运维/02_综合架构/06-密钥认证/</div>
-    </div>
-    <div class="license-meta">
-      
-        <div class="license-meta-item">
-          <div>作者</div>
-          <div>GongSheng</div>
-        </div>
-      
-      
-        <div class="license-meta-item license-meta-date">
-          <div>发布于</div>
-          <div>2024年4月29日</div>
-        </div>
-      
-      
-      
-        <div class="license-meta-item">
-          <div>许可协议</div>
-          <div>
-            
-              
-              
-                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
-                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
-                    <i class="iconfont icon-cc-by"></i>
-                  </span>
-                </a>
-              
-            
-          </div>
-        </div>
-      
-    </div>
-    <div class="license-icon iconfont"></div>
-  </div>
-
-
-
-              
-                <div class="post-prevnext my-3">
-                  <article class="post-prev col-6">
-                    
-                    
-                      <a href="/2024/04/29/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/02_%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/07-%E9%9B%86%E7%BE%A4%E8%87%AA%E5%8A%A8%E5%8C%96%E7%BB%B4%E6%8A%A4-Ansible-1/" title="07-集群自动化维护-Ansible(一)">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">07-集群自动化维护-Ansible(一)</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
-                  </article>
-                  <article class="post-next col-6">
-                    
-                    
-                      <a href="/2024/04/28/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/02_%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/05-SSHD%E6%9C%8D%E5%8A%A1/" title="05-Openssh服务">
-                        <span class="hidden-mobile">05-Openssh服务</span>
-                        <span class="visible-mobile">下一篇</span>
-                        <i class="iconfont icon-arrowright"></i>
-                      </a>
-                    
-                  </article>
-                </div>
-              
-            </div>
-
-            
-          </article>
-        </div>
-      </div>
-    </div>
-
-    <div class="side-col d-none d-lg-block col-lg-2">
-      
-
-    </div>
-  </div>
-</div>
-
-
-
-
-
-  
-
-
-
-  
-
-
-
-  
-
-
-
-  
-
-
-
-  
-
-
-
-
-
-
-
-    
-
-    
-      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
-        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
-      </a>
-    
-
-    
-      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
-     aria-hidden="true">
-  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header text-center">
-        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
-        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body mx-3">
-        <div class="md-form mb-5">
-          <input type="text" id="local-search-input" class="form-control validate">
-          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
-        </div>
-        <div class="list-group" id="local-search-result"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-    
-
-    
-  </main>
-
-  <footer>
-    <div class="footer-inner">
-  
-    <div class="footer-content">
-       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
-    </div>
-  
-  
-  
-</div>
-
-  </footer>
-
-  <!-- Scripts -->
-  
-  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
-  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
-
-  <script>
-    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
-    NProgress.start()
-    window.addEventListener('load', function() {
-      NProgress.done();
-    })
-  </script>
-
-
-<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
-<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
-<script  src="/js/events.js" ></script>
-<script  src="/js/plugins.js" ></script>
-
-
-  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
-  <script>
-    (function (window, document) {
-      var typing = Fluid.plugins.typing;
-      var subtitle = document.getElementById('subtitle');
-      if (!subtitle || !typing) {
-        return;
-      }
-      var text = subtitle.getAttribute('data-typed-text');
-      
-        typing(text);
-      
-    })(window, document);
-  </script>
-
-
-
-
-  
-    <script  src="/js/img-lazyload.js" ></script>
-  
-
-
-
-
-  
-<script>
-  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
-    var toc = jQuery('#toc');
-    if (toc.length === 0 || !window.tocbot) { return; }
-    var boardCtn = jQuery('#board-ctn');
-    var boardTop = boardCtn.offset().top;
-
-    window.tocbot.init(Object.assign({
-      tocSelector     : '#toc-body',
-      contentSelector : '.markdown-body',
-      linkClass       : 'tocbot-link',
-      activeLinkClass : 'tocbot-active-link',
-      listClass       : 'tocbot-list',
-      isCollapsedClass: 'tocbot-is-collapsed',
-      collapsibleClass: 'tocbot-is-collapsible',
-      scrollSmooth    : true,
-      includeTitleTags: true,
-      headingsOffset  : -boardTop,
-    }, CONFIG.toc));
-    if (toc.find('.toc-list-item').length > 0) {
-      toc.css('visibility', 'visible');
-    }
-
-    Fluid.events.registerRefreshCallback(function() {
-      if ('tocbot' in window) {
-        tocbot.refresh();
-        var toc = jQuery('#toc');
-        if (toc.length === 0 || !tocbot) {
-          return;
-        }
-        if (toc.find('.toc-list-item').length > 0) {
-          toc.css('visibility', 'visible');
-        }
-      }
-    });
-  });
-</script>
-
-
-  <script  src="https://lib.baomitu.com/prism/1.29.0/components/prism-core.min.js" ></script>
-
-  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js" ></script>
-
-  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
-
-  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
-
-  <script>Fluid.plugins.codeWidget();</script>
-
-
-  
-<script>
-  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
-    window.anchors.options = {
-      placement: CONFIG.anchorjs.placement,
-      visible  : CONFIG.anchorjs.visible
-    };
-    if (CONFIG.anchorjs.icon) {
-      window.anchors.options.icon = CONFIG.anchorjs.icon;
-    }
-    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
-    var res = [];
-    for (var item of el) {
-      res.push('.markdown-body > ' + item.trim());
-    }
-    if (CONFIG.anchorjs.placement === 'left') {
-      window.anchors.options.class = 'anchorjs-link-left';
-    }
-    window.anchors.add(res.join(', '));
-
-    Fluid.events.registerRefreshCallback(function() {
-      if ('anchors' in window) {
-        anchors.removeAll();
-        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
-        var res = [];
-        for (var item of el) {
-          res.push('.markdown-body > ' + item.trim());
-        }
-        if (CONFIG.anchorjs.placement === 'left') {
-          anchors.options.class = 'anchorjs-link-left';
-        }
-        anchors.add(res.join(', '));
-      }
-    });
-  });
-</script>
-
-
-  
-<script>
-  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
-    Fluid.plugins.fancyBox();
-  });
-</script>
-
-
-  <script>Fluid.plugins.imageCaption();</script>
-
-  <script  src="/js/local-search.js" ></script>
-
-
-
-
-
-<!-- 主题的启动项，将它保持在最底部 -->
-<!-- the boot of the theme, keep it at the bottom -->
-<script  src="/js/boot.js" ></script>
-
-
-  
-
-  <noscript>
-    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
-  </noscript>
-</body>
-</html>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://gsproj.github.io">Haris</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://gsproj.github.io/2024/04/29/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/02_%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/06-%E5%AF%86%E9%92%A5%E8%AE%A4%E8%AF%81/">http://gsproj.github.io/2024/04/29/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/02_%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/06-%E5%AF%86%E9%92%A5%E8%AE%A4%E8%AF%81/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://gsproj.github.io" target="_blank">迎风之豚的博客</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="/img/%E7%BA%A2%E7%8C%AA.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2024/04/28/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/02_%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/05-SSHD%E6%9C%8D%E5%8A%A1/" title="05-Openssh服务"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">05-Openssh服务</div></div><div class="info-2"><div class="info-item-1">一、Openssh服务1.1. openssh服务介绍 用于实现加密的远程连接&#x2F;传输数据.openssh-server 服务端（sshd,&#x2F;etc&#x2F;ssh&#x2F;sshd_config）openssh-clients客户端（命令 scp,ssh）  1.2 telnet VS openssh   服务 共同点 区别 应用场景    openssh 服务 远程连接 数据加密的 默认使用openssh   telnet 服务 远程连接 数据未加密 升级openssh服务的时候,启动telnet服务即可   telnet服务的使用 123456789# 安装服务yum install -y telnet-server# 启动systemctl start telnet.socket# systemctl disable telnet.socket#本地shell中连接telnet 10.0.0.61 23    1.3 openssh的配置文件（*）核心配置文件:...</div></div></div></a><a class="pagination-related" href="/2024/04/29/07_85%E6%9C%9F%E8%BF%90%E7%BB%B4/02_%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/07-%E9%9B%86%E7%BE%A4%E8%87%AA%E5%8A%A8%E5%8C%96%E7%BB%B4%E6%8A%A4-Ansible-1/" title="07-集群自动化维护-Ansible(一)"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">07-集群自动化维护-Ansible(一)</div></div><div class="info-2"><div class="info-item-1">Ansible集群自动化维护1.1 Ansible概述市面上的部分批量管理工具    批量管理工具 说明    Ansible 无客户端,基于ssh进行管理与维护.   Saltstack 需要安装客户端,基于ssh进行管理,与ansible.   terraform tf批量管理基础设施(批量创建100台公有云)   Ansible是其中一种，基于Python语言实现，用于集群批量管理，批量分发，批量执行，维护等 1.2 Ansible的管理框架图示：  详细解释：  Inventory 主机机清单 被管理主机的ip列表，分类.   ad-hoc 模式： 命令行批量管理(使用ans模块),临时任务.   playbook 剧本模式 类似于把操作写出脚本,可以重复运行这个脚本    1.3 部署与配置1.3.1 安装在主控节点(mn01)安装ansible 1yum install -y ansible  1.3.2 初始配置修改ansible的配置文件：  关闭主机Host_key_checking . 开启日志功能  12345678910111213[root@mn01[...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/%E7%BA%A2%E7%8C%AA.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Haris</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">208</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">1</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">29</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%AF%86%E9%92%A5%E8%AE%A4%E8%AF%81-%E9%9B%86%E7%BE%A4%E6%89%B9%E9%87%8F%E7%AE%A1%E7%90%86"><span class="toc-number">1.</span> <span class="toc-text">一、密钥认证-集群批量管理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-%E6%A6%82%E8%BF%B0"><span class="toc-number">1.1.</span> <span class="toc-text">1.1 概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-2-%E5%AF%86%E9%92%A5%E8%AE%A4%E8%AF%81%E7%9A%84%E5%8E%9F%E7%90%86"><span class="toc-number">1.2.</span> <span class="toc-text">1.2 密钥认证的原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-3-%E9%85%8D%E7%BD%AE%E5%AF%86%E9%92%A5%E8%AE%A4%E8%AF%81"><span class="toc-number">1.3.</span> <span class="toc-text">1.3 配置密钥认证</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-1-%E5%9F%BA%E6%9C%AC%E6%A3%80%E6%9F%A5"><span class="toc-number">1.3.1.</span> <span class="toc-text">1.3.1 基本检查</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-2-%E5%88%9B%E5%BB%BA%E5%AF%86%E9%92%A5%E5%AF%B9"><span class="toc-number">1.3.2.</span> <span class="toc-text">1.3.2 创建密钥对</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-3-%E5%88%86%E5%8F%91%E5%85%AC%E9%92%A5"><span class="toc-number">1.3.3.</span> <span class="toc-text">1.3.3 分发公钥</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-4-%E8%BF%9E%E6%8E%A5%E6%B5%8B%E8%AF%95"><span class="toc-number">1.3.4.</span> <span class="toc-text">1.3.4 连接测试</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-4-%E8%87%AA%E5%8A%A8%E5%8C%96%E5%88%9B%E5%BB%BA%E4%B8%8E%E5%88%86%E5%8F%91%E5%AF%86%E9%92%A5"><span class="toc-number">1.4.</span> <span class="toc-text">1.4 自动化创建与分发密钥</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-1-%E8%87%AA%E5%8A%A8%E5%8C%96%E5%88%9B%E5%BB%BA"><span class="toc-number">1.4.1.</span> <span class="toc-text">1.4.1 自动化创建</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-2-%E8%87%AA%E5%8A%A8%E5%8C%96%E5%88%86%E5%8C%96%E5%AF%86%E9%92%A5"><span class="toc-number">1.4.2.</span> <span class="toc-text">1.4.2 自动化分化密钥</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-3-%E8%87%AA%E5%8A%A8%E5%8C%96%E5%88%9B%E5%BB%BA%E4%B8%8E%E5%88%86%E5%8F%91%E8%84%9A%E6%9C%AC"><span class="toc-number">1.4.3.</span> <span class="toc-text">1.4.3 自动化创建与分发脚本</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/03/12/09_%E9%9F%A9%E5%85%88%E8%B6%85K8S/01-Docker%E5%9F%BA%E7%A1%80/04-Dockerfile%E5%AE%9E%E6%88%98%E7%AF%87-%E6%9E%84%E5%BB%BA%E4%BC%81%E4%B8%9A%E7%BA%A7%E9%95%9C%E5%83%8F/" title="04-Dockerfile实战篇-构建企业级镜像">04-Dockerfile实战篇-构建企业级镜像</a><time datetime="2025-03-12T07:12:52.000Z" title="发表于 2025-03-12 15:12:52">2025-03-12</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/03/04/09_%E9%9F%A9%E5%85%88%E8%B6%85K8S/01-Docker%E5%9F%BA%E7%A1%80/03-Dockerfile%E5%9F%BA%E7%A1%80%E7%AF%87-%E5%9F%BA%E6%9C%AC%E8%AF%AD%E6%B3%95/" title="03-Dockerfile基础篇-基本语法">03-Dockerfile基础篇-基本语法</a><time datetime="2025-03-04T07:12:52.000Z" title="发表于 2025-03-04 15:12:52">2025-03-04</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/03/03/09_%E9%9F%A9%E5%85%88%E8%B6%85K8S/01-Docker%E5%9F%BA%E7%A1%80/02-%E8%BF%90%E8%A1%8CDocker%E5%AE%B9%E5%99%A8/" title="02-运行Docker容器">02-运行Docker容器</a><time datetime="2025-03-03T07:12:52.000Z" title="发表于 2025-03-03 15:12:52">2025-03-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/03/03/09_%E9%9F%A9%E5%85%88%E8%B6%85K8S/01-Docker%E5%9F%BA%E7%A1%80/01-Dokcer%E5%AE%B9%E5%99%A8%E5%9F%BA%E7%A1%80%E5%85%A5%E9%97%A8/" title="01-Docker基础">01-Docker基础</a><time datetime="2025-03-03T04:30:52.000Z" title="发表于 2025-03-03 12:30:52">2025-03-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/02/25/06_%E6%9D%82%E8%AE%B0/Ubuntu22.04%E6%98%BE%E5%8D%A1%E7%9B%B4%E9%80%9A/" title="Ubuntu22.04显卡直通虚拟机">Ubuntu22.04显卡直通虚拟机</a><time datetime="2025-02-25T09:50:52.000Z" title="发表于 2025-02-25 17:50:52">2025-02-25</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url(/img/footer.png);"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2025 By Haris</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>

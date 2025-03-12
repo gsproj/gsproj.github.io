@@ -1,312 +1,190 @@
-
-
-<!DOCTYPE html>
-<html lang="zh-CN" data-default-color-scheme=auto>
-
-
-
-<head>
-  <meta charset="UTF-8">
-
-  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
-  <link rel="icon" href="/img/fluid.png">
-  
-
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
-  <meta http-equiv="x-ua-compatible" content="ie=edge">
-  
-  <meta name="theme-color" content="#2f4154">
-  <meta name="author" content="GongSheng">
-  <meta name="keywords" content="">
-  
-    <meta name="description" content="GPU服务器硬件拓扑和集群组网 转载自：http:&#x2F;&#x2F;arthurchiao.art&#x2F;blog&#x2F;gpu-advanced-notes-1-zh&#x2F;#11-pcie-%E4%BA%A4%E6%8D%A2%E8%8A%AF%E7%89%87 感谢原作者的分享！在此基础上改动为个人版本。  1 术语与基础大模型训练一般都是用单机 8 卡 GPU 主机组成集群，机型包括 8*&#123;A100,A800,">
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>GPU服务器硬件拓扑和集群组网 | 迎风之豚的博客</title><meta name="author" content="Haris"><meta name="copyright" content="Haris"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="GPU服务器硬件拓扑和集群组网 转载自：http:&#x2F;&#x2F;arthurchiao.art&#x2F;blog&#x2F;gpu-advanced-notes-1-zh&#x2F;#11-pcie-%E4%BA%A4%E6%8D%A2%E8%8A%AF%E7%89%87 感谢原作者的分享！在此基础上改动为个人版本。  1 术语与基础大模型训练一般都是用单机 8 卡 GPU 主机组成集群，机型包括 8*&#123;A100,A800,">
 <meta property="og:type" content="article">
 <meta property="og:title" content="GPU服务器硬件拓扑和集群组网">
 <meta property="og:url" content="http://gsproj.github.io/2024/11/02/06_%E6%9D%82%E8%AE%B0/%E9%AB%98%E6%80%A7%E8%83%BDGPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/index.html">
 <meta property="og:site_name" content="迎风之豚的博客">
 <meta property="og:description" content="GPU服务器硬件拓扑和集群组网 转载自：http:&#x2F;&#x2F;arthurchiao.art&#x2F;blog&#x2F;gpu-advanced-notes-1-zh&#x2F;#11-pcie-%E4%BA%A4%E6%8D%A2%E8%8A%AF%E7%89%87 感谢原作者的分享！在此基础上改动为个人版本。  1 术语与基础大模型训练一般都是用单机 8 卡 GPU 主机组成集群，机型包括 8*&#123;A100,A800,">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20241012131712609.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20241012132051768.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20241012132200770.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20241012132323761.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20241012154412755.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20241012160300087.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20241012132627792.png">
-<meta property="og:image" content="http://gsproj.github.io/img/NVIDIA-DGX-A100-Block-Diagram.png">
-<meta property="og:image" content="http://gsproj.github.io/img/image-20241012133420998.png">
-<meta property="og:image" content="http://gsproj.github.io/img/a100-idc-network.png">
+<meta property="og:image" content="http://gsproj.github.io/img/%E7%BA%A2%E7%8C%AA.png">
 <meta property="article:published_time" content="2024-11-02T01:29:52.000Z">
 <meta property="article:modified_time" content="2024-12-04T02:02:27.220Z">
-<meta property="article:author" content="GongSheng">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://gsproj.github.io/img/image-20241012131712609.png">
-  
-  
-  
-  <title>GPU服务器硬件拓扑和集群组网 - 迎风之豚的博客</title>
-
-  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
-
-
-
-  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
-
-  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
-
-  <link  rel="stylesheet" href="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" />
-
-  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
-
-
-
-<!-- 主题依赖的图标库，不要自行修改 -->
-<!-- Do not modify the link that theme dependent icons -->
-
-<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
-
-
-
-<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
-
-
-<link  rel="stylesheet" href="/css/main.css" />
-
-
-  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
-  
-    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
-  
-
-
-
-
-  <script id="fluid-configs">
-    var Fluid = window.Fluid || {};
-    Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"gsproj.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"left","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
-
-    if (CONFIG.web_analytics.follow_dnt) {
-      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
-      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+<meta property="article:author" content="Haris">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://gsproj.github.io/img/%E7%BA%A2%E7%8C%AA.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "GPU服务器硬件拓扑和集群组网",
+  "url": "http://gsproj.github.io/2024/11/02/06_%E6%9D%82%E8%AE%B0/%E9%AB%98%E6%80%A7%E8%83%BDGPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/",
+  "image": "http://gsproj.github.io/img/%E7%BA%A2%E7%8C%AA.png",
+  "datePublished": "2024-11-02T01:29:52.000Z",
+  "dateModified": "2024-12-04T02:02:27.220Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Haris",
+      "url": "http://gsproj.github.io/"
     }
-  </script>
-  <script  src="/js/utils.js" ></script>
-  <script  src="/js/color-schema.js" ></script>
-  
-
-
-  
-<meta name="generator" content="Hexo 7.3.0"></head>
-
-
-<body>
-  
-
-  <header>
-    
-
-<div class="header-inner" style="height: 70vh;">
-  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
-  <div class="container">
-    <a class="navbar-brand" href="/">
-      <strong>Haris的博客</strong>
-    </a>
-
-    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
-            data-target="#navbarSupportedContent"
-            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <div class="animated-icon"><span></span><span></span><span></span></div>
-    </button>
-
-    <!-- Collapsible content -->
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav ml-auto text-center">
-        
-          
-          
-          
-          
-            <li class="nav-item">
-              <a class="nav-link" href="/" target="_self">
-                <i class="iconfont icon-home-fill"></i>
-                <span>首页</span>
-              </a>
-            </li>
-          
-        
-          
-          
-          
-          
-            <li class="nav-item">
-              <a class="nav-link" href="/archives/" target="_self">
-                <i class="iconfont icon-archive-fill"></i>
-                <span>归档</span>
-              </a>
-            </li>
-          
-        
-          
-          
-          
-          
-            <li class="nav-item">
-              <a class="nav-link" href="/categories/" target="_self">
-                <i class="iconfont icon-category-fill"></i>
-                <span>分类</span>
-              </a>
-            </li>
-          
-        
-          
-          
-          
-          
-            <li class="nav-item">
-              <a class="nav-link" href="/tags/" target="_self">
-                <i class="iconfont icon-tags-fill"></i>
-                <span>标签</span>
-              </a>
-            </li>
-          
-        
-          
-          
-          
-          
-            <li class="nav-item">
-              <a class="nav-link" href="/about/" target="_self">
-                <i class="iconfont icon-user-fill"></i>
-                <span>关于</span>
-              </a>
-            </li>
-          
-        
-        
-          <li class="nav-item" id="search-btn">
-            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
-              <i class="iconfont icon-search"></i>
-            </a>
-          </li>
-          
-        
-        
-          <li class="nav-item" id="color-toggle-btn">
-            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
-              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
-            </a>
-          </li>
-        
-      </ul>
-    </div>
-  </div>
-</nav>
-
-  
-
-<div id="banner" class="banner" parallax=true
-     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
-  <div class="full-bg-img">
-    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
-      <div class="banner-text text-center fade-in-up">
-        <div class="h2">
-          
-            <span id="subtitle" data-typed-text="GPU服务器硬件拓扑和集群组网"></span>
-          
-        </div>
-
-        
-          
-  <div class="mt-3">
-    
-    
-      <span class="post-meta">
-        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2024-11-02 09:29" pubdate>
-          2024年11月2日 上午
-        </time>
-      </span>
-    
-  </div>
-
-  <div class="mt-1">
-    
-      <span class="post-meta mr-2">
-        <i class="iconfont icon-chart"></i>
-        
-          5.2k 字
-        
-      </span>
-    
-
-    
-      <span class="post-meta mr-2">
-        <i class="iconfont icon-clock-fill"></i>
-        
-        
-        
-          44 分钟
-        
-      </span>
-    
-
-    
-    
-  </div>
-
-
-        
-      </div>
-
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://gsproj.github.io/2024/11/02/06_%E6%9D%82%E8%AE%B0/%E9%AB%98%E6%80%A7%E8%83%BDGPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
       
-    </div>
-  </div>
-</div>
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
 
-</div>
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
 
-  </header>
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
 
-  <main>
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
     
       
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'GPU服务器硬件拓扑和集群组网',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
 
-<div class="container-fluid nopadding-x">
-  <div class="row nomargin-x">
-    <div class="side-col d-none d-lg-block col-lg-2">
-      
-  <aside class="sidebar" style="padding-left: 2rem; margin-right: -1rem">
-    <div id="toc">
-  <p class="toc-header">
-    <i class="iconfont icon-list"></i>
-    <span>目录</span>
-  </p>
-  <div class="toc-body" id="toc-body"></div>
-</div>
+  preloader.initLoading()
+  window.addEventListener('load', preloader.endLoading)
 
-
-
-  </aside>
-
-
-    </div>
-
-    <div class="col-lg-8 nopadding-x-md">
-      <div class="container nopadding-x-md" id="board-ctn">
-        <div id="board">
-          <article class="post-content mx-auto">
-            <h1 id="seo-header">GPU服务器硬件拓扑和集群组网</h1>
-            
-            
-              <div class="markdown-body">
-                
-                <h1 id="GPU服务器硬件拓扑和集群组网"><a href="#GPU服务器硬件拓扑和集群组网" class="headerlink" title="GPU服务器硬件拓扑和集群组网"></a>GPU服务器硬件拓扑和集群组网</h1><blockquote>
+  if (false) {
+    btf.addGlobalFn('pjaxSend', preloader.initLoading, 'preloader_init')
+    btf.addGlobalFn('pjaxComplete', preloader.endLoading, 'preloader_end')
+  }
+})()</script><div id="web_bg" style="background-image: url(/img/吊床.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/%E7%BA%A2%E7%8C%AA.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">208</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">1</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">29</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/吊床.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">迎风之豚的博客</span></a><a class="nav-page-title" href="/"><span class="site-name">GPU服务器硬件拓扑和集群组网</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">GPU服务器硬件拓扑和集群组网</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-11-02T01:29:52.000Z" title="发表于 2024-11-02 09:29:52">2024-11-02</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-12-04T02:02:27.220Z" title="更新于 2024-12-04 10:02:27">2024-12-04</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%9D%82%E8%AE%B0/">杂记</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="GPU服务器硬件拓扑和集群组网"><a href="#GPU服务器硬件拓扑和集群组网" class="headerlink" title="GPU服务器硬件拓扑和集群组网"></a>GPU服务器硬件拓扑和集群组网</h1><blockquote>
 <p>转载自：<a target="_blank" rel="noopener" href="http://arthurchiao.art/blog/gpu-advanced-notes-1-zh/#11-pcie-%E4%BA%A4%E6%8D%A2%E8%8A%AF%E7%89%87">http://arthurchiao.art/blog/gpu-advanced-notes-1-zh/#11-pcie-%E4%BA%A4%E6%8D%A2%E8%8A%AF%E7%89%87</a></p>
 <p>感谢原作者的分享！在此基础上改动为个人版本。</p>
 </blockquote>
 <h1 id="1-术语与基础"><a href="#1-术语与基础" class="headerlink" title="1 术语与基础"></a>1 术语与基础</h1><p>大模型训练一般都是用单机 8 卡 GPU 主机组成集群，机型包括 <code>8*&#123;A100,A800,H100,H800&#125;</code> 。 下面一台典型 8*A100 GPU 的主机内硬件拓扑：</p>
-<p><img src="/../../img/image-20241012131712609.png" srcset="/img/loading.gif" lazyload alt="典型 8 卡 A100 主机硬件拓扑"></p>
+<p><img src="/../../img/image-20241012131712609.png" alt="典型 8 卡 A100 主机硬件拓扑"></p>
 <p>需要重点理解的组成部件包括：</p>
 <ul>
 <li>PCIE交换芯片</li>
@@ -330,31 +208,29 @@
 </ol>
 <h3 id="2）NVLink技术演进"><a href="#2）NVLink技术演进" class="headerlink" title="2）NVLink技术演进"></a>2）NVLink技术演进</h3><p>从2016年的第1代开始，到2022年已升级到第4 代。</p>
 <p>图示为版本差异：主要区别是单条 NVLink 链路的 <strong>lane 数量</strong>以及每个 <strong>lane 的带宽</strong>（图中给的都是双向带宽）等：</p>
-<p><img src="/./../../img/image-20241012132051768.png" srcset="/img/loading.gif" lazyload alt="NVLink 演进。Image from: HotChips 2022 [1]"></p>
+<p><img src="/./../../img/image-20241012132051768.png" alt="NVLink 演进。Image from: HotChips 2022 [1]"></p>
 <h3 id="3）NVLink总带宽的计算方式"><a href="#3）NVLink总带宽的计算方式" class="headerlink" title="3）NVLink总带宽的计算方式"></a>3）NVLink总带宽的计算方式</h3><ul>
 <li>A100的双向带宽是600GB&#x2F;s，单向带宽是300GB&#x2F;s</li>
 </ul>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># A100双向带宽的计算公式
-# 一台8卡的A100服务器里总共有6个NVSwitch，每个NVSwitch中有两条lane，每条lane的速度是50GB&#x2F;s,
-2 lanes&#x2F;NVSwitch * 6 NVSwitch * 50GB&#x2F;s&#x2F;lane &#x3D; 600GB&#x2F;s</code></pre></div></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">A100双向带宽的计算公式</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">一台8卡的A100服务器里总共有6个NVSwitch，每个NVSwitch中有两条lane，每条lane的速度是50GB/s,</span></span><br><span class="line">2 lanes/NVSwitch * 6 NVSwitch * 50GB/s/lane = 600GB/s</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>A800 被阉割了 4 条 lane，所以是双向带宽是400GB&#x2F;s，单向带宽是200GB&#x2F;s</li>
 </ul>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">8 lane * 50GB&#x2F;s&#x2F;lane &#x3D; 400GB&#x2F;s</code></pre></div></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">8 lane * 50GB/s/lane = 400GB/s</span><br></pre></td></tr></table></figure>
 
 
 
 <h3 id="4）监控NVLink带宽的方法"><a href="#4）监控NVLink带宽的方法" class="headerlink" title="4）监控NVLink带宽的方法"></a>4）监控NVLink带宽的方法</h3><p>基于 DCGM 可以采集到实时 NVLink 带宽</p>
-<p><img src="/./../../img/image-20241012132200770.png" srcset="/img/loading.gif" lazyload alt="Metrics from dcgm-exporter [5]"></p>
+<p><img src="/./../../img/image-20241012132200770.png" alt="Metrics from dcgm-exporter [5]"></p>
 <h2 id="1-3-NVSwitch芯片"><a href="#1-3-NVSwitch芯片" class="headerlink" title="1.3 NVSwitch芯片"></a>1.3 NVSwitch芯片</h2><p>NVSwitch 是 NVIDIA 的一款<strong>交换芯片</strong>，封装在 GPU模组（module）上，用于<strong>连接同一主机内GPU。</strong></p>
 <p>如下图所示，为浪潮机器的真机图，左侧的8 个nvdia盒子就是 8 片 A100 GPU，而右侧的 6 块超厚散热片下面就是 NVSwitch 芯片。</p>
-<p><img src="/./../../img/image-20241012132323761.png" srcset="/img/loading.gif" lazyload alt="Inspur NF5488A5 NVIDIA HGX A100 8 GPU Assembly Side View. Image source: [2]"></p>
+<p><img src="/./../../img/image-20241012132323761.png" alt="Inspur NF5488A5 NVIDIA HGX A100 8 GPU Assembly Side View. Image source: [2]"></p>
 <h2 id="1-4-NVLink-Switch"><a href="#1-4-NVLink-Switch" class="headerlink" title="1.4 NVLink Switch"></a>1.4 NVLink Switch</h2><blockquote>
 <p>请注意，别和NVSwitch弄混淆了！</p>
 </blockquote>
 <p>2022 年，NVIDIA 把NVSwitch芯片拿出来，做成了交换机，叫 NVLink Switch， 用来<strong>跨主机连接 GPU 设备</strong>。</p>
-<p><img src="/./../../img/image-20241012154412755.png" srcset="/img/loading.gif" lazyload alt="image-20241012154412755"></p>
+<p><img src="/./../../img/image-20241012154412755.png" alt="image-20241012154412755"></p>
 <h2 id="1-5-HBM"><a href="#1-5-HBM" class="headerlink" title="1.5 HBM"></a>1.5 HBM</h2><h3 id="1）什么是HBM？"><a href="#1）什么是HBM？" class="headerlink" title="1）什么是HBM？"></a>1）什么是HBM？</h3><blockquote>
 <p>美光副总裁暨计算与网络事业部计算产品事	业群总经理Praveen Vaidyanathan指出，芯片性能表现与存储器的频宽和容量成正相关，随着大语言模型（LLM）参数量增加，也需要更高频宽存储器，AI处理器才能顺利运行。</p>
 </blockquote>
@@ -371,7 +247,7 @@
 <li>HBM 的能效更高，它的总线更宽，但工作频率较低，且通过堆叠设计缩短了显存和 GPU 之间的距离。这种设计显著降低了功耗。</li>
 </ul>
 <p>HBM 的市场目前被 SK 海力士和三星等韩国公司垄断。</p>
-<p><img src="/./../../img/image-20241012160300087.png" srcset="/img/loading.gif" lazyload alt="image-20241012160300087"></p>
+<p><img src="/./../../img/image-20241012160300087.png" alt="image-20241012160300087"></p>
 <blockquote>
 <p>现在 CPU 也有用 HBM 的了，比如 <a target="_blank" rel="noopener" href="https://www.intel.com/content/www/us/en/products/details/processors/xeon/max-series.html">Intel Xeon CPU Max Series</a> 就自带了 64GB HBM2e。</p>
 </blockquote>
@@ -419,7 +295,7 @@
 <td><code>H200</code>, <a target="_blank" rel="noopener" href="https://www.nvidia.com/en-us/data-center/h200/">4.8TB&#x2F;s</a></td>
 </tr>
 </tbody></table>
-<p><img src="/./../../img/image-20241012132627792.png" srcset="/img/loading.gif" lazyload alt="使用了 HBM 的近几代高端 NVIDIA GPU 显存带宽（双向），纵坐标是 TB/s。Image source: [3]"></p>
+<p><img src="/./../../img/image-20241012132627792.png" alt="使用了 HBM 的近几代高端 NVIDIA GPU 显存带宽（双向），纵坐标是 TB/s。Image source: [3]"></p>
 <ul>
 <li>AMD MI300X 采用 192GB HBM3 方案，带宽 **<code>5.2TB/s</code>**；</li>
 <li>HBM3e 是 HBM3 的增强版，速度从 6.4GT&#x2F;s 到 8GT&#x2F;s。</li>
@@ -439,7 +315,7 @@
 <li>8 个 GPU 专属网卡（GPU卡 - PCIE总线 - Infiniband网卡）</li>
 </ul>
 <p>可参考下图构成：</p>
-<p><img src="/./../../img/NVIDIA-DGX-A100-Block-Diagram.png" srcset="/img/loading.gif" lazyload alt="NVIDIA DGX A100 主机（官方 8 卡机器）硬件拓扑"></p>
+<p><img src="/./../../img/NVIDIA-DGX-A100-Block-Diagram.png" alt="NVIDIA DGX A100 主机（官方 8 卡机器）硬件拓扑"></p>
 <h3 id="1）存储网卡"><a href="#1）存储网卡" class="headerlink" title="1）存储网卡"></a>1）存储网卡</h3><p>通过 PCIe 直连 CPU，用途：</p>
 <ol>
 <li>从分布式存储读写数据，例如读训练数据，写checkpoint等。</li>
@@ -449,10 +325,10 @@
 <h3 id="2）NVSwitch-删除"><a href="#2）NVSwitch-删除" class="headerlink" title="2）NVSwitch(删除)"></a>2）NVSwitch(删除)</h3><p>8 个 GPU 通过 6 个 NVSwitch 芯片 full-mesh 连接，这个 full-mesh 也叫 **<code>NVSwitch fabric</code>**； </p>
 <p>full-mesh 里面的<strong>每根线的带宽是 n * bw-per-nvlink-lane</strong>，比如：</p>
 <p>A100 用的 NVLink3，每条lane的带宽是50GB&#x2F;s</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">所以 full-mesh 里的每条线就是 12*50GB&#x2F;s&#x3D;600GB&#x2F;s，注意这个是双向带宽，单向只有 300GB&#x2F;s。</code></pre></div></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">所以 full-mesh 里的每条线就是 12*50GB/s=600GB/s，注意这个是双向带宽，单向只有 300GB/s。</span><br></pre></td></tr></table></figure>
 
 <p>A800 是阉割版，12 lane 变成 8 lane</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">所以每条线 8*50GB&#x2F;s&#x3D;400GB&#x2F;s，单向 200GB&#x2F;s。</code></pre></div></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">所以每条线 8*50GB/s=400GB/s，单向 200GB/s。</span><br></pre></td></tr></table></figure>
 
 
 
@@ -460,7 +336,7 @@
 
 <h3 id="3）查看拓扑"><a href="#3）查看拓扑" class="headerlink" title="3）查看拓扑"></a>3）查看拓扑</h3><p>使用<code>nvidia-smi topo</code>命令可以查看部件连接拓扑：</p>
 <p>下面是一台 8*A800 机器上 <strong><code>nvidia-smi</code></strong> 显示的实际拓扑（网卡两两做了 bond，NIC 0~3 都是 bond）：</p>
-<p><img src="/./../../img/image-20241012133420998.png" srcset="/img/loading.gif" lazyload alt="image-20241012133420998"></p>
+<p><img src="/./../../img/image-20241012133420998.png" alt="image-20241012133420998"></p>
 <ul>
 <li><p>GPU 之间（左上角区域）：都是 **<code>NV8</code>**，表示 <strong>8 条 NVLink</strong> 连接；</p>
 </li>
@@ -479,257 +355,22 @@
 </li>
 </ul>
 <h2 id="2-2-GPU-训练集群组网"><a href="#2-2-GPU-训练集群组网" class="headerlink" title="2.2 GPU 训练集群组网"></a>2.2 GPU 训练集群组网</h2><p>计算节点互联的网络架构：主要连接<strong>计算网络</strong>和<strong>存储网络</strong></p>
-<p><img src="/./../../img/a100-idc-network.png" srcset="/img/loading.gif" lazyload alt="a100-idc-network"></p>
+<p><img src="/./../../img/a100-idc-network.png" alt="a100-idc-network"></p>
 <h3 id="1）计算网络"><a href="#1）计算网络" class="headerlink" title="1）计算网络"></a>1）计算网络</h3><p>GPU 网卡直连到叶层交换机（leaf），leaf 通过 full-mesh（点对点直连）的方式连接到脊层交换机（spine），形成跨主机 GPU 计算网络。</p>
 <ul>
 <li><p>这个网络的目的是 GPU 与其他计算节点的 GPU交换数据；</p>
 </li>
 <li><p>服务器内部的GPU和存储网卡通过PCIe 交换芯片连接</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">  GPU &lt;--&gt; PCIe Switch &lt;--&gt; 存储网卡
-
-
-
-### 2）存储网络
-
-直连 CPU 的两张网卡，连接到另一张网络里，主要作用是读写数据，以及 SSH 管理等等。
-
-
-
-### 3）RDMA概念
-
-在了解RDMA之前，需要先了解DMA（全称为Direct Memory Access，即直接内存访问。意思是外设对内存的读写过程可以不用CPU参与而直接进行）
-
-没有DMA的时候，外部设备读写内存需要绕道CPU走一圈。假设I&#x2F;O设备为一个普通网卡，为了从内存拿到需要发送的数据，然后组装数据包发送到物理链路上，网卡需要通过总线告知CPU自己的数据请求。然后CPU将会把内存缓冲区中的数据复制到自己内部的寄存器中，再复制到I&#x2F;O设备的存储空间中。如果数据量比较大，那么很长一段时间内CPU都会忙于搬移数据，而无法投入到其他工作中去。
-
-![image-20241012170122410](.&#x2F;..&#x2F;..&#x2F;img&#x2F;image-20241012170122410.png)
-
-CPU的最主要工作是计算，而不是进行数据复制，这种工作属于白白浪费了它的计算能力。为了给CPU“减负”，让它投入到更有意义的工作中去，后来人们设计了DMA机制：
-
-![image-20241012170404114](.&#x2F;..&#x2F;..&#x2F;img&#x2F;image-20241012170404114.png)
-
-可以看到总线上又挂了一个DMA控制器，它是专门用来读写内存的设备。有了它以后，当我们的网卡想要从内存中拷贝数据时，除了一些必要的控制命令外，整个数据复制过程都是由DMA控制器完成的。过程跟CPU复制是一样的，只不过这次是把内存中的数据通过总线复制到DMA控制器内部的寄存器中，再复制到I&#x2F;O设备的存储空间中。CPU除了关注一下这个过程的开始和结束以外，其他时间可以去做其他事情。DMA控制器一般是和I&#x2F;O设备在一起的，也就是说一块网卡中既有负责数据收发的模块，也有DMA模块。
-
-好了，现在可以来学习RDMA了。
-
-RDMA（Remote Direct Memory Access，远程直接内存访问）是一种高速网络互联技术，该技术主要设计目的是减少在数据传输过程中收发端的处理延迟以及资源消耗。RDMA技术使计算机能够直接访问远程计算机的内存，在内存层面进行数据传输而无需CPU频繁介入，从而显著增强网络通信性能。
-
-传统网卡的通信方式：传统网络中，&quot;服务器1给服务器2发消息&quot;实际上做的是“把&quot;服务器1内存中的一段数据，通过网络链路搬移到&quot;服务器2的内存中”，而这一过程无论是发端还是收段，都需要CPU的指挥和控制，包括网卡的控制，中断的处理，报文的封装和解析等等。
-
-![image-20241012171059302](.&#x2F;..&#x2F;..&#x2F;img&#x2F;image-20241012171059302.png)
-
-使用RDMA网卡的通信方式：同样是把本端内存中的一段数据，复制到对端内存中，在使用了RDMA技术时，两端的CPU几乎不用参与数据传输过程（只参与控制面）。本端的网卡直接从内存的用户空间DMA拷贝数据到内部存储空间，然后硬件进行各层报文的组装后，通过物理链路发送到对端网卡。对端的RDMA网卡收到数据后，剥离各层报文头和校验码，通过DMA将数据直接拷贝到用户空间内存中。
-
-![image-20241012171217209](.&#x2F;..&#x2F;..&#x2F;img&#x2F;image-20241012171217209.png)
-
-
-
-### 3）RoCE vs. InfiniBand
-
-不管是计算网络还是存储网络，都需要RDMA技术才能实现 AI 所需的高性能。RDMA**技术**的实现目前有**两种协议**选择：
-
-- RoCEv2：公有云卖的 8 卡 GPU 主机基本都是这种网络；在性能达标的前提下，（相对）便宜；
-- InfiniBand (IB)：同等网卡带宽下，性能比 RoCEv2 好 20% 以上，但是价格贵一倍。
-
-
-
-## 2.3 数据链路带宽瓶颈分析
-
-![单机 8 卡 A100 GPU 主机带宽瓶颈分析](.&#x2F;..&#x2F;..&#x2F;img&#x2F;8x-a100-bw-limits.png)
-
-几个关键链路带宽都标在图上了，
-
-1、同主机 GPU 之间：走 NVLink，双向 600GB&#x2F;s，单向 **&#96;300GB&#x2F;s&#96;**；
-
-2、同主机 GPU 和自己的网卡之间：走 PICe Gen4 Switch 芯片，双向 64GB&#x2F;s，单向 **&#96;32GB&#x2F;s&#96;**；
-
-3、跨主机 GPU 之间：需要通过网卡收发数据，这个就看网卡带宽了，
-
-- &#96;100Gbps&#x3D;12.5GB&#x2F;s&#96;： 远低于PCIe Gen4 的单向带宽，所以跨机通信相比主机内通信性能要下降很多。
-- &#96;200Gbps&#x3D;&#x3D;25GB&#x2F;s&#96;：已经**接近** PCIe Gen4 的单向带宽（推荐）。
-- &#96;400Gbps&#x3D;&#x3D;50GB&#x2F;s&#96;：已经**超过** PCIe Gen4 的单向带宽。
-
-因此在这种机型里，用 400Gbps 网卡作用不大，400Gbps 需要 PCIe Gen5 性能才能发挥出来。
-
-
-
-# 3 典型8卡H100&#x2F;H800主机构成
-
-H系列的GPU按照主板规格（Board Form Factor）分为两种类型：
-
-- PCIe Gen5
-- SXM-5：性能更高一些
-
-
-
-## 3.1 H100 芯片 layout
-
-下面是一片 H100 GPU 芯片的内部结构：
-
-![单片H100GPU内部逻辑布局](.&#x2F;..&#x2F;..&#x2F;img&#x2F;image-20241012134446643.png)
-
-- 台积电4nm工艺
-- 采用第四代NVlink技术，最下面的绿色条是18条lane；NVLINK的双向总带宽900GB&#x2F;s（18 * 50）
-- 中间蓝色的是 L2 cache；
-- 左右两侧是 **&#96;HBM&#96;** 芯片，即显存；
-
-## 3.2 主机内硬件拓扑
-
-跟 A100 8 卡机结构大致类似，区别：
-
-1. NVSwitch 芯片从 6 个减少到了 4 个；真机图如下，
-
-![A100-8卡真机图](.&#x2F;..&#x2F;..&#x2F;img&#x2F;image-20241012134550723.png)
-
-2.与 CPU 的互联从 PCIe Gen4 x16 升级到 **&#96;PCIe Gen5 x16&#96;**，双向带宽 **&#96;128GB&#x2F;s&#96;**；
-
-![image-20241012134613017](.&#x2F;..&#x2F;..&#x2F;img&#x2F;image-20241012134613017.png)
-
-## 3.3 组网
-
-与 A100 也类似，只是标配改成了 **&#96;400Gbps&#96;** 的 CX7 网卡， 否则网络带宽与 PCIe Switch 和 NVLink&#x2F;NVSwitch 之间的差距更大了。
-
-
-
-# 4 典型 &#96;4*L40S&#x2F;8*L40S&#96; 主机
-
-L40S 是今年（2023）即将上市的新一代“性价比款”多功能 GPU，**对标 A100**。 除了不适合训练基座大模型之外（后面会看到为什么），官方的宣传里它几乎什么都能干。 ~~价格的话，目前第三方服务器厂商给到的口头报价都是 A100 的 8 折左右~~。
-
-
-
-## 4.1 L40S vs A100 配置及特点对比
-
-L40S 最大的特点之一是 **time-to-market 时间短**，也就是从订货到拿到货周期比 A100&#x2F;A800&#x2F;H800 快很多。 这里面技术和非技术原因都有，比如：
-
-- ~~不存在被美国禁售的功能~~（根据 2023.10 的新规定，已经禁售了），比如 **FP64 和 NVLink 都干掉了**；
-- 使用 **&#96;GDDR6&#96;** 显存，不依赖 HBM 产能（及先进封装）；
-
-价格便宜也有几方面原因，后面会详细介绍：
-
-1. 大头可能来自 GPU 本身价格降低：因为去掉了一些模块和功能，或者用便宜的产品替代；
-2. 整机成本也有节省：例如去掉了一层 PCIe Gen4 Swtich；不过相比于 4x&#x2F;8x GPU，整机的其他部分都可以说送的了；
-
-
-
-## 4.2 L40S 与 A100 性能对比
-
-下面是一个官方标称性能对比：
-
-![L40S与A100性能对比](.&#x2F;..&#x2F;..&#x2F;img&#x2F;image-20241012134804131.png)
-
-
-
-具体场景的性能对比网上也有很多官方资料，这里就不列举了。简单来，
-
-- 性能 1.2x ~ 2x（看具体场景）。
-- 功耗：两台 L40S 和单台 A100 差不多
-
-
-
-需要注意，**L40S 主机官方推荐的是单机 4 卡而不是 8 卡**（后面会介绍为什么）， 所以对比一般是用 &#96;两台 4*L40S&#96; vs &#96;单台 8*A100&#96;。另外，很多场景的性能提升有个 **大前提**：网络需要是 200Gbps RoCE 或 IB 网络，接下来介绍为什么。
-
-
-
-## 4.3 L40S 攒机
-
-### 推荐架构：&#96;2-2-4&#96;
-
-相比于 A100 的 **&#96;2-2-4-6-8-8&#96;** 架构， 官方推荐的 L40S GPU 主机是 2-2-4 架构，一台机器物理拓扑如下：
-
-![单机4卡L40S GPU](.&#x2F;..&#x2F;..&#x2F;img&#x2F;image-20241012135201064.png)
-
-最明显的变化是**去掉了 CPU 和 GPU 之间的 PCIe Switch 芯片**， 网卡和 GPU 都是直连 CPU 上自带的 PCIe Gen4 x16（64GB&#x2F;s），
-
-- 2 片 CPU（NUMA）
-- 2 张双口 CX7 网卡（每张网卡 **&#96;2\*200Gbps&#96;**）
-- 4 片 L40S GPU
-- 另外，存储网卡只配 1 张（双口），直连在任意一片 CPU 上
-
-这样**每片 GPU 平均 200Gbps 网络带宽**。
-
-
-
-### 不推荐架构：&#96;2-2-8&#96;
-
-![单机 8 卡 L40S GPU 主机拓扑，来自 NVIDIA L40S 官方推介材料](.&#x2F;..&#x2F;..&#x2F;img&#x2F;image-20241012135239994.png)
-
-如图，跟单机 4 卡相比，单机 8 卡需要引入两片 PCIe Gen5 Switch 芯片：
-
-- 说是现在**PCIe Gen5 Switch 单片价格 1w 刀**（不知真假），一台机器需要 2 片；价格不划算；
-- PCIe switch 只有一家在生产，产能受限，周期很长；
-- 平摊到每片 GPU 的网络带宽减半；
-
-
-
-## 4.4 组网
-
-官方建议 4 卡机型，搭配 200Gbps RoCE&#x2F;IB 组网。
-
-
-
-## 4.5 数据链路带宽瓶颈分析
-
-![单机 4 卡 L40S GPU 主机带宽瓶颈分析](.&#x2F;..&#x2F;..&#x2F;img&#x2F;image-20241012135328084.png)
-
-以同 CPU 下面的两种 L40S 为例，这里面有两条链路可选：
-
-1. 直接通过 CPU 处理：&#96;GPU0 &lt;--PCIe--&gt; CPU &lt;--PCIe--&gt; GPU1&#96;
-   - PCIe Gen4 x16 双向 64GB&#x2F;s，单向 **&#96;32GB&#x2F;s&#96;**；
-   - **CPU 处理瓶颈？TODO**
-2. 完全绕过 CPU 处理，**通过网卡去外面绕一圈再回来**：&#96;GPU0 &lt;--PCIe--&gt; NIC &lt;-- RoCe&#x2F;IB Switch --&gt; NIC &lt;--PCIe--&gt; GPU1&#96;
-   - PCIe Gen4 x16 双向 64GB&#x2F;s，单向 **&#96;32GB&#x2F;s&#96;**；
-   - 平均每个 GPU 一个单向 200Gbps 网口，单向折算 **&#96;25GB&#x2F;s&#96;**；
-   - **需要 NCCL 支持**，官方说新版本 NCCL 正在针对 L40S 适配，默认行为就是去外面绕一圈回来；
-
-第二种方式看着长了很多，但官方说其实比方式一还要快很多（这里还每太搞懂，CPU 那里是怎么处理的？）—— **前提是网卡和交换机配到位**：200Gbps RoCE&#x2F;IB 网络。在这种网络架构下（网络带宽充足），
-
-- **任何两片 GPU 的通信带宽和延迟都是一样的**，是否在一台机器内或一片 CPU 下面并不重要，集群可以**横向扩展**（scaling up，compared with scaling in）；
-- GPU 机器成本降低；但其实对于那些对网络带宽要求没那么高的业务来说，是**把 NVLINK 的成本转嫁给了网络**，这时候必须要组建 200Gbps 网络，否则发挥不出 L40S 多卡训练的性能。
-
-如果是方式二，同主机内 GPU 卡间的带宽瓶颈在网卡速度。即使网络是推荐的 2*CX7 配置，
-
-- L40S： 200Gbps（网卡单向线速）
-- A100： 300GB&#x2F;s（NVLINK3 单向） &#x3D;&#x3D; **&#96;12x&#96;**200Gbps
-- A800： 200GB&#x2F;s（NVLINK3 单向） &#x3D;&#x3D; **&#96;8x&#96;**200Gbps
-
-可以看到，**L40S 卡间带宽还是比 A100 NVLINK 慢了 12 倍**， 比 A800 NVLink 慢了 8 倍，所以**不适合数据密集交互的基础大模型训练**。
-
-
-
-## 4.6 测试注意事项
-
-如上，即便只测试单机 4 卡 L40S 机器，也需要搭配 200Gbps 交换机，否则卡间性能发挥不出来。
-
-
-
-# 5 典型 &#96;8*H20&#96; GPU 服务器（2024 更新）
-
-H20 是 2023 年发布，2024 年正式开始交付的 GPU。面向中国大陆市场，填补 A800&#x2F;L40S 等等被禁之后的产品空缺。
-
-## 5.1 显存：**&#96;8\*96GB&#96;**
-</code></pre></div></figure></li>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br></pre></td><td class="code"><pre><span class="line">  GPU &lt;--&gt; PCIe Switch &lt;--&gt; 存储网卡</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment">## 2）存储网络</span></span></span><br><span class="line"></span><br><span class="line">直连 CPU 的两张网卡，连接到另一张网络里，主要作用是读写数据，以及 SSH 管理等等。</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment">## 3）RDMA概念</span></span></span><br><span class="line"></span><br><span class="line">在了解RDMA之前，需要先了解DMA（全称为Direct Memory Access，即直接内存访问。意思是外设对内存的读写过程可以不用CPU参与而直接进行）</span><br><span class="line"></span><br><span class="line">没有DMA的时候，外部设备读写内存需要绕道CPU走一圈。假设I/O设备为一个普通网卡，为了从内存拿到需要发送的数据，然后组装数据包发送到物理链路上，网卡需要通过总线告知CPU自己的数据请求。然后CPU将会把内存缓冲区中的数据复制到自己内部的寄存器中，再复制到I/O设备的存储空间中。如果数据量比较大，那么很长一段时间内CPU都会忙于搬移数据，而无法投入到其他工作中去。</span><br><span class="line"></span><br><span class="line">![image-20241012170122410](./../../img/image-20241012170122410.png)</span><br><span class="line"></span><br><span class="line">CPU的最主要工作是计算，而不是进行数据复制，这种工作属于白白浪费了它的计算能力。为了给CPU“减负”，让它投入到更有意义的工作中去，后来人们设计了DMA机制：</span><br><span class="line"></span><br><span class="line">![image-20241012170404114](./../../img/image-20241012170404114.png)</span><br><span class="line"></span><br><span class="line">可以看到总线上又挂了一个DMA控制器，它是专门用来读写内存的设备。有了它以后，当我们的网卡想要从内存中拷贝数据时，除了一些必要的控制命令外，整个数据复制过程都是由DMA控制器完成的。过程跟CPU复制是一样的，只不过这次是把内存中的数据通过总线复制到DMA控制器内部的寄存器中，再复制到I/O设备的存储空间中。CPU除了关注一下这个过程的开始和结束以外，其他时间可以去做其他事情。DMA控制器一般是和I/O设备在一起的，也就是说一块网卡中既有负责数据收发的模块，也有DMA模块。</span><br><span class="line"></span><br><span class="line">好了，现在可以来学习RDMA了。</span><br><span class="line"></span><br><span class="line">RDMA（Remote Direct Memory Access，远程直接内存访问）是一种高速网络互联技术，该技术主要设计目的是减少在数据传输过程中收发端的处理延迟以及资源消耗。RDMA技术使计算机能够直接访问远程计算机的内存，在内存层面进行数据传输而无需CPU频繁介入，从而显著增强网络通信性能。</span><br><span class="line"></span><br><span class="line">传统网卡的通信方式：传统网络中，&quot;服务器1给服务器2发消息&quot;实际上做的是“把&quot;服务器1内存中的一段数据，通过网络链路搬移到&quot;服务器2的内存中”，而这一过程无论是发端还是收段，都需要CPU的指挥和控制，包括网卡的控制，中断的处理，报文的封装和解析等等。</span><br><span class="line"></span><br><span class="line">![image-20241012171059302](./../../img/image-20241012171059302.png)</span><br><span class="line"></span><br><span class="line">使用RDMA网卡的通信方式：同样是把本端内存中的一段数据，复制到对端内存中，在使用了RDMA技术时，两端的CPU几乎不用参与数据传输过程（只参与控制面）。本端的网卡直接从内存的用户空间DMA拷贝数据到内部存储空间，然后硬件进行各层报文的组装后，通过物理链路发送到对端网卡。对端的RDMA网卡收到数据后，剥离各层报文头和校验码，通过DMA将数据直接拷贝到用户空间内存中。</span><br><span class="line"></span><br><span class="line">![image-20241012171217209](./../../img/image-20241012171217209.png)</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment">## 3）RoCE vs. InfiniBand</span></span></span><br><span class="line"></span><br><span class="line">不管是计算网络还是存储网络，都需要RDMA技术才能实现 AI 所需的高性能。RDMA**技术**的实现目前有**两种协议**选择：</span><br><span class="line"></span><br><span class="line">- RoCEv2：公有云卖的 8 卡 GPU 主机基本都是这种网络；在性能达标的前提下，（相对）便宜；</span><br><span class="line">- InfiniBand (IB)：同等网卡带宽下，性能比 RoCEv2 好 20% 以上，但是价格贵一倍。</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># 2.3 数据链路带宽瓶颈分析</span></span></span><br><span class="line"></span><br><span class="line">![单机 8 卡 A100 GPU 主机带宽瓶颈分析](./../../img/8x-a100-bw-limits.png)</span><br><span class="line"></span><br><span class="line">几个关键链路带宽都标在图上了，</span><br><span class="line"></span><br><span class="line">1、同主机 GPU 之间：走 NVLink，双向 600GB/s，单向 **`300GB/s`**；</span><br><span class="line"></span><br><span class="line">2、同主机 GPU 和自己的网卡之间：走 PICe Gen4 Switch 芯片，双向 64GB/s，单向 **`32GB/s`**；</span><br><span class="line"></span><br><span class="line">3、跨主机 GPU 之间：需要通过网卡收发数据，这个就看网卡带宽了，</span><br><span class="line"></span><br><span class="line">- `100Gbps=12.5GB/s`： 远低于PCIe Gen4 的单向带宽，所以跨机通信相比主机内通信性能要下降很多。</span><br><span class="line">- `200Gbps==25GB/s`：已经**接近** PCIe Gen4 的单向带宽（推荐）。</span><br><span class="line">- `400Gbps==50GB/s`：已经**超过** PCIe Gen4 的单向带宽。</span><br><span class="line"></span><br><span class="line">因此在这种机型里，用 400Gbps 网卡作用不大，400Gbps 需要 PCIe Gen5 性能才能发挥出来。</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">3 典型8卡H100/H800主机构成</span></span><br><span class="line"></span><br><span class="line">H系列的GPU按照主板规格（Board Form Factor）分为两种类型：</span><br><span class="line"></span><br><span class="line">- PCIe Gen5</span><br><span class="line">- SXM-5：性能更高一些</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># 3.1 H100 芯片 layout</span></span></span><br><span class="line"></span><br><span class="line">下面是一片 H100 GPU 芯片的内部结构：</span><br><span class="line"></span><br><span class="line">![单片H100GPU内部逻辑布局](./../../img/image-20241012134446643.png)</span><br><span class="line"></span><br><span class="line">- 台积电4nm工艺</span><br><span class="line">- 采用第四代NVlink技术，最下面的绿色条是18条lane；NVLINK的双向总带宽900GB/s（18 * 50）</span><br><span class="line">- 中间蓝色的是 L2 cache；</span><br><span class="line">- 左右两侧是 **`HBM`** 芯片，即显存；</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># 3.2 主机内硬件拓扑</span></span></span><br><span class="line"></span><br><span class="line">跟 A100 8 卡机结构大致类似，区别：</span><br><span class="line"></span><br><span class="line">1. NVSwitch 芯片从 6 个减少到了 4 个；真机图如下，</span><br><span class="line"></span><br><span class="line">![A100-8卡真机图](./../../img/image-20241012134550723.png)</span><br><span class="line"></span><br><span class="line">2.与 CPU 的互联从 PCIe Gen4 x16 升级到 **`PCIe Gen5 x16`**，双向带宽 **`128GB/s`**；</span><br><span class="line"></span><br><span class="line">![image-20241012134613017](./../../img/image-20241012134613017.png)</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># 3.3 组网</span></span></span><br><span class="line"></span><br><span class="line">与 A100 也类似，只是标配改成了 **`400Gbps`** 的 CX7 网卡， 否则网络带宽与 PCIe Switch 和 NVLink/NVSwitch 之间的差距更大了。</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">4 典型 `4*L40S/8*L40S` 主机</span></span><br><span class="line"></span><br><span class="line">L40S 是今年（2023）即将上市的新一代“性价比款”多功能 GPU，**对标 A100**。 除了不适合训练基座大模型之外（后面会看到为什么），官方的宣传里它几乎什么都能干。 ~~价格的话，目前第三方服务器厂商给到的口头报价都是 A100 的 8 折左右~~。</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># 4.1 L40S vs A100 配置及特点对比</span></span></span><br><span class="line"></span><br><span class="line">L40S 最大的特点之一是 **time-to-market 时间短**，也就是从订货到拿到货周期比 A100/A800/H800 快很多。 这里面技术和非技术原因都有，比如：</span><br><span class="line"></span><br><span class="line">- ~~不存在被美国禁售的功能~~（根据 2023.10 的新规定，已经禁售了），比如 **FP64 和 NVLink 都干掉了**；</span><br><span class="line">- 使用 **`GDDR6`** 显存，不依赖 HBM 产能（及先进封装）；</span><br><span class="line"></span><br><span class="line">价格便宜也有几方面原因，后面会详细介绍：</span><br><span class="line"></span><br><span class="line">1. 大头可能来自 GPU 本身价格降低：因为去掉了一些模块和功能，或者用便宜的产品替代；</span><br><span class="line">2. 整机成本也有节省：例如去掉了一层 PCIe Gen4 Swtich；不过相比于 4x/8x GPU，整机的其他部分都可以说送的了；</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># 4.2 L40S 与 A100 性能对比</span></span></span><br><span class="line"></span><br><span class="line">下面是一个官方标称性能对比：</span><br><span class="line"></span><br><span class="line">![L40S与A100性能对比](./../../img/image-20241012134804131.png)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">具体场景的性能对比网上也有很多官方资料，这里就不列举了。简单来，</span><br><span class="line"></span><br><span class="line">- 性能 1.2x ~ 2x（看具体场景）。</span><br><span class="line">- 功耗：两台 L40S 和单台 A100 差不多</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">需要注意，**L40S 主机官方推荐的是单机 4 卡而不是 8 卡**（后面会介绍为什么）， 所以对比一般是用 `两台 4*L40S` vs `单台 8*A100`。另外，很多场景的性能提升有个 **大前提**：网络需要是 200Gbps RoCE 或 IB 网络，接下来介绍为什么。</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># 4.3 L40S 攒机</span></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment">## 推荐架构：`2-2-4`</span></span></span><br><span class="line"></span><br><span class="line">相比于 A100 的 **`2-2-4-6-8-8`** 架构， 官方推荐的 L40S GPU 主机是 2-2-4 架构，一台机器物理拓扑如下：</span><br><span class="line"></span><br><span class="line">![单机4卡L40S GPU](./../../img/image-20241012135201064.png)</span><br><span class="line"></span><br><span class="line">最明显的变化是**去掉了 CPU 和 GPU 之间的 PCIe Switch 芯片**， 网卡和 GPU 都是直连 CPU 上自带的 PCIe Gen4 x16（64GB/s），</span><br><span class="line"></span><br><span class="line">- 2 片 CPU（NUMA）</span><br><span class="line">- 2 张双口 CX7 网卡（每张网卡 **`2\*200Gbps`**）</span><br><span class="line">- 4 片 L40S GPU</span><br><span class="line">- 另外，存储网卡只配 1 张（双口），直连在任意一片 CPU 上</span><br><span class="line"></span><br><span class="line">这样**每片 GPU 平均 200Gbps 网络带宽**。</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment">## 不推荐架构：`2-2-8`</span></span></span><br><span class="line"></span><br><span class="line">![单机 8 卡 L40S GPU 主机拓扑，来自 NVIDIA L40S 官方推介材料](./../../img/image-20241012135239994.png)</span><br><span class="line"></span><br><span class="line">如图，跟单机 4 卡相比，单机 8 卡需要引入两片 PCIe Gen5 Switch 芯片：</span><br><span class="line"></span><br><span class="line">- 说是现在**PCIe Gen5 Switch 单片价格 1w 刀**（不知真假），一台机器需要 2 片；价格不划算；</span><br><span class="line">- PCIe switch 只有一家在生产，产能受限，周期很长；</span><br><span class="line">- 平摊到每片 GPU 的网络带宽减半；</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># 4.4 组网</span></span></span><br><span class="line"></span><br><span class="line">官方建议 4 卡机型，搭配 200Gbps RoCE/IB 组网。</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># 4.5 数据链路带宽瓶颈分析</span></span></span><br><span class="line"></span><br><span class="line">![单机 4 卡 L40S GPU 主机带宽瓶颈分析](./../../img/image-20241012135328084.png)</span><br><span class="line"></span><br><span class="line">以同 CPU 下面的两种 L40S 为例，这里面有两条链路可选：</span><br><span class="line"></span><br><span class="line">1. 直接通过 CPU 处理：`GPU0 &lt;--PCIe--&gt; CPU &lt;--PCIe--&gt; GPU1`</span><br><span class="line">   - PCIe Gen4 x16 双向 64GB/s，单向 **`32GB/s`**；</span><br><span class="line">   - **CPU 处理瓶颈？TODO**</span><br><span class="line">2. 完全绕过 CPU 处理，**通过网卡去外面绕一圈再回来**：`GPU0 &lt;--PCIe--&gt; NIC &lt;-- RoCe/IB Switch --&gt; NIC &lt;--PCIe--&gt; GPU1`</span><br><span class="line">   - PCIe Gen4 x16 双向 64GB/s，单向 **`32GB/s`**；</span><br><span class="line">   - 平均每个 GPU 一个单向 200Gbps 网口，单向折算 **`25GB/s`**；</span><br><span class="line">   - **需要 NCCL 支持**，官方说新版本 NCCL 正在针对 L40S 适配，默认行为就是去外面绕一圈回来；</span><br><span class="line"></span><br><span class="line">第二种方式看着长了很多，但官方说其实比方式一还要快很多（这里还每太搞懂，CPU 那里是怎么处理的？）—— **前提是网卡和交换机配到位**：200Gbps RoCE/IB 网络。在这种网络架构下（网络带宽充足），</span><br><span class="line"></span><br><span class="line">- **任何两片 GPU 的通信带宽和延迟都是一样的**，是否在一台机器内或一片 CPU 下面并不重要，集群可以**横向扩展**（scaling up，compared with scaling in）；</span><br><span class="line">- GPU 机器成本降低；但其实对于那些对网络带宽要求没那么高的业务来说，是**把 NVLINK 的成本转嫁给了网络**，这时候必须要组建 200Gbps 网络，否则发挥不出 L40S 多卡训练的性能。</span><br><span class="line"></span><br><span class="line">如果是方式二，同主机内 GPU 卡间的带宽瓶颈在网卡速度。即使网络是推荐的 2*CX7 配置，</span><br><span class="line"></span><br><span class="line">- L40S： 200Gbps（网卡单向线速）</span><br><span class="line">- A100： 300GB/s（NVLINK3 单向） == **`12x`**200Gbps</span><br><span class="line">- A800： 200GB/s（NVLINK3 单向） == **`8x`**200Gbps</span><br><span class="line"></span><br><span class="line">可以看到，**L40S 卡间带宽还是比 A100 NVLINK 慢了 12 倍**， 比 A800 NVLink 慢了 8 倍，所以**不适合数据密集交互的基础大模型训练**。</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># 4.6 测试注意事项</span></span></span><br><span class="line"></span><br><span class="line">如上，即便只测试单机 4 卡 L40S 机器，也需要搭配 200Gbps 交换机，否则卡间性能发挥不出来。</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">5 典型 `8*H20` GPU 服务器（2024 更新）</span></span><br><span class="line"></span><br><span class="line">H20 是 2023 年发布，2024 年正式开始交付的 GPU。面向中国大陆市场，填补 A800/L40S 等等被禁之后的产品空缺。</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment"># 5.1 显存：**`8\*96GB`**</span></span></span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
 </ul>
 <p>$ nvidia-smi<br>+—————————————————————————————+<br>| NVIDIA-SMI 535.161.03             Driver Version: 535.161.03   CUDA Version: 12.2     |<br>|—————————————–+———————-+———————-+<br>| GPU  Name                 Persistence-M | Bus-Id        Disp.A | Volatile Uncorr. ECC |<br>| Fan  Temp   Perf          Pwr:Usage&#x2F;Cap |         Memory-Usage | GPU-Util  Compute M. |<br>|                                         |                      |               MIG M. |<br>|&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;+&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;+&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;|<br>|   0  NVIDIA H20                     On  | 00000000:04:00.0 Off |                    0 |<br>| N&#x2F;A   24C    P0              72W &#x2F; 500W |      0MiB &#x2F; 97871MiB |      0%      Default |<br>|                                         |                      |             Disabled |<br>+—————————————–+———————-+———————-+<br>|   1  NVIDIA H20                     On  | 00000000:23:00.0 Off |                    0 |<br>| N&#x2F;A   24C    P0              71W &#x2F; 500W |      0MiB &#x2F; 97871MiB |      0%      Default |<br>|                                         |                      |             Disabled |<br>+—————————————–+———————-+———————-+<br>…<br>+—————————————–+———————-+———————-+<br>|   7  NVIDIA H20                     On  | 00000000:E4:00.0 Off |                    0 |<br>| N&#x2F;A   24C    P0              72W &#x2F; 500W |      0MiB &#x2F; 97871MiB |      0%      Default |<br>|                                         |                      |             Disabled |<br>+—————————————–+———————-+———————-+</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-none"><code class="language-none">
-GPU 最大功耗 &#96;8*500W&#96;。
-
-## 5.2 卡间互联：NVLINK &#96;x18 lanes &#x3D; 900GB&#x2F;s&#96;
-</code></pre></div></figure>
+<figure class="highlight autohotkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">GPU 最大功耗 `8*<span class="number">500</span>W`。</span><br><span class="line"></span><br><span class="line">## <span class="number">5.2</span> 卡间互联：NVLINK `x18 lanes = <span class="number">900</span>GB/s`</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 <p>$ nvidia-smi topo -m<br>        GPU0    GPU1    GPU2    GPU3    GPU4    GPU5    GPU6    GPU7    NIC0    NIC1    CPU Affinity    NUMA Affinity   GPU NUMA ID<br>GPU0     X      NV18    NV18    NV18    NV18    NV18    NV18    NV18    SYS     SYS     0-95,192-287    0               N&#x2F;A<br>GPU1    NV18     X      NV18    NV18    NV18    NV18    NV18    NV18    SYS     SYS     0-95,192-287    0               N&#x2F;A<br>GPU2    NV18    NV18     X      NV18    NV18    NV18    NV18    NV18    SYS     SYS     0-95,192-287    0               N&#x2F;A<br>GPU3    NV18    NV18    NV18     X      NV18    NV18    NV18    NV18    SYS     SYS     0-95,192-287    0               N&#x2F;A<br>GPU4    NV18    NV18    NV18    NV18     X      NV18    NV18    NV18    NODE    NODE    96-191,288-383  1               N&#x2F;A<br>GPU5    NV18    NV18    NV18    NV18    NV18     X      NV18    NV18    NODE    NODE    96-191,288-383  1               N&#x2F;A<br>GPU6    NV18    NV18    NV18    NV18    NV18    NV18     X      NV18    PHB     PHB     96-191,288-383  1               N&#x2F;A<br>GPU7    NV18    NV18    NV18    NV18    NV18    NV18    NV18     X      NODE    NODE    96-191,288-383  1               N&#x2F;A<br>NIC0    SYS     SYS     SYS     SYS     NODE    NODE    PHB     NODE     X      PIX<br>NIC1    SYS     SYS     SYS     SYS     NODE    NODE    PHB     NODE    PIX      X</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-none"><code class="language-none">
-可以看到双向 **&#96;18 lanes \* 50GB&#x2F;s&#x2F;lane&#x3D; 900GB&#x2F;s&#96;**（单向 450GB&#x2F;s）。 作为对比，&#96;8*A800&#96; NVLINK 是 8 lanes，见前面章节。
-
-
-
-## 5.3 网络
-
-这个看各服务器厂商怎么配了。下面是国内某家的 PCIe 和网卡信息：
-</code></pre></div></figure>
+<figure class="highlight autohotkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">可以看到双向 **`18 lanes \* <span class="number">50</span>GB/s/lane= <span class="number">900</span>GB/s`**（单向 <span class="number">450</span>GB/s）。 作为对比，`8*A800` NVLINK 是 <span class="number">8</span> lanes，见前面章节。</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">## <span class="number">5.3</span> 网络</span><br><span class="line"></span><br><span class="line">这个看各服务器厂商怎么配了。下面是国内某家的 PCIe 和网卡信息：</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 <p>$ lspci<br>00:00.0 Host bridge: Advanced Micro Devices, Inc. [AMD] Device 14a4 (rev 01)<br>c0:00.2 IOMMU: Advanced Micro Devices, Inc. [AMD] Device 149e (rev 01)<br>c0:01.1 PCI bridge: Advanced Micro Devices, Inc. [AMD] Device 14ab (rev 01)<br>c1:00.0 PCI bridge: Broadcom &#x2F; LSI PEX890xx PCIe Gen 5 Switch (rev b0)           # &lt;– PCIe Gen5<br>c2:00.0 PCI bridge: Broadcom &#x2F; LSI PEX890xx PCIe Gen 5 Switch (rev b0)<br>c3:00.0 3D controller: NVIDIA Corporation Device 2329 (rev a1)<br>c6:00.0 Ethernet controller: Mellanox Technologies MT2894 Family [ConnectX-6 Lx] # &lt;– Mellanox CX6<br>c6:00.1 Ethernet controller: Mellanox Technologies MT2894 Family [ConnectX-6 Lx]<br>…</p>
-<figure><div class="code-wrapper"><pre class="line-numbers language-none"><code class="language-none">
-RDMA：
-</code></pre></div></figure>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">RDMA：</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 <p>$ ibstat<br>CA ‘mlx5_0’<br>        CA type: MT4127<br>        Number of ports: 1<br>        Port 1:<br>                State: Down<br>                Physical state: Disabled<br>                Rate: 40<br>                Base lid: 0<br>                LMC: 0<br>                SM lid: 0<br>                Capability mask: 0x00010000<br>                Link layer: Ethernet<br>CA ‘mlx5_1’<br>        CA type: MT4127<br>        Number of ports: 1<br>        Port 1:<br>                State: Down<br>                Physical state: Disabled<br>                Rate: 40<br>                Base lid: 0<br>                LMC: 0<br>                SM lid: 0<br>                Capability mask: 0x00010000<br>                Link layer: Ethernet</p>
-<figure><div class="code-wrapper"><pre class="language-none"><code class="language-none">
+<pre><code>
 
 
 ## 5.4 训练性能：`8*H20 vs 8*A800`
@@ -755,359 +396,5 @@ RDMA：
 4. [DGX A100 review: Throughput and Hardware Summary](https://www.microway.com/hpc-tech-tips/dgx-a100-review-throughput-and-hardware-summary/), 2020
 5. [Understanding NVIDIA GPU Performance: Utilization vs. Saturation](http://arthurchiao.art/blog/understanding-gpu-performance/), 2023
 6. [GPU Performance (Data Sheets) Quick Reference (2023)](http://arthurchiao.art/blog/gpu-data-sheets/)
-</code></pre></div></figure>
-
-                
-              </div>
-            
-            <hr/>
-            <div>
-              <div class="post-metas my-3">
-  
-    <div class="post-meta mr-3 d-flex align-items-center">
-      <i class="iconfont icon-category"></i>
-      
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/%E6%9D%82%E8%AE%B0/" class="category-chain-item">杂记</a>
-  
-  
-
-      </span>
-    
-  
-</span>
-
-    </div>
-  
-  
-</div>
-
-
-              
-  
-
-  <div class="license-box my-3">
-    <div class="license-title">
-      <div>GPU服务器硬件拓扑和集群组网</div>
-      <div>http://gsproj.github.io/2024/11/02/06_杂记/高性能GPU学习笔记/</div>
-    </div>
-    <div class="license-meta">
-      
-        <div class="license-meta-item">
-          <div>作者</div>
-          <div>GongSheng</div>
-        </div>
-      
-      
-        <div class="license-meta-item license-meta-date">
-          <div>发布于</div>
-          <div>2024年11月2日</div>
-        </div>
-      
-      
-      
-        <div class="license-meta-item">
-          <div>许可协议</div>
-          <div>
-            
-              
-              
-                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
-                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
-                    <i class="iconfont icon-cc-by"></i>
-                  </span>
-                </a>
-              
-            
-          </div>
-        </div>
-      
-    </div>
-    <div class="license-icon iconfont"></div>
-  </div>
-
-
-
-              
-                <div class="post-prevnext my-3">
-                  <article class="post-prev col-6">
-                    
-                    
-                      <a href="/2024/11/07/02_%E6%B5%8B%E8%AF%95/09-%E6%98%87%E8%85%BE910B%E6%BB%A1%E8%BD%BD%E5%8A%9F%E8%80%97%E6%B5%8B%E8%AF%95/" title="昇腾910B显卡满载功耗测试">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">昇腾910B显卡满载功耗测试</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
-                  </article>
-                  <article class="post-next col-6">
-                    
-                    
-                      <a href="/2024/10/17/01_%E8%BF%90%E7%BB%B4/06-%E6%99%BA%E7%AE%97%E4%B8%AD%E5%BF%83/01-%E6%99%BA%E7%AE%97%E4%B8%AD%E5%BF%83%E7%9A%84%E5%BB%BA%E8%AE%BE%E6%88%90%E6%9C%AC/" title="01-智算中心的建设成本">
-                        <span class="hidden-mobile">01-智算中心的建设成本</span>
-                        <span class="visible-mobile">下一篇</span>
-                        <i class="iconfont icon-arrowright"></i>
-                      </a>
-                    
-                  </article>
-                </div>
-              
-            </div>
-
-            
-          </article>
-        </div>
-      </div>
-    </div>
-
-    <div class="side-col d-none d-lg-block col-lg-2">
-      
-
-    </div>
-  </div>
-</div>
-
-
-
-
-
-  
-
-
-
-  
-
-
-
-  
-
-
-
-  
-
-
-
-  
-
-
-
-
-
-
-
-    
-
-    
-      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
-        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
-      </a>
-    
-
-    
-      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
-     aria-hidden="true">
-  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header text-center">
-        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
-        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body mx-3">
-        <div class="md-form mb-5">
-          <input type="text" id="local-search-input" class="form-control validate">
-          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
-        </div>
-        <div class="list-group" id="local-search-result"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-    
-
-    
-  </main>
-
-  <footer>
-    <div class="footer-inner">
-  
-    <div class="footer-content">
-       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
-    </div>
-  
-  
-  
-</div>
-
-  </footer>
-
-  <!-- Scripts -->
-  
-  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
-  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
-
-  <script>
-    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
-    NProgress.start()
-    window.addEventListener('load', function() {
-      NProgress.done();
-    })
-  </script>
-
-
-<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
-<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
-<script  src="/js/events.js" ></script>
-<script  src="/js/plugins.js" ></script>
-
-
-  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
-  <script>
-    (function (window, document) {
-      var typing = Fluid.plugins.typing;
-      var subtitle = document.getElementById('subtitle');
-      if (!subtitle || !typing) {
-        return;
-      }
-      var text = subtitle.getAttribute('data-typed-text');
-      
-        typing(text);
-      
-    })(window, document);
-  </script>
-
-
-
-
-  
-    <script  src="/js/img-lazyload.js" ></script>
-  
-
-
-
-
-  
-<script>
-  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
-    var toc = jQuery('#toc');
-    if (toc.length === 0 || !window.tocbot) { return; }
-    var boardCtn = jQuery('#board-ctn');
-    var boardTop = boardCtn.offset().top;
-
-    window.tocbot.init(Object.assign({
-      tocSelector     : '#toc-body',
-      contentSelector : '.markdown-body',
-      linkClass       : 'tocbot-link',
-      activeLinkClass : 'tocbot-active-link',
-      listClass       : 'tocbot-list',
-      isCollapsedClass: 'tocbot-is-collapsed',
-      collapsibleClass: 'tocbot-is-collapsible',
-      scrollSmooth    : true,
-      includeTitleTags: true,
-      headingsOffset  : -boardTop,
-    }, CONFIG.toc));
-    if (toc.find('.toc-list-item').length > 0) {
-      toc.css('visibility', 'visible');
-    }
-
-    Fluid.events.registerRefreshCallback(function() {
-      if ('tocbot' in window) {
-        tocbot.refresh();
-        var toc = jQuery('#toc');
-        if (toc.length === 0 || !tocbot) {
-          return;
-        }
-        if (toc.find('.toc-list-item').length > 0) {
-          toc.css('visibility', 'visible');
-        }
-      }
-    });
-  });
-</script>
-
-
-  <script  src="https://lib.baomitu.com/prism/1.29.0/components/prism-core.min.js" ></script>
-
-  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js" ></script>
-
-  <script  src="https://lib.baomitu.com/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js" ></script>
-
-  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
-
-  <script>Fluid.plugins.codeWidget();</script>
-
-
-  
-<script>
-  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
-    window.anchors.options = {
-      placement: CONFIG.anchorjs.placement,
-      visible  : CONFIG.anchorjs.visible
-    };
-    if (CONFIG.anchorjs.icon) {
-      window.anchors.options.icon = CONFIG.anchorjs.icon;
-    }
-    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
-    var res = [];
-    for (var item of el) {
-      res.push('.markdown-body > ' + item.trim());
-    }
-    if (CONFIG.anchorjs.placement === 'left') {
-      window.anchors.options.class = 'anchorjs-link-left';
-    }
-    window.anchors.add(res.join(', '));
-
-    Fluid.events.registerRefreshCallback(function() {
-      if ('anchors' in window) {
-        anchors.removeAll();
-        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
-        var res = [];
-        for (var item of el) {
-          res.push('.markdown-body > ' + item.trim());
-        }
-        if (CONFIG.anchorjs.placement === 'left') {
-          anchors.options.class = 'anchorjs-link-left';
-        }
-        anchors.add(res.join(', '));
-      }
-    });
-  });
-</script>
-
-
-  
-<script>
-  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
-    Fluid.plugins.fancyBox();
-  });
-</script>
-
-
-  <script>Fluid.plugins.imageCaption();</script>
-
-  <script  src="/js/local-search.js" ></script>
-
-
-
-
-
-<!-- 主题的启动项，将它保持在最底部 -->
-<!-- the boot of the theme, keep it at the bottom -->
-<script  src="/js/boot.js" ></script>
-
-
-  
-
-  <noscript>
-    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
-  </noscript>
-</body>
-</html>
+</code></pre>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://gsproj.github.io">Haris</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://gsproj.github.io/2024/11/02/06_%E6%9D%82%E8%AE%B0/%E9%AB%98%E6%80%A7%E8%83%BDGPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">http://gsproj.github.io/2024/11/02/06_%E6%9D%82%E8%AE%B0/%E9%AB%98%E6%80%A7%E8%83%BDGPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://gsproj.github.io" target="_blank">迎风之豚的博客</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="/img/%E7%BA%A2%E7%8C%AA.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2024/10/17/01_%E8%BF%90%E7%BB%B4/06-%E6%99%BA%E7%AE%97%E4%B8%AD%E5%BF%83/02-%E4%B8%80%E6%96%87%E6%90%9E%E6%87%82H100H200%EF%BC%8CB100B200%EF%BC%8CB200GB200%EF%BC%8CHGXDGX%E7%9A%84%E5%8C%BA%E5%88%AB%E5%92%8C%E5%8F%82%E6%95%B0/" title="02-一文搞懂H100H200，B100B200，B200GB200，HGXDGX的区别和参数"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">02-一文搞懂H100H200，B100B200，B200GB200，HGXDGX的区别和参数</div></div><div class="info-2"><div class="info-item-1"> 转载至公众号：IT技术分享-老张  前言最近英伟达GPU热点一直很高，尤其是对H200，B200的讨论，当然也包括GB200，DGX及HGX等，我简单汇总了以下几个问题，我们今天展开聊聊！  1、你清楚H200比H100升级了什么吗？B200与B100的区别呢？ 2、B200和GB200名字看着很像，有何区别与联系呢？ 3、我们常见到HGX和DGX，他们是什么产品以及两者间的区别和联系？ 4、HGX H200\B200，DGX H100\B200的官方参数情况  一、英伟达H200和H100的变化作为H100的升级款产品，H200相信大家的关注度挺高，其实从整体参数方面H200只升级了GPU显存相关内容，GPU单卡从80G HBM3升级到了141G...</div></div></div></a><a class="pagination-related" href="/2024/11/07/02_%E6%B5%8B%E8%AF%95/09-%E6%98%87%E8%85%BE910B%E6%BB%A1%E8%BD%BD%E5%8A%9F%E8%80%97%E6%B5%8B%E8%AF%95/" title="昇腾910B显卡满载功耗测试"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">昇腾910B显卡满载功耗测试</div></div><div class="info-2"><div class="info-item-1">昇腾910B显卡满载功耗测试一、安装测试工具  参考链接：https://www.hiascend.com/document/detail/zh/mindx-dl/60rc2/toolbox/ascenddmi/toolboxug_0004.html  下载Toolbox的deb安装包 链接：https://www.hiascend.com/developer/download/community/result?module=dl%2Bcann 安装 1dpkg -i ./Ascend-mindx-toolbox_6.0.RC2.2_linux-aarch64.deb  执行环境变量 1source /usr/local/Ascend/toolbox/set_env.sh  测试是否安装成功 12root@user:~/Ascend-test# ascend-dmi --versionascend-dmi version: 6.0.RC2.2    二、压力测试 执行设置开发者套件的环境变量 12345678# toolboxsource...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/%E7%BA%A2%E7%8C%AA.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Haris</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">208</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">1</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">29</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#GPU%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%A1%AC%E4%BB%B6%E6%8B%93%E6%89%91%E5%92%8C%E9%9B%86%E7%BE%A4%E7%BB%84%E7%BD%91"><span class="toc-number">1.</span> <span class="toc-text">GPU服务器硬件拓扑和集群组网</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#1-%E6%9C%AF%E8%AF%AD%E4%B8%8E%E5%9F%BA%E7%A1%80"><span class="toc-number">2.</span> <span class="toc-text">1 术语与基础</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-PCIe-%E4%BA%A4%E6%8D%A2%E8%8A%AF%E7%89%87"><span class="toc-number">2.1.</span> <span class="toc-text">1.1 PCIe 交换芯片</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-2-NVLink%E6%8A%80%E6%9C%AF"><span class="toc-number">2.2.</span> <span class="toc-text">1.2 NVLink技术</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%EF%BC%89%E5%AE%9A%E4%B9%89"><span class="toc-number">2.2.1.</span> <span class="toc-text">1）定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%EF%BC%89NVLink%E6%8A%80%E6%9C%AF%E6%BC%94%E8%BF%9B"><span class="toc-number">2.2.2.</span> <span class="toc-text">2）NVLink技术演进</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%EF%BC%89NVLink%E6%80%BB%E5%B8%A6%E5%AE%BD%E7%9A%84%E8%AE%A1%E7%AE%97%E6%96%B9%E5%BC%8F"><span class="toc-number">2.2.3.</span> <span class="toc-text">3）NVLink总带宽的计算方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4%EF%BC%89%E7%9B%91%E6%8E%A7NVLink%E5%B8%A6%E5%AE%BD%E7%9A%84%E6%96%B9%E6%B3%95"><span class="toc-number">2.2.4.</span> <span class="toc-text">4）监控NVLink带宽的方法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-3-NVSwitch%E8%8A%AF%E7%89%87"><span class="toc-number">2.3.</span> <span class="toc-text">1.3 NVSwitch芯片</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-4-NVLink-Switch"><span class="toc-number">2.4.</span> <span class="toc-text">1.4 NVLink Switch</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-5-HBM"><span class="toc-number">2.5.</span> <span class="toc-text">1.5 HBM</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%EF%BC%89%E4%BB%80%E4%B9%88%E6%98%AFHBM%EF%BC%9F"><span class="toc-number">2.5.1.</span> <span class="toc-text">1）什么是HBM？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%EF%BC%89HDM%E6%8A%80%E6%9C%AF%E6%BC%94%E8%BF%9B%EF%BC%9A"><span class="toc-number">2.5.2.</span> <span class="toc-text">2）HDM技术演进：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-6-%E5%B8%A6%E5%AE%BD%E5%8D%95%E4%BD%8D"><span class="toc-number">2.6.</span> <span class="toc-text">1.6 带宽单位</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2-%E5%85%B8%E5%9E%8B8%E5%8D%A1A100-A800%E4%B8%BB%E6%9C%BA%E6%9E%84%E6%88%90"><span class="toc-number">3.</span> <span class="toc-text">2 典型8卡A100&#x2F;A800主机构成</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-%E4%B8%BB%E8%A6%81%E9%83%A8%E4%BB%B6"><span class="toc-number">3.1.</span> <span class="toc-text">2.1 主要部件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%EF%BC%89%E5%AD%98%E5%82%A8%E7%BD%91%E5%8D%A1"><span class="toc-number">3.1.1.</span> <span class="toc-text">1）存储网卡</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%EF%BC%89NVSwitch-%E5%88%A0%E9%99%A4"><span class="toc-number">3.1.2.</span> <span class="toc-text">2）NVSwitch(删除)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%EF%BC%89%E6%9F%A5%E7%9C%8B%E6%8B%93%E6%89%91"><span class="toc-number">3.1.3.</span> <span class="toc-text">3）查看拓扑</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-GPU-%E8%AE%AD%E7%BB%83%E9%9B%86%E7%BE%A4%E7%BB%84%E7%BD%91"><span class="toc-number">3.2.</span> <span class="toc-text">2.2 GPU 训练集群组网</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%EF%BC%89%E8%AE%A1%E7%AE%97%E7%BD%91%E7%BB%9C"><span class="toc-number">3.2.1.</span> <span class="toc-text">1）计算网络</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/03/12/09_%E9%9F%A9%E5%85%88%E8%B6%85K8S/01-Docker%E5%9F%BA%E7%A1%80/04-Dockerfile%E5%AE%9E%E6%88%98%E7%AF%87-%E6%9E%84%E5%BB%BA%E4%BC%81%E4%B8%9A%E7%BA%A7%E9%95%9C%E5%83%8F/" title="04-Dockerfile实战篇-构建企业级镜像">04-Dockerfile实战篇-构建企业级镜像</a><time datetime="2025-03-12T07:12:52.000Z" title="发表于 2025-03-12 15:12:52">2025-03-12</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/03/04/09_%E9%9F%A9%E5%85%88%E8%B6%85K8S/01-Docker%E5%9F%BA%E7%A1%80/03-Dockerfile%E5%9F%BA%E7%A1%80%E7%AF%87-%E5%9F%BA%E6%9C%AC%E8%AF%AD%E6%B3%95/" title="03-Dockerfile基础篇-基本语法">03-Dockerfile基础篇-基本语法</a><time datetime="2025-03-04T07:12:52.000Z" title="发表于 2025-03-04 15:12:52">2025-03-04</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/03/03/09_%E9%9F%A9%E5%85%88%E8%B6%85K8S/01-Docker%E5%9F%BA%E7%A1%80/02-%E8%BF%90%E8%A1%8CDocker%E5%AE%B9%E5%99%A8/" title="02-运行Docker容器">02-运行Docker容器</a><time datetime="2025-03-03T07:12:52.000Z" title="发表于 2025-03-03 15:12:52">2025-03-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/03/03/09_%E9%9F%A9%E5%85%88%E8%B6%85K8S/01-Docker%E5%9F%BA%E7%A1%80/01-Dokcer%E5%AE%B9%E5%99%A8%E5%9F%BA%E7%A1%80%E5%85%A5%E9%97%A8/" title="01-Docker基础">01-Docker基础</a><time datetime="2025-03-03T04:30:52.000Z" title="发表于 2025-03-03 12:30:52">2025-03-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/02/25/06_%E6%9D%82%E8%AE%B0/Ubuntu22.04%E6%98%BE%E5%8D%A1%E7%9B%B4%E9%80%9A/" title="Ubuntu22.04显卡直通虚拟机">Ubuntu22.04显卡直通虚拟机</a><time datetime="2025-02-25T09:50:52.000Z" title="发表于 2025-02-25 17:50:52">2025-02-25</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url(/img/footer.png);"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2025 By Haris</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>
