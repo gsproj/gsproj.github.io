@@ -87,3 +87,72 @@ docker rm 926b --force
 
 
 
+# 二、容器部署Nginx站点
+
+>使用centos容器，在里面安装nginx
+
+1、创建并运行centos容器
+
+```shell
+[root@master1 ~]#docker run --name nginx -p 80 -itd centos
+4a6ec9d7ca97815fd0c0946a20c7d2373065108839fbd7e1ad46379736cb4cb3
+```
+
+2、进入容器
+
+```shell
+[root@master1 ~]#docker exec -it 4a6e /bin/bash
+[root@4a6ec9d7ca97 /]# 
+```
+
+3、设置yum源
+
+```shell
+# 下载阿里镜像源
+curl -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-8.repo
+# 更新缓存
+yum makecache
+```
+
+4、安装nginx
+
+```shell
+yum install nginx -y
+```
+
+5、准备Nginx的站点页面
+
+```shell
+# 创建文件夹
+curl -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-8.repo
+# 站点文件
+[root@4a6ec9d7ca97 html]# cat index.html 
+This is Test Nginx Page for Docker
+```
+
+6、修改nginx配置文件
+
+```shell
+# vim /etc/nginx/nginx.conf
+# 将站点路径指向/var/www/html
+server {
+        listen       80 default_server;
+        listen       [::]:80 default_server;
+        server_name  _;
+        root         /var/www/html;  # 改这里
+```
+
+7、启动nginx服务
+
+```shell
+/usr/sbin/nginx
+```
+
+8、宿主机测试
+
+查看容器信息可以看到容器的80端口映射到物理机的32768端口，通过curl访问成功
+
+![image-20250304135315452](./../../../img/image-20250304135315452.png)
+
+
+
