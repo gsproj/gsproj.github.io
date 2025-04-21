@@ -3,7 +3,7 @@ title: 05-Docker容器数据持久化
 date: 2025-3-20 15:12:52
 categories:
 - 超哥K8S
-- （一）Docker容器基础入门
+- （一）Docker容器入门
 tags:
 ---
 
@@ -80,5 +80,126 @@ index.html
 # 但是不能写，只读文件系统
 [root@e7c522293e5d html]# echo "destory you" > index.html 
 bash: index.html: Read-only file system
+```
+
+---
+
+## 2.3 使用dockerfile构建包含数据卷的镜像
+
+1、创建dockerfile文件
+
+```dockerfile
+[root@master1 ~/Docker-Demo/03-volume/02-dockerfile-volume]#cat dockerfile 
+FROM centos
+VOLUME ["/virvol01", "virvol02"]
+CMD /bin/bash
+```
+
+2、构建镜像
+
+```shell
+docker build -t="volumetest" .
+```
+
+3、使用镜像运行容器
+
+```shell
+docker run --name volume-double -it volumetest
+```
+
+可以看到创建的两个volume已经挂载到容器中
+
+![image-20250325164425936](./../../../img/image-20250325164425936.png)
+
+---
+
+## 2.4 数据卷容器（共享数据）
+
+>什么是数据卷容器？
+>
+>就是一个挂载了数据卷的容器，其他容器可以通过挂载这个容器来实现数据共享
+
+应用场景：新创建一个容器，挂载2.3节创建的容器（用作数据卷容器）
+
+1、确保2.3节创建的容器正在运行
+
+```shell
+[root@master1 /]#docker ps
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS               NAMES
+b52f34e73d91        volumetest          "/bin/sh -c /bin/bash"   13 seconds ago      Up 13 seconds                           volume-double
+```
+
+2、创建新容器，挂载`volume-double`容器
+
+```shell
+docker run --name volume-double2 --volumes-from volume-double -itd centos /bin/bash
+```
+
+3、进入容器内部，命令查看确实也有virvol01/02两个文件夹
+
+![image-20250325165803198](./../../../img/image-20250325165803198.png)
+
+---
+
+## 2.5 数据备份和还原
+
+>备份：将容器里的数据备份到物理机中
+>
+>还原：将物理机里的备份文件还原到容器中
+
+### 2.5.1 备份
+
+1、在2.3构建的数据卷容器中，创建重要文件`bigSecret `
+
+```shell
+[root@27db0950f061 /]# ls
+bin  dev  etc  home  lib  lib64  lost+found  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var  virvol01	virvol02
+[root@27db0950f061 /]# ls virvol01/ImportantFile/bigSecret 
+virvol01/ImportantFile/bigSecret
+```
+
+2、新启动一个容器，将重要文件备份出来
+
+```shell
+[root@master1 /]#docker run --volumes-from volume-double -v /root/backup:/backup --name volume-double-copy centos  tar zvcf /backup/virvol01bak.tar.gz /virvol01
+tar: Removing leading `/' from member names
+/virvol01/
+/virvol01/ImportantFile/
+/virvol01/ImportantFile/bigSecret
+```
+
+3、查看备份成功
+
+```shell
+[root@master1 /]#ls /root/backup/
+virvol01bak.tar.gz
+```
+
+### 2.5.2 还原
+
+1、删除数据卷容器`27db`里的数据
+
+```shell
+[root@27db0950f061 virvol01]# ls
+ImportantFile  virvol01
+[root@27db0950f061 virvol01]# rm ./* -fr
+```
+
+2、新启动一个容器，并将将物理机的`virvol01bak.tar.gz`文件还原进去
+
+```shell
+docker run --volumes-from volume-double -v /root/backup/:/backup --name "volume-double-rebuild" centos tar zvxf /backup/virvol01bak.tar.gz -C /virvol01
+virvol01/
+virvol01/ImportantFile/
+virvol01/ImportantFile/bigSecret
+```
+
+3、重新查看`27db`容器的数据，文件又回来了，还原成功
+
+```shell
+[root@27db0950f061 virvol01]# ls virvol01/
+ImportantFile
+[root@27db0950f061 virvol01]# ls virvol01/ImportantFile/
+bigSecret
 ```
 
