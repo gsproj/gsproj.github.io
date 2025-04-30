@@ -17,7 +17,7 @@ tags:
 | CUDA版本    | 12.4                                         |
 | GPU驱动版本 | 550.54.15                                    |
 
-
+---
 
 # 二、安装ollama框架
 
@@ -73,7 +73,7 @@ systemctl enable ollama
 ollama version is 0.6.5
 ```
 
-
+---
 
 # 三、拉取deepseek模型并运行
 
@@ -111,7 +111,7 @@ NAME                ID              SIZE      PROCESSOR    UNTIL
 deepseek-r1:671b    739e1b229ad7    552 GB    100% GPU     Forever  
 ```
 
-
+---
 
 # 四、访问deepseek模型
 
@@ -123,7 +123,7 @@ deepseek-r1:671b    739e1b229ad7    552 GB    100% GPU     Forever
 
 2、方法二：API接口调用
 
-ollama服务运行后会监听 `0.0.0.0:11434`，我们可以通过API接口访问运行后的模型实例。ollama的对话接口兼容openai接口，可以执行以下命令调用模型接口：
+ollama服务运行后会监听 `127.0.0.1:11434`，我们可以通过API接口访问运行后的模型实例。ollama的对话接口兼容openai接口，可以执行以下命令调用模型接口：
 
 ```shell
 curl --request POST \
@@ -144,13 +144,13 @@ curl --request POST \
 
 ![image-20250421144447707](./../../img/image-20250421144447707.png)
 
-
+---
 
 # 五、压测大模型
 
-[压测脚本下载]: https://github.com/zhayujie/llm-eval-suite/blob/main/model_stress_test.py	"对对对"
+1、下载脚本：https://github.com/zhayujie/llm-eval-suite/blob/main/model_stress_test.py 
 
-运行压测脚本
+2、运行压测脚本
 
 ```shell
 python3 model_stress_test.py
@@ -158,7 +158,7 @@ python3 model_stress_test.py
 
 ![image-20250421145118917](./../../img/image-20250421145118917.png)
 
-压测过程中可以使用`nvitop`查看GPU的使用情况
+3、压测过程中可以使用`nvitop`查看GPU的使用情况
 
 ```shell
 # 安装nvitop
