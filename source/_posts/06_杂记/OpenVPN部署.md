@@ -22,24 +22,17 @@ apt-get install easy-rsa openvpn -y
 1、将easy-rsa工具拷贝到openvpn文件夹中
 
 ```shell
-(base) root@hr650-1:/etc# cd /etc/openvpn/
-(base) root@hr650-1:/etc/openvpn# ls
-client  server  update-resolv-conf
-(base) root@hr650-1:/etc/openvpn# cp /usr/share/easy-rsa/ . -r
-(base) root@hr650-1:/etc/openvpn# ls easy-rsa/
-easyrsa  openssl-easyrsa.cnf  vars.example  x509-types
+cp /usr/share/easy-rsa/ /etc/openvpn/ -r
 ```
 
 2、复制变量文件`vars`，并修改参数
 
 ```shell
-(base) root@hr650-1:/etc/openvpn# cd easy-rsa/
-(base) root@hr650-1:/etc/openvpn/easy-rsa# ls
-easyrsa  openssl-easyrsa.cnf  vars.example  x509-types
-(base) root@hr650-1:/etc/openvpn/easy-rsa# cp vars.example vars
+cd easy-rsa/
+cp vars.example vars
 
 # 参数如下
-(base) root@hr650-1:/etc/openvpn/easy-rsa# grep -v "^#\|^$" vars
+# grep -v "^#\|^$" vars
 if [ -z "$EASYRSA_CALLER" ]; then
 	echo "You appear to be sourcing an Easy-RSA *vars* file. This is" >&2
 	echo "no longer necessary and is disallowed. See the section called" >&2
@@ -68,7 +61,7 @@ set_var EASYRSA_REQ_OU		"Product Department"
 # 生成DH证书
 ./easyrsa gen-dh
 # 生成HMAC密钥（防DDos攻击、UDP淹没等恶意攻击）
-openvpn --genkey --secret ta.key
+openvpn --genkey secret ta.key
 ```
 
 # 三、配置OpenVPN服务端
@@ -76,7 +69,7 @@ openvpn --genkey --secret ta.key
 1、创建文件`/etc/openvpn/server/server.conf`，内容如下：
 
 ```shell
-port 2294
+port 8890
 # 改成tcp，默认使用udp，如果使用HTTP Proxy，必须使用tcp协议
 proto tcp
 dev tun
@@ -124,14 +117,7 @@ systemctl start openvpn-server@server
 3、确保服务正常启用
 
 ```shell
-(base) root@hr650-1:/etc/openvpn/server# systemctl status openvpn-server@server
-● openvpn-server@server.service - OpenVPN service for server
-     Loaded: loaded (/usr/lib/systemd/system/openvpn-server@.service; enabled; preset: enabled)
-     Active: active (running) since Thu 2025-04-03 17:19:31 CST; 1s ago
-       Docs: man:openvpn(8)
-             https://openvpn.net/community-resources/reference-manual-for-openvpn-2-6/
-             https://community.openvpn.net/openvpn/wiki/HOWTO
-....
+systemctl status openvpn-server@server
 ```
 
 # 四、配置 iptables 规则
@@ -139,42 +125,30 @@ systemctl start openvpn-server@server
 让客户端可以访问到服务器所在局域网的其它主机
 
 ```bash
-[root@openvpn ~]# iptables -t nat -A POSTROUTING -s 10.8.0.0/24 -j MASQUERADE
-[root@openvpn ~]# cat /proc/sys/net/ipv4/ip_forward
-0
-[root@openvpn ~]# echo "1" > /proc/sys/net/ipv4/ip_forward
-[root@openvpn ~]# cat /proc/sys/net/ipv4/ip_forward
-1
+iptables -t nat -A POSTROUTING -s 10.8.0.0/24 -j MASQUERADE
+echo "1" > /proc/sys/net/ipv4/ip_forward
+sysctl -p
 ```
 
+> 如果VPN客户端只能通VPN服务端的服务器，而不能与内网其他网段互通，需要加上以下策略
+>
+> ```shell
+> # 比如VPN服务器出外网的网卡是enp103s0f0np0，而VPN虚拟网卡是tun0
+> iptables -A FORWARD -i tun0 -o enp103s0f0np0 -j ACCEPT
+> iptables -A FORWARD -i enp103s0f0np0 -o tun0 -j ACCEPT
+> ```
 
+iptables持久保存
+
+```shell
+apt-get install iptables-persistent
+netfilter-persistent save
+sudo systemctl status iptables
+```
 
 # 五、Windows客户端OpenVPN配置
 
-### 7.1 客户端的配置文件（仅供参考，主要通过下面的脚本配置）
-
-```bash
-client
-dev tun
-proto tcp
-remote 36.158.226.1 16001
-resolv-retry infinite
-persist-key
-persist-tun
-mute-replay-warnings
-ca ca.crt
-cert yll.crt
-key yll.key
-remote-cert-tls server
-tls-auth ta.key 1
-cipher AES-256-CBC
-comp-lzo
-verb 3
-mute 20
-reneg-sec 0
-```
-
-### 7.2 生成客户端证书的脚本如下
+### 7.1 生成客户端证书的脚本如下
 
 ```bash
 (base) root@hr650-1:/etc/openvpn/easy-rsa# cat /usr/local/bin/genovpnuser 
